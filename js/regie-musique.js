@@ -71,7 +71,7 @@ function afficherMusiques() {
         <input type="text" class="mu-titre" maxlength="60" aria-label="Nom du morceau">
         <button class="petit mu-retirer" title="Retirer">✕</button>
       </div>
-      <div class="mu-scenes"><span>Pendant</span>${SCENES_MUSIQUE.map(([s, nom, long]) => `<button type="button" data-s="${s}" title="Démarre tout seul pendant : ${long}" class="${etat.musiqueScenes[s] === m.id ? 'actif' : ''}">${nom}</button>`).join('')}</div>${note}`;
+      <div class="mu-scenes">${SCENES_MUSIQUE.map(([s, nom, long]) => `<button type="button" data-s="${s}" title="Démarre tout seul pendant : ${long}" class="${etat.musiqueScenes[s] === m.id ? 'actif' : ''}">${nom}</button>`).join('')}</div>${note}`;
     const titre = el.querySelector('.mu-titre');
     titre.value = m.nom;
     titre.onchange = () => { m.nom = titre.value.trim() || m.nom; titre.value = m.nom; envoyer(); majEtatMusique(); };
@@ -99,7 +99,7 @@ function afficherMusiques() {
     });
     box.appendChild(el);
   });
-  $('#mu-compte').textContent = n >= max ? `${n} sur ${max}. Plus de morceaux avec une formule au-dessus.` : `${n} sur ${max}`;
+  $('#mu-compte').textContent = (n >= max ? `${n} sur ${max}. Plus de morceaux avec une formule au-dessus.` : `${n} sur ${max}`) + (n ? ' Coche les scènes où un morceau doit démarrer tout seul.' : '');
   $('#mu-ajouter').classList.toggle('plein', n >= max);
   majEtatMusique();
 }

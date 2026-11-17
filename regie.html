@@ -111,6 +111,9 @@
   .vu { height: 6px; border-radius: 2px; background: var(--ui-input); overflow: hidden; position: relative; }
   .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green) 0 62%, var(--ui-ambre) 62% 84%, var(--ui-red) 84%); background-size: 100vw 100%; transition: width .1s linear; }
   .vu::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 5px, var(--ui-panel2) 5px 7px); }
+  /* le petit message en bas de l'écran porte aussi la classe « vu » (visible) : il ne doit pas prendre l'allure d'un vu-mètre */
+  .toast.vu { position: fixed; height: auto; overflow: visible; background: var(--ui-accent); border-radius: 10px; }
+  .toast.vu::after { content: none; }
   #hote-controles .participant { border: 0; padding: 8px 0 0; background: none; }
   #hote-controles .vignette, #hote-controles .haut-btn { display: none; }
   #liste { display: contents; }
@@ -193,8 +196,7 @@
   .mu-ligne { display: flex; align-items: center; gap: 8px; }
   .mu-piste input.mu-titre { flex: 1; min-width: 0; background: transparent; border: 1px solid transparent; padding: 5px 6px; font-weight: 500; text-overflow: ellipsis; }
   .mu-piste input.mu-titre:hover, .mu-piste input.mu-titre:focus { border-color: var(--ui-line2); background: var(--ui-bg); }
-  .mu-scenes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
-  .mu-scenes span { color: var(--ui-muted); font-size: 12px; margin-right: 3px; }
+  .mu-scenes { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; }
   .mu-scenes button { padding: 3px 8px; font-size: 12px; border-radius: 99px; background: transparent; color: var(--ui-muted); }
   .mu-scenes button:hover { color: var(--ui-text); }
   .mu-scenes button.actif { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-sur-accent, #111); font-weight: 600; }
@@ -641,7 +643,7 @@
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/regie.js?v=e8761c2d"></script>
 <script src="js/regie-sources.js?v=622c30a4"></script>
-<script src="js/regie-musique.js?v=af6d70a0"></script>
+<script src="js/regie-musique.js?v=a9c44f70"></script>
 <script src="js/regie-quiz.js?v=378bbe17"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=03347cc5"></script>
