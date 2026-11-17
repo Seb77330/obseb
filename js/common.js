@@ -9,41 +9,90 @@ const THEMES = {
   minimal: {
     nom: 'Sebastian (noir et jaune)',
     bg: '#0b0b0d', bg2: '#1a1a1f', accent: '#FFD21F', text: '#ffffff', muted: '#a8a8b0',
-    fontTitle: 'Anton', fontBody: 'Montserrat', deco: 'minimal'
+    fontTitle: 'Outfit', fontBody: 'Inter', deco: 'minimal'
   },
   bond: {
     nom: 'Espion (noir et or)',
     bg: '#050505', bg2: '#17130a', accent: '#D4AF37', text: '#f5f1e6', muted: '#9c9480',
-    fontTitle: 'Cinzel', fontBody: 'Montserrat', deco: 'barillet'
+    fontTitle: 'Cinzel', fontBody: 'Inter', deco: 'barillet'
   },
   heros: {
     nom: 'Super-héros (rouge et bleu)',
     bg: '#070b1a', bg2: '#13214a', accent: '#E62429', text: '#ffffff', muted: '#9fb0d8',
-    fontTitle: 'Bangers', fontBody: 'Montserrat', deco: 'trame'
+    fontTitle: 'Bangers', fontBody: 'Inter', deco: 'trame'
   },
   horreur: {
     nom: 'Horreur (rouge sang)',
     bg: '#070000', bg2: '#250303', accent: '#C1121F', text: '#f2e9e9', muted: '#a07a7a',
-    fontTitle: 'Creepster', fontBody: 'Montserrat', deco: 'brume'
+    fontTitle: 'Creepster', fontBody: 'Inter', deco: 'brume'
   },
   polar: {
     nom: 'Polar (noir et blanc)',
     bg: '#0a0a0a', bg2: '#262626', accent: '#EDEDED', text: '#ffffff', muted: '#9a9a9a',
-    fontTitle: 'Special Elite', fontBody: 'Montserrat', deco: 'stores'
+    fontTitle: 'Special Elite', fontBody: 'Inter', deco: 'stores'
   },
   arene: {
     nom: 'Arène (façon Hunger Games)',
     bg: '#0c0a08', bg2: '#2a1608', accent: '#E0892B', text: '#f4ead9', muted: '#a8977f',
-    fontTitle: 'Cinzel Decorative', fontBody: 'Montserrat', deco: 'aucun', pack: 'arene', packJs: true
+    fontTitle: 'Cinzel Decorative', fontBody: 'Inter', deco: 'aucun', pack: 'arene', packJs: true
   },
   anime: {
     nom: 'Animation (orange vif)',
     bg: '#120a1f', bg2: '#2b1650', accent: '#FF8A00', text: '#ffffff', muted: '#c6b5e8',
-    fontTitle: 'Luckiest Guy', fontBody: 'Montserrat', deco: 'bulles'
+    fontTitle: 'Luckiest Guy', fontBody: 'Inter', deco: 'bulles'
   }
 };
-const FONTS = ['Anton', 'Cinzel Decorative', 'Bebas Neue', 'Cinzel', 'Bangers', 'Creepster', 'Special Elite', 'Luckiest Guy',
-  'Playfair Display', 'Oswald', 'Montserrat', 'Abril Fatface', 'Righteous'];
+// Polices fines en premier ; les plus grasses restent disponibles pour certains thèmes
+const FONTS = ['Outfit', 'Inter', 'Cormorant Garamond', 'Marcellus', 'Italiana', 'Cinzel', 'Josefin Sans', 'DM Serif Display',
+  'Fraunces', 'Space Grotesk', 'Playfair Display', 'Cinzel Decorative', 'Bebas Neue', 'Oswald', 'Montserrat',
+  'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous'];
+const POIDS_POLICES = { Inter: '400;500;600;700', Outfit: '300;400;500;600', Montserrat: '500;700;800', 'Josefin Sans': '300;400;600',
+  'Cormorant Garamond': '400;500;600', 'Space Grotesk': '400;500;600', Fraunces: '300;400;600' };
+
+/* ---------- Affichage de l'interface : auto / sombre / clair, daltonien, contraste, taille ---------- */
+const CLE_AFFICHAGE = 'studioSeb:affichage';
+function lireAffichage() {
+  try { return Object.assign({ mode: 'sombre', daltonien: false, contraste: false, taille: 'normal' }, JSON.parse(localStorage.getItem(CLE_AFFICHAGE) || '{}')); }
+  catch (e) { return { mode: 'sombre', daltonien: false, contraste: false, taille: 'normal' }; }
+}
+function appliquerAffichage(a = lireAffichage()) {
+  const r = document.documentElement;
+  const clair = a.mode === 'clair' || (a.mode === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
+  if (clair) r.dataset.mode = 'clair'; else delete r.dataset.mode;
+  if (a.daltonien) r.dataset.daltonien = ''; else delete r.dataset.daltonien;
+  if (a.contraste) r.dataset.contraste = ''; else delete r.dataset.contraste;
+  r.dataset.taille = a.taille;
+}
+/* Bouton « Affichage » : petit menu avec les réglages, mémorisés dans ce navigateur */
+function boutonAffichage(conteneur) {
+  const box = document.createElement('div'); box.className = 'bouton-affichage';
+  box.innerHTML = `<button type="button" title="Affichage : mode clair, sombre, daltonien…">Affichage</button>
+    <div class="affichage-pop" hidden>
+      <div class="titre-pop">Thème de l'interface</div>
+      <div class="segment" data-r="mode"><button data-v="auto">Auto</button><button data-v="sombre">Sombre</button><button data-v="clair">Clair</button></div>
+      <label><span>Mode daltonien<small>Bleu et orange au lieu de vert et rouge</small></span><input type="checkbox" data-r="daltonien"></label>
+      <label><span>Contraste élevé<small>Textes et contours plus marqués</small></span><input type="checkbox" data-r="contraste"></label>
+      <div class="titre-pop">Taille du texte</div>
+      <div class="segment" data-r="taille"><button data-v="normal">Normale</button><button data-v="grand">Grande</button></div>
+    </div>`;
+  const pop = box.querySelector('.affichage-pop');
+  const maj = () => {
+    const a = lireAffichage();
+    pop.querySelectorAll('.segment').forEach(sg => sg.querySelectorAll('button').forEach(b => b.classList.toggle('actif', a[sg.dataset.r] === b.dataset.v)));
+    pop.querySelectorAll('input[data-r]').forEach(i => { i.checked = !!a[i.dataset.r]; });
+  };
+  const changer = (k, v) => { const a = lireAffichage(); a[k] = v; try { localStorage.setItem(CLE_AFFICHAGE, JSON.stringify(a)); } catch (e) { /* rien */ } appliquerAffichage(a); maj(); };
+  pop.querySelectorAll('.segment button').forEach(b => b.onclick = () => changer(b.parentElement.dataset.r, b.dataset.v));
+  pop.querySelectorAll('input[data-r]').forEach(i => i.onchange = () => changer(i.dataset.r, i.checked));
+  box.firstElementChild.onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; maj(); };
+  document.addEventListener('click', e => { if (!box.contains(e.target)) pop.hidden = true; });
+  conteneur.appendChild(box);
+  return box;
+}
+if (!/sortie\.html/.test(location.pathname)) {
+  appliquerAffichage();
+  if (window.matchMedia) matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', () => appliquerAffichage());
+}
 
 /* ---------- Outils ---------- */
 function rnd(n = 8) {
@@ -95,11 +144,18 @@ function themeComplet(session) {
 function baseUrl() {
   return location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
 }
+/* Images importées depuis le PC : gardées dans le lien OBS et la régie, retirées du lien invités (trop long à partager) */
+function sansImagesLocales(session) {
+  const t = Object.assign({}, session.theme);
+  for (const k of Object.keys(t)) if (typeof t[k] === 'string' && t[k].startsWith('data:')) delete t[k];
+  return Object.assign({}, session, { theme: t });
+}
 function liens(session, cle) {
   const s = b64e(session);
+  const sInvite = b64e(sansImagesLocales(session));
   return {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
-    invite: `${baseUrl()}invite.html#s=${s}`,
+    invite: `${baseUrl()}invite.html#s=${sInvite}`,
     sortie: `${baseUrl()}sortie.html#s=${s}`,
     vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}`
   };
@@ -143,7 +199,7 @@ function chargerPolices(liste) {
   const l = document.createElement('link');
   l.id = id; l.rel = 'stylesheet';
   l.href = 'https://fonts.googleapis.com/css2?' +
-    fams.map(f => 'family=' + f.replace(/ /g, '+') + (f === 'Montserrat' ? ':wght@500;700;800;900' : '')).join('&') + '&display=swap';
+    fams.map(f => 'family=' + f.replace(/ /g, '+') + (POIDS_POLICES[f] ? ':wght@' + POIDS_POLICES[f] : '')).join('&') + '&display=swap';
   document.head.appendChild(l);
 }
 

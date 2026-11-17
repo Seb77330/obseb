@@ -1,44 +1,56 @@
 /* Interface du OBSeb (accueil, régie, coulisses invité) */
 :root {
   --ui-bg: #0d0e12; --ui-panel: #16181e; --ui-panel2: #1d2028; --ui-line: #2a2e38;
-  --ui-text: #f1f2f5; --ui-muted: #9097a6; --ui-accent: #FFD21F; --ui-red: #ff3b3b; --ui-green: #2fd27a;
-  --radius: 12px;
+  --ui-text: #f1f2f5; --ui-muted: #9097a6; --ui-accent: #FFD21F; --ui-sur-accent: #111;
+  --ui-red: #ff3b3b; --ui-green: #2fd27a; --ui-ko: #ff6b6b;
+  --ui-header: #0a0b0e; --ui-input: #0f1116; --ui-hover: #232733; --ui-line2: #3c4250;
+  --radius: 12px; --ui-taille: 15px;
 }
+/* Modes d'affichage (bouton « Affichage ») */
+:root[data-mode="clair"] {
+  --ui-bg: #f4f5f7; --ui-panel: #ffffff; --ui-panel2: #f1f2f5; --ui-line: #dcdfe5;
+  --ui-text: #15171c; --ui-muted: #5d6472; --ui-accent: #F2C200; --ui-sur-accent: #111;
+  --ui-header: #ffffff; --ui-input: #ffffff; --ui-hover: #e8eaef; --ui-line2: #c3c8d1;
+}
+:root[data-daltonien] { --ui-red: #E66100; --ui-green: #1A85FF; --ui-ko: #E66100; }
+:root[data-contraste] { --ui-muted: #c9ced8; --ui-line: #565d6b; --ui-line2: #7a8291; }
+:root[data-contraste][data-mode="clair"] { --ui-muted: #2f343d; --ui-line: #8a909b; --ui-line2: #5f6570; }
+:root[data-taille="grand"] { --ui-taille: 17px; }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--ui-bg); color: var(--ui-text); font: 15px/1.45 Montserrat, system-ui, Arial, sans-serif; }
+html, body { margin: 0; background: var(--ui-bg); color: var(--ui-text); font: 400 var(--ui-taille)/1.5 Inter, system-ui, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 a { color: var(--ui-accent); }
 button, input, select { font: inherit; color: inherit; }
 button {
   background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 14px;
-  cursor: pointer; font-weight: 700; transition: background .15s, border-color .15s, transform .05s;
+  cursor: pointer; font-weight: 600; transition: background .15s, border-color .15s, transform .05s;
 }
-button:hover { border-color: #3c4250; background: #232733; }
+button:hover { border-color: var(--ui-line2); background: var(--ui-hover); }
 button:active { transform: translateY(1px); }
-button.primaire { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
+button.primaire { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
 button.primaire:hover { filter: brightness(1.05); }
 button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
 button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
 button.petit { padding: 5px 10px; font-size: 13px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 input[type=text], input[type=password], input[type=number], input[type=url], input[type=time], select {
-  background: #0f1116; border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 12px; width: 100%; outline: none;
+  background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 12px; width: 100%; outline: none;
 }
 input:focus, select:focus { border-color: var(--ui-accent); }
 input[type=color] { width: 44px; height: 38px; border: 1px solid var(--ui-line); border-radius: 9px; background: none; padding: 2px; }
 input[type=range] { width: 100%; accent-color: var(--ui-accent); }
-label.champ { display: block; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin: 14px 0 6px; }
+label.champ { display: block; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin: 14px 0 6px; }
 .panneau { background: var(--ui-panel); border: 1px solid rgba(255,255,255,.06); border-radius: var(--radius); padding: 18px; box-shadow: 0 1px 0 rgba(255,255,255,.03) inset; }
-.panneau h2 { margin: 0 0 12px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); display: flex; align-items: center; gap: 8px; }
+.panneau h2 { margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); display: flex; align-items: center; gap: 8px; }
 .ligne-boutons { display: flex; gap: 8px; flex-wrap: wrap; }
 .aide { color: var(--ui-muted); font-size: 13px; }
-.badge-direct { display: inline-flex; align-items: center; gap: 6px; background: var(--ui-red); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.badge-direct { display: inline-flex; align-items: center; gap: 6px; background: var(--ui-red); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; letter-spacing: .12em; }
 .badge-direct::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
-  background: var(--ui-accent); color: #111; font-weight: 800; padding: 10px 18px; border-radius: 10px; transition: .25s; z-index: 99; pointer-events: none;
+  background: var(--ui-accent); color: #111; font-weight: 600; padding: 10px 18px; border-radius: 10px; transition: .25s; z-index: 99; pointer-events: none;
 }
 .toast.vu { opacity: 1; transform: translateX(-50%); }
-.marque { font-family: Anton, Impact, sans-serif; letter-spacing: .04em; font-size: 22px; text-transform: uppercase; }
+.marque { font-family: Inter, system-ui, sans-serif; font-weight: 700; letter-spacing: -.02em; font-size: 21px; }
 .marque b { color: var(--ui-accent); font-weight: 400; }
 .cadre169 { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }
 .cadre169 iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
@@ -48,14 +60,14 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 /* ----- Chat réuni ----- */
 .chat-src { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .chat-src input { flex: 1; min-width: 0; }
-.chat-src i, .chat-msg i { font-style: normal; font-size: 10px; font-weight: 800; color: #fff; border-radius: 5px; padding: 3px 5px; flex: none; }
+.chat-src i, .chat-msg i { font-style: normal; font-size: 10px; font-weight: 600; color: #fff; border-radius: 5px; padding: 3px 5px; flex: none; }
 .chat-etat { min-height: 0; margin: 2px 0 0 36px; }
 .chat-etat:empty { display: none; }
-.chat-etat.ok { color: #2fd27a; }
-.chat-etat.ko { color: #ff6b6b; }
-#chat-liste { height: 300px; overflow-y: auto; background: rgba(0,0,0,.25); border-radius: 10px; padding: 6px; }
+.chat-etat.ok { color: var(--ui-green); }
+.chat-etat.ko { color: var(--ui-ko); }
+#chat-liste { height: 300px; overflow-y: auto; background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 10px; padding: 6px; }
 .chat-msg { display: flex; gap: 6px; align-items: baseline; padding: 5px 6px; border-radius: 7px; cursor: pointer; font-size: 13px; line-height: 1.35; }
-.chat-msg:hover { background: rgba(255,255,255,.07); }
+.chat-msg:hover { background: var(--ui-hover); }
 .chat-msg.affiche { background: rgba(255,210,31,.16); outline: 1px solid rgba(255,210,31,.5); }
 .chat-msg b { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat-msg span { overflow-wrap: anywhere; }
@@ -65,13 +77,24 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .rm-video { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }
 .rm-video video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
 .rm-vide { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; font-size: 13px; color: var(--ui-muted); cursor: pointer; }
-.rm-res { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 6px; }
+.rm-res { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 6px; }
 .rm-res:empty { display: none; }
-.rm-champ { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin-top: 6px; }
-.rm-vu { height: 6px; border-radius: 3px; background: #2a2e38; overflow: hidden; }
+.rm-champ { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin-top: 6px; }
+.rm-vu { height: 6px; border-radius: 3px; background: var(--ui-line); overflow: hidden; }
 .rm-vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .08s; }
 .rm-aide { margin: 0; font-size: 12px; color: var(--ui-accent); }
 .rm-aide:empty { display: none; }
 .rm-go { margin-top: 6px; }
 #ma-camera { display: block; }
 .rm-vide[hidden] { display: none; }
+
+/* Menu Affichage */
+.affichage-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: 280px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.35); display: grid; gap: 10px; }
+.affichage-pop .titre-pop { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ui-muted); }
+.segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 9px; padding: 3px; gap: 3px; }
+.segment button { border: 0; background: none; padding: 6px 4px; font-size: 13px; font-weight: 500; }
+.segment button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); }
+.affichage-pop label { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+.affichage-pop label small { display: block; color: var(--ui-muted); font-size: 12px; }
+.bouton-affichage { position: relative; }
+.affichage-pop[hidden] { display: none; }

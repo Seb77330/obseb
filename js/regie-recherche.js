@@ -126,3 +126,6 @@ addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('#palette').hidden ? ouvrirPalette() : fermerPalette(); }
   else if (e.key === '/' && !e.target.matches('input, textarea, select')) { e.preventDefault(); ouvrirPalette(); }
 });
+
+/* Bouton Affichage dans l'en-tête */
+boutonAffichage($('#place-affichage'));

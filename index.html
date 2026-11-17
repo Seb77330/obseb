@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OBSeb</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/app.css">
 <style>
   .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 20px 60px; }
@@ -28,17 +28,48 @@
   .couleurs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .couleurs label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-muted); }
   details { margin-top: 14px; }
-  summary { cursor: pointer; font-weight: 800; color: var(--ui-muted); font-size: 13px; letter-spacing: .06em; }
+  summary { cursor: pointer; font-weight: 500; color: var(--ui-muted); font-size: 13px; }
+  .etape { display: flex; align-items: center; gap: 10px; margin: 22px 0 10px; font-size: 15px; }
+  .etape .num { width: 24px; height: 24px; border-radius: 50%; background: var(--ui-accent); color: var(--ui-sur-accent); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  #mode-style { margin-bottom: 12px; }
+  .bloc { padding: 14px 0; border-top: 1px solid var(--ui-line); }
+  .bloc:first-child { border-top: 0; padding-top: 2px; }
+  .bloc-titre { font-size: 12px; font-weight: 600; color: var(--ui-muted); margin-bottom: 10px; }
+  .nuancier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .nuance { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--ui-muted); cursor: pointer; }
+  .nuance input[type=color] { width: 100%; height: 44px; border-radius: 10px; padding: 3px; cursor: pointer; }
+  .polices { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+  .police { text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--ui-panel2); font-weight: 400; }
+  .police span { display: block; font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .police small { display: block; font-family: Inter, sans-serif; font-size: 11px; color: var(--ui-muted); margin-top: 4px; }
+  .police.actif { outline: 2px solid var(--ui-accent); }
+  .depots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .depot { position: relative; border: 1.5px dashed var(--ui-line2); border-radius: 12px; padding: 12px; display: grid; justify-items: center; text-align: center; gap: 2px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .depot:hover, .depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
+  .depot b { font-size: 13px; font-weight: 600; } .depot small { font-size: 12px; color: var(--ui-muted); }
+  .depot-vue { width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: var(--ui-input) center/cover no-repeat; margin-bottom: 6px; position: relative; }
+  .depot[data-cible="f-logo"] .depot-vue { background-size: contain; background-origin: content-box; padding: 10px; }
+  .depot-vue .retirer { position: absolute; top: 4px; right: 4px; padding: 2px 7px; font-size: 12px; }
+  .depot.grand { padding: 28px 16px; margin-top: 10px; }
+  .depot.grand b { font-size: 15px; }
+  .plus { margin-top: 10px; }
+  .plus summary { margin-bottom: 8px; }
+  .pas-obs { padding-left: 20px; margin: 0; font-size: 14px; } .pas-obs li { margin: 6px 0; }
+  #obs-rapport { margin-top: 10px; font-size: 13px; }
+  #obs-rapport .ok { color: var(--ui-green); } #obs-rapport .ko { color: var(--ui-ko); }
+  #obs-rapport ul { margin: 6px 0 0; padding-left: 18px; color: var(--ui-muted); }
+  .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .guide ol { padding-left: 20px; margin: 8px 0 0; }
   .guide li { margin: 6px 0; }
-  code { background: #0f1116; border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  code { background: var(--ui-input); border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="marque">OBS<b>eb</b></div>
-    <span class="aide">Ta régie live perso : un lien pour tes invités, un lien pour OBS, un thème par live.</span>
+    <span class="aide" style="flex:1">Ta régie live perso : un lien pour tes invités, un lien pour OBS, un thème par live.</span>
+    <span id="place-affichage"></span>
   </header>
 
   <div class="grille">
@@ -58,7 +89,7 @@
         <h2>Mode d'emploi (5 minutes avant le live)</h2>
         <ol>
           <li><b>OBS</b> : ferme ta caméra (Cam Link) dans OBS. Ajoute une <b>source Navigateur</b>, colle le <b>lien OBS</b>, largeur <code>1920</code>, hauteur <code>1080</code>, et coche <b>Contrôler l'audio via OBS</b>. C'est la seule source dont tu as besoin pour le plateau.</li>
-          <li><b>Régie</b> : ouvre la régie dans Chrome, choisis ta Cam Link et ton micro dans « Ma caméra », clique sur Démarrer. Mets un casque.</li>
+          <li><b>Régie</b> : ouvre la régie dans Chrome, choisis ta Cam Link et ton micro dans « Ma caméra » (avec aperçu et indicateur de son), puis « Démarrer ma caméra ». La régie s’en souvient pour les fois suivantes. Mets un casque.</li>
           <li><b>Invités</b> : clique sur « Copier le lien invités » et envoie-le. Ils arrivent en coulisses, tu les mets à l'antenne d'un clic.</li>
           <li><b>Pendant le live</b> : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Live, <kbd>3</kbd> Partage, <kbd>4</kbd> Fin. Le volume de chaque invité se règle dans la régie, même si OBS est fermé tu continues de les entendre.</li>
           <li><b>Vertical (TikTok, Shorts)</b> : même principe avec le <b>lien vertical</b>, source navigateur <code>1080</code> x <code>1920</code>. La régie pilote les deux en même temps.</li>
@@ -78,42 +109,74 @@
         <button class="petit" data-apercu="vertical">Vertical</button>
       </div>
 
-      <label class="champ" for="f-titre">Titre du live</label>
+      <div class="etape"><span class="num">1</span><b>Le titre du live</b></div>
       <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
 
-      <label class="champ">Thème</label>
-      <div class="presets" id="presets"></div>
+      <div class="etape"><span class="num">2</span><b>Le style</b></div>
+      <div class="segment" id="mode-style">
+        <button type="button" data-mode="prets" class="actif">Thèmes prêts</button>
+        <button type="button" data-mode="perso">Personnaliser</button>
+        <button type="button" data-mode="obs">Importer depuis OBS</button>
+      </div>
 
-      <details>
-        <summary>Personnaliser le thème</summary>
-        <label class="champ">Couleurs</label>
-        <div class="couleurs">
-          <label><input type="color" id="f-accent"> Accent</label>
-          <label><input type="color" id="f-bg"> Fond</label>
-          <label><input type="color" id="f-bg2"> Halo</label>
-          <label><input type="color" id="f-text"> Texte</label>
+      <section class="volet" data-volet="prets">
+        <div class="presets" id="presets"></div>
+        <p class="aide" style="margin:8px 0 0">Choisis une base, puis affine-la dans « Personnaliser » si tu veux.</p>
+      </section>
+
+      <section class="volet" data-volet="perso" hidden>
+        <div class="bloc">
+          <div class="bloc-titre">Couleurs</div>
+          <div class="nuancier">
+            <label class="nuance"><input type="color" id="f-accent"><span>Accent</span></label>
+            <label class="nuance"><input type="color" id="f-bg"><span>Fond</span></label>
+            <label class="nuance"><input type="color" id="f-bg2"><span>Halo</span></label>
+            <label class="nuance"><input type="color" id="f-text"><span>Texte</span></label>
+          </div>
         </div>
-        <label class="champ" for="f-font">Police des titres</label>
-        <select id="f-font"></select>
-        <label class="champ" for="f-image">Image de fond (lien d'une image, optionnel)</label>
-        <input type="url" id="f-image" placeholder="https://…/fond.jpg">
-        <label class="champ" for="f-logo">Logo (lien d'une image, optionnel)</label>
-        <input type="url" id="f-logo" placeholder="https://…/logo.png">
-        <label class="champ" for="f-logotexte">Texte du logo si pas d'image</label>
-        <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
-        <label class="champ" for="f-mintro">Musique d'intro (lien d'un MP3, optionnel)</label>
-        <input type="url" id="f-mintro" placeholder="https://…/intro.mp3">
-        <label class="champ" for="f-mfin">Musique de fin (lien d'un MP3, optionnel)</label>
-        <input type="url" id="f-mfin" placeholder="https://…/fin.mp3">
-        <p class="aide" style="margin:6px 0 0">Les musiques passent dans le son du live (sortie OBS), pas dans les aperçus.</p>
-      </details>
-      <details>
-        <summary>Présentateur et chaîne</summary>
-        <label class="champ" for="f-hote">Ton nom à l'écran</label>
-        <input type="text" id="f-hote" maxlength="28">
-        <label class="champ" for="f-handle">Compte affiché à la fin</label>
-        <input type="text" id="f-handle" maxlength="40">
-      </details>
+        <div class="bloc">
+          <div class="bloc-titre">Police des titres</div>
+          <select id="f-font" hidden></select>
+          <div class="polices" id="polices"></div>
+        </div>
+        <div class="bloc">
+          <div class="bloc-titre">Images</div>
+          <div class="depots">
+            <div class="depot" data-cible="f-image"><div class="depot-vue"></div><b>Image de fond</b><small>Glisse une image ou clique</small><input type="file" accept="image/*" hidden></div>
+            <div class="depot" data-cible="f-logo"><div class="depot-vue"></div><b>Logo</b><small>PNG transparent idéal</small><input type="file" accept="image/*" hidden></div>
+          </div>
+          <details class="plus"><summary>Ou coller un lien d'image</summary>
+            <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
+            <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
+          </details>
+          <label class="champ" for="f-logotexte">Texte du logo s'il n'y a pas d'image</label>
+          <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
+        </div>
+        <details class="bloc plus"><summary>Musiques d'intro et de fin</summary>
+          <input type="url" id="f-mintro" placeholder="Lien du MP3 d'intro (https://…)">
+          <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
+          <p class="aide" style="margin:6px 0 0">Elles passent dans le son du live, pas dans les aperçus.</p>
+        </details>
+      </section>
+
+      <section class="volet" data-volet="obs" hidden>
+        <ol class="pas-obs">
+          <li>Dans OBS : <b>Outils &gt; Scripts</b>, ajoute <a href="obs/exporter-vers-obseb.lua" download>exporter-vers-obseb.lua</a> (une seule fois), puis clique sur <b>Exporter vers OBSeb</b>.</li>
+          <li>Glisse ici le dossier créé (dans <code>Vidéos\SEBASTIAN\SEBASTIAN Ciné Série\OBSeb\Exports</code>), ou directement le fichier <code>.json</code> de ta collection et ses images.</li>
+        </ol>
+        <div class="depot grand" id="depot-obs">
+          <b>Glisse ton export OBS ici</b><small>ou <u>choisis le dossier</u> · <u>choisis des fichiers</u></small>
+          <input type="file" id="obs-dossier" webkitdirectory hidden>
+          <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
+        </div>
+        <div id="obs-rapport"></div>
+      </section>
+
+      <div class="etape"><span class="num">3</span><b>Toi et ta chaîne</b></div>
+      <div class="grille2">
+        <div><label class="champ" for="f-hote" style="margin-top:0">Ton nom à l'écran</label><input type="text" id="f-hote" maxlength="28"></div>
+        <div><label class="champ" for="f-handle" style="margin-top:0">Compte affiché à la fin</label><input type="text" id="f-handle" maxlength="40"></div>
+      </div>
 
       <div class="ligne-boutons" style="margin-top:18px">
         <button class="primaire" id="btn-creer">Créer la session</button>
@@ -126,5 +189,6 @@
 <div class="toast" id="toast"></div>
 <script src="js/common.js"></script>
 <script src="js/accueil.js"></script>
+<script src="js/accueil-style.js"></script>
 </body>
 </html>

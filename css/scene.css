@@ -70,7 +70,7 @@ body.sortie { background: #000; }
   position: absolute; left: 16px; bottom: 14px; z-index: 2;
   background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
   border-left: 5px solid var(--accent); padding: 8px 16px 8px 12px; border-radius: 6px;
-  font: 800 24px/1.1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  font: 700 24px/1.1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: #fff;
   max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .tuile.petite .nom { font-size: 17px; padding: 5px 10px 5px 8px; left: 10px; bottom: 9px; }
@@ -98,7 +98,7 @@ body.sortie { background: #000; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text);
   text-shadow: 0 4px 18px rgba(0,0,0,.6);
 }
-#bandeau .sous { margin-top: 8px; display: flex; gap: 18px; align-items: center; font: 800 22px var(--font-body); letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+#bandeau .sous { margin-top: 8px; display: flex; gap: 18px; align-items: center; font: 700 22px var(--font-body); letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
 #bandeau .direct { display: inline-flex; align-items: center; gap: 10px; background: #e01e1e; color: #fff; padding: 6px 14px; border-radius: 6px; letter-spacing: .14em; }
 #bandeau .direct b { width: 12px; height: 12px; border-radius: 50%; background: #fff; animation: clign 1.4s infinite; }
 @keyframes clign { 50% { opacity: .25; } }
@@ -106,15 +106,15 @@ body.sortie { background: #000; }
 
 /* Écrans plein cadre : intro, fin */
 .plein { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 160px; }
-.plein .sur-titre { font: 800 26px var(--font-body); letter-spacing: .5em; text-transform: uppercase; color: var(--accent); margin-bottom: 26px; }
+.plein .sur-titre { font: 700 26px var(--font-body); letter-spacing: .5em; text-transform: uppercase; color: var(--accent); margin-bottom: 26px; }
 .plein .grand-titre { font: 400 128px/1.02 var(--font-title); text-transform: uppercase; margin: 0; text-shadow: 0 10px 40px rgba(0,0,0,.6); max-width: 1640px; text-wrap: balance; overflow-wrap: break-word; }
 .plein .grand-titre.long { font-size: 96px; }
 .plein .grand-titre.tres-long { font-size: 76px; }
 .plein .ligne { width: 260px; height: 5px; background: var(--accent); border-radius: 3px; margin: 40px auto 34px; }
 .plein .info { font: 700 30px var(--font-body); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
 .plein .compte { font: 400 150px/1 var(--font-title); color: var(--accent); margin-top: 22px; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
-.plein .hote { margin-top: 46px; font: 800 26px var(--font-body); letter-spacing: .35em; text-transform: uppercase; color: var(--text); }
-.plein .handle { margin-top: 12px; font: 800 26px var(--font-body); letter-spacing: .25em; color: var(--accent); }
+.plein .hote { margin-top: 46px; font: 700 26px var(--font-body); letter-spacing: .35em; text-transform: uppercase; color: var(--text); }
+.plein .handle { margin-top: 12px; font: 700 26px var(--font-body); letter-spacing: .25em; color: var(--accent); }
 
 /* Partage d'écran */
 #ecran { z-index: 3; }
@@ -127,7 +127,7 @@ body.sortie { background: #000; }
 }
 #defilant.cachee { transform: translateY(110%); opacity: 1; }
 #defilant .piste {
-  white-space: nowrap; font: 800 22px var(--font-body); letter-spacing: .06em; text-transform: uppercase;
+  white-space: nowrap; font: 700 22px var(--font-body); letter-spacing: .06em; text-transform: uppercase;
   padding-left: 100%; animation: defile 40s linear infinite;
 }
 @keyframes defile { to { transform: translateX(-100%); } }
@@ -163,7 +163,7 @@ body.vertical #quiz, body.vertical #classement { padding: 590px 0 0 40px; justif
 }
 body.vertical .qz-panneau { width: 920px; padding: 28px 32px; }
 .qz-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.qz-tag { background: var(--accent); color: var(--bg); font: 800 22px var(--font-body); letter-spacing: .25em; text-transform: uppercase; padding: 8px 16px; border-radius: 8px; }
+.qz-tag { background: var(--accent); color: var(--bg); font: 700 22px var(--font-body); letter-spacing: .25em; text-transform: uppercase; padding: 8px 16px; border-radius: 8px; }
 .qz-temps { font: 400 64px/1 var(--font-title); color: var(--accent); font-variant-numeric: tabular-nums; }
 .qz-q { font: 400 52px/1.1 var(--font-title); color: var(--text); margin-bottom: 20px; }
 body.vertical .qz-q { font-size: 48px; }
@@ -193,8 +193,8 @@ body.vertical .qz-choix { grid-template-columns: 1fr; }
 #chat-bulle.cachee { opacity: 0; transform: translateX(40px); }
 body.chat-on #bandeau { right: 920px; }
 #chat-bulle .cb-tete { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-#chat-bulle i { font: 800 16px var(--font-body); font-style: normal; color: #fff; border-radius: 6px; padding: 4px 8px; }
-#chat-bulle b { font: 800 22px var(--font-body); color: var(--accent); }
+#chat-bulle i { font: 700 16px var(--font-body); font-style: normal; color: #fff; border-radius: 6px; padding: 4px 8px; }
+#chat-bulle b { font: 700 22px var(--font-body); color: var(--accent); }
 #cb-texte { font: 600 27px/1.2 var(--font-body); color: var(--text); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 body.vertical #chat-bulle { left: 40px; right: 40px; top: 240px; bottom: auto; width: auto; max-height: 150px; }
 body.vertical #cb-texte { font-size: 32px; }
@@ -202,4 +202,4 @@ body.vertical.chat-on #bandeau { opacity: 0; right: 40px; }
 
 /* Repères des zones sûres (aperçu de la régie uniquement, jamais diffusés) */
 #zones-sures { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
-#zones-sures div { position: absolute; background: repeating-linear-gradient(45deg, rgba(255,59,59,.22) 0 14px, rgba(255,59,59,.08) 14px 28px); border: 2px dashed rgba(255,90,90,.8); color: #fff; font: 800 22px Montserrat, sans-serif; display: grid; place-items: center; text-align: center; text-shadow: 0 2px 6px #000; }
+#zones-sures div { position: absolute; background: repeating-linear-gradient(45deg, rgba(255,59,59,.22) 0 14px, rgba(255,59,59,.08) 14px 28px); border: 2px dashed rgba(255,90,90,.8); color: #fff; font: 700 22px Montserrat, sans-serif; display: grid; place-items: center; text-align: center; text-shadow: 0 2px 6px #000; }
