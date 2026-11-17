@@ -259,3 +259,24 @@ function etatParDefaut(session) {
   };
 }
 const CANAL = 'studioSeb';
+
+/* Résumé des statistiques vdo.ninja (format variable selon les versions) :
+   on cherche la plus grande résolution « L x H » et le plus grand débit en kbps */
+function resumeStats(stats) {
+  const r = { w: 0, h: 0, kbps: 0 };
+  const racine = (stats && (stats.outbound || stats.outbound_stats)) || stats;
+  (function parcourir(o, prof) {
+    if (!o || typeof o !== 'object' || prof > 6) return;
+    for (const [k, v] of Object.entries(o)) {
+      if (typeof v === 'string') {
+        const m = v.match(/(\d{3,4})\s*x\s*(\d{3,4})/);
+        if (m && +m[2] > r.h) { r.w = +m[1]; r.h = +m[2]; }
+      } else if (typeof v === 'number' && /bitrate|kbps/i.test(k) && !/audio|target|max/i.test(k)) {
+        if (v > r.kbps && v < 100000) r.kbps = Math.round(v);
+      } else if (typeof v === 'object') parcourir(v, prof + 1);
+      if (/^(height|frameHeight)$/.test(k) && typeof v === 'number' && v > r.h) r.h = v;
+      if (/^(width|frameWidth)$/.test(k) && typeof v === 'number' && v > r.w) r.w = v;
+    }
+  })(racine, 0);
+  return r;
+}

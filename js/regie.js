@@ -29,7 +29,8 @@ etat.noms[ID_HOTE] = etat.noms[ID_HOTE] || session.hote;
 
 const presents = new Map();   // id -> { vu: timestamp } (connectés en ce moment)
 const cartes = new Map();     // id -> { el, iframe, vu }
-let listeRecue = false;       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
+let listeRecue = false;
+const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
 
 /* ----- En-tête ----- */
 $('#titre-session').textContent = session.titre;
@@ -66,10 +67,12 @@ $('#btn-ecran').onclick = () => {
   f.src = vdo({ room: session.room, push: ID_ECRAN, label: 'Partage', screenshare: true, quality: 0,
     novideo: true, noaudio: true, ln: 'fr', cleanish: true });
   f.hidden = false; $('#btn-ecran').hidden = true; $('#btn-ecran-stop').hidden = false;
+  partageActif = true;
 };
 $('#btn-ecran-stop').onclick = () => {
   const f = $('#mon-ecran'); f.src = 'about:blank'; f.hidden = true;
   $('#btn-ecran').hidden = false; $('#btn-ecran-stop').hidden = true;
+  partageActif = false; presents.delete(ID_ECRAN);
   if (etat.scene === 'partage') changerScene('live');
 };
 
@@ -96,6 +99,10 @@ function changerScene(s) {
 function changerLayout(l) { etat.layout = l; envoyer(); }
 $$('[data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene));
 $$('[data-layout]').forEach(b => b.onclick = () => changerLayout(b.dataset.layout));
+$('#auto-antenne').checked = !!etat.autoAntenne;
+$('#auto-antenne').onchange = e => { etat.autoAntenne = e.target.checked; envoyer(); };
+$('#vol-musique').value = Math.round((etat.volMusique ?? 0.5) * 100);
+$('#vol-musique').oninput = e => { etat.volMusique = e.target.value / 100; envoyerBientot(); };
 $('#surbrillance').onchange = e => { etat.surbrillance = e.target.checked; envoyer(); };
 $('#bandeau').oninput = e => { etat.bandeau = e.target.value; envoyerBientot(); };
 $('#message').oninput = e => { etat.message = e.target.value; envoyerBientot(); };
@@ -138,6 +145,7 @@ function creerCarte(id) {
       <input type="text" class="nom" title="Nom affiché à l'écran">
       <div class="reglages"><span title="Volume dans le live">🔊</span><input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
       <div class="vu"><i></i></div>
+      ${estHote ? '' : '<div class="qualite aide"></div>'}
     </div>
     <div class="actions">
       <button class="petit antenne-btn"></button>
@@ -189,6 +197,15 @@ function majCarte(id) {
   b.className = 'petit antenne-btn' + (enDirect ? ' rouge' : ' primaire');
   c.el.querySelector('.muet-btn').textContent = etat.muet[id] ? 'Rétablir le son' : 'Couper le son';
   c.el.querySelector('.muet-btn').classList.toggle('actif', !!etat.muet[id]);
+  const qe = c.el.querySelector('.qualite'), q = qualites.get(id);
+  if (qe) {
+    if (!q) qe.textContent = 'Qualité : en attente…';
+    else {
+      const res = q.h ? `${q.h}p` : '?', debit = q.kbps ? `${(q.kbps / 1000).toFixed(1).replace('.', ',')} Mb/s` : '';
+      const bon = q.h >= 720 && q.kbps >= 1500, moyen = q.h >= 480 && q.kbps >= 600;
+      qe.innerHTML = `<span style="color:${bon ? 'var(--ui-green)' : moyen ? 'var(--ui-accent)' : 'var(--ui-red)'}">●</span> ${res} ${debit} · ${bon ? 'bonne image' : moyen ? 'image moyenne' : 'connexion faible'}`;
+    }
+  }
   c.el.querySelector('.pct').textContent = (etat.muet[id] ? 0 : Math.round((etat.vol[id] ?? 1) * 100)) + '%';
 }
 function majInterface() {
@@ -219,14 +236,18 @@ function arrivee(id, label) {
   presents.set(id, { vu: Date.now() });
   if (id !== ID_ECRAN && label && !etat.noms[id]) etat.noms[id] = label;
   if (id !== ID_ECRAN && !etat.noms[id]) etat.noms[id] = 'Invité';
+  if (nouveau && id !== ID_ECRAN && etat.autoAntenne && !etat.onair.includes(id) && etat.onair.length < MAX_ANTENNE) etat.onair.push(id);
   if (nouveau) {
     if (id === ID_ECRAN) toast("Partage d'écran prêt : touche 3 pour l'afficher");
     else toast(`${etat.noms[id]} est en coulisses`);
     envoyer();
   }
 }
+let partageActif = false;
 setInterval(() => {
   ordre(maCamera, { getStreamIDs: true });
+  ordre(maCamera, { getStats: true });
+  if (partageActif) presents.set(ID_ECRAN, { vu: Date.now() });
   // retire ceux qui ne répondent plus depuis 12 s (seulement si vdo.ninja fournit bien la liste)
   if (!listeRecue) return;
   let change = false;
@@ -238,13 +259,26 @@ addEventListener('message', e => {
   const d = e.data;
   if (!d || typeof d !== 'object') return;
   if (e.source === maCamera.contentWindow) {
+    if (d.stats) {
+      const q = resumeStats(d.stats);
+      const n = d.stats.total_outbound_connections;
+      const el = $('#etat-camera');
+      if (typeof n === 'number' && n === 0) el.innerHTML = '<span style="color:var(--ui-red)">●</span> Personne ne reçoit ta caméra pour l\'instant (clique sur Démarrer, puis vérifie la source OBS)';
+      else if (q.h || n) el.innerHTML = `<span style="color:var(--ui-green)">●</span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`;
+    }
     if (d.streamIDs) {
       listeRecue = true;
       const liste = Array.isArray(d.streamIDs) ? Object.fromEntries(d.streamIDs.map(x => [x, ''])) : d.streamIDs;
       for (const [id, label] of Object.entries(liste)) if (presents.has(id) || id) arrivee(id, typeof label === 'string' ? label : label?.label);
     }
     if (d.action === 'guest-connected' && d.streamID) arrivee(d.streamID, d.value && d.value.label);
-    if ((d.action === 'push-connection' || d.action === 'view-connection') && d.streamID && d.value === false) {
+    const salut = d.dataReceived && d.dataReceived.studioSebSalut;
+    if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')) {
+      listeRecue = true;
+      arrivee(salut.id, String(salut.nom || '').slice(0, 28));
+      if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
+    }
+    if (d.action === 'push-connection' && d.streamID && d.value === false) {
       presents.delete(d.streamID); envoyer();
     }
     return;

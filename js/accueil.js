@@ -51,6 +51,7 @@ function remplirForm() {
   $('#f-accent').value = t.accent; $('#f-bg').value = t.bg; $('#f-bg2').value = t.bg2; $('#f-text').value = t.text;
   $('#f-font').value = t.fontTitle; $('#f-image').value = t.bgImage || ''; $('#f-logo').value = t.logo || '';
   $('#f-logotexte').value = t.logoTexte || '';
+  $('#f-mintro').value = t.musiqueIntro || ''; $('#f-mfin').value = t.musiqueFin || '';
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
   $$('.preset').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
 }
@@ -67,6 +68,8 @@ $('#f-text').oninput = e => surcharge('text', e.target.value);
 $('#f-font').onchange = e => surcharge('fontTitle', e.target.value);
 $('#f-image').onchange = e => surcharge('bgImage', e.target.value.trim());
 $('#f-logo').onchange = e => surcharge('logo', e.target.value.trim());
+$('#f-mintro').onchange = e => surcharge('musiqueIntro', e.target.value.trim());
+$('#f-mfin').onchange = e => surcharge('musiqueFin', e.target.value.trim());
 $('#f-logotexte').oninput = e => surcharge('logoTexte', e.target.value.trim());
 $('#f-hote').oninput = e => { brouillon.hote = e.target.value || 'Sebastian'; apercu(); };
 $('#f-handle').oninput = e => { brouillon.handle = e.target.value || HANDLE_DEFAUT; apercu(); };

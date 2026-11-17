@@ -41,8 +41,21 @@ function entrer() {
 }
 
 /* L'animateur envoie l'état du live : on affiche « À l'antenne » ou « En coulisses » */
+/* Toutes les 3 s : on mesure sa qualité d'envoi et on dit « je suis là » à l'animateur */
+let maQualite = null;
+setInterval(() => {
+  if (!maCamera) return;
+  ordre(maCamera, { getStats: true });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite } }, type: 'rpcs' });
+}, 3000);
+
 addEventListener('message', e => {
   if (!maCamera || e.source !== maCamera.contentWindow) return;
+  if (e.data && e.data.stats) {
+    maQualite = resumeStats(e.data.stats);
+    const el = $('#ma-qualite');
+    if (el && maQualite.h) el.textContent = `Ton image part en ${maQualite.h}p${maQualite.kbps ? ' · ' + (maQualite.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`;
+  }
   const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
   if (!st) return;
   ordre(apercu, { [CANAL]: st });

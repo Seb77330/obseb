@@ -38,6 +38,7 @@
   .participant .actions { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
   .vu { height: 5px; border-radius: 3px; background: #2a2e38; overflow: hidden; margin-top: 6px; }
   .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .12s; }
+  .participant .qualite { font-size: 12px; margin-top: 4px; }
   .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; }
   kbd { color: var(--ui-text); background: #0f1116; border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
   #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
@@ -59,6 +60,7 @@
       <div class="panneau">
         <h2>Ma caméra</h2>
         <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+        <p class="aide" id="etat-camera" style="color:var(--ui-text)"><span style="color:var(--ui-accent)">●</span> Caméra pas encore démarrée</p>
         <p class="aide">Choisis ta caméra (Cam Link) et ton micro, puis clique sur Démarrer. Ferme la caméra dans OBS avant : ici, c'est le seul endroit qui l'utilise.</p>
       </div>
       <div class="panneau">
@@ -106,13 +108,17 @@
           <button class="petit" id="btn-heure">Jusqu'à cette heure</button>
           <button class="petit" id="btn-sans-compte">Sans compte à rebours</button>
         </div>
+        <label class="champ" for="vol-musique">Volume de la musique (intro et fin)</label>
+        <input type="range" id="vol-musique" min="0" max="100" step="1">
+        <p class="aide" style="margin:4px 0 0">Les musiques se choisissent dans le thème de la session (Mes sessions, Modifier).</p>
       </div>
     </div>
 
     <div class="colonne" id="col-droite">
       <div class="panneau">
         <h2>Participants <span id="nb-part" class="aide"></span></h2>
-        <p class="aide" style="margin-top:-6px">Les invités arrivent en coulisses. Tu les mets à l'antenne quand tu veux. Le volume réglé ici est celui du live (et de ton casque).</p>
+        <label class="aide" style="display:flex;gap:6px;align-items:center;margin:-4px 0 8px"><input type="checkbox" id="auto-antenne"> Mettre les invités à l'antenne dès leur arrivée</label>
+        <p class="aide" style="margin-top:0">Les invités arrivent en coulisses. Tu les mets à l'antenne quand tu veux. Le volume réglé ici est celui du live (et de ton casque).</p>
         <div id="liste"></div>
       </div>
     </div>

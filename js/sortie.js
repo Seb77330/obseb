@@ -127,6 +127,31 @@ function appliquerEtat(st) {
   }
   appliquerVolumes();
   compteARebours();
+  gererMusique(scene);
+}
+
+/* ----- Musiques d'intro et de fin (liens dans le thème, son seul) ----- */
+const musiques = {};
+if (!PREVIEW && !DEMO) {
+  for (const [scene, url] of [['intro', theme.musiqueIntro], ['fin', theme.musiqueFin]]) {
+    if (!url) continue;
+    const a = new Audio(url); a.loop = true; a.volume = 0; a.preload = 'auto';
+    musiques[scene] = a;
+  }
+}
+function gererMusique(scene) {
+  const cible = etat ? (etat.volMusique ?? 0.5) : 0.5;
+  for (const [nom, a] of Object.entries(musiques)) {
+    const active = nom === scene;
+    if (active && a.paused) { if (nom === 'fin') a.currentTime = 0; a.play().catch(() => {}); }
+    clearInterval(a._fondu);
+    a._fondu = setInterval(() => {
+      const but = active ? cible : 0;
+      const pas = 0.04;
+      a.volume = Math.abs(a.volume - but) <= pas ? but : a.volume + (a.volume < but ? pas : -pas);
+      if (a.volume === but) { clearInterval(a._fondu); if (!active) a.pause(); }
+    }, 60);
+  }
 }
 
 /* ----- Compte à rebours de l'intro ----- */
