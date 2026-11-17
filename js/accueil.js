@@ -284,5 +284,5 @@ $('#btn-formules').onclick = () => { if ($('#vue-liste').hidden) montrerVue('lis
 $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   if (b.dataset.formule === 'gratuit') { $('#btn-nouveau').click(); return; }
   // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
-  toast("Le paiement en ligne n'est pas encore ouvert. Pour l'instant, tout le studio est accessible gratuitement.");
+  toast("Cette formule n'est pas encore ouverte. Pendant la bêta, tout le studio est gratuit.");
 });
