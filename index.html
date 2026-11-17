@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<!-- Sécurité : le navigateur refuse tout script qui ne vient pas du site lui-même (protège tes clés et tes invités) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>OBSeb</title>
@@ -632,9 +634,9 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=d2ef47b1"></script>
+<script src="js/common.js?v=9b58cc66"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=1c7cfa2b"></script>
+<script src="js/accueil.js?v=3f9e4af6"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>
 <script src="js/accueil-style.js?v=41260911"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>

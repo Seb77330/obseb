@@ -92,12 +92,12 @@ else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
 
 /* ----- Aperçu de l'antenne ----- */
 const apercu = $('#apercu');
-apercu.src = `sortie.html?preview=regie${location.hash.replace(/&k=[^&]*/, '')}`;
+apercu.src = `sortie.html?preview=regie${location.hash}`;
 apercu.addEventListener('load', () => envoyer());
 let apercuVertical = false;
 $('#btn-apercu-format').onclick = () => {
   apercuVertical = !apercuVertical;
-  apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical&zones=1' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
+  apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical&zones=1' : ''}${location.hash}`;
   $('#moniteur').classList.toggle('vertical', apercuVertical);
   $('#btn-apercu-format').classList.toggle('vertical', apercuVertical);
   $('#btn-apercu-format').title = apercuVertical ? 'Aperçu vertical. Clique pour revenir à l\'horizontal.' : 'Aperçu horizontal. Clique pour voir le vertical (TikTok, Shorts, Reels).';
@@ -342,6 +342,7 @@ const nomsInvites = new Map();      // dernier nom choisi par chaque invité
 const renommesParMoi = new Set();   // invités que tu as renommés : leur propre nom ne t'écrase plus
 function arrivee(id, label) {
   if (!id || id === ID_HOTE || camsLocales.has(id)) return;     // tes propres caméras sont déjà connues
+  if (typeof enAttente === 'function' && enAttente(id, label)) return;   // serveur OBSeb : salle d'attente (js/regie-securite.js)
   const nouveau = !presents.has(id);
   presents.set(id, { vu: Date.now() });
   if (estEcran(id)) { if (label) nomsEcrans.set(id, label); if (nouveau && typeof majSources === 'function') majSources(); }

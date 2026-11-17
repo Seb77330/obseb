@@ -2,12 +2,27 @@
 # OBSeb Cloud : installation automatique du serveur (Ubuntu 24.04, Hetzner CPX32 conseillé : 4 vCPU, 8 Go).
 # À la création du serveur, remplacer __OBSEB_SECRET__ par une clé secrète (la régie l'utilise pour piloter le serveur).
 package_update: true
-packages: [ffmpeg, xvfb, pulseaudio, pulseaudio-utils, fonts-noto-color-emoji, fonts-dejavu, curl, git, debian-keyring, debian-archive-keyring, apt-transport-https]
+package_upgrade: true
+# Sécurité : connexion SSH par clé seulement (jamais de mot de passe), pas de root par mot de passe
+ssh_pwauth: false
+disable_root_opts: 'no-port-forwarding,no-agent-forwarding,no-X11-forwarding'
+packages: [ufw, fail2ban, unattended-upgrades, ffmpeg, xvfb, pulseaudio, pulseaudio-utils, fonts-noto-color-emoji, fonts-dejavu, curl, git, debian-keyring, debian-archive-keyring, apt-transport-https]
 users:
   - name: obseb
     shell: /bin/bash
     lock_passwd: true
 write_files:
+  - path: /etc/ssh/sshd_config.d/10-obseb.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin prohibit-password
+      X11Forwarding no
+      MaxAuthTries 3
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
   - path: /etc/obseb.env
     permissions: '0600'
     content: |
@@ -40,6 +55,17 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 runcmd:
+  # Pare-feu : seuls SSH, le web (HTTPS) et la vidéo sont ouverts ; le moteur (8080) et LiveKit (7880) restent fermés au monde
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 3478/udp
+  - ufw allow 7881/tcp
+  - ufw allow 50000:60000/udp
+  - ufw --force enable
+  - systemctl enable --now fail2ban
   # Chrome
   - curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb
   - apt-get install -y /tmp/chrome.deb
@@ -57,7 +83,7 @@ runcmd:
   # Adresse HTTPS : <ip-avec-tirets>.sslip.io
   - |
     IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
-    printf '%s.sslip.io {\n  reverse_proxy 127.0.0.1:8080\n}\n' "$(echo $IP | tr . -)" > /etc/caddy/Caddyfile
+    printf '%s.sslip.io {\n  header {\n    Strict-Transport-Security "max-age=31536000"\n    X-Content-Type-Options nosniff\n    Referrer-Policy no-referrer\n    -Server\n  }\n  reverse_proxy 127.0.0.1:8080\n}\n' "$(echo $IP | tr . -)" > /etc/caddy/Caddyfile
   # Serveur vidéo LiveKit : clés tirées au hasard sur la machine, jamais écrites ailleurs
   - curl -sSL https://get.livekit.io | bash
   - |

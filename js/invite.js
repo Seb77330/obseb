@@ -82,7 +82,7 @@ function entrer() {
   };
   reglage.ouvrir();
   apercu = $('#apercu');
-  apercu.src = `sortie.html?preview=1${CAM_DISTANTE ? '&musique=0' : ''}#s=${hashParams().get('s')}`;
+  apercu.src = `sortie.html?preview=1${CAM_DISTANTE ? '&musique=0' : ''}#s=${hashParams().get('s')}&moi=${encodeURIComponent(moi.id)}`;   // « moi » : avec le serveur OBSeb, l'aperçu s'ouvre une fois l'invité admis
   $('#mon-nom').value = moi.nom;
 }
 
@@ -122,6 +122,12 @@ addEventListener('message', e => {
   // un fichier choisi dans la régie (musique, image) manque à mon aperçu : je le demande à la régie avec mon prochain « je suis là »
   if (apercu && e.source === apercu.contentWindow && e.data && typeof e.data.studioSebBesoin === 'string') { besoinApercu = e.data.studioSebBesoin.slice(0, 40); return; }
   if (!maCamera || e.source !== maCamera.contentWindow) return;
+  if (e.data && typeof e.data.obsebAttente === 'boolean') {    // salle d'attente du serveur OBSeb
+    const statut = $('#statut');
+    statut.textContent = e.data.obsebAttente ? 'SALLE D\'ATTENTE · L\'ANIMATEUR VA TE FAIRE ENTRER' : 'EN COULISSES';
+    return;
+  }
+  if (e.data && typeof e.data.obsebRefus === 'string') { $('#statut').textContent = e.data.obsebRefus.toUpperCase(); return; }
   if (e.data && e.data.stats) {
     maQualite = resumeStats(e.data.stats);
     const el = $('#ma-qualite');

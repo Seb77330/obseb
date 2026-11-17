@@ -232,6 +232,14 @@ function queryParams() {
 /* ---------- Session ----------
    Une session = un live. Tout est dans le lien (aucun serveur) :
    { v, titre, hote, handle, room, theme:{preset,...surcharges} } */
+/* Sécurité : le nom de la salle est tiré de la clé de la régie (PBKDF2, 100 000 tours ; même calcul dans serveur/moteur.js).
+   Le serveur peut ainsi vérifier que c'est bien l'animateur, sans rien retenir, et personne ne peut lui prendre sa place. */
+async function salleDepuisCle(cle) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(cle), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode('obseb-salle-v1'), iterations: 100000, hash: 'SHA-256' }, base, 96));
+  const a = 'abcdefghijkmnpqrstuvwxyz23456789';
+  return 'sebk' + Array.from(bits, x => a[x % 32]).join('');
+}
 function nouvelleSession(titre, preset = 'minimal') {
   return {
     v: 1, titre: titre ?? 'Mon live', hote: 'Sebastian', handle: HANDLE_DEFAUT, limite: 135,
@@ -307,11 +315,12 @@ function liens(session, cle) {
   return {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
     invite: `${baseUrl()}invite.html#s=${sInvite}`,
-    sortie: `${baseUrl()}sortie.html#s=${s}`,
-    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}`,
+    // la sortie (OBS) porte la clé : avec le serveur OBSeb, seul l'animateur peut regarder les coulisses sans être vu
+    sortie: `${baseUrl()}sortie.html#s=${s}&k=${cle}`,
+    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}&k=${cle}`,
     // « Je garde mon OBS » : les caméras seules, sur fond transparent
-    cameras: `${baseUrl()}sortie.html?decor=0#s=${s}`,
-    camerasVertical: `${baseUrl()}sortie.html?decor=0&format=vertical#s=${s}`
+    cameras: `${baseUrl()}sortie.html?decor=0#s=${s}&k=${cle}`,
+    camerasVertical: `${baseUrl()}sortie.html?decor=0&format=vertical#s=${s}&k=${cle}`
   };
 }
 const idHote = s => s.room + '_seb';
@@ -390,9 +399,11 @@ function vdo(params) {
   const p = Object.assign({}, params);
   if (t) {
     p.lk = t.serveur;
-    // l'animateur et ses partages d'écran prouvent qu'ils sont bien l'animateur avec la clé de la régie
-    const k = hashParams().get('k');
-    if (k && p.push && /_(seb|ecran\d|cam\d)$/.test(p.push)) p.cle = k;
+    // l'animateur (sa caméra, ses écrans, sa régie, sa sortie OBS) prouve qui il est avec la clé de la régie ;
+    // l'aperçu d'un invité dit pour qui il regarde (le serveur vérifie que cet invité a bien été admis)
+    const h = hashParams(), k = h.get('k'), moi = h.get('moi');
+    if (k && (!p.push || /_(seb|ecran\d|cam\d)$/.test(p.push))) p.cle = k;
+    else if (moi && !p.push) p.pour = moi;
   }
   const parts = [];
   for (const [k, val] of Object.entries(p)) {

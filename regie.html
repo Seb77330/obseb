@@ -2,12 +2,15 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<!-- Sécurité : le navigateur refuse tout script qui ne vient pas du site lui-même (protège tes clés et tes invités) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <title>OBSeb · Régie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css?v=fe38768c">
+<link rel="stylesheet" href="css/securite.css?v=e05cba99">
 <style>
   html, body { height: 100%; }
   body { display: flex; flex-direction: column; overflow: hidden; }
@@ -1027,10 +1030,10 @@
 </div>
 <script src="js/vendor/qrcode.js?v=105f38a7"></script>
 <script src="js/effets.js?v=4095499a"></script>
-<script src="js/common.js?v=d2ef47b1"></script>
+<script src="js/common.js?v=9b58cc66"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=63b8062e"></script>
+<script src="js/regie.js?v=09355e4e"></script>
 <script src="js/regie-scenes.js?v=4b4137a7"></script>
 <script src="js/regie-sources.js?v=04c1ea9c"></script>
 <script src="js/regie-musique.js?v=8ca88ff4"></script>
@@ -1046,5 +1049,6 @@
 <script src="js/regie-watch.js?v=d9f776ec"></script>
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
+<script src="js/regie-securite.js?v=63a7bf74"></script>
 </body>
 </html>

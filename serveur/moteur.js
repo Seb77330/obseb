@@ -7,8 +7,17 @@
      GET  /etat                     état du direct
      POST /demarrer   {url, rtmp}   lance le direct (rtmp = adresse complète avec la clé, optionnelle)
      POST /arreter                  arrête le direct et finalise l'enregistrement
-     GET  /enregistrements          liste des fichiers
-     GET  /enregistrements/<nom>    téléchargement
+     GET  /enregistrements          liste des fichiers (chacun avec un lien de téléchargement signé, valable 1 h)
+     GET  /enregistrements/<nom>    téléchargement (lien signé, ou en-tête Authorization)
+
+   Sans clé secrète (pour la régie, les invités, la sortie) :
+     POST /jeton                    {room, identite, nom, publier, cle?, pour?}  accès vidéo LiveKit (voir plus bas)
+     POST /salle/admettre           {room, cle, identite}   fait entrer un invité de la salle d'attente
+     POST /salle/exclure            {room, cle, identite}   le met dehors (et l'empêche de revenir sous ce nom)
+     POST /salle/verrouiller        {room, cle}             plus personne ne peut entrer (deverrouiller pour rouvrir)
+
+   Sécurité : le moteur n'écoute que sur 127.0.0.1 (Caddy fait le HTTPS devant), toute clé est comparée en temps constant,
+   les essais sont limités à 30 par minute et par adresse.
 */
 'use strict';
 const http = require('http');
@@ -30,6 +39,8 @@ const crypto = require('crypto');
 const LK_CLE = process.env.LIVEKIT_API_KEY || '';
 const LK_SECRET = process.env.LIVEKIT_API_SECRET || '';
 const LK_URL = process.env.LIVEKIT_URL_PUBLIQUE || '';          // ex. wss://1-2-3-4.sslip.io
+const LK_PORT = +process.env.LIVEKIT_PORT || 7880;              // LiveKit écoute seulement sur la machine
+const ECOUTE = process.env.OBSEB_ECOUTE || '127.0.0.1';         // le moteur n'est joignable que par Caddy (HTTPS)
 const FICHIER_SALLES = path.join(DOSSIER, '..', 'salles.json');  // salle -> empreinte de la clé de l'animateur
 
 fs.mkdirSync(DOSSIER, { recursive: true });
@@ -71,8 +82,10 @@ async function preparerSysteme() {
 
 async function demarrer({ url, rtmp }) {
   if (etat.enDirect) throw new Error('Un direct est déjà en cours');
-  if (!/^https?:\/\//.test(url || '')) throw new Error('Adresse de sortie invalide');
-  if (rtmp && !/^rtmps?:\/\//.test(rtmp)) throw new Error('Adresse YouTube invalide');
+  // le Chrome du serveur n'ouvre QUE la sortie OBSeb (jamais une autre adresse)
+  let u; try { u = new URL(url); } catch (e) { throw new Error('Adresse de sortie invalide'); }
+  if (!ORIGINES.includes(u.origin) || !/\/sortie\.html$/.test(u.pathname)) throw new Error('Adresse de sortie invalide');
+  if (rtmp && (typeof rtmp !== 'string' || !/^rtmps?:\/\/[^\s|\[\]]+$/.test(rtmp))) throw new Error('Adresse YouTube invalide');   // pas de | ni [ ] (options de ffmpeg)
   await preparerSysteme();
   procs.arretDemande = false;
   const profil = fs.mkdtempSync('/tmp/obseb-chrome-');
@@ -142,9 +155,12 @@ function menage() {
 setInterval(menage, 3600000); menage();
 
 /* ----- Jetons LiveKit -----
-   Invités et spectateurs : il suffit de connaître la salle (nom aléatoire, présent dans leur lien).
-   Animateur (…_seb), ses écrans (…_ecran1-4) et ses autres caméras (…_cam2-4) : la clé de la régie est exigée ; la première clé vue
-   pour une salle devient la bonne (personne d'autre ne peut ensuite se faire passer pour l'animateur). */
+   Animateur (…_seb), ses écrans (…_ecran1-4) et ses autres caméras (…_cam2-4) : la clé de la régie est exigée.
+   - Salles récentes (« sebk » + 12 caractères) : le nom de la salle est tiré de la clé de la régie (PBKDF2, 100 000 tours).
+     Le serveur vérifie donc la clé sans rien retenir, et personne ne peut prendre la place de l'animateur, même en arrivant avant lui.
+   - Anciennes salles (« sebcs… ») : la première clé vue pour la salle devient la bonne (comme avant).
+   Invités : ils entrent en SALLE D'ATTENTE (ni caméra, ni micro, ni rien à voir ou entendre) jusqu'à ce que l'animateur les fasse entrer.
+   Spectateurs invisibles (la sortie OBS, les vignettes, l'aperçu d'un invité) : clé de la régie, ou invité déjà admis. */
 let salles = {};
 try { salles = JSON.parse(fs.readFileSync(FICHIER_SALLES, 'utf8')); } catch (e) { /* rien */ }
 const b64url = b => Buffer.from(b).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -154,27 +170,112 @@ function jwt(charge) {
   const sig = crypto.createHmac('sha256', LK_SECRET).update(`${tete}.${corps}`).digest('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
   return `${tete}.${corps}.${sig}`;
 }
-function jeton({ room, identite, nom, publier, cle }) {
+const ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
+/* Même calcul que salleDepuisCle() dans js/common.js */
+function salleDepuisCle(cle) {
+  const o = crypto.pbkdf2Sync(String(cle), 'obseb-salle-v1', 100000, 12, 'sha256');
+  return 'sebk' + Array.from(o, x => ALPHABET[x % 32]).join('');
+}
+const SALLE_LIEE = /^sebk[a-z2-9]{12}$/;
+const verifCache = new Map();   // évite de refaire le calcul à chaque demande
+function cleValide(room, cle) {
+  if (!cle || typeof cle !== 'string' || cle.length > 100) return false;
+  if (SALLE_LIEE.test(room)) {
+    const k = room + ':' + cle;
+    if (!verifCache.has(k)) { if (verifCache.size > 500) verifCache.clear(); verifCache.set(k, egal(salleDepuisCle(cle), room)); }
+    return verifCache.get(k);
+  }
+  const emp = crypto.createHash('sha256').update(room + ':' + cle).digest('hex');
+  if (!salles[room]) { salles[room] = emp; try { fs.writeFileSync(FICHIER_SALLES, JSON.stringify(salles), { mode: 0o600 }); } catch (e) { /* rien */ } }
+  return egal(salles[room], emp);
+}
+/* État des salles (en mémoire : le serveur ne vit que le temps du live) */
+const regles = new Map();   // room -> { verrou: bool, exclus: Set }
+const regle = room => { if (!regles.has(room)) regles.set(room, { verrou: false, exclus: new Set() }); return regles.get(room); };
+
+/* API d'administration de LiveKit (sur la machine même) */
+async function lkAdmin(methode, corpsReq) {
+  const maintenant = Math.floor(Date.now() / 1000);
+  const t = jwt({ iss: LK_CLE, sub: 'obseb-moteur', nbf: maintenant - 10, exp: maintenant + 60, video: { room: corpsReq.room, roomAdmin: true } });
+  const r = await fetch(`http://127.0.0.1:${LK_PORT}/twirp/livekit.RoomService/${methode}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify(corpsReq)
+  });
+  const txt = await r.text();
+  if (!r.ok) { const e = new Error('LiveKit ' + methode + ' : ' + r.status); e.code = r.status; e.detail = txt.slice(0, 200); throw e; }
+  return txt ? JSON.parse(txt) : {};
+}
+const perm = (p, nom) => !!(p && (p[nom] ?? p[nom.replace(/[A-Z]/g, c => '_' + c.toLowerCase())]));
+async function estAdmis(room, identite) {
+  if (typeof identite !== 'string' || !identite.startsWith(room + '_')) return false;
+  try { const p = await lkAdmin('GetParticipant', { room, identity: identite }); return perm(p.permission, 'canPublish'); }
+  catch (e) { return false; }
+}
+const PERM_ADMIS = { canSubscribe: true, canPublish: true, canPublishData: true, canUpdateMetadata: true };   // noms JSON de LiveKit (protobuf)
+
+function refus(message, extra) { const e = new Error(message); e.refus = true; Object.assign(e, extra || {}); return e; }
+
+async function jeton({ room, identite, nom, publier, cle, pour }) {
   if (!LK_CLE || !LK_SECRET || !LK_URL) throw new Error('LiveKit non configuré');
-  if (!/^[a-z0-9]{6,40}$/.test(room || '')) throw new Error('Salle invalide');
-  if (typeof identite !== 'string' || !identite.startsWith(room + '_') || identite.length > 80) throw new Error('Identité invalide');
+  if (typeof room !== 'string' || !/^[a-z0-9]{6,40}$/.test(room)) throw refus('Salle invalide');
+  if (typeof identite !== 'string' || !identite.startsWith(room + '_') || identite.length > 80 || !/^[a-z0-9_-]+$/i.test(identite)) throw refus('Identité invalide');
   const animateur = /_(seb|ecran\d|cam\d)$/.test(identite);
-  if (animateur) {
-    if (!cle || typeof cle !== 'string') throw new Error('Clé de régie manquante');
-    const emp = crypto.createHash('sha256').update(room + ':' + cle).digest('hex');
-    if (!salles[room]) { salles[room] = emp; try { fs.writeFileSync(FICHIER_SALLES, JSON.stringify(salles)); } catch (e) { /* rien */ } }
-    else if (salles[room] !== emp) throw new Error('Clé de régie incorrecte');
+  const hoteOk = cleValide(room, cle);
+  if (animateur && !hoteOk) throw refus(cle ? 'Clé de régie incorrecte' : 'Clé de régie manquante');
+  const r = regle(room);
+  let droits;
+  if (hoteOk) {
+    droits = { canSubscribe: true, canPublish: !!publier, canPublishData: !!publier, canUpdateOwnMetadata: !!publier, hidden: !publier };
+  } else if (publier) {
+    if (r.exclus.has(identite) || r.exclus.has(identite.replace(/ecr$/, ''))) throw refus('L\'animateur t\'a retiré de ce live');
+    // le partage d'écran d'un invité déjà admis entre directement
+    const admis = /ecr$/.test(identite) && await estAdmis(room, identite.replace(/ecr$/, ''));
+    if (!admis && r.verrou) throw refus('L\'animateur a fermé la salle : plus personne ne peut entrer');
+    droits = admis
+      ? { canSubscribe: true, canPublish: true, canPublishData: true, canUpdateOwnMetadata: true }
+      : { canSubscribe: false, canPublish: false, canPublishData: true, canUpdateOwnMetadata: false };   // salle d'attente : peut seulement dire « je suis là »
+  } else {
+    // regarder sans être vu : seulement l'animateur (clé) ou un invité déjà admis
+    if (!(await estAdmis(room, pour))) throw refus('Pas encore admis', { attente: true });
+    droits = { canSubscribe: true, canPublish: false, canPublishData: false, canUpdateOwnMetadata: false, hidden: true };
   }
   const maintenant = Math.floor(Date.now() / 1000);
   const token = jwt({
     iss: LK_CLE, sub: identite, name: String(nom || '').slice(0, 40), nbf: maintenant - 10, exp: maintenant + 12 * 3600,
-    video: {
-      room, roomJoin: true, canSubscribe: true,
-      canPublish: !!publier, canPublishData: !!publier, canUpdateOwnMetadata: !!publier,
-      hidden: !publier,                 // la sortie et les vignettes sont invisibles pour les autres
-    },
+    video: Object.assign({ room, roomJoin: true }, droits),
   });
-  return { url: LK_URL, token };
+  return { url: LK_URL, token, attente: !hoteOk && !!publier && !droits.canPublish };
+}
+
+/* Commandes de l'animateur sur sa salle (clé de la régie exigée) */
+async function commandeSalle(action, { room, cle, identite }) {
+  if (typeof room !== 'string' || !/^[a-z0-9]{6,40}$/.test(room) || !cleValide(room, cle)) throw refus('Clé de régie incorrecte');
+  const r = regle(room);
+  if (action === 'verrouiller') { r.verrou = true; return { verrou: true }; }
+  if (action === 'deverrouiller') { r.verrou = false; return { verrou: false }; }
+  if (typeof identite !== 'string' || !identite.startsWith(room + '_') || /_(seb|ecran\d|cam\d)$/.test(identite)) throw refus('Identité invalide');
+  if (action === 'admettre') {
+    r.exclus.delete(identite);
+    await lkAdmin('UpdateParticipant', { room, identity: identite, permission: PERM_ADMIS });
+    return { ok: true };
+  }
+  if (action === 'exclure') {
+    r.exclus.add(identite);
+    for (const id of [identite, identite + 'ecr']) { try { await lkAdmin('RemoveParticipant', { room, identity: id }); } catch (e) { /* déjà parti */ } }
+    return { ok: true };
+  }
+  throw refus('Commande inconnue');
+}
+
+/* Liens de téléchargement : signés et valables 1 heure (la clé secrète ne passe jamais dans une adresse) */
+function signerTelechargement(nom, ms = 3600000) {
+  const exp = Date.now() + ms;
+  const sig = crypto.createHmac('sha256', SECRET).update(nom + ':' + exp).digest('hex').slice(0, 32);
+  return `/enregistrements/${encodeURIComponent(nom)}?exp=${exp}&sig=${sig}`;
+}
+function telechargementSigne(nom, url) {
+  const exp = +url.searchParams.get('exp'), sig = url.searchParams.get('sig') || '';
+  if (!SECRET_VALIDE || !exp || exp < Date.now()) return false;
+  return egal(crypto.createHmac('sha256', SECRET).update(nom + ':' + exp).digest('hex').slice(0, 32), sig);
 }
 
 /* ----- Serveur HTTP ----- */
@@ -186,7 +287,7 @@ function cors(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   }
 }
-function json(res, code, obj) { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); }
+function json(res, code, obj) { res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, ENTETES_SURS)); res.end(JSON.stringify(obj)); }
 function corps(req) {
   return new Promise((ok, ko) => {
     let d = ''; req.on('data', c => { d += c; if (d.length > 1e5) req.destroy(); });
@@ -203,12 +304,15 @@ function egal(a, b) {
 function autorise(req, url) {
   if (!SECRET_VALIDE) return false;
   const h = req.headers.authorization || '';
-  return egal(h, `Bearer ${SECRET}`) || egal(url.searchParams.get('cle') || '', SECRET);   // ?cle= pour les liens de téléchargement
+  return egal(h, `Bearer ${SECRET}`);
 }
 /* Limite de débit pour les jetons (anti-abus) : 30 demandes par minute et par adresse */
 const demandes = new Map();
+const ENTETES_SURS = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' };
 function tropDeDemandes(req) {
-  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  // derrière Caddy (sur la machine), l'adresse du visiteur est dans X-Forwarded-For ; sinon on ne croit pas cet en-tête
+  const local = /^(::ffff:)?127\.0\.0\.1$|^::1$/.test(req.socket.remoteAddress || '');
+  const ip = local ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() || 'local' : (req.socket.remoteAddress || '');
   const t = Date.now(), l = (demandes.get(ip) || []).filter(x => t - x < 60000);
   l.push(t); demandes.set(ip, l);
   if (demandes.size > 5000) demandes.clear();
@@ -222,24 +326,35 @@ http.createServer(async (req, res) => {
   if (url.pathname === '/sante') return json(res, 200, { ok: true });
   if (req.method === 'POST' && url.pathname === '/jeton') {
     if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
-    try { return json(res, 200, jeton(await corps(req))); } catch (e) { return json(res, 403, { erreur: e.message }); }
+    try { return json(res, 200, await jeton(await corps(req))); }
+    catch (e) { return json(res, e.refus ? 403 : 500, { erreur: e.refus ? e.message : 'Erreur du serveur', attente: !!e.attente }); }
   }
-  if (!autorise(req, url)) return json(res, 401, { erreur: 'Clé incorrecte' });
+  const salle = url.pathname.match(/^\/salle\/(admettre|exclure|verrouiller|deverrouiller)$/);
+  if (req.method === 'POST' && salle) {
+    if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
+    try { return json(res, 200, await commandeSalle(salle[1], await corps(req))); }
+    catch (e) { return json(res, e.refus ? 403 : 502, { erreur: e.refus ? e.message : 'Le serveur vidéo ne répond pas' }); }
+  }
+  // téléchargement d'un enregistrement : lien signé (valable 1 h) ou clé secrète dans l'en-tête
+  const m = url.pathname.match(/^\/enregistrements\/([\w.-]+)$/);
+  if (req.method === 'GET' && m && (autorise(req, url) || telechargementSigne(m[1], url))) {
+    const f = path.join(DOSSIER, path.basename(m[1]));
+    if (!/\.(mkv|mp4)$/.test(f) || !fs.existsSync(f)) return json(res, 404, { erreur: 'Introuvable' });
+    res.writeHead(200, Object.assign({ 'Content-Type': f.endsWith('.mp4') ? 'video/mp4' : 'video/x-matroska', 'Content-Length': fs.statSync(f).size,
+      'Content-Disposition': `attachment; filename="${path.basename(f)}"` }, ENTETES_SURS));
+    return fs.createReadStream(f).pipe(res);
+  }
+  if (!autorise(req, url)) {
+    if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });   // freine les essais de clé
+    return json(res, 401, { erreur: 'Clé incorrecte' });
+  }
   try {
-    if (req.method === 'GET' && url.pathname === '/etat') return json(res, 200, etat);
+    if (req.method === 'GET' && url.pathname === '/etat') return json(res, 200, Object.assign({}, etat, { url: undefined }));
     if (req.method === 'POST' && url.pathname === '/demarrer') return json(res, 200, await demarrer(await corps(req)));
     if (req.method === 'POST' && url.pathname === '/arreter') return json(res, 200, await arreter());
-    if (req.method === 'GET' && url.pathname === '/enregistrements') return json(res, 200, enregistrements());
-    const m = url.pathname.match(/^\/enregistrements\/([\w.-]+)$/);
-    if (req.method === 'GET' && m) {
-      const f = path.join(DOSSIER, path.basename(m[1]));
-      if (!fs.existsSync(f)) return json(res, 404, { erreur: 'Introuvable' });
-      res.writeHead(200, { 'Content-Type': 'video/x-matroska', 'Content-Length': fs.statSync(f).size,
-        'Content-Disposition': `attachment; filename="${path.basename(f)}"` });
-      return fs.createReadStream(f).pipe(res);
-    }
+    if (req.method === 'GET' && url.pathname === '/enregistrements') return json(res, 200, enregistrements().map(e => Object.assign(e, { lien: signerTelechargement(e.nom) })));
     json(res, 404, { erreur: 'Inconnu' });
   } catch (e) { json(res, 400, { erreur: e.message }); }
-}).listen(PORT, () => journal(`OBSeb Cloud prêt sur le port ${PORT}`));
+}).listen(PORT, ECOUTE, () => journal(`OBSeb Cloud prêt sur ${ECOUTE}:${PORT}`));
 
 process.on('SIGTERM', async () => { await arreter(); process.exit(0); });

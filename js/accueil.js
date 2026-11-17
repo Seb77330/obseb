@@ -151,7 +151,7 @@ function ouvrirCreation(titre, bouton, modif) {
 addEventListener('popstate', () => montrerVue(location.hash === '#nouveau' ? 'creation' : 'liste', false));
 $('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSession('', 'minimal'); if (typeof appliquerStyleDefaut === 'function') appliquerStyleDefaut(brouillon); ouvrirCreation('Nouveau live', 'Créer le live', false); };
 
-$('#btn-creer').onclick = () => {
+$('#btn-creer').onclick = async () => {
   if (!brouillon.titre.trim()) { $('#f-titre').focus(); return toast('Donne un titre à ton live'); }
   if (brouillon.debut && brouillon.debut < Date.now() && !enEdition) return toast('L\'heure choisie est déjà passée');
   const programme = brouillon.debut && brouillon.debut > Date.now() ? brouillon.debut : 0;
@@ -161,7 +161,9 @@ $('#btn-creer').onclick = () => {
     if (i >= 0) l[i].session = brouillon;
     toast('Live modifié');
   } else {
-    l.unshift({ session: brouillon, cle: rnd(12) });
+    const cle = rnd(20);                         // 100 bits : impossible à deviner
+    brouillon.room = await salleDepuisCle(cle);  // la salle est liée à cette clé (voir common.js)
+    l.unshift({ session: brouillon, cle });
     toast(programme ? `Live programmé : ${quandTexte(programme)}` : 'Live créé : clique sur « Ouvrir la régie »');
   }
   ecrire(l);
