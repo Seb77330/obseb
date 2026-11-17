@@ -122,7 +122,7 @@ function enregistrements() {
   }).sort((a, b) => b.date - a.date);
 }
 
-/* Ménage : les enregistrements de plus de 14 jours sont supprimés */
+/* Ménage : les enregistrements plus vieux que GARDE_JOURS (10 jours) sont supprimés */
 function menage() {
   const limite = Date.now() - GARDE_JOURS * 86400000;
   for (const e of enregistrements()) {
