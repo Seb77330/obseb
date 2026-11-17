@@ -18,6 +18,22 @@ const PLATEFORMES_LIVE = [
     aide: 'TikTok LIVE Center (ou LIVE Studio) > Clé de stream : copie l\'URL du serveur et la clé. Ta chaîne a assez d\'abonnés pour le LIVE.' },
   { id: 'instagram', nom: 'Instagram', court: 'IG', couleur: '#E1306C', format: 'vertical', serveur: '',
     aide: 'Sur ordinateur : instagram.com > Créer > Vidéo en direct > logiciel de streaming. L\'URL et la clé changent à chaque live.' },
+  { id: 'linkedin', nom: 'LinkedIn', court: 'in', couleur: '#0A66C2', format: 'horizontal', serveur: '',
+    aide: 'Créer un événement LinkedIn Live (accès à demander à LinkedIn) puis « Logiciel de streaming » : copie l\'URL et la clé.' },
+  { id: 'rumble', nom: 'Rumble', court: 'R', couleur: '#85C742', texte: '#000', format: 'horizontal', serveur: '',
+    aide: 'Rumble Studio > Go Live > logiciel externe (RTMP) : copie l\'URL et la clé.' },
+  { id: 'dailymotion', nom: 'Dailymotion', court: 'DM', couleur: '#0D0D0D', format: 'horizontal', serveur: '',
+    aide: 'Dailymotion Studio > Live > Créer un live : copie l\'URL du serveur et la clé.' },
+  { id: 'vimeo', nom: 'Vimeo', court: 'V', couleur: '#1AB7EA', format: 'horizontal', serveur: '',
+    aide: 'Vimeo > Événement en direct > Paramètres de diffusion > RTMP : copie l\'URL et la clé (offre payante).' },
+  { id: 'trovo', nom: 'Trovo', court: 'TR', couleur: '#19D66B', texte: '#000', format: 'horizontal', serveur: '',
+    aide: 'Trovo > Creator Studio > Stream Settings : copie l\'URL du serveur et la clé.' },
+  { id: 'dlive', nom: 'DLive', court: 'DL', couleur: '#FFD300', texte: '#000', format: 'horizontal', serveur: '',
+    aide: 'DLive > Dashboard > Stream Setup : copie l\'URL et la clé.' },
+  { id: 'telegram', nom: 'Telegram', court: 'TG', couleur: '#229ED9', format: 'horizontal', serveur: '',
+    aide: 'Dans ton canal Telegram : Diffusion en direct > « Diffuser avec » : copie l\'URL du serveur et la clé.' },
+  { id: 'autre', nom: 'Autre site (RTMP)', court: '+', couleur: '#444444', format: 'horizontal', serveur: '',
+    aide: 'N\'importe quel site qui accepte un « logiciel de streaming » (comme OBS) : colle son URL RTMP et sa clé.' },
 ];
 const CLE_COMPTES = 'studioSeb:comptes';
 let comptes = {};

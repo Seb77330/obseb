@@ -144,6 +144,29 @@
   .demarrage button.fait i { background: var(--ui-green); border-color: var(--ui-green); }
   .demarrage button.fait i::after { content: '✓'; color: #fff; }
   .demarrage .fermer { margin-left: auto; color: var(--ui-muted); }
+  .qz-direct { background: var(--ui-panel2); border-radius: 10px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
+  .qz-direct.actif { box-shadow: inset 3px 0 0 var(--ui-red); }
+  .qz-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .qz-cats button { padding: 5px 11px; font-size: 13px; border-radius: 999px; }
+  .qz-cats button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
+  .qz-cats button small { opacity: .65; margin-left: 4px; }
+  #qz-liste { max-height: 330px; overflow-y: auto; }
+  #qz-liste .elt img { width: 44px; height: 26px; object-fit: cover; border-radius: 4px; flex: none; }
+  .qz-form { border: 1px solid var(--ui-line); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+  .qz-form summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  .qz-form[open] summary { margin-bottom: 10px; }
+  .qz-reps { display: grid; gap: 6px; margin-top: 8px; }
+  .qz-reps label { display: flex; align-items: center; gap: 8px; }
+  .qz-reps b { width: 18px; color: var(--ui-muted); font-weight: 600; }
+  .qz-ligne { display: grid; grid-template-columns: 1fr 100px; gap: 8px; }
+  .qz-ligne label { display: grid; gap: 4px; }
+  .qz-image { margin-top: 10px; }
+  .qz-image-apercu { display: flex; gap: 10px; align-items: center; }
+  .qz-image-apercu img { width: 120px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #000; }
+  .qz-styles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .qz-styles button { display: flex; align-items: center; gap: 8px; font-size: 13px; text-align: left; }
+  .qz-styles button i { width: 16px; height: 16px; border-radius: 4px; flex: none; }
+  .qz-styles button.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
 </style>
 </head>
 <body>
@@ -271,29 +294,54 @@
         
       </section>
       <section class="onglet" data-onglet="quiz" hidden>
-          <p class="intro-onglet">Prépare tes questions avant le live, puis « Lancer » pendant le live. <span class="aide" id="qz-statut"></span></p>
-        <div class="grille2">
-          <div style="grid-column:1/-1"><input type="text" id="qz-q" placeholder="Ta question"></div>
-          <div><label class="aide"><input type="radio" name="qz-bonne" value="0" checked> A</label><input type="text" class="qz-r" placeholder="Réponse A"></div>
-          <div><label class="aide"><input type="radio" name="qz-bonne" value="1"> B</label><input type="text" class="qz-r" placeholder="Réponse B"></div>
-          <div><label class="aide"><input type="radio" name="qz-bonne" value="2"> C</label><input type="text" class="qz-r" placeholder="Réponse C (optionnelle)"></div>
-          <div><label class="aide"><input type="radio" name="qz-bonne" value="3"> D</label><input type="text" class="qz-r" placeholder="Réponse D (optionnelle)"></div>
+        <div class="qz-direct">
+          <div class="aide" id="qz-statut">Aucune question à l'écran</div>
+          <div class="ligne-boutons">
+            <button class="petit" id="qz-reveler">Révéler la réponse</button>
+            <button class="petit" id="qz-fermer">Retirer de l'écran</button>
+            <button class="petit" id="qz-scores">Afficher le classement</button>
+          </div>
         </div>
-        <div class="ligne-boutons" style="margin-top:8px;align-items:center">
-          <span class="aide">Temps :</span>
-          <select id="qz-duree" style="width:auto"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="20">20 s</option><option value="30">30 s</option></select>
-          <span class="aide">Coche la bonne réponse (A, B, C ou D).</span>
-          <button class="primaire" id="qz-ajouter" style="margin-left:auto">Ajouter la question</button>
+
+        <div class="qz-cats" id="qz-cats"></div>
+        <div id="qz-liste"></div>
+
+        <details class="qz-form" id="qz-form">
+          <summary>+ Nouvelle question <span class="aide" id="qz-compte"></span></summary>
+          <input type="text" id="qz-q" placeholder="Ta question" maxlength="140">
+          <div class="qz-reps">
+            <label><input type="radio" name="qz-bonne" value="0" checked><b>A</b><input type="text" class="qz-r" placeholder="Réponse A" maxlength="60"></label>
+            <label><input type="radio" name="qz-bonne" value="1"><b>B</b><input type="text" class="qz-r" placeholder="Réponse B" maxlength="60"></label>
+            <label><input type="radio" name="qz-bonne" value="2"><b>C</b><input type="text" class="qz-r" placeholder="Réponse C (facultatif)" maxlength="60"></label>
+            <label><input type="radio" name="qz-bonne" value="3"><b>D</b><input type="text" class="qz-r" placeholder="Réponse D (facultatif)" maxlength="60"></label>
+          </div>
+          <p class="aide" style="margin:2px 0 8px">Coche la bonne réponse.</p>
+          <div class="qz-ligne">
+            <label class="aide">Catégorie<input type="text" id="qz-cat" list="qz-cats-liste" placeholder="Ex. Cinéma" maxlength="30"></label>
+            <datalist id="qz-cats-liste"></datalist>
+            <label class="aide">Temps<select id="qz-duree"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label>
+          </div>
+          <div class="qz-image">
+            <div class="qz-image-apercu" id="qz-img-apercu" hidden><img alt=""><button class="petit" id="qz-img-retirer">Retirer l'image</button></div>
+            <div class="ligne-boutons" id="qz-img-choix">
+              <button class="petit" id="qz-img-btn">Ajouter une image</button>
+              <input type="url" id="qz-img-url" placeholder="ou colle le lien d'une image" style="flex:1;min-width:0">
+            </div>
+            <input type="file" id="qz-img-fichier" accept="image/*" hidden>
+          </div>
+          <button class="primaire" id="qz-ajouter" style="width:100%;margin-top:10px">Ajouter la question</button>
+        </details>
+
+        <h3 class="sous-titre">Style du quiz à l'écran</h3>
+        <div class="qz-styles" id="qz-styles">
+          <button data-qstyle="theme"><i style="background:var(--qs-theme, #D4AF37)"></i>Thème du live</button>
+          <button data-qstyle="plateau"><i style="background:linear-gradient(135deg,#1b3cff,#7a2cff)"></i>Plateau TV</button>
+          <button data-qstyle="neon"><i style="background:#ff2bd6;box-shadow:0 0 8px #ff2bd6"></i>Néon</button>
+          <button data-qstyle="clair"><i style="background:#fff;border:1px solid #ccc"></i>Clair</button>
+          <button data-qstyle="cinema"><i style="background:#c8102e"></i>Cinéma</button>
         </div>
-        <div id="qz-liste" style="margin-top:10px"></div>
-        <div class="ligne-boutons" style="margin-top:6px">
-          <button id="qz-reveler">Révéler la réponse</button>
-          <button id="qz-fermer">Fermer la question</button>
-          <button id="qz-scores">Afficher le classement</button>
-          <button class="petit" id="qz-zero" style="margin-left:auto">Remettre les scores à zéro</button>
-        </div>
-      
-        </section>
+        <button class="petit" id="qz-zero" style="margin-top:14px">Remettre les scores à zéro</button>
+      </section>
       <section class="onglet" data-onglet="musique" hidden>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
           <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">

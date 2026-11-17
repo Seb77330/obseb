@@ -267,6 +267,7 @@ let quizAffiche = null;
 function gererQuiz() {
   const qz = (etat && etat.quiz) || {};
   const a = qz.active;
+  document.body.dataset.quizStyle = qz.style || 'theme';
   $('#quiz').classList.toggle('cachee', !a || !!qz.afficherScores);
   $('#classement').classList.toggle('cachee', !qz.afficherScores);
   if (qz.afficherScores) {
@@ -278,6 +279,9 @@ function gererQuiz() {
   if (quizAffiche !== a.qid) {
     quizAffiche = a.qid;
     $('#qz-q').textContent = a.q;
+    const im = $('#qz-img');
+    im.hidden = !a.img; if (a.img) im.src = a.img; else im.removeAttribute('src');
+    $('#quiz').classList.toggle('avec-image', !!a.img);
     $('#qz-choix').innerHTML = a.choix.map((c, i) => `<div class="qz-c"><b>${'ABCD'[i]}</b><span>${esc(c)}</span></div>`).join('');
   }
   [...document.querySelectorAll('.qz-c')].forEach((el, i) => {
@@ -386,7 +390,7 @@ if (DEMO) {
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
-  if (Q.get('quiz')) st.quiz = { active: { qid: 'd', q: 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }] } };
+  if (Q.get('quiz')) st.quiz = { active: { qid: 'd', q: 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { afficherScores: true, classement: [{ nom: 'Antho', pts: 2850 }, { nom: 'Landri', pts: 1900 }, { nom: 'Camille', pts: 870 }] };
   st.message = 'Pose tes questions dans le chat';

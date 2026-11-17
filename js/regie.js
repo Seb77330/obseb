@@ -98,7 +98,7 @@ function envoyer() {
   for (const [id, nom] of Object.entries(etat.noms)) if (id === ID_HOTE || presents.has(id)) st.noms[id] = nom;
   st.onair = etat.onair.filter(id => id in st.noms);
   // les questions préparées (avec les bonnes réponses) restent dans la régie
-  if (st.quiz) st.quiz = { active: st.quiz.active, afficherScores: st.quiz.afficherScores, classement: st.quiz.classement };
+  if (st.quiz) st.quiz = { active: st.quiz.active, afficherScores: st.quiz.afficherScores, classement: st.quiz.classement, style: st.quiz.style };
   ordre(maCamera, { sendData: { [CANAL]: st }, type: 'pcs' });     // vers OBS et les coulisses
   ordre(apercu, { [CANAL]: st });                                  // vers l'aperçu de la régie
   try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(etat)); } catch (e) { /* rien */ }

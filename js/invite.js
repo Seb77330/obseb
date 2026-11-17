@@ -110,6 +110,7 @@ function gererQuiz(qz) {
   if (!quizVu || quizVu.qid !== a.qid) {
     quizVu = { qid: a.qid, vuA: performance.now(), choix: null, duree: a.duree, revele: false };
     $('#qz-question').textContent = a.q;
+    const im = $('#qz-image'); im.hidden = !a.img; if (a.img) im.src = a.img;
     const c = $('#qz-choix'); c.innerHTML = '';
     a.choix.forEach((txt, i) => {
       const b = document.createElement('button');
