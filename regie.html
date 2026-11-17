@@ -227,6 +227,10 @@
   .mu-note { display: block; margin-top: 7px; font-size: 12px; color: var(--ui-muted); }
   .mu-note.ko { color: var(--ui-red); }
   .mu-par-lien { margin-top: 14px; }
+  @keyframes appel { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 35% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--ui-accent) 45%, transparent); } }
+  .choisir-ecran.appel { animation: appel .9s ease 2; }
+  .mu-ecoute button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 6px; }
+  .mu-ecoute svg { width: 16px; height: 16px; flex: none; }
   #chat-liste { height: clamp(180px, 34vh, 360px); }
   .compte { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; background: var(--ui-panel2); }
   .compte.on { border-color: color-mix(in srgb, var(--ui-accent) 55%, transparent); }
@@ -714,6 +718,11 @@
         </div>
         <label class="champ" for="vol-musique">Volume</label>
         <input type="range" id="vol-musique" min="0" max="100" step="1">
+        <label class="champ" id="mu-ecoute-titre">Qui l'entend</label>
+        <div class="segment mu-ecoute" id="mu-ecoute" role="group" aria-labelledby="mu-ecoute-titre">
+          <button type="button" data-v="studio" title="Toi et tes invités l'entendez, en plus des spectateurs. Mets un casque : sinon ton micro la reprend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></svg>Tout le monde</button>
+          <button type="button" data-v="live" title="Elle passe dans le live, mais ni toi ni tes invités ne l'entendez dans le studio."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>Le live seulement</button>
+        </div>
         <details class="aide mu-par-lien">
           <summary>Ajouter par un lien</summary>
           <div class="ligne-boutons" style="flex-wrap:nowrap;margin-top:8px">
@@ -748,18 +757,18 @@
 </div>
 
 <script src="js/common.js?v=6cbb29c8"></script>
-<script src="js/reglages-media.js?v=2b1fab4a"></script>
+<script src="js/reglages-media.js?v=3e62aba8"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=88efb430"></script>
-<script src="js/regie-sources.js?v=ac71a7e4"></script>
-<script src="js/regie-musique.js?v=68ee0af0"></script>
+<script src="js/regie.js?v=a4fd9402"></script>
+<script src="js/regie-sources.js?v=98df5e91"></script>
+<script src="js/regie-musique.js?v=648c911a"></script>
 <script src="js/regie-quiz.js?v=80082167"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=03347cc5"></script>
 <script src="js/regie-recherche.js?v=8986a628"></script>
 <script src="js/regie-direct.js?v=a0de5236"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
-<script src="js/regie-cams.js?v=a329af3e"></script>
+<script src="js/regie-cams.js?v=55166cf2"></script>
 <script src="js/regie-watch.js?v=d4ce3fab"></script>
 <script src="js/regie-etat.js?v=af2213d7"></script>
 <script src="js/regie-st.js?v=211f6618"></script>

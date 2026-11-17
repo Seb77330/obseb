@@ -451,6 +451,10 @@ setInterval(() => {
    Un morceau a soit un lien, soit un fichier ajouté depuis l'ordinateur de la régie.
    Le fichier est cherché dans ce navigateur ; s'il n'y est pas (OBS est un autre navigateur),
    la sortie le demande à la régie, le reçoit en morceaux et le garde pour les prochaines fois. */
+/* Où la musique s'entend : toujours dans la sortie du live. Dans un aperçu (la régie, les coulisses d'un invité),
+   seulement si la régie a choisi « Tout le monde l'entend » : c'est le retour du studio. */
+const SANS_MUSIQUE = Q.get('musique') === '0';      // la 2e caméra de l'animateur : il l'entend déjà dans sa régie
+const musiqueIci = () => !DEMO && !SANS_MUSIQUE && (!PREVIEW || !!(etat && etat.musiqueStudio !== false));
 const adressesMusique = new Map();     // id -> adresse locale du fichier
 const recherchesMusique = new Map();   // id -> 'cherche' | 'absent'
 const recuMusique = { id: '', n: 0, parts: [], nb: 0 };
@@ -473,10 +477,10 @@ function fichierPret(id) {
 }
 function adressePiste(p) { return !p ? '' : p.url ? p.url : adresseFichier(p.id); }
 const idFichierSource = s => s && typeof s.ref === 'string' && s.ref.startsWith('fichier:') ? s.ref.slice(8) : '';
-// les fichiers annoncés par la régie : les musiques (sauf dans un aperçu, qui est muet) et les images de la scène Partage
+// les fichiers annoncés par la régie : les musiques (là où elles s'entendent) et les images de la scène Partage
 function fichiersAnnonces() {
   const ids = ((etat && etat.sources) || []).map(idFichierSource).filter(Boolean);
-  if (!PREVIEW) for (const m of (etat && etat.playlist) || []) if (m.fichier && m.id) ids.push(m.id);
+  if (musiqueIci()) for (const m of (etat && etat.playlist) || []) if (m.fichier && m.id) ids.push(m.id);
   return ids;
 }
 // le premier fichier qui manque ici : la régie l'envoie quand elle voit cette demande
@@ -517,8 +521,25 @@ lecteur.addEventListener('ended', () => {
   adresseLecteur = '';
   if (chargerPiste(l[pisteLocale.idx])) lecteur.play().catch(() => {});
 });
+/* Le retour du studio se cale sur le live : un aperçu ouvert en cours de morceau (invité qui arrive, aperçu rechargé)
+   reprend au bon endroit au lieu de repartir du début. La sortie du live, elle, ne saute jamais. */
+let caleSur = '';
+function calerRetour(m) {
+  if (!PREVIEW || !m.t0) return;
+  const cle = m.n + ':' + m.idx + ':' + m.t0;
+  if (caleSur === cle) return;
+  const faire = () => {
+    const d = lecteur.duration, o = (+m.pos0 || 0) + (maintenantHote() - m.t0) / 1000;
+    caleSur = cle;
+    if (!(d > 0) || !isFinite(d) || !(o >= 0) || o > 6 * 3600) return;
+    const cible = m.boucle ? o % d : o;
+    if (cible < d - 1 && Math.abs(lecteur.currentTime - cible) > 1.2) lecteur.currentTime = cible;
+  };
+  if (lecteur.readyState >= 1) faire(); else lecteur.addEventListener('loadedmetadata', faire, { once: true });
+}
 function gererPlaylist() {
-  if (PREVIEW || DEMO || !etat) return;
+  if (!etat) return;
+  if (!musiqueIci()) { if (!lecteur.paused) lecteur.pause(); caleSur = ''; return; }   // au retour du son, on se recale sur le live
   const l = etat.playlist || [], m = etat.musique || {};
   l.forEach(p => { if (!p.url) adressePiste(p); });     // prépare les fichiers avant d'en avoir besoin
 
@@ -529,7 +550,7 @@ function gererPlaylist() {
   if (m.lecture && pret) {
     if (fonduLecteur) { clearInterval(fonduLecteur); fonduLecteur = null; }
     lecteur.volume = volume;
-    if (lecteur.paused) lecteur.play().catch(() => {});
+    if (lecteur.paused) { calerRetour(m); lecteur.play().catch(() => {}); }
   } else if (!lecteur.paused && !fonduLecteur) {
     // arrêt en fondu, pour ne pas couper net au changement de scène
     fonduLecteur = setInterval(() => {

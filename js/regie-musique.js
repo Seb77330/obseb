@@ -62,7 +62,13 @@ $('#mu-lien').onclick = () => {
 /* ---------- La liste ---------- */
 function jouerMorceau(i, options) {
   const meme = etat.musique.idx === i;
-  etat.musique = Object.assign({ idx: i, lecture: true, n: (etat.musique.n || 0) + (meme ? 0 : 1) }, options || {});
+  // t0 et pos0 : quand la lecture est partie, et d'où. Les retours du studio s'en servent pour se caler sur le live.
+  etat.musique = Object.assign({ idx: i, lecture: true, n: (etat.musique.n || 0) + (meme ? 0 : 1), t0: Date.now(), pos0: meme && !etat.musique.lecture ? etat.musique.pos0 || 0 : 0 }, options || {});
+}
+function pauseMusique(plus) {
+  const m = etat.musique;
+  if (m.lecture && m.t0) m.pos0 = (m.pos0 || 0) + (Date.now() - m.t0) / 1000;
+  etat.musique = Object.assign({}, m, { lecture: false }, plus || {});
 }
 function afficherMusiques() {
   const box = $('#mu-liste'), max = maxMusiques(), n = etat.playlist.length;
@@ -85,7 +91,7 @@ function afficherMusiques() {
     titre.value = m.nom;
     titre.onchange = () => { m.nom = titre.value.trim() || m.nom; titre.value = m.nom; envoyer(); majEtatMusique(); };
     el.querySelector('.mu-jouer').onclick = () => {
-      if (on) etat.musique.lecture = false; else jouerMorceau(i);
+      if (on) pauseMusique(); else jouerMorceau(i);
       envoyer(); afficherMusiques();
     };
     el.querySelector('.mu-retirer').onclick = () => {
@@ -119,13 +125,23 @@ function majEtatMusique() {
 }
 $('#mu-lecture').onclick = () => {
   if (!etat.playlist.length) return toast('Ajoute d\'abord une musique');
-  etat.musique.lecture = !etat.musique.lecture; envoyer(); afficherMusiques();
+  if (etat.musique.lecture) pauseMusique(); else Object.assign(etat.musique, { lecture: true, t0: Date.now() });
+  envoyer(); afficherMusiques();
 };
 $('#mu-suivante').onclick = () => {
   if (!etat.playlist.length) return;
-  etat.musique = { idx: (etat.musique.idx + 1) % etat.playlist.length, lecture: true, n: (etat.musique.n || 0) + 1 };
+  etat.musique = { idx: (etat.musique.idx + 1) % etat.playlist.length, lecture: true, n: (etat.musique.n || 0) + 1, t0: Date.now() };
   envoyer(); afficherMusiques();
 };
+/* Qui entend la musique : tout le studio (toi et tes invités, par l'aperçu de chacun) ou seulement le live.
+   Dans les deux cas elle part dans le son du live. */
+function majEcouteMusique() { $$('#mu-ecoute button').forEach(b => b.classList.toggle('actif', (b.dataset.v === 'studio') === (etat.musiqueStudio !== false))); }
+$$('#mu-ecoute button').forEach(b => b.onclick = () => {
+  etat.musiqueStudio = b.dataset.v === 'studio';
+  envoyer(); majEcouteMusique();
+  toast(etat.musiqueStudio ? 'Tout le monde entend la musique' : 'La musique ne passe plus que dans le live');
+});
+majEcouteMusique();
 $('#vol-musique').value = Math.round((etat.volMusique ?? 0.5) * 100);
 $('#vol-musique').oninput = e => { etat.volMusique = e.target.value / 100; envoyerBientot(); };
 
@@ -145,7 +161,7 @@ function musiqueAuto(force) {
     if (!(etat.musique.lecture && etat.musique.idx === idx)) jouerMorceau(idx, { boucle: true, auto: true });
     else Object.assign(etat.musique, { boucle: true, auto: true });
   } else if (etat.musique.auto) {
-    etat.musique = Object.assign({}, etat.musique, { lecture: false, auto: false, boucle: false });
+    pauseMusique({ auto: false, boucle: false });
   } else return;
   setTimeout(afficherMusiques, 0);
 }

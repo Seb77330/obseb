@@ -63,6 +63,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       if (s.height && s.height < 1080) aide.textContent = `Cette caméra donne ${s.height}p. Pour du 1080p, choisis ta Cam Link.`;
     }
     choix.cam = s && s.deviceId; choix.mic = at && at.getSettings().deviceId;
+    choix.h = (s && s.height) || 0;   // ce que la caméra sait vraiment donner : la salle lui demandera ça, pas plus
     // liste des appareils (les noms n'apparaissent qu'une fois l'accès autorisé)
     const app = await navigator.mediaDevices.enumerateDevices();
     const remplir = (sel, type, actuel) => {
@@ -100,16 +101,21 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     choix.nomCam = appCam; choix.nomMic = appMic;
     try { localStorage.setItem(cle, JSON.stringify(choix)); } catch (e) { /* rien */ }
     arreter();   // libère la caméra avant que la salle l'ouvre (évite le conflit Cam Link)
-    surDemarrer({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic });
+    surDemarrer({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 });
   };
   return { ouvrir, arreter, choix: () => choix };
 }
+
+/* Qualité demandée à la salle selon ce que la caméra donne vraiment (0 : 1080p, 1 : 720p, 2 : 360p).
+   On n'impose jamais une taille exacte : une caméra qui ne sait pas la faire refuse alors de démarrer
+   (c'est arrivé le 17/11 avec une webcam 720p à qui on demandait 1920 x 1080). */
+function qualiteCamera(h) { return !h || h >= 1080 ? 0 : h >= 720 ? 1 : 2; }
 
 /* Appareils retenus la dernière fois (pour redémarrer sans repasser par le réglage) */
 function appareilsRetenus(cle) {
   try {
     const c = JSON.parse(localStorage.getItem(cle) || '{}');
     if (!c.nomCam && !c.nomMic) return null;
-    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic };
+    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0 };
   } catch (e) { return null; }
 }

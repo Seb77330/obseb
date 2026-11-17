@@ -51,7 +51,7 @@ function entrer() {
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
     $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
-    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true });   // l'invité entend tout le monde ici
+    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, quality: qualiteCamera(app.h) });   // l'invité entend tout le monde ici
   }
   $('#btn-cam-changer').onclick = () => {
     $('#ma-camera').src = 'about:blank'; maCamera = null;
@@ -59,7 +59,7 @@ function entrer() {
   };
   reglage.ouvrir();
   apercu = $('#apercu');
-  apercu.src = `sortie.html?preview=1#s=${hashParams().get('s')}`;
+  apercu.src = `sortie.html?preview=1${CAM_DISTANTE ? '&musique=0' : ''}#s=${hashParams().get('s')}`;
   $('#mon-nom').value = moi.nom;
 }
 
@@ -96,14 +96,15 @@ setInterval(() => {
 
 let besoinApercu = '';   // fichier que mon aperçu attend de la régie
 addEventListener('message', e => {
+  // un fichier choisi dans la régie (musique, image) manque à mon aperçu : je le demande à la régie avec mon prochain « je suis là »
+  if (apercu && e.source === apercu.contentWindow && e.data && typeof e.data.studioSebBesoin === 'string') { besoinApercu = e.data.studioSebBesoin.slice(0, 40); return; }
   if (!maCamera || e.source !== maCamera.contentWindow) return;
   if (e.data && e.data.stats) {
     maQualite = resumeStats(e.data.stats);
     const el = $('#ma-qualite');
     if (el && maQualite.h) el.textContent = `Ton image part en ${maQualite.h}p${maQualite.kbps ? ' · ' + (maQualite.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`;
   }
-  // une image choisie dans la régie : les morceaux vont à mon aperçu ; s'il lui en manque une, je la demande à la régie
-  if (e.source === apercu.contentWindow && e.data && typeof e.data.studioSebBesoin === 'string') { besoinApercu = e.data.studioSebBesoin.slice(0, 40); return; }
+  // les morceaux d'un fichier envoyé par la régie vont à mon aperçu
   const morceau = e.data && e.data.dataReceived && e.data.dataReceived.studioSebFichier;
   if (morceau && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebFichier: morceau }); return; }
   const sousT = e.data && e.data.dataReceived && e.data.dataReceived.studioSebST;

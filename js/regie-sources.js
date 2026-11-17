@@ -66,7 +66,7 @@ async function choisirImage(i, f) {
   const id = 'i' + rnd(8);
   try { await fichiers.mettre(id, blob); } catch (e) { return toast('Ce navigateur refuse de garder le fichier'); }
   oublierImage(src);
-  Object.assign(src, { ref: 'fichier:' + id, nom: f.name.replace(/\.\w+$/, '').slice(0, 40) || 'Image', fichier: { id, type: blob.type || f.type } });
+  Object.assign(src, { ref: 'fichier:' + id, nom: f.name.replace(/\.\w+$/, '').slice(0, 40) || 'Image', fichier: { id, type: blob.type || f.type }, actif: true });
   remplirCorps(i); envoyer(); majSlots();
 }
 function changerType(i, ui) {
@@ -87,6 +87,7 @@ function remplirCorps(i) {
     const b = document.createElement('button');
     b.className = 'petit primaire'; b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
     b.onclick = () => { iframesEcran.has(i) ? arreterMonEcran(i) : lancerMonEcran(i); remplirCorps(i); envoyer(); majSlots(); };
+    b.classList.add('choisir-ecran');
     corps.appendChild(b);
     if (iframesEcran.has(i)) corps.appendChild(iframesEcran.get(i));
     corps.insertAdjacentHTML('beforeend', '<span class="aide">Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
@@ -95,7 +96,7 @@ function remplirCorps(i) {
     sel.className = 'ecran-invite';
     corps.appendChild(sel);
     remplirEcransInvites(i);
-    sel.onchange = () => { src.ref = sel.value; src.nom = nomsEcrans.get(sel.value) || 'Écran invité'; if (!src.ref) src.actif = false; envoyer(); majSlots(); };
+    sel.onchange = () => { src.ref = sel.value; src.nom = nomsEcrans.get(sel.value) || 'Écran invité'; src.actif = !!src.ref; envoyer(); majSlots(); };
   } else if (['image', 'video', 'web'].includes(src.ui)) {
     if (src.ui === 'image') {
       // une image : on la choisit sur l'ordinateur (ou on colle un lien juste en dessous)
@@ -117,7 +118,7 @@ function remplirCorps(i) {
       if (v && !/^https:\/\//.test(v)) { toast('Le lien doit commencer par https://'); return; }
       if (!v && src.fichier) return;
       oublierImage(src);
-      src.ref = v; src.nom = src.ui; if (!v) src.actif = false; envoyer(); majSlots();
+      src.ref = v; src.nom = src.ui; src.actif = !!v; envoyer(); majSlots();
       if (src.ui === 'image') remplirCorps(i);
     };
     corps.appendChild(inp);
@@ -153,6 +154,7 @@ function lancerMonEcran(i) {
   ecransActifs.add(id);
   presents.set(id, { vu: Date.now() });
   etat.sources[i].ref = id;
+  etat.sources[i].actif = true;      // ce que tu choisis passe à l'écran tout de suite ; la case « À l'écran » sert à le retirer
 }
 function arreterMonEcran(i) {
   const f = iframesEcran.get(i);
@@ -169,6 +171,12 @@ function majSlots() {
     el.classList.toggle('on', !!(src.actif && src.ref));
     el.querySelector('.actif').checked = !!(src.actif && src.ref);
   });
+}
+/* On passe sur la scène Écran partagé sans rien à montrer : la première source propose « Mon écran », bouton en évidence */
+function proposerPartage() {
+  if (!etat.sources.some(x => x.ui)) { $('#sources').children[0].querySelector('.type').value = 'monecran'; changerType(0, 'monecran'); }
+  const b = $('#sources .choisir-ecran');
+  if (b) { b.classList.remove('appel'); void b.offsetWidth; b.classList.add('appel'); }
 }
 /* appelée quand un écran d'invité arrive ou part */
 function majSources() { etat.sources.forEach((s, i) => { if (s.ui === 'ecraninvite') remplirEcransInvites(i); }); }

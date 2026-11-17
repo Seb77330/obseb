@@ -68,7 +68,8 @@ function demarrerCamera(app) {
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
-  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, width: 1920, height: 1080, maxframerate: 30, contenthint: 'detail' });   // 1080p tenu : le navigateur baisse les images/s plutôt que la définition   // son pro : stéréo, sans anti-écho (casque)
+  // la meilleure image que la caméra sait donner (1080p avec une Cam Link, 720p avec une webcam) ; « detail » : le navigateur baisse les images/s plutôt que la définition
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, quality: qualiteCamera(app.h), maxframerate: 30, contenthint: 'detail' });
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
@@ -77,7 +78,7 @@ $('#btn-cam-changer').onclick = () => {
   reglageCam.ouvrir();
 };
 const retenus = appareilsRetenus(CLE_CAM);
-if (retenus) demarrerCamera(retenus);
+if (retenus && retenus.h) demarrerCamera(retenus);   // sans mesure de la caméra (choix retenu avant le 17/11), on repasse une fois par le réglage
 else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
 
 /* ----- Aperçu de l'antenne ----- */
@@ -124,7 +125,12 @@ function noterLiveTermine() {
   } catch (err) { /* stockage indisponible */ }
 }
 function changerScene(s) {
-  if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) toast('Aucune source affichée : active au moins une source (colonne de gauche)');
+  // rien à montrer pour l'instant : on ouvre l'onglet où l'on choisit quoi partager, au lieu d'un message
+  if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) {
+    if (typeof ouvrirOnglet === 'function') ouvrirOnglet('sources');
+    if (typeof proposerPartage === 'function') proposerPartage();
+    toast('Choisis ce que tu veux montrer, dans l\'onglet Partage');
+  }
   etat.scene = s; envoyer();
 }
 function changerLayout(l) { etat.layout = l; envoyer(); }
