@@ -56,57 +56,86 @@
   @media (max-width: 640px) { .replique { grid-template-columns: 60px minmax(0, 1fr) 26px; } .replique .qui { grid-column: 2; } .replique textarea { grid-column: 1 / -1; grid-row: 2; } }
   .atelier-pied { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-top: 1px solid var(--ui-line); }
   .atelier-pied label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-right: auto; cursor: pointer; }
-  /* Les formules : très peu de texte en haut, les chiffres clés en grand dans chaque carte */
-  .formules { margin-top: 96px; scroll-margin-top: 90px; }
-  .formules-tete { text-align: center; margin: 0 auto 44px; }
-  .sur-titre { display: inline-block; font: 500 11px var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ui-accent); }
+  /* Les formules : une couleur par formule (« à tes couleurs »), très peu de texte, les chiffres clés en grand */
+  .formules { margin-top: 96px; scroll-margin-top: 90px;
+    --f-essai: #56D4E8; --f-essentiel: var(--ui-accent); --f-pro: #B08CFF; --f-regie: #FF7A66; --f-ent: #6EA8FF;
+    --t-essai: var(--f-essai); --t-essentiel: var(--f-essentiel); --t-pro: var(--f-pro); --t-regie: var(--f-regie); --t-ent: var(--f-ent); }
+  :root[data-mode="clair"] .formules { --f-essai: #17A2BD; --f-pro: #7C55E8; --f-regie: #E5533C; --f-ent: #3B76DB;
+    --t-essai: #0B7389; --t-essentiel: #8A6800; --t-pro: #5E3BC4; --t-regie: #C23A25; --t-ent: #2459B8; }
+  .formules-tete { text-align: center; margin: 0 auto 58px; }
+  .sur-titre { display: inline-block; font: 500 11px var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ct, var(--t-essentiel, var(--ui-accent))); }
   .formules-tete h2 { margin: 14px 0 10px; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.08; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
+  .formules-tete h2 em { font-style: normal; white-space: nowrap; background: linear-gradient(90deg, var(--t-essai), var(--t-essentiel) 36%, var(--t-pro) 68%, var(--t-regie)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .formules-tete p { margin: 0; color: var(--ui-muted); font-size: 16px; }
-  .offres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
-  .offre { position: relative; display: flex; flex-direction: column; padding: 26px 22px 22px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 18px; transition: border-color .2s, transform .2s; }
-  .offre:hover { border-color: var(--ui-line2); transform: translateY(-2px); }
-  .offre.vedette { border-color: var(--ui-accent); background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--ui-accent) 13%, transparent), transparent 70%), var(--ui-panel); box-shadow: 0 18px 50px -24px color-mix(in srgb, var(--ui-accent) 55%, transparent); }
-  .offre.vedette:hover { border-color: var(--ui-accent); }
-  .offre-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); padding: 3px 12px; border-radius: 99px; background: var(--ui-accent); color: var(--ui-sur-accent); font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
-  .offre h3 { margin: 0; font: 500 11px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ui-muted); }
-  .offre.vedette h3 { color: var(--ui-accent); }
-  .offre .prix { margin: 18px 0 0; display: flex; align-items: baseline; font-variant-numeric: tabular-nums; }
-  .offre .prix b { font-size: 54px; line-height: .9; font-weight: 600; letter-spacing: -.04em; }
+  .offres { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+  /* le halo derrière les cartes : les quatre couleurs, très doux */
+  .offres::before { content: ''; position: absolute; z-index: -1; inset: 10% 3% -2%; background: linear-gradient(90deg, var(--f-essai), var(--f-essentiel) 36%, var(--f-pro) 68%, var(--f-regie)); filter: blur(90px); opacity: .13; pointer-events: none; }
+  :root[data-mode="clair"] .offres::before { opacity: .16; }
+  .offre, .entreprises { --c: var(--f-essentiel); --ct: var(--t-essentiel); }
+  [data-teinte=essai] { --c: var(--f-essai); --ct: var(--t-essai); }
+  [data-teinte=pro] { --c: var(--f-pro); --ct: var(--t-pro); }
+  [data-teinte=regie] { --c: var(--f-regie); --ct: var(--t-regie); }
+  [data-teinte=ent] { --c: var(--f-ent); --ct: var(--t-ent); }
+  .offre { position: relative; isolation: isolate; display: flex; flex-direction: column; padding: 24px 22px 22px; border: 1px solid transparent; border-radius: 20px;
+    background: radial-gradient(130% 62% at 50% 0%, color-mix(in srgb, var(--c) 11%, transparent), transparent 64%) padding-box, linear-gradient(var(--ui-panel), var(--ui-panel)) padding-box, linear-gradient(180deg, color-mix(in srgb, var(--c) 60%, var(--ui-line)), var(--ui-line) 56%) border-box;
+    transition: transform .25s, box-shadow .25s; }
+  /* la lueur qui suit la souris */
+  .offre::before, .entreprises::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--c) 17%, transparent), transparent 66%); opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .offre:hover::before, .entreprises:hover::before { opacity: 1; }
+  .offre:hover { transform: translateY(-4px); box-shadow: 0 26px 60px -34px color-mix(in srgb, var(--c) 65%, transparent); }
+  .offre.vedette { background: radial-gradient(130% 70% at 50% 0%, color-mix(in srgb, var(--c) 19%, transparent), transparent 68%) padding-box, linear-gradient(var(--ui-panel), var(--ui-panel)) padding-box, linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 38%, var(--ui-line))) border-box; box-shadow: 0 28px 70px -36px color-mix(in srgb, var(--c) 75%, transparent); }
+  .offre.vedette:hover { box-shadow: 0 34px 80px -34px color-mix(in srgb, var(--c) 85%, transparent); }
+  .offre-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 4px 13px; border-radius: 99px; background: var(--c); color: var(--ui-sur-accent); font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--c) 80%, transparent); }
+  .offre-tete { display: flex; align-items: center; gap: 12px; }
+  .embleme { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; color: var(--ct); background: color-mix(in srgb, var(--c) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 32%, transparent); }
+  .embleme svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .offre h3 { margin: 0; font-size: 19px; line-height: 1.15; font-weight: 600; letter-spacing: -.015em; }
+  .offre .pour { margin: 3px 0 0; font-size: 13px; line-height: 1.3; color: var(--ui-muted); }
+  .offre .prix { margin: 26px 0 0; display: flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+  .offre .prix b { font-size: 58px; line-height: .9; font-weight: 600; letter-spacing: -.045em; padding-right: 2px; background: linear-gradient(170deg, var(--ui-text) 42%, color-mix(in srgb, var(--ct) 80%, var(--ui-text))); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .offre .prix i { font-style: normal; font-size: 20px; font-weight: 600; letter-spacing: -.01em; }
   .offre .prix i.seul { margin-left: 7px; }
   .offre .prix span { margin-left: 8px; color: var(--ui-muted); font-size: 13px; }
-  .offre .pour { margin: 12px 0 0; font-size: 15px; color: var(--ui-text); }
-  .chiffres-cles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 22px 0 0; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-bg); }
-  .offre.vedette .chiffres-cles { border-color: color-mix(in srgb, var(--ui-accent) 35%, var(--ui-line)); }
+  .chiffres-cles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 22px 0 0; border-radius: 13px; background: color-mix(in srgb, var(--c) 7%, var(--ui-bg)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 16%, var(--ui-line)); }
   .chiffres-cles div { padding: 12px 4px 11px; text-align: center; min-width: 0; }
-  .chiffres-cles div + div { border-left: 1px solid var(--ui-line); }
+  .chiffres-cles div + div { border-left: 1px solid color-mix(in srgb, var(--c) 16%, var(--ui-line)); }
   .chiffres-cles b { display: block; font-size: 19px; line-height: 1.1; font-weight: 600; letter-spacing: -.02em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .chiffres-cles div:first-child b { color: var(--ct); }
   .chiffres-cles span { display: block; margin-top: 5px; font-size: 10.5px; line-height: 1.25; color: var(--ui-muted); }
   .offre ul { list-style: none; margin: 20px 0 26px; padding: 0; display: grid; gap: 9px; font-size: 14px; }
   .offre li { position: relative; padding-left: 22px; line-height: 1.4; }
-  .offre li::before { content: ''; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 1.5px solid var(--ui-accent); border-bottom: 1.5px solid var(--ui-accent); transform: rotate(-45deg); }
+  .offre li::before, .entreprises li::before { content: ''; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 1.5px solid var(--ct); border-bottom: 1.5px solid var(--ct); transform: rotate(-45deg); }
   .offre li.moins { color: var(--ui-muted); }
   .offre li.moins::before { top: 9px; width: 9px; height: 0; border-left: 0; border-color: var(--ui-muted); transform: none; }
-  .offre button { margin-top: auto; width: 100%; padding: 12px 16px; font-size: 15px; border-radius: 10px; }
+  .offre button { margin-top: auto; width: 100%; padding: 12px 16px; font-size: 15px; border-radius: 12px; }
+  .offre button:not(.primaire), .ent-prix button { background: color-mix(in srgb, var(--c) 7%, var(--ui-panel2)); border-color: color-mix(in srgb, var(--c) 26%, var(--ui-line)); }
+  .offre button:not(.primaire):hover, .ent-prix button:hover { border-color: var(--c); background: color-mix(in srgb, var(--c) 13%, var(--ui-panel2)); }
   .offre:not(.vedette) button[data-formule]:not([data-formule=gratuit]) { color: var(--ui-muted); }
-  /* Entreprises : un bandeau discret sous les quatre formules */
-  .entreprises { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.5fr) auto; gap: 18px 36px; align-items: center; padding: 24px 26px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 18px; }
-  .entreprises h3 { margin: 10px 0 0; font-size: 22px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; }
+  @media (min-width: 1081px) { .offre.vedette { margin-block: -14px; padding-top: 38px; padding-bottom: 36px; } }
+  /* Entreprises : un bandeau sous les quatre formules, à sa couleur */
+  .entreprises { position: relative; isolation: isolate; margin-top: 30px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) auto; gap: 18px 36px; align-items: center; padding: 24px 26px; border: 1px solid transparent; border-radius: 20px;
+    background: radial-gradient(60% 150% at 0% 50%, color-mix(in srgb, var(--c) 11%, transparent), transparent 70%) padding-box, linear-gradient(var(--ui-panel), var(--ui-panel)) padding-box, linear-gradient(90deg, color-mix(in srgb, var(--c) 60%, var(--ui-line)), var(--ui-line) 48%) border-box; }
+  .ent-tete { display: flex; align-items: center; gap: 14px; }
+  .entreprises h3 { margin: 6px 0 0; font-size: 21px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; }
   .entreprises ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 22px; font-size: 14px; }
   .entreprises li { position: relative; padding-left: 22px; line-height: 1.4; }
-  .entreprises li::before { content: ''; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 1.5px solid var(--ui-accent); border-bottom: 1.5px solid var(--ui-accent); transform: rotate(-45deg); }
   .ent-prix { display: flex; align-items: center; gap: 22px; }
   .ent-prix p { margin: 0; display: grid; justify-items: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .ent-prix b { font-size: 30px; line-height: 1.05; font-weight: 600; letter-spacing: -.03em; }
   .ent-prix span { color: var(--ui-muted); font-size: 12px; }
-  .ent-prix button { padding: 11px 18px; font-size: 14px; border-radius: 10px; color: var(--ui-muted); white-space: nowrap; }
-  @media (max-width: 1080px) { .entreprises { grid-template-columns: 1fr; gap: 18px; } .ent-prix { justify-content: space-between; } .ent-prix p { justify-items: start; } }
+  .ent-prix button { padding: 11px 18px; font-size: 14px; border-radius: 12px; color: var(--ui-muted); white-space: nowrap; }
+  @media (max-width: 1080px) { .entreprises { grid-template-columns: 1fr; gap: 18px; margin-top: 22px; } .ent-prix { justify-content: space-between; } .ent-prix p { justify-items: start; } }
   @media (max-width: 620px) { .entreprises { max-width: 420px; margin-left: auto; margin-right: auto; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
   .formules-pied { margin: 30px auto 0; text-align: center; color: var(--ui-muted); font-size: 13px; }
   .formules-pied b { margin-right: 9px; padding: 2px 8px; border: 1px solid var(--ui-line2); border-radius: 99px; color: var(--ui-text); font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
-  @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 14px; } }
-  @media (max-width: 620px) { .offres { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } .formules { margin-top: 64px; } .formules-tete { margin-bottom: 34px; } }
-  @media (prefers-reduced-motion: reduce) { .offre { transition: none; } .offre:hover { transform: none; } }
+  @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+  @media (max-width: 620px) { .offres { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } .formules { margin-top: 64px; } .formules-tete { margin-bottom: 40px; } }
+  /* les cartes arrivent l'une après l'autre quand on descend jusqu'aux formules */
+  @keyframes offre-arrive { from { opacity: 0; transform: translateY(20px); } }
+  .formules.a-venir:not(.visible) :is(.offre, .entreprises) { opacity: 0; }
+  .formules.visible :is(.offre, .entreprises) { animation: offre-arrive .65s cubic-bezier(.2, .7, .2, 1) backwards; }
+  .formules.visible .offre:nth-child(2) { animation-delay: .08s; } .formules.visible .offre:nth-child(3) { animation-delay: .16s; } .formules.visible .offre:nth-child(4) { animation-delay: .24s; } .formules.visible .entreprises { animation-delay: .34s; }
+  @media (prefers-reduced-motion: reduce) { .offre { transition: none; } .offre:hover { transform: none; } .formules.visible :is(.offre, .entreprises) { animation: none; } }
   .lien-barre { background: none; border: 0; color: var(--ui-muted); padding: 9px 10px; font-weight: 500; }
   .lien-barre:hover { background: none; color: var(--ui-text); }
   @media (max-width: 600px) { .barre .etiquette { display: none; } .barre { gap: 6px; } .barre button { padding-left: 9px; padding-right: 9px; white-space: nowrap; font-size: 14px; } .barre { padding-left: 14px; padding-right: 14px; } }
@@ -301,51 +330,48 @@
   <section class="formules" id="formules" aria-labelledby="formules-titre">
     <div class="formules-tete">
       <span class="sur-titre">Formules</span>
-      <h2 id="formules-titre">Ton live, à tes couleurs.</h2>
+      <h2 id="formules-titre">Ton live, <em>à tes couleurs.</em></h2>
       <p>30 jours gratuits. Dès 6,99 € ensuite.</p>
     </div>
     <div class="offres">
-      <article class="offre">
+      <article data-teinte="essai" class="offre">
         
-        <h3>Essai</h3>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l1.9 5.1a2 2 0 0 0 1.2 1.2l5.1 1.9-5.1 1.9a2 2 0 0 0-1.2 1.2L12 19.9l-1.9-5.1a2 2 0 0 0-1.2-1.2l-5.1-1.9 5.1-1.9a2 2 0 0 0 1.2-1.2z"/></svg></span><div><h3>Essai</h3><p class="pour">Pour tout tester.</p></div></div>
         <p class="prix"><b>0</b><i class="seul">€</i><span>pendant 30 jours</span></p>
-        <p class="pour">Pour tout tester.</p>
         <div class="chiffres-cles"><div><b>6 h</b><span>de direct</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
         <ul><li>Tout ce qu'offre Pro</li><li>Vertical, Watch Party, quiz</li><li>Sans carte bancaire</li><li class="moins">Ensuite, une formule au choix</li></ul>
         <button type="button" data-formule="gratuit">Commencer</button>
       </article>
-      <article class="offre vedette">
+      <article data-teinte="essentiel" class="offre vedette">
         <span class="offre-badge">Recommandée</span>
-        <h3>Essentiel</h3>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span><div><h3>Essentiel</h3><p class="pour">Le live propre.</p></div></div>
         <p class="prix"><b>6</b><i>,99 €</i><span>par mois</span></p>
-        <p class="pour">Le live propre.</p>
         <div class="chiffres-cles"><div><b>15 h</b><span>par mois</span></div><div><b>8</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
         <ul><li>3 plateformes en même temps</li><li>Sans logo du studio</li><li>Sous-titres en direct</li><li>Les 25 thèmes, tes styles gardés</li><li>Quiz : 15 questions</li></ul>
         <button type="button" class="primaire" data-formule="essentiel">Bientôt disponible</button>
       </article>
-      <article class="offre">
+      <article data-teinte="pro" class="offre">
         
-        <h3>Pro</h3>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.8" y="6" width="12.4" height="9" rx="2"/><rect x="13.2" y="8.5" width="8" height="12.5" rx="2" fill="var(--ui-panel)"/><path d="M6 19h4"/></svg></span><div><h3>Pro</h3><p class="pour">Partout à la fois.</p></div></div>
         <p class="prix"><b>11</b><i>,99 €</i><span>par mois</span></p>
-        <p class="pour">Partout à la fois.</p>
         <div class="chiffres-cles"><div><b>30 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
         <ul><li>Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Replay 10 jours, sous-titres à corriger</li><li>Quiz : 25 questions</li></ul>
         <button type="button" data-formule="pro">Bientôt disponible</button>
       </article>
-      <article class="offre">
+      <article data-teinte="regie" class="offre">
         
-        <h3>Régie</h3>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><rect x="4" y="13" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="10" y="6.5" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="16" y="11" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/></svg></span><div><h3>Régie</h3><p class="pour">Avec ton OBS.</p></div></div>
         <p class="prix"><b>19</b><i>,99 €</i><span>par mois</span></p>
-        <p class="pour">Avec ton OBS.</p>
         <div class="chiffres-cles"><div><b>60 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
         <ul><li>Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li>Replay 30 jours</li><li>Quiz : 50 questions</li></ul>
         <button type="button" data-formule="regie">Bientôt disponible</button>
       </article>
     </div>
-    <aside class="entreprises" aria-labelledby="entreprises-titre">
+    <aside class="entreprises" data-teinte="ent" aria-labelledby="entreprises-titre">
       <div class="ent-tete">
-        <span class="sur-titre">Entreprises</span>
-        <h3 id="entreprises-titre">Toute l'équipe en direct.</h3>
+        <span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 20.5v-15a1.5 1.5 0 0 1 1.5-1.5h7a1.5 1.5 0 0 1 1.5 1.5v15M14.5 10h4a1.5 1.5 0 0 1 1.5 1.5v9M3 20.5h18M8 8h3M8 11.5h3M8 15h3"/></svg></span>
+        <div><span class="sur-titre">Entreprises</span>
+        <h3 id="entreprises-titre">Toute l'équipe en direct.</h3></div>
       </div>
       <ul>
         <li>3 personnes sur le compte</li>
@@ -526,7 +552,7 @@
 </dialog>
 <script src="js/common.js?v=bfe7db35"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=648d6b8d"></script>
+<script src="js/accueil.js?v=2bef9961"></script>
 <script src="js/accueil-style.js?v=91ce6e61"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>

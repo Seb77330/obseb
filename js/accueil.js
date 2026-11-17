@@ -287,3 +287,15 @@ $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
   toast("Cette formule n'est pas encore ouverte. Pendant la bêta, tout le studio est gratuit.");
 });
+(function () {
+  const zone = $('#formules'); if (!zone) return;
+  zone.addEventListener('pointermove', e => {
+    const c = e.target.closest('.offre, .entreprises'); if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', Math.round(e.clientX - r.left) + 'px'); c.style.setProperty('--my', Math.round(e.clientY - r.top) + 'px');
+  });
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  zone.classList.add('a-venir');
+  const vu = new IntersectionObserver(l => { if (l.some(x => x.isIntersecting)) { zone.classList.add('visible'); vu.disconnect(); } }, { threshold: .1 });
+  vu.observe(zone.querySelector('.offres'));
+})();
