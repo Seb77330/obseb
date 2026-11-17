@@ -134,6 +134,30 @@
       </div>
 
       <div class="panneau">
+        <h2>Mode quiz <span class="aide" id="qz-statut"></span></h2>
+        <div class="grille2">
+          <div style="grid-column:1/-1"><input type="text" id="qz-q" placeholder="Question (ex. Dans quel film Daniel Craig débute-t-il en 007 ?)"></div>
+          <div><label class="aide"><input type="radio" name="qz-bonne" value="0" checked> A</label><input type="text" class="qz-r" placeholder="Réponse A"></div>
+          <div><label class="aide"><input type="radio" name="qz-bonne" value="1"> B</label><input type="text" class="qz-r" placeholder="Réponse B"></div>
+          <div><label class="aide"><input type="radio" name="qz-bonne" value="2"> C</label><input type="text" class="qz-r" placeholder="Réponse C (optionnelle)"></div>
+          <div><label class="aide"><input type="radio" name="qz-bonne" value="3"> D</label><input type="text" class="qz-r" placeholder="Réponse D (optionnelle)"></div>
+        </div>
+        <div class="ligne-boutons" style="margin-top:8px;align-items:center">
+          <span class="aide">Temps :</span>
+          <select id="qz-duree" style="width:auto"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="20">20 s</option><option value="30">30 s</option></select>
+          <span class="aide">Coche la bonne réponse (A, B, C ou D).</span>
+          <button class="primaire" id="qz-ajouter" style="margin-left:auto">Ajouter la question</button>
+        </div>
+        <div id="qz-liste" style="margin-top:10px"></div>
+        <div class="ligne-boutons" style="margin-top:6px">
+          <button id="qz-reveler">Révéler la réponse</button>
+          <button id="qz-fermer">Fermer la question</button>
+          <button id="qz-scores">Afficher le classement</button>
+          <button class="petit" id="qz-zero" style="margin-left:auto">Remettre les scores à zéro</button>
+        </div>
+      </div>
+
+      <div class="panneau">
         <h2>Musique</h2>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
           <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
@@ -171,5 +195,6 @@
 <script src="js/common.js"></script>
 <script src="js/regie.js"></script>
 <script src="js/regie-sources.js"></script>
+<script src="js/regie-quiz.js"></script>
 </body>
 </html>

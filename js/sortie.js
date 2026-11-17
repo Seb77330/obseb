@@ -189,6 +189,7 @@ function appliquerEtat(st) {
   }
   for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
   gererPlaylist();
+  gererQuiz();
   appliquerVolumes();
   compteARebours();
   gererMusique(scene);
@@ -217,6 +218,45 @@ function gererMusique(scene) {
     }, 60);
   }
 }
+
+/* ----- Quiz ----- */
+let quizAffiche = null;
+function gererQuiz() {
+  const qz = (etat && etat.quiz) || {};
+  const a = qz.active;
+  $('#quiz').classList.toggle('cachee', !a || !!qz.afficherScores);
+  $('#classement').classList.toggle('cachee', !qz.afficherScores);
+  if (qz.afficherScores) {
+    $('#classement-liste').innerHTML = (qz.classement || []).length
+      ? qz.classement.map(c => `<li><span>${esc(c.nom)}</span><em>${c.pts} pts</em></li>`).join('')
+      : '<li><span>Pas encore de points</span></li>';
+  }
+  if (!a) { quizAffiche = null; return; }
+  if (quizAffiche !== a.qid) {
+    quizAffiche = a.qid;
+    $('#qz-q').textContent = a.q;
+    $('#qz-choix').innerHTML = a.choix.map((c, i) => `<div class="qz-c"><b>${'ABCD'[i]}</b><span>${esc(c)}</span></div>`).join('');
+  }
+  [...document.querySelectorAll('.qz-c')].forEach((el, i) => {
+    el.classList.toggle('bonne', !!a.revele && i === a.bonne);
+    el.classList.toggle('fausse', !!a.revele && i !== a.bonne);
+  });
+  const res = $('#qz-res');
+  if (a.revele) {
+    const r = a.resultats || [];
+    res.innerHTML = r.length
+      ? `Le plus rapide : <b>${esc(r[0].nom)}</b> en ${(r[0].ms / 1000).toFixed(1).replace('.', ',')} s` + (r.length > 1 ? ` · ${r.length} bonnes réponses` : '')
+      : 'Personne n\'a trouvé !';
+  } else res.textContent = '';
+}
+setInterval(() => {
+  const a = etat && etat.quiz && etat.quiz.active;
+  if (!a) return;
+  if (a.revele) { $('#qz-temps').textContent = ''; $('#qz-barre').style.width = '0%'; return; }
+  const ms = Math.max(0, a.duree * 1000 - (Date.now() - a.debut));
+  $('#qz-temps').textContent = Math.ceil(ms / 1000);
+  $('#qz-barre').style.width = (ms / (a.duree * 10)) + '%';
+}, 250);
 
 /* ----- Playlist de la régie ----- */
 const lecteur = new Audio(); lecteur.preload = 'auto';
@@ -297,6 +337,8 @@ if (DEMO) {
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
+  if (Q.get('quiz')) st.quiz = { active: { qid: 'd', q: 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }] } };
+  if (Q.get('classement')) st.quiz = { afficherScores: true, classement: [{ nom: 'Antho', pts: 2850 }, { nom: 'Landri', pts: 1900 }, { nom: 'Camille', pts: 870 }] };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {

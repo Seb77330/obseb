@@ -69,8 +69,57 @@ addEventListener('message', e => {
   const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
   if (!st) return;
   ordre(apercu, { [CANAL]: st });
+  gererQuiz(st.quiz);
   const enDirect = (st.onair || []).includes(moi.id) && (st.scene === 'live' || st.scene === 'partage');
   const statut = $('#statut');
   statut.textContent = enDirect ? '● À L\'ANTENNE' : ((st.onair || []).includes(moi.id) ? 'PRÊT(E), À L\'ANTENNE AU PROCHAIN PLAN' : 'EN COULISSES');
   statut.classList.toggle('direct', enDirect);
 });
+
+/* ----- Mode quiz : répondre le plus vite possible ----- */
+let quizVu = null;      // { qid, vuA (heure locale d'affichage), choix, envoye }
+function gererQuiz(qz) {
+  const box = $('#quiz');
+  const a = qz && qz.active;
+  if (!a) { box.hidden = true; quizVu = null; return; }
+  box.hidden = false;
+  if (!quizVu || quizVu.qid !== a.qid) {
+    quizVu = { qid: a.qid, vuA: performance.now(), choix: null, duree: a.duree, revele: false };
+    $('#qz-question').textContent = a.q;
+    const c = $('#qz-choix'); c.innerHTML = '';
+    a.choix.forEach((txt, i) => {
+      const b = document.createElement('button');
+      b.className = 'qz-btn'; b.innerHTML = `<b>${'ABCD'[i]}</b>`; b.append(txt);
+      b.onclick = () => repondre(i);
+      c.appendChild(b);
+    });
+    $('#qz-retour').textContent = 'Réponds le plus vite possible !';
+  }
+  const btns = [...document.querySelectorAll('.qz-btn')];
+  quizVu.revele = !!a.revele;
+  if (a.revele) {
+    btns.forEach((b, i) => { b.disabled = true; b.classList.toggle('bonne', i === a.bonne); b.classList.toggle('fausse', i !== a.bonne); });
+    const moi_r = (a.resultats || []).find(r => r.id === moi.id);
+    $('#qz-retour').textContent = moi_r ? `Bonne réponse ! +${moi_r.pts} points` : (quizVu.choix === null ? 'Temps écoulé.' : 'Raté, ce sera pour la prochaine !');
+    $('#qz-temps').textContent = '';
+  }
+}
+function repondre(i) {
+  if (!quizVu || quizVu.choix !== null) return;
+  const ms = Math.round(performance.now() - quizVu.vuA);
+  quizVu.choix = i;
+  document.querySelectorAll('.qz-btn').forEach((b, k) => { b.disabled = true; b.classList.toggle('choisi', k === i); });
+  $('#qz-retour').textContent = `Réponse envoyée en ${(ms / 1000).toFixed(1).replace('.', ',')} s. Attends la révélation…`;
+  const msg = { studioSebQuiz: { qid: quizVu.qid, choix: i, ms, id: moi.id } };
+  // envoyé 3 fois pour être sûr qu'il arrive (seule la première réception compte)
+  [0, 700, 1600].forEach(d => setTimeout(() => ordre(maCamera, { sendData: msg, type: 'rpcs' }), d));
+}
+setInterval(() => {
+  if (!quizVu || quizVu.revele || $('#quiz').hidden) return;
+  const reste = Math.max(0, Math.ceil(quizVu.duree - (performance.now() - quizVu.vuA) / 1000));
+  $('#qz-temps').textContent = reste + ' s';
+  if (reste === 0 && quizVu.choix === null) {
+    document.querySelectorAll('.qz-btn').forEach(b => b.disabled = true);
+    $('#qz-retour').textContent = 'Temps écoulé.';
+  }
+}, 250);
