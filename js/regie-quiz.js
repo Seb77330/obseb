@@ -5,7 +5,7 @@
 
 const MAX_QUESTIONS = 50;
 const CLE_BANQUE = 'studioSeb:quiz';
-etat.quiz = Object.assign({ active: null, scores: {}, afficherScores: false, style: 'theme' }, etat.quiz || {});
+etat.quiz = Object.assign({ active: null, scores: {}, afficherScores: false, style: 'theme', dispo: 'centre' }, etat.quiz || {});
 
 /* ----- Banque de questions (partagée entre les lives) ----- */
 let banque = [];
@@ -168,6 +168,11 @@ $('#qz-ajouter').onclick = async () => {
 function majStyles() { $$('#qz-styles button').forEach(b => b.classList.toggle('actif', b.dataset.qstyle === (etat.quiz.style || 'theme'))); }
 $$('#qz-styles button').forEach(b => b.onclick = () => { etat.quiz.style = b.dataset.qstyle; majStyles(); envoyer(); });
 majStyles();
+
+/* ----- Place de la question à l'écran ----- */
+function majDispos() { $$('#qz-dispos button').forEach(b => b.classList.toggle('actif', b.dataset.qdispo === (etat.quiz.dispo || 'centre'))); }
+$$('#qz-dispos button').forEach(b => b.onclick = () => { etat.quiz.dispo = b.dataset.qdispo; majDispos(); envoyer(); });
+majDispos();
 
 /* Révéler : points pour les bonnes réponses, plus on est rapide plus on gagne (500 à 1000) */
 $('#qz-reveler').onclick = () => {

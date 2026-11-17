@@ -438,22 +438,62 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
   return r;
 }
 
-/* Pendant un quiz : tout le monde en rangée(s) en haut, le panneau du quiz dessous (jamais sur un visage) */
-const ZONE_QUIZ = { x: 70, y: 40, w: 1780, h: 620 };   // les visages gardent presque la moitié de l'écran
+/* Pendant un quiz, trois dispositions au choix (etat.quiz.dispo) :
+   « centre » (par défaut) : jusqu'à 4 personnes, les caméras en rangée et la question juste dessous, de la même largeur ;
+                             à partir de 5, la question au milieu, les caméras réparties au-dessus et en dessous ;
+   « plein »  : la question en très grand, les caméras en petite rangée en bas ;
+   « bas »    : les caméras en grand, la question en bandeau en bas.
+   Renvoie la place de chaque caméra, plus `__panneau` : la place de la question (absente en « bas » et en vertical). */
+const ZONE_QUIZ = { x: 70, y: 40, w: 1780, h: 620 };   // disposition « bas »
 const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 560 };
-function dispositionQuiz(ids, vertical) {
+function rangeeCentree(ids, y, w, h, gap, r) {
+  const total = ids.length * w + (ids.length - 1) * gap, x0 = (SCENE_W - total) / 2;
+  ids.forEach((id, i) => { r[id] = { x: x0 + i * (w + gap), y, w, h }; });
+  return total;
+}
+function dispositionQuiz(ids, vertical, dispo = 'centre') {
   const n = ids.length; if (!n) return {};
-  const z = vertical ? ZONE_QUIZ_V : ZONE_QUIZ, gap = 12;
-  const rows = vertical ? (n <= 4 ? 1 : n <= 8 ? 2 : 3) : (n <= 7 ? 1 : 2);
-  const cols = Math.ceil(n / rows);
-  if (vertical) return grilleCellules(ids, z.x, z.y, z.w, z.h, gap, [cols, rows]);
-  const cw = (z.w - gap * (cols - 1)) / cols, ch = (z.h - gap * (rows - 1)) / rows;
-  const t = fit169(0, 0, cw, ch), r = {};
-  ids.forEach((id, i) => {
-    const row = Math.floor(i / cols), dans = row === rows - 1 ? n - row * cols : cols, col = i - row * cols;
-    const x0 = z.x + (z.w - (dans * t.w + (dans - 1) * gap)) / 2;
-    r[id] = { x: x0 + col * (t.w + gap), y: z.y + row * (t.h + gap), w: t.w, h: t.h };
-  });
+  const r = {};
+  if (vertical || dispo === 'bas') {
+    const z = vertical ? ZONE_QUIZ_V : ZONE_QUIZ, gap = 12;
+    const rows = vertical ? (n <= 4 ? 1 : n <= 8 ? 2 : 3) : (n <= 7 ? 1 : 2);
+    const cols = Math.ceil(n / rows);
+    if (vertical) return grilleCellules(ids, z.x, z.y, z.w, z.h, gap, [cols, rows]);
+    const cw = (z.w - gap * (cols - 1)) / cols, ch = (z.h - gap * (rows - 1)) / rows;
+    const t = fit169(0, 0, cw, ch);
+    const yc = z.y + (z.h - (rows * t.h + (rows - 1) * gap)) / 2;   // rangées centrées dans la hauteur disponible
+    ids.forEach((id, i) => {
+      const row = Math.floor(i / cols), dans = row === rows - 1 ? n - row * cols : cols, col = i - row * cols;
+      const x0 = z.x + (z.w - (dans * t.w + (dans - 1) * gap)) / 2;
+      r[id] = { x: x0 + col * (t.w + gap), y: yc + row * (t.h + gap), w: t.w, h: t.h };
+    });
+    return r;
+  }
+  const X = 70, W = 1780, HAUT = 40, BAS = 1032, gap = 20, esp = 24;
+  const largeur = (nb, hMax) => Math.min((W - gap * (nb - 1)) / nb, hMax * 16 / 9);
+  if (dispo === 'plein') {
+    const w = largeur(n, 200), h = w * 9 / 16;
+    rangeeCentree(ids, BAS - h, w, h, n > 7 ? 12 : gap, r);
+    r.__panneau = { x: X, y: HAUT, w: W, h: BAS - h - esp - HAUT };
+    return r;
+  }
+  if (n <= 4) {
+    // caméras en rangée, la question dessous, alignée sur la même largeur
+    const w = largeur(n, 380), h = w * 9 / 16;
+    const total = rangeeCentree(ids, HAUT, w, h, gap, r);
+    const pw = Math.max(total, 1180);
+    r.__panneau = { x: (SCENE_W - pw) / 2, y: HAUT + h + esp, w: pw, h: BAS - (HAUT + h + esp) };
+    return r;
+  }
+  // 5 personnes et plus : la question au milieu, une rangée au-dessus, une rangée en dessous
+  const haut = ids.slice(0, Math.ceil(n / 2)), bas = ids.slice(haut.length);
+  const w = largeur(haut.length, 240), h = w * 9 / 16;
+  const ph = Math.min(BAS - HAUT - 2 * h - 2 * esp, 520);
+  const y0 = HAUT + (BAS - HAUT - (2 * h + 2 * esp + ph)) / 2;
+  const total = rangeeCentree(haut, y0, w, h, gap, r);
+  rangeeCentree(bas, y0 + h + esp + ph + esp, w, h, gap, r);
+  const pw = Math.max(total, 1300);
+  r.__panneau = { x: (SCENE_W - pw) / 2, y: y0 + h + esp, w: pw, h: ph };
   return r;
 }
 

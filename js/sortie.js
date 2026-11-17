@@ -206,7 +206,7 @@ function appliquerEtat(st) {
   const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
   const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && scene !== 'intro' && scene !== 'fin';
   document.body.classList.toggle('quiz-on', !!quizEnCours);
-  const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL) : VERTICAL
+  const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
     ? (scene === 'partage' ? dispositionPartageV(ids, clesActives) : calculerDispositionV(st.layout, ids, st.focus))
     : (scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus));
   for (const t of tuiles.values()) {
@@ -214,6 +214,7 @@ function appliquerEtat(st) {
     else placer(t, disp[t.id]);
   }
   for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
+  placerPanneauQuiz(quizEnCours ? disp.__panneau : null);
   gererPlaylist();
   gererQuiz();
   gererChat();
@@ -263,6 +264,28 @@ function gererChat() {
 }
 
 /* ----- Quiz ----- */
+/* Place de la question : calculée avec celle des caméras (dispositions « centre » et « plein ») ;
+   sans rectangle (disposition « bas », vertical), le panneau reprend sa place fixe en bas */
+function placerPanneauQuiz(rect) {
+  document.body.dataset.quizDispo = rect ? 'libre' : 'bas';
+  for (const el of document.querySelectorAll('#quiz .qz-panneau, #classement .qz-panneau')) {
+    if (!rect) { el.style.cssText = ''; continue; }
+    Object.assign(el.style, { left: rect.x + 'px', top: rect.y + 'px', width: rect.w + 'px', height: rect.h + 'px' });
+    el.style.setProperty('--ph', rect.h + 'px');
+  }
+  ajusterQuiz();
+}
+/* Une question très longue : on réduit le texte jusqu'à ce que tout tienne dans le panneau */
+let qk = 1;
+function ajusterQuiz(depuisLeDebut = true) {
+  const p = $('#quiz .qz-panneau'), corps = p.querySelector('.qz-corps'), texte = p.querySelector('.qz-texte');
+  if (depuisLeDebut !== false) { qk = 1; p.style.setProperty('--qk', 1); }
+  if (document.body.dataset.quizDispo !== 'libre') return;
+  while (qk > 0.4 && texte.offsetHeight > corps.clientHeight) { qk -= 0.06; p.style.setProperty('--qk', qk.toFixed(2)); }
+}
+/* police ou image arrivée après coup : on resserre encore si ça ne tient plus */
+if (window.ResizeObserver) new ResizeObserver(() => ajusterQuiz(false)).observe($('#quiz .qz-texte'));
+if (document.fonts) { document.fonts.ready.then(() => ajusterQuiz()); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => ajusterQuiz()); }
 let quizAffiche = null;
 function gererQuiz() {
   const qz = (etat && etat.quiz) || {};
@@ -283,6 +306,8 @@ function gererQuiz() {
     im.hidden = !a.img; if (a.img) im.src = a.img; else im.removeAttribute('src');
     $('#quiz').classList.toggle('avec-image', !!a.img);
     $('#qz-choix').innerHTML = a.choix.map((c, i) => `<div class="qz-c"><b>${'ABCD'[i]}</b><span>${esc(c)}</span></div>`).join('');
+    im.onload = () => ajusterQuiz();
+    ajusterQuiz();
   }
   [...document.querySelectorAll('.qz-c')].forEach((el, i) => {
     el.classList.toggle('bonne', !!a.revele && i === a.bonne);
@@ -295,10 +320,13 @@ function gererQuiz() {
       ? `Le plus rapide : <b>${esc(r[0].nom)}</b> en ${(r[0].ms / 1000).toFixed(1).replace('.', ',')} s` + (r.length > 1 ? ` · ${r.length} bonnes réponses` : '')
       : 'Personne n\'a trouvé !';
   } else res.textContent = '';
+  if (!!a.revele !== quizRevele) { quizRevele = !!a.revele; ajusterQuiz(); }
 }
+let quizRevele = false;
 setInterval(() => {
   const a = etat && etat.quiz && etat.quiz.active;
   if (!a) return;
+  ajusterQuiz(false);   // filet de sécurité : police ou image arrivée après coup
   if (a.revele) { $('#qz-temps').textContent = ''; $('#qz-barre').style.width = '0%'; return; }
   const ms = Math.max(0, a.duree * 1000 - (Date.now() - a.debut));
   $('#qz-temps').textContent = Math.ceil(ms / 1000);
@@ -390,9 +418,9 @@ if (DEMO) {
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
-  if (Q.get('quiz')) st.quiz = { active: { qid: 'd', q: 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
-  if (Q.get('classement')) st.quiz = { afficherScores: true, classement: [{ nom: 'Antho', pts: 2850 }, { nom: 'Landri', pts: 1900 }, { nom: 'Camille', pts: 870 }] };
+  if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {

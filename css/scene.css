@@ -253,3 +253,25 @@ body.vertical #quiz.avec-image { padding-top: 560px; }
 [data-clair] .tuile { box-shadow: 0 10px 30px rgba(0,0,0,.14); }
 [data-clair] .tuile.demo .attente { color: var(--text); }
 [data-clair] .plein .grand-titre { font-weight: 400; }
+
+/* ----- Quiz : question placée avec les caméras (dispositions « Au centre » et « Plein écran ») ----- */
+[data-quiz-dispo="libre"] #quiz, [data-quiz-dispo="libre"] #classement { display: block; padding: 0; }
+[data-quiz-dispo="libre"] .qz-panneau {
+  position: absolute; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+  padding: calc(var(--ph) * .045) calc(var(--ph) * .075) calc(var(--ph) * .05); border-width: 2px; border-radius: 20px;
+}
+[data-quiz-dispo="libre"] .qz-tete { margin-bottom: 0; flex: none; }
+[data-quiz-dispo="libre"] .qz-tag { font-size: max(15px, calc(var(--ph) * .032)); }
+[data-quiz-dispo="libre"] .qz-temps { font-size: max(40px, calc(var(--ph) * .11)); }
+[data-quiz-dispo="libre"] .qz-corps { flex: 1; min-height: 0; align-items: center; gap: calc(var(--ph) * .06); }
+[data-quiz-dispo="libre"] .qz-q { font-size: calc(max(30px, var(--ph) * .1) * var(--qk, 1)); line-height: 1.12; margin-bottom: calc(var(--ph) * .05); text-align: center; text-wrap: balance; }
+[data-quiz-dispo="libre"] #quiz.avec-image .qz-q { text-align: left; }
+[data-quiz-dispo="libre"] .qz-choix { gap: calc(var(--ph) * .025); }
+[data-quiz-dispo="libre"] .qz-c { font-size: calc(max(24px, var(--ph) * .06) * var(--qk, 1)); padding: calc(var(--ph) * .028) calc(var(--ph) * .04); gap: .6em; border-radius: 14px; }
+[data-quiz-dispo="libre"] .qz-c b { width: 1.55em; height: 1.55em; font-size: .85em; }
+[data-quiz-dispo="libre"] #qz-img { width: auto; height: calc(var(--ph) * .52); max-width: 36%; }
+[data-quiz-dispo="libre"] .qz-barre { flex: none; margin-top: calc(var(--ph) * .035); }
+[data-quiz-dispo="libre"] .qz-res { flex: none; font-size: max(20px, calc(var(--ph) * .042)); text-align: center; }
+[data-quiz-dispo="libre"] #classement-liste { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, 1fr); column-gap: 60px; align-content: center; margin-top: calc(var(--ph) * .03); }
+[data-quiz-dispo="libre"] #classement-liste li { font-size: max(24px, calc(var(--ph) * .06)); }
+[data-quiz-dispo="libre"] #classement-liste li::before { width: 1.5em; height: 1.5em; font-size: .7em; }
