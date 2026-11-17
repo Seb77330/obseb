@@ -271,6 +271,26 @@ function gererChat() {
   $('#cb-texte').textContent = c.texte;
 }
 
+/* ----- Sous-titres en direct : une ligne par personne qui parle, avec son nom ----- */
+let stVus = 0;
+function finDeTexte(t, max) {      // on garde la fin de la phrase, coupée à un mot
+  t = String(t || '');
+  if (t.length <= max) return t;
+  const c = t.slice(t.length - max);
+  return '… ' + c.slice(c.indexOf(' ') + 1);
+}
+function afficherST(m) {
+  const box = $('#sous-titres');
+  const scene = SCENE_FORCEE || (etat && etat.scene);
+  const l = m && m.ecran && Array.isArray(m.l) && sceneCameras(scene) ? m.l.slice(-2) : [];
+  box.classList.toggle('cachee', !l.length);
+  if (l.length) {
+    stVus = Date.now();
+    box.innerHTML = l.map(x => `<div>${x.nom ? `<b>${esc(String(x.nom).slice(0, 28))}</b>` : ''}<span>${esc(finDeTexte(x.t, VERTICAL ? 70 : 120))}</span></div>`).join('');
+  }
+}
+setInterval(() => { if (stVus && Date.now() - stVus > 8000) { stVus = 0; $('#sous-titres').classList.add('cachee'); } }, 1000);
+
 /* ----- Watch Party : le minuteur du film ----- */
 function gererWatch() {
   const w = etat && etat.watch, scene = SCENE_FORCEE || (etat && etat.scene);
@@ -432,6 +452,11 @@ addEventListener('message', e => {
     appliquerEtat(d.dataReceived[CANAL]);
     return;
   }
+  // sous-titres : envoyés par la régie (par la caméra de l'hôte, ou par la page qui m'intègre)
+  if ((hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebST) || (e.source === window.parent && window.parent !== window && d.studioSebST)) {
+    afficherST(d.studioSebST || d.dataReceived.studioSebST);
+    return;
+  }
   // 2) état poussé directement par la page qui m'intègre (aperçu dans la régie ou chez l'invité)
   if (e.source === window.parent && window.parent !== window && d[CANAL]) {
     appliquerEtat(d[CANAL]);
@@ -460,6 +485,7 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };

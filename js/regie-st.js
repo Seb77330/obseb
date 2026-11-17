@@ -1,0 +1,92 @@
+/* Régie : sous-titres en direct.
+   Chaque personne est transcrite par son propre navigateur, puis son texte arrive ici avec son nom.
+   La régie l'affiche à l'écran (si tu le veux) et garde les répliques du direct, avec leur minutage,
+   pour que tu puisses les corriger et les télécharger depuis « Lives terminés ». */
+'use strict';
+
+etat.st = Object.assign({ actif: false, ecran: true }, etat.st || {});
+const CLE_ST = 'studioSeb:st:' + session.room;
+const stLignes = new Map();     // id -> { t, f, vu } : ce que chacun est en train de dire
+const stDebuts = new Map();     // id -> heure du début de la phrase en cours
+let stArchive = null;           // { debut: heure de début du direct, segs: [{ a, b, id, nom, t }] }
+try { stArchive = JSON.parse(localStorage.getItem(CLE_ST) || 'null'); } catch (e) { stArchive = null; }
+
+const hoteALAntenne = () => etat.onair.some(estMaCamera);
+
+/* Un texte arrive (de toi ou d'un invité) */
+function sousTitreRecu(id, st) {
+  if (!etat.st.actif || !st || typeof st.t !== 'string') return;
+  const moi = id === ID_HOTE;
+  if (etat.muet[id] || !(moi ? hoteALAntenne() : etat.onair.includes(id))) return;      // hors antenne ou en muet : rien
+  const t = st.t.replace(/\s+/g, ' ').trim().slice(0, 600);
+  if (!t) return;
+  if (!stDebuts.has(id)) stDebuts.set(id, Date.now());
+  stLignes.set(id, { t, f: !!st.f, vu: Date.now() });
+  if (st.f) {
+    const debut = stDebuts.get(id); stDebuts.delete(id);
+    garderReplique(id, debut, Date.now(), t);
+  }
+  diffuserST();
+}
+/* Les répliques ne sont gardées que pendant le direct : leur minutage suit alors le replay */
+function garderReplique(id, debut, fin, t) {
+  const d = etat.direct; if (!d) return;
+  if (!stArchive || stArchive.debut !== d.debut) stArchive = { debut: d.debut, segs: [] };
+  stArchive.segs.push({ a: Math.max(0, debut - d.debut - 300), b: Math.max(0, fin - d.debut), id, nom: etat.noms[id] || '', t });
+  sauverST();
+}
+function sauverST() {
+  clearTimeout(sauverST.t);
+  sauverST.t = setTimeout(() => { try { localStorage.setItem(CLE_ST, JSON.stringify(stArchive)); } catch (e) { /* plus de place */ } majST(); }, 800);
+}
+/* Envoi à l'écran : les deux dernières personnes qui parlent */
+function diffuserST() {
+  if (diffuserST.t) return;
+  diffuserST.t = setTimeout(() => {
+    diffuserST.t = null;
+    const maintenant = Date.now();
+    for (const [id, l] of stLignes) if (maintenant - l.vu > (l.f ? 4500 : 7000)) { stLignes.delete(id); stDebuts.delete(id); }
+    const l = [...stLignes].sort((a, b) => a[1].vu - b[1].vu).slice(-2).map(([id, x]) => ({ nom: etat.noms[id] || '', t: x.t }));
+    const msg = { ecran: !!(etat.st.actif && etat.st.ecran), l };
+    ordre(maCamera, { sendData: { studioSebST: msg }, type: 'pcs' });
+    ordre(apercu, { studioSebST: msg });
+  }, 150);
+}
+setInterval(() => { if (stLignes.size) diffuserST(); }, 1000);
+
+/* Ta voix : écoutée ici, sur le micro choisi quand le navigateur le permet */
+let stEtatHote = 'arret';
+const ecouteHote = creerEcoute(st => sousTitreRecu(ID_HOTE, st), e => { stEtatHote = e; majST(); },
+  () => { const p = typeof microFlux !== 'undefined' && microFlux && microFlux.getAudioTracks()[0]; return p && p.readyState === 'live' ? p : null; });
+function reglerEcouteHote() {
+  const veut = etat.st.actif && !$('#cam-direct').hidden && !etat.muet[ID_HOTE];
+  if (veut && !ecouteHote.actif()) ecouteHote.demarrer();
+  if (!veut && ecouteHote.actif()) ecouteHote.arreter();
+}
+setInterval(reglerEcouteHote, 1000);
+
+/* ----- Réglages (onglet Titres) ----- */
+$('#st-actif').checked = !!etat.st.actif;
+$('#st-ecran').checked = !!etat.st.ecran;
+$('#st-actif').onchange = e => {
+  etat.st.actif = e.target.checked;
+  if (!etat.st.actif) { stLignes.clear(); stDebuts.clear(); }
+  envoyer(); reglerEcouteHote(); diffuserST(); majST();
+  toast(etat.st.actif ? 'Sous-titres activés : chacun est transcrit sur son ordinateur' : 'Sous-titres arrêtés');
+};
+$('#st-ecran').onchange = e => { etat.st.ecran = e.target.checked; envoyer(); diffuserST(); majST(); };
+function majST() {
+  const el = $('#st-etat'), v = $('#st-voyant');
+  $('#st-ecran').disabled = !etat.st.actif;
+  const n = stArchive && etat.direct && stArchive.debut === etat.direct.debut ? stArchive.segs.length : 0;
+  let niveau = '', txt;
+  if (!ecouteHote.dispo) { niveau = 'att'; txt = 'Ce navigateur ne sait pas transcrire : ouvre la régie dans Chrome ou Edge.'; }
+  else if (!etat.st.actif) txt = 'Arrêtés. Rien n\'est transcrit.';
+  else if (stEtatHote === 'refuse') { niveau = 'ko'; txt = 'Le navigateur a refusé l\'accès au micro pour la transcription.'; }
+  else if ($('#cam-direct').hidden) { niveau = 'att'; txt = 'En attente : démarre ta caméra.'; }
+  else if (!etat.direct) { niveau = 'ok'; txt = 'En marche. Les répliques seront gardées à partir du début du direct.'; }
+  else { niveau = 'ok'; txt = `En marche · ${n} réplique${n > 1 ? 's' : ''} gardée${n > 1 ? 's' : ''} pour le replay.`; }
+  v.className = 'voyant' + (niveau ? ' ' + niveau : '');
+  el.textContent = txt;
+}
+setInterval(majST, 2000); majST();

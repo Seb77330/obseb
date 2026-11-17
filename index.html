@@ -33,6 +33,29 @@
   .vide-accueil h1 { font-size: 34px; margin-bottom: 10px; }
   .vide-accueil p { color: var(--ui-muted); font-size: 16px; margin: 0 0 24px; }
   .vide-accueil button { padding: 12px 22px; font-size: 16px; }
+  /* Sous-titres d'un live terminé : la ligne dans la liste, puis l'atelier de correction */
+  .st-ligne { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-line); font-size: 13px; }
+  .st-ligne .txt { flex: 1; min-width: 180px; color: var(--ui-muted); } .st-ligne .txt b { color: var(--ui-text); font-weight: 600; }
+  dialog.atelier { width: min(980px, calc(100vw - 32px)); height: min(820px, calc(100dvh - 32px)); padding: 0; border: 1px solid var(--ui-line2); border-radius: 14px; background: var(--ui-panel); color: var(--ui-text); overflow: hidden; }
+  dialog.atelier[open] { display: flex; flex-direction: column; }
+  dialog.atelier::backdrop { background: rgba(0,0,0,.6); }
+  .atelier-tete { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--ui-line); }
+  .atelier-tete h2 { flex: 1; min-width: 0; margin: 0; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .atelier-outils { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--ui-line); background: var(--ui-panel2); }
+  .atelier-outils input[type=text] { flex: 1; min-width: 150px; }
+  .atelier-outils .fleche { color: var(--ui-muted); }
+  .atelier-outils .compte { font: 500 12px var(--mono); color: var(--ui-muted); min-width: 70px; }
+  .atelier-liste { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 18px 18px; }
+  .replique { display: grid; grid-template-columns: 74px 150px minmax(0, 1fr) 30px; gap: 8px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--ui-line); }
+  .replique .tc { font: 500 12px var(--mono); color: var(--ui-muted); padding-top: 10px; }
+  .replique textarea { width: 100%; box-sizing: border-box; resize: none; overflow: hidden; min-height: 38px; padding: 8px 12px; line-height: 1.45; font: inherit; font-size: 14px; color: var(--ui-text); background: var(--ui-bg); border: 1px solid var(--ui-line); border-radius: 9px; outline: none; }
+  .replique textarea:focus { border-color: var(--ui-accent); }
+  .replique.trouve textarea { border-color: var(--ui-accent); }
+  .replique .oter { padding: 8px 0; color: var(--ui-muted); background: none; border: 0; }
+  .replique .oter:hover { color: var(--ui-ko); background: none; }
+  @media (max-width: 640px) { .replique { grid-template-columns: 60px minmax(0, 1fr) 26px; } .replique .qui { grid-column: 2; } .replique textarea { grid-column: 1 / -1; grid-row: 2; } }
+  .atelier-pied { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-top: 1px solid var(--ui-line); }
+  .atelier-pied label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-right: auto; cursor: pointer; }
   .trois-pas { list-style: none; margin: 56px auto 0; padding: 0; max-width: 860px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
   .trois-pas span { display: grid; place-items: center; width: 34px; height: 34px; margin: 0 auto 12px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ui-accent) 55%, transparent); color: var(--ui-accent); font: 500 13px var(--mono); }
   .trois-pas b { display: block; font-size: 16px; font-weight: 600; }
@@ -366,8 +389,27 @@
   </div>
 </main>
 <div class="toast" id="toast"></div>
+<dialog class="atelier" id="atelier-st">
+  <div class="atelier-tete"><h2 id="at-titre">Sous-titres</h2><span class="aide" id="at-reste" style="margin:0"></span><button type="button" id="at-fermer">Fermer</button></div>
+  <div class="atelier-outils">
+    <input type="text" id="at-chercher" placeholder="Mot mal compris, ex. Vile neuve">
+    <span class="fleche">→</span>
+    <input type="text" id="at-remplacer" placeholder="Le bon mot, ex. Villeneuve">
+    <span class="compte" id="at-compte"></span>
+    <button type="button" class="primaire" id="at-partout">Remplacer partout</button>
+  </div>
+  <div class="atelier-liste" id="at-liste"></div>
+  <div class="atelier-pied">
+    <label><input type="checkbox" id="at-noms" checked> Écrire le nom de la personne devant chaque réplique</label>
+    <button type="button" class="primaire" data-format="srt">Télécharger .srt</button>
+    <button type="button" data-format="vtt">.vtt</button>
+    <button type="button" data-format="txt">Texte</button>
+  </div>
+</dialog>
 <script src="js/common.js?v=c33ad272"></script>
-<script src="js/accueil.js?v=9ba5f7e9"></script>
+<script src="js/sous-titres.js?v=923d3b0d"></script>
+<script src="js/accueil.js?v=fcf0d1f0"></script>
 <script src="js/accueil-style.js?v=91ce6e61"></script>
+<script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>
 </html>

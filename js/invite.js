@@ -100,6 +100,8 @@ addEventListener('message', e => {
     const el = $('#ma-qualite');
     if (el && maQualite.h) el.textContent = `Ton image part en ${maQualite.h}p${maQualite.kbps ? ' · ' + (maQualite.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`;
   }
+  const sousT = e.data && e.data.dataReceived && e.data.dataReceived.studioSebST;
+  if (sousT && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebST: sousT }); return; }
   const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
   if (!st) return;
   // seul l'animateur pilote les coulisses : un autre invité ne peut pas envoyer de faux ordres
@@ -110,10 +112,18 @@ addEventListener('message', e => {
   filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || st.watch.pastille || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
   majWatchInvite();
   const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
+  reglerSousTitres(!!(st.st && st.st.actif), enDirect && !(st.muet || {})[moi.id]);
   const statut = $('#statut');
   statut.textContent = enDirect ? '● À L\'ANTENNE' : ((st.onair || []).includes(moi.id) ? 'PRÊT(E), À L\'ANTENNE AU PROCHAIN PLAN' : 'EN COULISSES');
   statut.classList.toggle('direct', enDirect);
 });
+
+/* ----- Sous-titres : ma voix est transcrite ici, puis envoyée à l'animateur avec mon nom ----- */
+const monEcoute = creerEcoute(st => { if (maCamera) ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, st } }, type: 'rpcs' }); });
+function reglerSousTitres(actifs, jeParle) {
+  $('#st-info').hidden = !(actifs && monEcoute.dispo) || CAM_DISTANTE;
+  if (actifs && jeParle && monEcoute.dispo && !CAM_DISTANTE) monEcoute.demarrer(); else monEcoute.arreter();
+}
 
 /* ----- Watch Party : le minuteur du film de l'animateur, pour se caler dessus ----- */
 let filmHote = null, extInvite = 0;

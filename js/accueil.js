@@ -247,6 +247,7 @@ function afficherLives() {
         <label class="champ">Fichier enregistré par OBS</label>
         <input type="text" class="fichier" placeholder="Ex. C:\\Users\\sebou\\Videos\\…\\live.mkv">
       </div>`;
+    if (typeof ligneSousTitres === 'function') { const st = ligneSousTitres(session, live); if (st) el.children[1].appendChild(st); }
     const replay = el.querySelector('.replay'), fichier = el.querySelector('.fichier'), ouvrir = el.querySelector('.ouvrir');
     replay.value = live.replay || ''; fichier.value = live.fichier || '';
     const majLien = () => { const ok = /^https:\/\//.test(replay.value); ouvrir.hidden = !ok; if (ok) ouvrir.href = replay.value; };

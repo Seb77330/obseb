@@ -526,3 +526,12 @@ body.sans-decor, body.sans-decor.sortie { background: transparent; }
 body.sans-decor #stage { background: none; }
 body.sans-decor #stage::before, body.sans-decor #stage::after, body.sans-decor .deco,
 body.sans-decor #intro, body.sans-decor #fin, body.sans-decor #bandeau, body.sans-decor #defilant { display: none; }
+
+/* ----- Sous-titres en direct ----- */
+#sous-titres { position: absolute; left: 160px; right: 160px; bottom: 200px; z-index: 8; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; transition: opacity .3s ease; }
+#sous-titres > div { max-width: 100%; box-sizing: border-box; background: rgba(0,0,0,.8); color: #fff; padding: 9px 22px 10px; border-radius: 10px; font: 500 34px/1.25 var(--font-body); text-align: center; text-wrap: balance; }
+#sous-titres b { font-weight: 700; font-size: 22px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-right: 14px; vertical-align: 3px; }
+body.quiz-on #sous-titres { bottom: 20px; }
+body.vertical #sous-titres { left: 40px; right: 130px; bottom: auto; top: 1130px; }
+body.vertical #sous-titres > div { font-size: 36px; padding: 10px 18px 12px; }
+body.vertical #sous-titres b { display: block; margin: 0 0 2px; }

@@ -117,6 +117,7 @@ function noterLiveTermine() {
     let e = l.find(x => x.session.room === session.room);
     if (!e) { e = { session, cle }; l.unshift(e); }
     e.live = Object.assign({ fichier: '', replay: '' }, e.live, { date: Date.now() });
+    if (typeof stArchive !== 'undefined' && stArchive && stArchive.segs.length) { try { localStorage.setItem(CLE_ST, JSON.stringify(stArchive)); } catch (e2) { /* rien */ } }
     localStorage.setItem('studioSeb:sessions', JSON.stringify(l));
   } catch (err) { /* stockage indisponible */ }
 }
