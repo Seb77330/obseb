@@ -148,7 +148,7 @@ function creerCarte(id) {
   const el = document.createElement('div');
   el.className = 'participant';
   el.innerHTML = `
-    <div class="vignette">${estHote ? '<div class="moi">Toi<br>(ta caméra est à gauche)</div>' : ''}</div>
+    <div class="vignette">${estHote ? '<div class="moi">Toi<br>(ta caméra est au-dessus)</div>' : ''}</div>
     <div>
       <input type="text" class="nom" title="Nom affiché à l'écran">
       <div class="reglages"><span title="Volume dans le live">🔊</span><input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
@@ -229,7 +229,7 @@ function majInterface() {
   tri.forEach(id => liste.appendChild(cartes.get(id).el));
   ids.forEach(majCarte);
   const nbInvites = ids.length - 1;
-  $('#nb-part').textContent = `· ${nbInvites} invité${nbInvites > 1 ? 's' : ''} · ${etat.onair.filter(id => ids.includes(id)).length} à l'antenne`;
+  $('#nb-part').textContent = `${nbInvites} invité${nbInvites > 1 ? 's' : ''} · ${etat.onair.filter(id => ids.includes(id)).length} à l'antenne`;
   if (!$('#liste .vide') && nbInvites === 0) liste.insertAdjacentHTML('beforeend', '<div class="vide">Personne en coulisses pour le moment. Envoie le lien invités.</div>');
   if (nbInvites > 0) $('#liste .vide')?.remove();
   $$('[data-scene]').forEach(b => b.classList.toggle('actif', b.dataset.scene === etat.scene));
