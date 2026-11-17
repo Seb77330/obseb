@@ -55,7 +55,8 @@ function remplirForm() {
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
   $('#f-limite').value = String(brouillon.limite || 0);
   const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
-  $$('.theme-carte').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
+  const styleActif = typeof styleCorrespondant === 'function' ? styleCorrespondant(brouillon.theme) : null;
+  $$('.theme-carte').forEach(b => b.classList.toggle('actif', styleActif ? b.dataset.style === styleActif.id : (!b.dataset.style && b.dataset.preset === brouillon.theme.preset)));
   if (perso) $('#opt-perso').open = true;
 }
 function surcharge(champ, valeur) {
@@ -137,7 +138,7 @@ function ouvrirCreation(titre, bouton, modif) {
   remplirForm(); montrerVue('creation');
 }
 addEventListener('popstate', () => montrerVue(location.hash === '#nouveau' ? 'creation' : 'liste', false));
-$('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSession('', 'minimal'); ouvrirCreation('Nouveau live', 'Créer le live', false); };
+$('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSession('', 'minimal'); if (typeof appliquerStyleDefaut === 'function') appliquerStyleDefaut(brouillon); ouvrirCreation('Nouveau live', 'Créer le live', false); };
 
 $('#btn-creer').onclick = () => {
   if (!brouillon.titre.trim()) { $('#f-titre').focus(); return toast('Donne un titre à ton live'); }

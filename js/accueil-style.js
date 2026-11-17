@@ -158,3 +158,63 @@ async function importerObs(fichiers) {
     <p class="aide" style="margin:8px 0 0">Vérifie l'aperçu, ajuste dans « Personnaliser », puis crée la session. Pour reproduire une scène OBS à l'identique (animations, placements), dis-le-moi : je transforme l'export en thème complet.</p>`;
   toast('Style importé depuis OBS');
 }
+
+/* ----- Mes styles : garder ses réglages (police, couleurs, logo, fond) pour les prochains lives ----- */
+const CLE_STYLES = 'studioSeb:styles';
+function lireStyles() { try { const l = JSON.parse(localStorage.getItem(CLE_STYLES) || '[]'); return Array.isArray(l) ? l.filter(x => x && x.id && x.theme) : []; } catch (e) { return []; } }
+function ecrireStyles(l) {
+  try { localStorage.setItem(CLE_STYLES, JSON.stringify(l)); return true; }
+  catch (e) { toast('Plus de place dans ce navigateur : supprime un style ou allège l\'image de fond'); return false; }
+}
+const cleTheme = t => JSON.stringify(Object.keys(t || {}).sort().map(k => [k, t[k]]));
+function styleCorrespondant(theme) { const c = cleTheme(theme); return lireStyles().find(s => cleTheme(s.theme) === c) || null; }
+function appliquerStyleDefaut(session) {
+  const d = lireStyles().find(s => s.defaut);
+  if (d) session.theme = JSON.parse(JSON.stringify(d.theme));
+}
+function dessinerStyles() {
+  const l = lireStyles(), box = $('#galerie-styles');
+  $('#mes-styles').hidden = !l.length;
+  box.innerHTML = '';
+  for (const st of l) {
+    const t = themeComplet({ theme: st.theme });
+    const b = document.createElement('div');
+    b.className = 'theme-carte'; b.dataset.style = st.id; b.tabIndex = 0; b.setAttribute('role', 'button'); b.style.cursor = 'pointer';
+    b.innerHTML = `<span class="theme-img"><span class="style-vue"><b>Aa</b></span></span>
+      ${st.defaut ? '<span class="defaut">Par défaut</span>' : ''}
+      <button type="button" class="oter" title="Supprimer ce style">✕</button>
+      <span class="theme-txt"><b></b></span>`;
+    const vue = b.querySelector('.style-vue');
+    vue.style.background = t.bgImage ? `center/cover no-repeat url("${t.bgImage}")` : `radial-gradient(circle at 50% 35%, ${t.bg2}, ${t.bg})`;
+    const aa = vue.querySelector('b');
+    aa.style.fontFamily = `'${t.fontTitle}', sans-serif`; aa.style.color = t.text; aa.style.borderColor = t.accent;
+    b.querySelector('.theme-txt b').textContent = st.nom;
+    b.title = st.defaut ? 'Style utilisé d\'office pour chaque nouveau live' : 'Clique pour l\'appliquer';
+    const choisir = () => { brouillon.theme = JSON.parse(JSON.stringify(st.theme)); remplirForm(); apercu(); };
+    b.onclick = e => { if (!e.target.closest('.oter')) choisir(); };
+    b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choisir(); } };
+    b.querySelector('.oter').onclick = () => {
+      if (!confirm(`Supprimer le style « ${st.nom} » ? Les lives déjà créés gardent leur habillage.`)) return;
+      ecrireStyles(lireStyles().filter(x => x.id !== st.id)); dessinerStyles(); remplirForm();
+    };
+    box.appendChild(b);
+  }
+  chargerPolices([...new Set(l.map(st => themeComplet({ theme: st.theme }).fontTitle))]);
+}
+$('#style-enregistrer').onclick = () => {
+  const nom = $('#style-nom').value.trim().slice(0, 30);
+  if (!nom) { $('#style-nom').focus(); return toast('Donne un nom à ce style'); }
+  let l = lireStyles();
+  const defaut = $('#style-defaut').checked;
+  if (defaut) l.forEach(s => { s.defaut = false; });
+  const deja = l.find(s => s.nom.toLowerCase() === nom.toLowerCase());
+  const theme = JSON.parse(JSON.stringify(brouillon.theme));
+  if (deja) { deja.theme = theme; deja.defaut = defaut; }
+  else l.unshift({ id: rnd(8), nom, theme, defaut });
+  if (!ecrireStyles(l)) return;
+  $('#style-nom').value = '';
+  dessinerStyles(); remplirForm();
+  toast(deja ? `Style « ${nom} » mis à jour` : `Style « ${nom} » enregistré : il est en haut des thèmes`);
+};
+$('#style-nom').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#style-enregistrer').click(); } };
+dessinerStyles();

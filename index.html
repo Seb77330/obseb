@@ -125,6 +125,15 @@
   .theme-carte.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
   .theme-carte.actif::after { content: '✓'; position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; display: grid; place-items: center; background: var(--ui-accent); color: #111; font-size: 12px; font-weight: 700; border-radius: 50%; }
   /* Les finitions : une liste de lignes, une icône, un titre, une explication dessous */
+  .sous-etape { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); margin: 14px 0 8px; }
+  #mes-styles .sous-etape:first-child { margin-top: 0; }
+  .style-vue { position: absolute; inset: 0; display: grid; place-items: center; background-size: cover; background-position: center; }
+  .style-vue b { font-size: 22px; font-weight: 400; line-height: 1; padding-bottom: 5px; border-bottom: 2px solid; }
+  .theme-carte .oter { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; padding: 0; border-radius: 50%; font-size: 11px; line-height: 1; background: rgba(0,0,0,.65); color: #fff; border: 0; opacity: 0; transition: opacity .15s; }
+  .theme-carte:hover .oter, .theme-carte:focus-within .oter { opacity: 1; }
+  .theme-carte .defaut { position: absolute; left: 5px; bottom: 34px; font: 600 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; background: rgba(0,0,0,.7); color: #fff; padding: 2px 5px; border-radius: 4px; }
+  .ligne-style { display: flex; gap: 8px; } .ligne-style input { flex: 1; min-width: 0; }
+  .case-style { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; cursor: pointer; }
   .options { border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; background: var(--ui-panel2); }
   .option { border-top: 1px solid var(--ui-line); }
   .option:first-child { border-top: 0; }
@@ -259,6 +268,11 @@
         <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
 
         <div class="etape"><span class="num">2</span>Le thème</div>
+        <div id="mes-styles" hidden>
+          <div class="sous-etape">Mes styles</div>
+          <div class="galerie" id="galerie-styles"></div>
+          <div class="sous-etape">Thèmes du site</div>
+        </div>
         <div class="galerie" id="galerie"></div>
 
         <div class="etape"><span class="num">3</span>Les finitions<span class="tag">facultatif</span></div>
@@ -290,6 +304,7 @@
               <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
               <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
             </details>
+            <p class="aide" style="margin:8px 0 0">Ces images passent en direct : rien de choquant ni de volé, les plateformes sanctionnent le compte qui diffuse.</p>
             <label class="champ" for="f-logotexte">Texte du logo s'il n'y a pas d'image</label>
             <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
           </div>
@@ -298,6 +313,15 @@
             <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
             <p class="aide" style="margin:6px 0 0">Elles passent dans le son du live, pas dans les aperçus.</p>
           </details>
+          <div class="bloc enregistrer-style">
+            <div class="bloc-titre">Garder ce style pour mes prochains lives</div>
+            <div class="ligne-style">
+              <input type="text" id="style-nom" maxlength="30" placeholder="Nom du style, ex. Mon habillage">
+              <button type="button" class="primaire" id="style-enregistrer">Enregistrer ce style</button>
+            </div>
+            <label class="case-style"><input type="checkbox" id="style-defaut" checked> L'utiliser d'office pour chaque nouveau live</label>
+            <p class="aide" style="margin:6px 0 0">Tu le retrouveras en haut des thèmes, dans « Mes styles ».</p>
+          </div>
         </div>
       </details>
       <details class="option" id="opt-obs">
@@ -346,7 +370,7 @@
 </main>
 <div class="toast" id="toast"></div>
 <script src="js/common.js?v=5b21c1bf"></script>
-<script src="js/accueil.js?v=1e83ef49"></script>
-<script src="js/accueil-style.js?v=45b79dea"></script>
+<script src="js/accueil.js?v=0c6a698c"></script>
+<script src="js/accueil-style.js?v=91ce6e61"></script>
 </body>
 </html>
