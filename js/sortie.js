@@ -216,11 +216,15 @@ function appliquerEtat(st) {
   const bandeST = !!(st.st && st.st.actif && st.st.ecran) && !quizEnCours && sceneCameras(scene);
   document.body.classList.toggle('st-on', bandeST);
   const retrait = (z, bas) => bandeST ? Object.assign({}, z, { h: Math.min(z.h, bas - z.y) }) : z;
-  const zone = VERTICAL ? retrait(ZONE_V, 1180) : retrait(ZONE, 720);
+  // tout le chat à l'écran : les caméras lui laissent une colonne (ou une bande en vertical), il ne passe jamais sur une image
+  const filChat = !!(st.chatFil && st.chatFil.actif) && !quizEnCours && sceneCameras(scene);
+  const cote = z => !filChat ? z : VERTICAL ? Object.assign({}, z, { h: z.h - 300 }) : Object.assign({}, z, { w: z.w - 400 });
+  const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(ZONE, 720));
+  const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
     ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : calculerDispositionV(st.layout, ids, st.focus, zone))
     : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : calculerDisposition(st.layout, ids, st.focus, zone));
-  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, retrait(ZONE_WATCH_V, 1180)) : calculerDisposition(st.layout, ids, st.focus, retrait(ZONE_WATCH, 690)));
+  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, zoneWatch) : calculerDisposition(st.layout, ids, st.focus, zoneWatch));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);
@@ -230,6 +234,7 @@ function appliquerEtat(st) {
   gererPlaylist();
   gererQuiz();
   gererChat();
+  gererFilChat(filChat, scene === 'watch' ? zoneWatch : zone);
   gererWatch();
   appliquerVolumes();
   compteARebours();
@@ -248,7 +253,7 @@ if (!PREVIEW && !DEMO) {
 function gererMusique(scene) {
   const cible = etat ? (etat.volMusique ?? 0.5) : 0.5;
   for (const [nom, a] of Object.entries(musiques)) {
-    const active = nom === scene;
+    const active = nom === scene && !((etat && etat.musiqueScenes) || {})[nom];
     if (active && a.paused) { if (nom === 'fin') a.currentTime = 0; a.play().catch(() => {}); }
     clearInterval(a._fondu);
     a._fondu = setInterval(() => {
@@ -274,6 +279,28 @@ function gererChat() {
   $('#cb-p').style.background = coul; $('#cb-p').textContent = nom;
   $('#cb-auteur').textContent = c.auteur;
   $('#cb-texte').textContent = c.texte;
+}
+
+/* ----- Tout le chat à l'écran : une colonne à côté des caméras ----- */
+let filVu = '';
+function gererFilChat(visible, z) {
+  const el = $('#chat-fil');
+  el.classList.toggle('cachee', !visible);
+  if (!visible) return;
+  if (VERTICAL) Object.assign(el.style, { left: z.x + 'px', top: (z.y + z.h + 14) + 'px', width: z.w + 'px', height: '286px' });
+  else Object.assign(el.style, { left: (z.x + z.w + 20) + 'px', top: z.y + 'px', width: '380px', height: z.h + 'px' });
+  const msgs = (etat.chatFil && Array.isArray(etat.chatFil.msgs) ? etat.chatFil.msgs : []).slice(-8);
+  const cle = JSON.stringify(msgs);
+  if (cle === filVu) return;
+  filVu = cle;
+  el.innerHTML = msgs.length ? '' : '<div class="cf-vide">Le chat s\'affiche ici</div>';
+  for (const m of msgs) {
+    const d = document.createElement('div'); d.className = 'cf-msg';
+    const i = document.createElement('i'); i.style.background = (COULEURS_CHAT[m.p] || ['#888'])[0];
+    const b = document.createElement('b'); b.textContent = String(m.a || '').slice(0, 30);
+    d.append(i, b, document.createTextNode(String(m.t || '').slice(0, 200)));
+    el.appendChild(d);
+  }
 }
 
 /* ----- Sous-titres en direct : une ligne par personne qui parle, avec son nom ----- */
@@ -401,27 +428,85 @@ setInterval(() => {
   $('#qz-barre').style.width = (ms / (a.duree * 10)) + '%';
 }, 250);
 
-/* ----- Playlist de la régie ----- */
+/* ----- Musiques de la régie -----
+   Un morceau a soit un lien, soit un fichier ajouté depuis l'ordinateur de la régie.
+   Le fichier est cherché dans ce navigateur ; s'il n'y est pas (OBS est un autre navigateur),
+   la sortie le demande à la régie, le reçoit en morceaux et le garde pour les prochaines fois. */
+const adressesMusique = new Map();     // id -> adresse locale du fichier
+const recherchesMusique = new Map();   // id -> 'cherche' | 'absent'
+const recuMusique = { id: '', n: 0, parts: [], nb: 0 };
+function adressePiste(p) {
+  if (!p) return '';
+  if (p.url) return p.url;
+  if (!p.id) return '';
+  if (adressesMusique.has(p.id)) return adressesMusique.get(p.id);
+  if (!recherchesMusique.has(p.id)) {
+    recherchesMusique.set(p.id, 'cherche');
+    fichiers.lire(p.id).then(b => {
+      if (b) { adressesMusique.set(p.id, URL.createObjectURL(b)); gererPlaylist(); }
+      else recherchesMusique.set(p.id, 'absent');
+    }).catch(() => recherchesMusique.set(p.id, 'absent'));
+  }
+  return '';
+}
+// le premier fichier qui manque ici : la régie l'envoie quand elle voit cette demande
+function fichierDemande() {
+  const p = ((etat && etat.playlist) || []).find(m => m.fichier && m.id && !adressesMusique.has(m.id) && recherchesMusique.get(m.id) === 'absent');
+  return p ? p.id : '';
+}
+function recevoirMorceau(f) {
+  if (!f || typeof f.id !== 'string' || typeof f.d !== 'string' || adressesMusique.has(f.id)) return;
+  if (!((etat && etat.playlist) || []).some(m => m.id === f.id && m.fichier)) return;     // seulement un morceau annoncé par la régie
+  if (!Number.isInteger(f.i) || !Number.isInteger(f.n) || f.n < 1 || f.n > 700 || f.i < 0 || f.i >= f.n || f.d.length > 40000) return;
+  if (recuMusique.id !== f.id || recuMusique.n !== f.n) Object.assign(recuMusique, { id: f.id, n: f.n, parts: new Array(f.n), nb: 0 });
+  if (recuMusique.parts[f.i]) return;
+  let bin;
+  try { bin = atob(f.d); } catch (e) { return; }
+  const o = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+  recuMusique.parts[f.i] = o; recuMusique.nb++;
+  if (recuMusique.nb < recuMusique.n) return;
+  const blob = new Blob(recuMusique.parts, { type: /^audio\/[\w.+-]+$/.test(f.type) ? f.type : 'audio/mpeg' });
+  Object.assign(recuMusique, { id: '', n: 0, parts: [], nb: 0 });
+  adressesMusique.set(f.id, URL.createObjectURL(blob));
+  fichiers.mettre(f.id, blob).catch(() => {});
+  gererPlaylist();
+}
+
 const lecteur = new Audio(); lecteur.preload = 'auto';
-let pisteLocale = { idx: -1, n: -1 };
+let pisteLocale = { idx: -1, n: -1 }, adresseLecteur = '', fonduLecteur = null;
+function chargerPiste(p) {
+  const a = adressePiste(p);
+  if (a && a !== adresseLecteur) { adresseLecteur = a; lecteur.src = a; }
+  return !!a;
+}
 lecteur.addEventListener('ended', () => {
   const l = (etat && etat.playlist) || [];
   if (!l.length) return;
+  if (etat.musique && etat.musique.boucle) { lecteur.currentTime = 0; lecteur.play().catch(() => {}); return; }   // morceau lié à une scène : en boucle
   pisteLocale.idx = (pisteLocale.idx + 1) % l.length;
-  lecteur.src = l[pisteLocale.idx].url; lecteur.play().catch(() => {});
+  adresseLecteur = '';
+  if (chargerPiste(l[pisteLocale.idx])) lecteur.play().catch(() => {});
 });
 function gererPlaylist() {
   if (PREVIEW || DEMO || !etat) return;
   const l = etat.playlist || [], m = etat.musique || {};
+  l.forEach(p => { if (!p.url) adressePiste(p); });     // prépare les fichiers avant d'en avoir besoin
   if (!l.length) { lecteur.pause(); return; }
-  if (m.idx !== pisteLocale.idx || m.n !== pisteLocale.n) {
-    pisteLocale = { idx: m.idx, n: m.n };
-    const piste = l[m.idx] || l[0];
-    if (lecteur.src !== piste.url) lecteur.src = piste.url;
+  if (m.idx !== pisteLocale.idx || m.n !== pisteLocale.n) pisteLocale = { idx: m.idx, n: m.n };
+  const pret = chargerPiste(l[pisteLocale.idx] || l[0]);
+  const volume = Math.min(1, etat.volMusique ?? 0.5);
+  if (m.lecture && pret) {
+    if (fonduLecteur) { clearInterval(fonduLecteur); fonduLecteur = null; }
+    lecteur.volume = volume;
+    if (lecteur.paused) lecteur.play().catch(() => {});
+  } else if (!lecteur.paused && !fonduLecteur) {
+    // arrêt en fondu, pour ne pas couper net au changement de scène
+    fonduLecteur = setInterval(() => {
+      lecteur.volume = Math.max(0, lecteur.volume - 0.07);
+      if (lecteur.volume <= 0.001) { clearInterval(fonduLecteur); fonduLecteur = null; lecteur.pause(); }
+    }, 50);
   }
-  lecteur.volume = Math.min(1, etat.volMusique ?? 0.5);
-  if (m.lecture && lecteur.paused) lecteur.play().catch(() => {});
-  if (!m.lecture && !lecteur.paused) lecteur.pause();
 }
 
 /* ----- Compte à rebours de l'intro ----- */
@@ -462,6 +547,7 @@ addEventListener('message', e => {
     appliquerEtat(d.dataReceived[CANAL]);
     return;
   }
+  if (hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebFichier) { recevoirMorceau(d.dataReceived.studioSebFichier); return; }
   // sous-titres : envoyés par la régie (par la caméra de l'hôte, ou par la page qui m'intègre)
   if ((hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebST) || (e.source === window.parent && window.parent !== window && d.studioSebST)) {
     afficherST(d.studioSebST || d.dataReceived.studioSebST);
@@ -481,7 +567,7 @@ addEventListener('message', e => {
 });
 
 /* ----- La sortie OBS signale sa présence à la régie (voyant « Sortie OBS ») ----- */
-if (!PREVIEW && !DEMO) setInterval(() => { if (hote) ordre(hote.iframe, { sendData: { studioSebSortie: { v: VERTICAL ? 1 : 0 } }, type: 'rpcs' }); }, 3000);
+if (!PREVIEW && !DEMO) setInterval(() => { if (hote) ordre(hote.iframe, { sendData: { studioSebSortie: { v: VERTICAL ? 1 : 0, besoin: fichierDemande() } }, type: 'rpcs' }); }, 3000);
 
 /* ----- Démarrage ----- */
 if (DEMO) {
@@ -498,6 +584,7 @@ if (DEMO) {
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
+  if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   st.message = 'Pose tes questions dans le chat';

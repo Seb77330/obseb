@@ -664,3 +664,30 @@ function confirmer(texte, { oui = 'Oui', non = 'Non', danger = true } = {}) {
     f.querySelector('.non').focus();
   });
 }
+
+/* ----- Petits fichiers gardés dans ce navigateur (les musiques ajoutées depuis l'ordinateur) ----- */
+const fichiers = (() => {
+  let base = null;
+  const ouvrir = () => base || (base = new Promise((ok, ko) => {
+    const r = indexedDB.open('studioSeb', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('fichiers');
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => { base = null; ko(r.error); };
+  }));
+  const op = (mode, f) => ouvrir().then(db => new Promise((ok, ko) => {
+    const t = db.transaction('fichiers', mode), q = f(t.objectStore('fichiers'));
+    t.oncomplete = () => ok(q.result);
+    t.onerror = t.onabort = () => ko(t.error);
+  }));
+  return {
+    mettre: (id, blob) => op('readwrite', s => s.put(blob, id)),
+    lire: id => op('readonly', s => s.get(id)).then(b => b || null),
+    oter: id => op('readwrite', s => s.delete(id)),
+  };
+})();
+
+/* ----- Ce que chaque formule permet. Les comptes n'existent pas encore : tout le monde est en Gratuit. ----- */
+const LIMITES = { gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 25 }, regie: { musiques: 50 } };
+function formuleActuelle() {
+  try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'gratuit'; } catch (e) { return 'gratuit'; }
+}

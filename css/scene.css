@@ -538,3 +538,17 @@ body[data-scene="watch"]:not(.vertical) #sous-titres { top: 698px; }
 body.vertical #sous-titres { left: 40px; right: 120px; top: 1192px; height: 150px; }
 body.vertical #sous-titres > div { font-size: 30px; padding: 9px 18px 10px; }
 body.vertical #sous-titres b { font-size: 19px; margin-right: 12px; }
+
+/* ----- Tout le chat à l'écran : une colonne à côté des caméras, les messages récents en bas ----- */
+#chat-fil {
+  position: absolute; z-index: 5; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px;
+  padding: 18px 20px; overflow: hidden; border-radius: 14px; box-sizing: border-box;
+  background: color-mix(in srgb, var(--bg) 82%, transparent); border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  transition: opacity .4s ease;
+}
+#chat-fil.cachee { opacity: 0; }
+#chat-fil .cf-msg { flex: none; font: 500 22px/1.25 var(--font-body); color: var(--text); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+#chat-fil .cf-msg b { color: var(--accent); font-weight: 700; margin-right: 8px; }
+#chat-fil .cf-msg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; }
+#chat-fil .cf-vide { font: 500 20px var(--font-body); color: var(--muted); }
+body.vertical #chat-fil .cf-msg { font-size: 26px; -webkit-line-clamp: 2; }

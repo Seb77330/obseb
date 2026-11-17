@@ -82,12 +82,13 @@ function actions() {
   // Musique
   add('Musique', $('#mu-lecture').textContent.replace(/^\S+\s/, '') + ' la musique', cliquer('#mu-lecture'), 'play pause playlist');
   add('Musique', 'Morceau suivant', cliquer('#mu-suivante'), 'playlist next');
-  add('Musique', 'Ajouter un morceau', champ('musique', '#mu-nom'), 'mp3 playlist');
+  add('Musique', 'Ajouter une musique', () => { ouvrirOnglet('musique'); $('#mu-ajouter').click(); }, 'mp3 playlist fichier morceau');
   add('Musique', 'Régler le volume de la musique', champ('musique', '#vol-musique'), 'son');
   // Chat
   add('Chat', 'Ouvrir le chat', () => ouvrirOnglet('chat'), 'twitch youtube messages');
   add('Chat', 'Masquer le message affiché', cliquer('#chat-masquer'), 'chat ecran');
   add('Chat', 'Connecter Twitch', champ('chat', '#chat-twitch'), 'chat');
+  add('Chat', 'Afficher tout le chat à l\'écran', () => { ouvrirOnglet('chat'); $('#chat-fil').click(); }, 'chat ecran colonne');
   add('Chat', 'Connecter YouTube', champ('chat', '#chat-youtube'), 'chat cle');
   // Comptes
   add('Comptes', 'Gérer les plateformes de diffusion', () => ouvrirOnglet('comptes'), 'multistream cle stream youtube twitch facebook x kick tiktok instagram');

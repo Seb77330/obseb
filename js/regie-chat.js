@@ -1,17 +1,19 @@
-/* OBSeb : régie, chat réuni (Twitch + YouTube) et message affiché à l'écran.
+/* OBSeb : régie, chat réuni (YouTube + Twitch), message choisi ou chat entier affiché à l'écran.
+   Tu donnes ta chaîne une seule fois : elle est retenue pour tous tes lives et le chat se reconnecte tout seul.
    Twitch : lecture anonyme, aucune clé.
    YouTube : clé d'API Google gratuite, gardée seulement dans ce navigateur (jamais dans les liens). */
 'use strict';
 
-const CLE_CHAT = 'studioSeb:chat:' + session.room;
+const CLE_CHAT = 'studioSeb:chat';                    // les chaînes sont retenues pour tous les lives
 const CLE_YT = 'studioSeb:cleYoutube';
 let reglagesChat = {};
-try { reglagesChat = JSON.parse(localStorage.getItem(CLE_CHAT) || '{}'); } catch (e) { /* rien */ }
+try { reglagesChat = JSON.parse(localStorage.getItem(CLE_CHAT) || localStorage.getItem(CLE_CHAT + ':' + session.room) || '{}'); } catch (e) { /* rien */ }
+etat.chatFil = Object.assign({ actif: false, msgs: [] }, etat.chatFil);
 const lireCleYt = () => { try { return localStorage.getItem(CLE_YT) || ''; } catch (e) { return ''; } };
 
 const PLATEFORMES = {
-  twitch: { nom: 'Twitch', court: 'TW', couleur: '#9146FF' },
   youtube: { nom: 'YouTube', court: 'YT', couleur: '#FF0000' },
+  twitch: { nom: 'Twitch', court: 'TW', couleur: '#9146FF' },
 };
 const messagesChat = [];
 const MAX_MESSAGES = 200;
@@ -35,6 +37,11 @@ function ajouterMessage(m) {
   box.appendChild(el);
   while (box.children.length > MAX_MESSAGES) box.firstChild.remove();
   if (enBas) box.scrollTop = box.scrollHeight;
+  if (etat.chatFil.actif) { remplirFilChat(); envoyerBientot(); }
+}
+// les derniers messages, envoyés à la sortie quand « tout le chat à l'écran » est coché
+function remplirFilChat() {
+  etat.chatFil.msgs = messagesChat.slice(-8).map(m => ({ p: m.p, a: String(m.auteur).slice(0, 30), t: m.texte.slice(0, 200) }));
 }
 
 function afficherMessageChat(m, el) {
@@ -76,10 +83,18 @@ function analyserIrc(ligne) {
   if (!m) return null;
   return { p: 'twitch', auteur: (tags['display-name'] || m[1]).replace(/\\s/g, ' '), couleur: tags.color || '', texte: m[2].replace(/^\u0001ACTION (.*)\u0001$/, '$1') };
 }
+// accepte « nom », « @nom », « twitch.tv/nom » ou le lien complet
+function nomTwitch(v) {
+  v = String(v || '').trim().toLowerCase();
+  const m = v.match(/twitch\.tv\/([a-z0-9_]{2,25})/);
+  if (m) return m[1];
+  v = v.replace(/^[@#]/, '');
+  return /^[a-z0-9_]{2,25}$/.test(v) ? v : '';
+}
 function connecterTwitch(chaine) {
   deconnecterTwitch();
-  chaineTwitch = chaine.toLowerCase().replace(/^.*twitch\.tv\//, '').replace(/[^a-z0-9_]/g, '');
-  if (!chaineTwitch) return statut('twitch', 'Nom de chaîne invalide', false);
+  chaineTwitch = nomTwitch(chaine);
+  if (!chaineTwitch) { $('#chat-twitch').focus(); return chaine.trim() ? statut('twitch', 'Je ne reconnais pas cette chaîne. Écris juste son nom.', false) : statut('twitch', 'Écris le nom de ta chaîne Twitch, une seule fois. Ensuite le chat se connecte tout seul.'); }
   statut('twitch', 'Connexion…');
   const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
   wsTwitch = ws;
@@ -109,34 +124,74 @@ function deconnecterTwitch() {
 
 /* ----- YouTube (API Data v3, clé gratuite) ----- */
 let ytActif = null;   // { chatId, page, vus:Set, t }
+let ytAttente = null; // en attente du début du live : { t }
 function idVideoYoutube(v) {
   const m = String(v || '').match(/(?:v=|youtu\.be\/|\/live\/|\/shorts\/)([\w-]{11})/);
   return m ? m[1] : (/^[\w-]{11}$/.test(String(v).trim()) ? String(v).trim() : '');
 }
-async function connecterYoutube(video) {
+// « @nom », « youtube.com/@nom », « youtube.com/channel/UC… » ou juste le nom
+function chaineYoutube(v) {
+  v = String(v || '').trim();
+  let m = v.match(/youtube\.com\/channel\/(UC[\w-]{22})/) || v.match(/^(UC[\w-]{22})$/);
+  if (m) return { id: m[1] };
+  m = v.match(/youtube\.com\/@([\w.-]{3,30})/) || v.match(/^@([\w.-]{3,30})$/) || v.match(/^([\w.-]{3,30})$/);
+  return m ? { pseudo: m[1] } : null;
+}
+async function apiYoutube(chemin) {
+  const r = await fetch('https://www.googleapis.com/youtube/v3/' + chemin + '&key=' + encodeURIComponent(lireCleYt()));
+  const d = await r.json();
+  if (d.error) {
+    const raison = (d.error.errors && d.error.errors[0] && d.error.errors[0].reason) || '';
+    if (/keyInvalid|badRequest/i.test(raison) && /API key/i.test(d.error.message)) throw new Error('La clé YouTube est refusée : vérifie-la dans « Clé YouTube »');
+    if (/quota/i.test(raison)) throw new Error('Quota YouTube du jour atteint : le chat reviendra demain');
+    throw new Error(d.error.message);
+  }
+  return d;
+}
+async function connecterYoutube(valeur, essai) {
   deconnecterYoutube();
-  const id = idVideoYoutube(video), cle = lireCleYt();
-  if (!id) return statut('youtube', 'Lien du live introuvable', false);
-  if (!cle) return statut('youtube', 'Il manque la clé YouTube (voir « Clé YouTube »)', false);
+  const video = idVideoYoutube(valeur), chaine = video ? null : chaineYoutube(valeur);
+  if (!String(valeur || '').trim()) { $('#chat-youtube').focus(); return statut('youtube', 'Écris ta chaîne YouTube (@nom), une seule fois. Ensuite le chat se connecte tout seul.'); }
+  if (!video && !chaine) return statut('youtube', 'Je ne reconnais pas cette chaîne ni ce lien', false);
+  if (!lireCleYt()) { $('#chat-cle-bloc').open = true; $('#chat-cle-yt').focus(); return statut('youtube', 'Il manque la clé YouTube : colle-la juste en dessous (une seule fois)'); }
   statut('youtube', 'Connexion…');
+  const jeton = ytAttente = {};
   try {
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${id}&key=${encodeURIComponent(cle)}`);
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message);
+    let id = video;
+    if (!id) {
+      let idChaine = chaine.id || (reglagesChat.ytPseudo === chaine.pseudo && reglagesChat.ytIdChaine) || '';
+      if (!idChaine) {
+        const d = await apiYoutube(`channels?part=id&forHandle=${encodeURIComponent('@' + chaine.pseudo)}`);
+        idChaine = d.items && d.items[0] && d.items[0].id;
+        if (!idChaine) throw new Error('Chaîne YouTube introuvable : @' + chaine.pseudo);
+        Object.assign(reglagesChat, { ytPseudo: chaine.pseudo, ytIdChaine: idChaine }); sauverReglagesChat();
+      }
+      const d = await apiYoutube(`search?part=id&channelId=${idChaine}&eventType=live&type=video&maxResults=1`);
+      if (ytAttente !== jeton) return;
+      id = d.items && d.items[0] && d.items[0].id && d.items[0].id.videoId;
+      if (!id) {
+        // pas encore en direct : on revérifie, sans vider le quota gratuit
+        if ((essai || 0) >= 14) { ytAttente = null; return statut('youtube', 'Toujours pas de live sur cette chaîne. Clique sur Connecter quand il a commencé.', false); }
+        statut('youtube', 'Pas de live en cours sur cette chaîne. Je revérifie toutes les 2 minutes.');
+        jeton.t = setTimeout(() => { if (ytAttente === jeton) connecterYoutube(valeur, (essai || 0) + 1).then(majBoutonsChat); }, 120000);
+        return;
+      }
+    }
+    const d = await apiYoutube(`videos?part=liveStreamingDetails&id=${id}`);
+    if (ytAttente !== jeton) return;
     const chatId = d.items && d.items[0] && d.items[0].liveStreamingDetails && d.items[0].liveStreamingDetails.activeLiveChatId;
     if (!chatId) throw new Error("Ce live n'a pas de chat actif (pas encore commencé ou déjà fini)");
+    ytAttente = null;
     ytActif = { chatId, page: '', vus: new Set(), premier: true };
     statut('youtube', 'Connecté', true);
     lireYoutube(ytActif);
-  } catch (e) { statut('youtube', e.message, false); }
+  } catch (e) { if (ytAttente === jeton) ytAttente = null; statut('youtube', e.message, false); }
 }
 async function lireYoutube(session_) {
   if (ytActif !== session_) return;
   let attente = 6000;
   try {
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${session_.chatId}&part=snippet,authorDetails&maxResults=200${session_.page ? '&pageToken=' + session_.page : ''}&key=${encodeURIComponent(lireCleYt())}`);
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message);
+    const d = await apiYoutube(`liveChat/messages?liveChatId=${session_.chatId}&part=snippet,authorDetails&maxResults=200${session_.page ? '&pageToken=' + session_.page : ''}`);
     session_.page = d.nextPageToken || session_.page;
     attente = Math.max(6000, d.pollingIntervalMillis || 0);   // reste bien sous le quota gratuit
     let items = d.items || [];
@@ -157,25 +212,57 @@ async function lireYoutube(session_) {
 }
 function deconnecterYoutube() {
   if (ytActif) clearTimeout(ytActif.t);
-  ytActif = null;
+  if (ytAttente) clearTimeout(ytAttente.t);
+  ytActif = null; ytAttente = null;
   statut('youtube', '');
 }
 
 /* ----- Interface ----- */
 function sauverReglagesChat() { try { localStorage.setItem(CLE_CHAT, JSON.stringify(reglagesChat)); } catch (e) { /* rien */ } }
+function majBoutonsChat() {
+  $('#chat-btn-twitch').textContent = wsTwitch ? 'Couper' : 'Connecter';
+  $('#chat-btn-youtube').textContent = ytActif || ytAttente ? 'Couper' : 'Connecter';
+}
 $('#chat-twitch').value = reglagesChat.twitch || '';
 $('#chat-youtube').value = reglagesChat.youtube || '';
 $('#chat-cle-yt').value = lireCleYt();
 $('#chat-cle-yt').onchange = () => { try { localStorage.setItem(CLE_YT, $('#chat-cle-yt').value.trim()); } catch (e) { /* rien */ } };
 
+function brancherTwitch() {
+  reglagesChat.twitch = $('#chat-twitch').value.trim();
+  connecterTwitch(reglagesChat.twitch);
+  reglagesChat.twitchAuto = !!wsTwitch; sauverReglagesChat(); majBoutonsChat();
+}
+function brancherYoutube() {
+  reglagesChat.youtube = $('#chat-youtube').value.trim();
+  const p = connecterYoutube(reglagesChat.youtube);
+  majBoutonsChat();
+  return p.then(() => {
+    // on ne retient « reconnecte tout seul » que pour une chaîne : le lien d'un live ne sert qu'une fois
+    reglagesChat.youtubeAuto = !!(ytActif || ytAttente) && !idVideoYoutube(reglagesChat.youtube);
+    sauverReglagesChat(); majBoutonsChat();
+  });
+}
 $('#chat-btn-twitch').onclick = () => {
-  if (wsTwitch) { deconnecterTwitch(); $('#chat-btn-twitch').textContent = 'Connecter'; return; }
-  reglagesChat.twitch = $('#chat-twitch').value.trim(); sauverReglagesChat();
-  connecterTwitch(reglagesChat.twitch); $('#chat-btn-twitch').textContent = 'Couper';
+  if (wsTwitch) { deconnecterTwitch(); reglagesChat.twitchAuto = false; sauverReglagesChat(); majBoutonsChat(); return; }
+  brancherTwitch();
 };
 $('#chat-btn-youtube').onclick = () => {
-  if (ytActif) { deconnecterYoutube(); $('#chat-btn-youtube').textContent = 'Connecter'; return; }
-  reglagesChat.youtube = $('#chat-youtube').value.trim(); sauverReglagesChat();
-  connecterYoutube(reglagesChat.youtube).then(() => { $('#chat-btn-youtube').textContent = ytActif ? 'Couper' : 'Connecter'; });
+  if (ytActif || ytAttente) { deconnecterYoutube(); reglagesChat.youtubeAuto = false; sauverReglagesChat(); majBoutonsChat(); return; }
+  brancherYoutube();
 };
+for (const [champ, brancher] of [['#chat-twitch', brancherTwitch], ['#chat-youtube', brancherYoutube]]) {
+  $(champ).addEventListener('keydown', e => { if (e.key === 'Enter') brancher(); });
+}
+
+// tout le chat à l'écran
+$('#chat-fil').checked = !!etat.chatFil.actif;
+$('#chat-fil').onchange = e => { etat.chatFil.actif = e.target.checked; remplirFilChat(); envoyer(); };
+// durée d'affichage d'un message choisi : retenue d'un live à l'autre
+if (reglagesChat.duree != null && [...$('#chat-duree').options].some(o => o.value === String(reglagesChat.duree))) $('#chat-duree').value = String(reglagesChat.duree);
+$('#chat-duree').onchange = e => { reglagesChat.duree = +e.target.value; sauverReglagesChat(); };
 $('#chat-masquer').disabled = !etat.chatAffiche;
+
+// à l'ouverture de la régie : le chat se reconnecte tout seul aux chaînes déjà données
+if (reglagesChat.twitchAuto && nomTwitch(reglagesChat.twitch)) brancherTwitch();
+if (reglagesChat.youtubeAuto && reglagesChat.youtube && lireCleYt()) brancherYoutube();

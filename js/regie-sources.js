@@ -1,4 +1,4 @@
-/* OBSeb : régie, partie Sources (4 max), Bandeaux et Musique */
+/* OBSeb : régie, partie Sources (4 max) et Bandeaux (la musique est dans regie-musique.js) */
 'use strict';
 
 const TYPES_SOURCE = [
@@ -164,54 +164,7 @@ $('#defilant-btn').onclick = () => {
   etat.defilant.actif = !etat.defilant.actif; envoyer(); majDefilant();
 };
 
-/* ---------- Musique ---------- */
-function afficherMusiques() {
-  const box = $('#mu-liste');
-  box.innerHTML = etat.playlist.length ? '' : '<div class="vide">Ajoute tes musiques (liens MP3). Elles passent dans le son du live.</div>';
-  etat.playlist.forEach((m, i) => {
-    const on = etat.musique.idx === i;
-    const el = document.createElement('div');
-    el.className = 'elt' + (on && etat.musique.lecture ? ' on' : '');
-    el.innerHTML = `<div class="txt"></div><button class="petit">${on && etat.musique.lecture ? '⏸' : '▶'}</button><button class="petit" title="Supprimer">✕</button>`;
-    el.querySelector('.txt').textContent = `${i + 1}. ${m.nom}`;
-    const [jouer, sup] = el.querySelectorAll('button');
-    jouer.onclick = () => {
-      if (on && etat.musique.lecture) etat.musique.lecture = false;
-      else { etat.musique = { idx: i, lecture: true, n: (etat.musique.n || 0) + (on ? 0 : 1) }; }
-      envoyer(); afficherMusiques();
-    };
-    sup.onclick = () => {
-      etat.playlist.splice(i, 1);
-      if (etat.musique.idx >= etat.playlist.length) etat.musique = { idx: 0, lecture: false, n: (etat.musique.n || 0) + 1 };
-      envoyer(); afficherMusiques();
-    };
-    box.appendChild(el);
-  });
-  const m = etat.playlist[etat.musique.idx];
-  $('#mu-lecture').textContent = etat.musique.lecture ? '⏸ Pause' : '▶ Lecture';
-  $('#mu-etat').textContent = m ? (etat.musique.lecture ? 'En cours : ' : 'Prêt : ') + m.nom : '';
-}
-$('#mu-ajouter').onclick = () => {
-  const url = $('#mu-url').value.trim(), nom = $('#mu-nom').value.trim();
-  if (!/^https:\/\//.test(url)) return toast('Colle un lien qui commence par https://');
-  etat.playlist.push({ nom: nom || url.split('/').pop().replace(/\.\w+$/, ''), url });
-  $('#mu-url').value = ''; $('#mu-nom').value = '';
-  envoyer(); afficherMusiques();
-};
-$('#mu-lecture').onclick = () => {
-  if (!etat.playlist.length) return toast('Ajoute d\'abord une musique');
-  etat.musique.lecture = !etat.musique.lecture; envoyer(); afficherMusiques();
-};
-$('#mu-suivante').onclick = () => {
-  if (!etat.playlist.length) return;
-  etat.musique = { idx: (etat.musique.idx + 1) % etat.playlist.length, lecture: true, n: (etat.musique.n || 0) + 1 };
-  envoyer(); afficherMusiques();
-};
-$('#vol-musique').value = Math.round((etat.volMusique ?? 0.5) * 100);
-$('#vol-musique').oninput = e => { etat.volMusique = e.target.value / 100; envoyerBientot(); };
-
 construireSlots();
 afficherBandeaux();
 majDefilant();
-afficherMusiques();
 envoyer();

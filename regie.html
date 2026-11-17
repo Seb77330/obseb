@@ -183,7 +183,25 @@
   .elt .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .elt .txt small { color: var(--ui-muted); margin-left: 6px; }
   .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; line-height: 1.5; }
-  #chat-liste { height: 360px; }
+  /* Musique */
+  .mu-ajout { width: 100%; padding: 11px 14px; font-size: 14px; }
+  .mu-ajout.plein { opacity: .55; }
+  .mu-compte { margin: 6px 2px 10px; }
+  [data-onglet="musique"].depot { outline: 2px dashed var(--ui-accent); outline-offset: 6px; border-radius: 8px; }
+  .mu-piste { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; padding: 8px 10px 10px; background: var(--ui-panel2); }
+  .mu-piste.on { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  .mu-ligne { display: flex; align-items: center; gap: 8px; }
+  .mu-piste input.mu-titre { flex: 1; min-width: 0; background: transparent; border: 1px solid transparent; padding: 5px 6px; font-weight: 500; text-overflow: ellipsis; }
+  .mu-piste input.mu-titre:hover, .mu-piste input.mu-titre:focus { border-color: var(--ui-line2); background: var(--ui-bg); }
+  .mu-scenes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+  .mu-scenes span { color: var(--ui-muted); font-size: 12px; margin-right: 3px; }
+  .mu-scenes button { padding: 3px 8px; font-size: 12px; border-radius: 99px; background: transparent; color: var(--ui-muted); }
+  .mu-scenes button:hover { color: var(--ui-text); }
+  .mu-scenes button.actif { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-sur-accent, #111); font-weight: 600; }
+  .mu-note { display: block; margin-top: 7px; font-size: 12px; color: var(--ui-muted); }
+  .mu-note.ko { color: var(--ui-red); }
+  .mu-par-lien { margin-top: 14px; }
+  #chat-liste { height: clamp(180px, 34vh, 360px); }
   .compte { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; background: var(--ui-panel2); }
   .compte.on { border-color: color-mix(in srgb, var(--ui-accent) 55%, transparent); }
   .comptes-plus { margin-top: 12px; }
@@ -549,43 +567,50 @@
       </section>
       <section class="onglet" data-onglet="chat" hidden>
         <div class="chat-src">
-          <i style="background:#9146FF">TW</i>
-          <input type="text" id="chat-twitch" placeholder="Ta chaîne Twitch (ex. sebastian_cineserie)">
-          <button class="petit" id="chat-btn-twitch">Connecter</button>
-        </div>
-        <div class="aide chat-etat" id="chat-etat-twitch"></div>
-        <div class="chat-src">
           <i style="background:#FF0000">YT</i>
-          <input type="text" id="chat-youtube" placeholder="Lien de ton live YouTube">
+          <input type="text" id="chat-youtube" placeholder="Ta chaîne YouTube (@nom) ou le lien du live">
           <button class="petit" id="chat-btn-youtube">Connecter</button>
         </div>
         <div class="aide chat-etat" id="chat-etat-youtube"></div>
-        <details class="aide" style="margin:4px 0 8px">
+        <div class="chat-src">
+          <i style="background:#9146FF">TW</i>
+          <input type="text" id="chat-twitch" placeholder="Ta chaîne Twitch">
+          <button class="petit" id="chat-btn-twitch">Connecter</button>
+        </div>
+        <div class="aide chat-etat" id="chat-etat-twitch"></div>
+        <details class="aide" id="chat-cle-bloc" style="margin:4px 0 8px">
           <summary>Clé YouTube (une seule fois)</summary>
           <p style="margin:6px 0">YouTube demande une clé gratuite pour lire le chat. Elle reste dans ce navigateur, jamais dans les liens.</p>
           <input type="password" id="chat-cle-yt" placeholder="Colle ta clé d'API YouTube ici" autocomplete="off">
         </details>
-        <div id="chat-liste"><div class="vide">Connecte ta chaîne Twitch et ton live YouTube : tous les messages arrivent ici. Clique sur un message pour l'afficher à l'écran.</div></div>
-        <div class="ligne-boutons" style="margin-top:8px;align-items:center">
-          <span class="aide">À l'écran pendant</span>
-          <select id="chat-duree" style="width:auto"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="0">jusqu'à ce que je masque</option></select>
-          <button class="petit" id="chat-masquer" style="margin-left:auto">Masquer le message</button>
+        <div id="chat-liste"><div class="vide">Les messages arrivent ici. Clique sur un message pour le mettre à l'écran.</div></div>
+        <label class="ligne-case" style="margin-top:10px"><input type="checkbox" id="chat-fil"> <span><b>Afficher tout le chat à l'écran</b><small>Dans une colonne à côté des caméras, jamais par-dessus.</small></span></label>
+        <div class="ligne-boutons" style="margin-top:8px;align-items:center;flex-wrap:nowrap">
+          <span class="aide" style="white-space:nowrap" title="Durée d'affichage du message sur lequel tu cliques">À l'écran pendant</span>
+          <select id="chat-duree" style="width:auto"><option value="5">5 s</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="60">1 min</option><option value="0">sans limite</option></select>
+          <button class="petit" id="chat-masquer" style="margin-left:auto">Masquer</button>
         </div>
       </section>
       <section class="onglet" data-onglet="musique" hidden>
-        <div class="ligne-boutons" style="flex-wrap:nowrap">
-          <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
-          <input type="url" id="mu-url" placeholder="Lien du MP3">
-          <button class="primaire" id="mu-ajouter">Ajouter</button>
-        </div>
-        <div id="mu-liste" style="margin-top:10px"></div>
+        <button class="primaire mu-ajout" id="mu-ajouter">+ Ajouter une musique</button>
+        <input type="file" id="mu-fichier" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple hidden>
+        <div class="aide mu-compte" id="mu-compte"></div>
+        <div id="mu-liste"></div>
         <div class="ligne-boutons" style="margin-top:10px;align-items:center">
           <button id="mu-lecture">▶ Lecture</button>
           <button id="mu-suivante">⏭ Suivante</button>
           <span class="aide" id="mu-etat"></span>
         </div>
-        <label class="champ" for="vol-musique">Volume de la musique (playlist, intro et fin)</label>
+        <label class="champ" for="vol-musique">Volume</label>
         <input type="range" id="vol-musique" min="0" max="100" step="1">
+        <details class="aide mu-par-lien">
+          <summary>Ajouter par un lien</summary>
+          <div class="ligne-boutons" style="flex-wrap:nowrap;margin-top:8px">
+            <input type="text" id="mu-nom" placeholder="Nom" style="max-width:120px">
+            <input type="url" id="mu-url" placeholder="Lien du MP3 (https://…)">
+            <button id="mu-lien">Ajouter</button>
+          </div>
+        </details>
       </section>
       <section class="onglet" data-onglet="comptes" hidden>
           <div class="aide" id="comptes-resume" style="margin-bottom:10px;color:var(--ui-text)"></div>
@@ -611,15 +636,16 @@
   </div>
 </div>
 
-<script src="js/common.js?v=c33ad272"></script>
+<script src="js/common.js?v=bfe7db35"></script>
 <script src="js/reglages-media.js?v=2b1fab4a"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=4cf5e135"></script>
-<script src="js/regie-sources.js?v=8d47ddb4"></script>
+<script src="js/regie.js?v=e8761c2d"></script>
+<script src="js/regie-sources.js?v=622c30a4"></script>
+<script src="js/regie-musique.js?v=af6d70a0"></script>
 <script src="js/regie-quiz.js?v=378bbe17"></script>
-<script src="js/regie-chat.js?v=0f5d0210"></script>
+<script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=03347cc5"></script>
-<script src="js/regie-recherche.js?v=17004b3e"></script>
+<script src="js/regie-recherche.js?v=23171b99"></script>
 <script src="js/regie-direct.js?v=38fcf347"></script>
 <script src="js/regie-guide.js?v=f11bbb1f"></script>
 <script src="js/regie-cams.js?v=a329af3e"></script>

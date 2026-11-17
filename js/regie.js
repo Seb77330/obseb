@@ -94,6 +94,7 @@ $('#btn-apercu-format').onclick = () => {
 
 /* ----- Envoi de l'état vers la sortie OBS et les invités ----- */
 function envoyer() {
+  if (typeof musiqueAuto === 'function') musiqueAuto();   // un morceau lié à la scène démarre avec elle
   etat.ts = Date.now();
   const st = JSON.parse(JSON.stringify(etat));
   // garder uniquement les personnes présentes (et toi)
@@ -351,6 +352,7 @@ addEventListener('message', e => {
     if (d.action === 'guest-connected' && d.streamID) arrivee(d.streamID, d.value && d.value.label);
     const so = d.dataReceived && d.dataReceived.studioSebSortie;
     if (so) sortieVue[so.v ? 'vertical' : 'horizontal'] = Date.now();
+    if (so && typeof so.besoin === 'string' && so.besoin && typeof envoyerFichierMusique === 'function') envoyerFichierMusique(so.besoin);
     const salut = d.dataReceived && d.dataReceived.studioSebSalut;
     if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')
         && !(typeof d.streamID === 'string' && d.streamID !== salut.id)) {   // pas d'usurpation du nom d'un autre
