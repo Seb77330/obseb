@@ -28,7 +28,8 @@ async function copier(txt, msg) {
 /* ----- Formulaire ----- */
 let enEdition = null;            // room de la session modifiée, sinon null
 let brouillon = nouvelleSession('', 'minimal');
-let modeApercu = 'live';
+let modeApercu = 'live';      // le moment montré : intro, live, live6, quiz, fin
+let formatApercu = 'deux';    // deux (horizontal et vertical côte à côte), h, v
 
 /* Galerie : une carte par thème, avec une vraie image de son intro (le plateau au survol) */
 function carteTheme(id) {
@@ -41,8 +42,7 @@ function carteTheme(id) {
   b.onclick = () => { brouillon.theme = { preset: id }; remplirForm(); apercu(); };
   return b;
 }
-GALERIE.forEach(id => $('#galerie').appendChild(carteTheme(id)));
-Object.keys(THEMES).filter(id => !GALERIE.includes(id)).forEach(id => $('#galerie-plus').appendChild(carteTheme(id)));
+[...GALERIE, ...Object.keys(THEMES).filter(id => !GALERIE.includes(id))].forEach(id => $('#galerie').appendChild(carteTheme(id)));
 FONTS.forEach(f => $('#f-font').insertAdjacentHTML('beforeend', `<option>${esc(f)}</option>`));
 
 function remplirForm() {
@@ -56,7 +56,6 @@ function remplirForm() {
   $('#f-limite').value = String(brouillon.limite || 0);
   const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
   $$('.theme-carte').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
-  if (!GALERIE.includes(brouillon.theme.preset)) $('#opt-plus').open = true;
   if (perso) $('#opt-perso').open = true;
 }
 function surcharge(champ, valeur) {
@@ -84,29 +83,53 @@ $$('[data-apercu]').forEach(b => b.onclick = () => {
   apercu();
 });
 
-function urlApercu(s, mode) {
-  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', quiz: 'demo=3&quiz=1', fin: 'demo=3&scene=fin', vertical: 'demo=3&format=vertical' }[mode];
-  return `sortie.html?${p}#s=${b64e(Object.assign({}, s, { titre: s.titre || 'Titre de ton live' }))}`;
+/* Les deux formats se voient en même temps, pour chaque moment du live (l'intro et la fin existent aussi en vertical) */
+$$('[data-format]').forEach(b => b.onclick = () => {
+  formatApercu = b.dataset.format;
+  try { localStorage.setItem('studioSeb:apercuFormat', formatApercu); } catch (e) { /* rien */ }
+  majFormatApercu(); apercu();
+});
+function majFormatApercu() {
+  $$('[data-format]').forEach(x => x.classList.toggle('actif', x.dataset.format === formatApercu));
+  $('#apercu-scene').dataset.format = formatApercu;
+  taillerApercu();
+}
+/* Les écrans prennent toute la place disponible, sans jamais déborder */
+function taillerApercu() {
+  const sc = $('#apercu-scene');
+  const W = sc.clientWidth, H = sc.clientHeight - 26;      // 26 px pour la légende sous l'écran
+  if (W <= 0 || H <= 0) return;
+  const gap = parseFloat(getComputedStyle(sc).columnGap) || 20;
+  const h = formatApercu === 'deux' ? (W - gap) / (16 / 9 + 9 / 16) : formatApercu === 'h' ? W / (16 / 9) : W / (9 / 16);
+  sc.style.setProperty('--h', Math.max(80, Math.floor(Math.min(H, h))) + 'px');
+}
+new ResizeObserver(taillerApercu).observe($('#apercu-scene'));
+
+function urlApercu(s, mode, vertical) {
+  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', quiz: 'demo=3&quiz=1', fin: 'demo=3&scene=fin' }[mode] || 'demo=3';
+  return `sortie.html?${p}${vertical ? '&format=vertical' : ''}#s=${b64e(Object.assign({}, s, { titre: s.titre || 'Titre de ton live' }))}`;
 }
 function apercu() {
   clearTimeout(apercu.t);
   if ($('#vue-creation').hidden) return;
   apercu.t = setTimeout(() => {
-    const f = $('#apercu-theme'), cadre = f.parentElement, v = modeApercu === 'vertical';
-    cadre.style.aspectRatio = v ? '9/16' : ''; cadre.style.width = v ? 'min(100%, 300px)' : ''; cadre.style.margin = v ? '0 auto' : '';
-    f.src = urlApercu(brouillon, modeApercu).replace('?', `?n=${++apercu.n}&`);
+    taillerApercu();
+    const n = ++apercu.n;
+    if (formatApercu !== 'v') $('#apercu-h').src = urlApercu(brouillon, modeApercu, false).replace('?', `?n=${n}&`);
+    if (formatApercu !== 'h') $('#apercu-v').src = urlApercu(brouillon, modeApercu, true).replace('?', `?n=${n}&`);
   }, 200);
 }
-
+try { const f = localStorage.getItem('studioSeb:apercuFormat'); if (['deux', 'h', 'v'].includes(f)) formatApercu = f; } catch (e) { /* rien */ }
 apercu.n = 0;
 
 /* ----- Deux vues : la liste de mes lives, et la création ----- */
 function montrerVue(v, pousser = true) {
   $('#vue-liste').hidden = v !== 'liste'; $('#vue-creation').hidden = v !== 'creation';
   $('#btn-nouveau').hidden = v === 'creation';
+  document.body.classList.toggle('en-creation', v === 'creation');
   if (pousser) history.pushState(null, '', v === 'creation' ? '#nouveau' : location.pathname);
   scrollTo(0, 0);
-  if (v === 'creation') { apercu(); if (!enEdition) setTimeout(() => $('#f-titre').focus(), 50); }
+  if (v === 'creation') { majFormatApercu(); apercu(); if (!enEdition) setTimeout(() => $('#f-titre').focus(), 50); }
 }
 function ouvrirCreation(titre, bouton, modif) {
   $('#titre-form').textContent = titre; $('#btn-creer').textContent = bouton; $('#note-modif').hidden = !modif;

@@ -69,32 +69,61 @@
   .plus .menu small { display: block; color: var(--ui-muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
   .plus .menu .danger { color: var(--ui-ko); }
 
-  /* Création d'un live : le formulaire à gauche, l'aperçu qui suit à droite */
-  .creation { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: 40px; align-items: start; }
-  @media (max-width: 1000px) { .creation { grid-template-columns: 1fr; } .creation-apercu { order: -1; position: static !important; } }
-  .creation-apercu { position: sticky; top: 84px; }
-  .creation-apercu .etiquette { display: block; margin-bottom: 8px; }
-  .retour { border: 0; background: none; padding: 0; color: var(--ui-muted); font-size: 14px; margin-bottom: 14px; }
+  /* Création d'un live : l'aperçu à gauche (horizontal et vertical), ce qu'on choisit à droite. Tout tient dans l'écran. */
+  body.en-creation { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  #vue-creation { padding: 0; flex: 1; min-height: 0; }
+  .creation { display: grid; grid-template-columns: minmax(0, 1fr) 440px; height: 100%; }
+  .scene-apercu { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 24px 16px; background: var(--ui-bg); }
+  .apercu-barre { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .apercu-barre .segment { display: inline-grid; }
+  .apercu-barre .segment button { padding: 7px 14px; white-space: nowrap; }
+  .apercu-scene { flex: 1; min-height: 0; display: flex; align-items: flex-start; justify-content: center; gap: 20px; }
+  .ecran { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .ecran .cadre { position: relative; height: var(--h, 300px); aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--ui-line); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  .ecran.v .cadre { aspect-ratio: 9/16; }
+  .ecran iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .ecran figcaption { font-size: 12px; color: var(--ui-muted); white-space: nowrap; height: 18px; width: 0; min-width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+  .ecran figcaption b { color: var(--ui-text); font-weight: 600; margin-right: 6px; }
+  .apercu-scene[data-format="h"] .ecran.v, .apercu-scene[data-format="v"] .ecran.h { display: none; }
+  .creation-choix { display: flex; flex-direction: column; min-height: 0; background: var(--ui-panel); border-left: 1px solid var(--ui-line); }
+  .choix-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 24px; }
+  .creation-choix .pied-form { margin: 0; padding: 14px 20px; border-top: 1px solid var(--ui-line); background: var(--ui-panel); }
+  .creation-choix .pied-form .primaire { flex: 1; }
+  .creation-choix .option { background: var(--ui-panel2); }
+  .facultatif { margin: 26px 0 0; font-size: 12px; color: var(--ui-muted); }
+  @media (max-width: 900px) {
+    body.en-creation { height: auto; display: block; overflow: visible; }
+    .ecran figcaption span { display: none; }
+    .creation { display: block; height: auto; }
+    .scene-apercu { padding: 12px 14px; position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--ui-line); }
+    .apercu-scene { height: calc(43vw + 26px); flex: none; gap: 10px; }
+    .apercu-barre { margin-bottom: 10px; gap: 8px; }
+    .apercu-barre .segment button { padding: 6px 9px; font-size: 12px; }
+    .creation-choix { border-left: 0; }
+    .choix-corps { overflow: visible; }
+    .creation-choix .pied-form { position: sticky; bottom: 0; }
+  }
+  .retour { border: 0; background: none; padding: 0; color: var(--ui-muted); font-size: 13px; margin-bottom: 8px; }
   .retour:hover { color: var(--ui-text); background: none; }
-  .etape { display: flex; align-items: baseline; gap: 10px; margin: 34px 0 12px; font-size: 16px; font-weight: 600; }
+  .etape { display: flex; align-items: baseline; gap: 10px; margin: 22px 0 10px; font-size: 15px; font-weight: 600; }
   .etape .num { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ui-accent); }
-  #f-titre { font-size: 17px; padding: 12px 14px; }
+  #f-titre { font-size: 16px; padding: 11px 13px; }
+  #vue-creation h1 { font-size: 22px; }
 
   /* Galerie de thèmes : une image par thème, comme une vitrine */
-  .galerie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  @media (max-width: 520px) { .galerie { grid-template-columns: 1fr; } }
-  .theme-carte { position: relative; padding: 0; text-align: left; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; font-weight: 400; }
-  .theme-carte:hover { border-color: var(--ui-line2); background: var(--ui-panel); }
+  .galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .theme-carte { position: relative; padding: 0; text-align: left; background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 9px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; font-weight: 400; }
+  .theme-carte:hover { border-color: var(--ui-line2); background: var(--ui-panel2); }
   .theme-carte:active { transform: none; }
   .theme-img { position: relative; display: block; aspect-ratio: 16/9; background: #000; }
   .theme-img img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transition: opacity .25s; }
   .theme-img img.alt { opacity: 0; }
   .theme-carte:hover .theme-img img.alt { opacity: 1; }
-  .theme-txt { display: block; padding: 10px 12px 12px; }
-  .theme-txt b { display: block; font-weight: 600; font-size: 15px; }
-  .theme-txt small { display: block; color: var(--ui-muted); font-size: 13px; line-height: 1.4; margin-top: 2px; }
-  .theme-carte.actif { background: var(--ui-panel); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
-  .theme-carte.actif::after { content: '✓ Choisi'; position: absolute; top: 10px; left: 10px; background: var(--ui-accent); color: #111; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 6px; }
+  .theme-txt { display: block; padding: 6px 8px 7px; }
+  .theme-txt b { display: block; font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .theme-txt small { display: none; }
+  .theme-carte.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
+  .theme-carte.actif::after { content: '✓'; position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; display: grid; place-items: center; background: var(--ui-accent); color: #111; font-size: 12px; font-weight: 700; border-radius: 50%; }
   .option { margin-top: 12px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-panel); }
   .option > summary { cursor: pointer; padding: 12px 14px; font-weight: 500; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 10px; }
   .option > summary::-webkit-details-marker { display: none; }
@@ -133,7 +162,7 @@
   @media (max-width: 520px) { .grille2 { grid-template-columns: 1fr; } }
   code { background: var(--ui-input); border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
   kbd { color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
-  .pied-form { display: flex; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--ui-line); }
+  .pied-form { display: flex; gap: 10px; }
   .pied-form .primaire { padding: 12px 22px; font-size: 16px; }
 </style>
 </head>
@@ -187,23 +216,44 @@
 </main>
 
 <!-- Vue 2 : créer ou modifier un live -->
-<main class="wrap" id="vue-creation" hidden>
+<main id="vue-creation" hidden>
   <div class="creation">
-    <div>
-      <button class="retour" id="btn-retour" type="button">← Mes lives</button>
-      <h1 id="titre-form">Nouveau live</h1>
+    <section class="scene-apercu" aria-label="Aperçu de ton live">
+      <div class="apercu-barre">
+        <div class="segment" id="apercu-scenes" title="Les moments de ton live">
+          <button type="button" data-apercu="intro">Intro</button>
+          <button type="button" data-apercu="live" class="actif">Plateau</button>
+          <button type="button" data-apercu="live6">À six</button>
+          <button type="button" data-apercu="quiz">Quiz</button>
+          <button type="button" data-apercu="fin">Fin</button>
+        </div>
+        <span style="flex:1"></span>
+        <div class="segment" id="apercu-formats" title="Le format de l'image">
+          <button type="button" data-format="deux" class="actif">Les deux</button>
+          <button type="button" data-format="h">Horizontal</button>
+          <button type="button" data-format="v">Vertical</button>
+        </div>
+      </div>
+      <div class="apercu-scene" id="apercu-scene" data-format="deux">
+        <figure class="ecran h"><div class="cadre"><iframe id="apercu-h" title="Aperçu horizontal"></iframe></div><figcaption><b>Horizontal</b><span>YouTube, Twitch</span></figcaption></figure>
+        <figure class="ecran v"><div class="cadre"><iframe id="apercu-v" title="Aperçu vertical"></iframe></div><figcaption><b>Vertical</b><span>TikTok, Instagram</span></figcaption></figure>
+      </div>
+    </section>
 
-      <div class="etape"><span class="num">01</span>Le titre</div>
-      <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
+    <aside class="creation-choix">
+      <div class="choix-corps">
+        <button class="retour" id="btn-retour" type="button">← Mes lives</button>
+        <h1 id="titre-form">Nouveau live</h1>
 
-      <div class="etape"><span class="num">02</span>Le thème</div>
-      <div class="galerie" id="galerie"></div>
-      <details class="option" id="opt-plus">
-        <summary>Plus de thèmes <small>Super-héros, Horreur, Polar, Arène, Animation</small></summary>
-        <div class="option-corps"><div class="galerie" id="galerie-plus"></div></div>
-      </details>
+        <div class="etape"><span class="num">1</span>Le titre</div>
+        <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
+
+        <div class="etape"><span class="num">2</span>Le thème</div>
+        <div class="galerie" id="galerie"></div>
+
+        <p class="facultatif">Facultatif, tu peux y revenir plus tard :</p>
       <details class="option" id="opt-perso">
-        <summary>Personnaliser <small>Couleurs, police, logo, image de fond</small></summary>
+        <summary>Personnaliser le thème <small>Couleurs, police, logo</small></summary>
         <div class="option-corps">
           <div class="bloc">
             <div class="bloc-titre">Couleurs</div>
@@ -240,7 +290,7 @@
         </div>
       </details>
       <details class="option" id="opt-obs">
-        <summary>Importer mon habillage depuis OBS <small>Fond, logo, police, couleurs</small></summary>
+        <summary>Reprendre mon habillage OBS</summary>
         <div class="option-corps">
           <ol class="pas-obs">
             <li>Dans OBS : <b>Outils &gt; Scripts</b>, ajoute <a href="obs/exporter-vers-obseb.lua" download>exporter-vers-obseb.lua</a> (une seule fois), puis clique sur <b>Exporter vers OBSeb</b>.</li>
@@ -255,7 +305,9 @@
         </div>
       </details>
 
-      <div class="etape"><span class="num">03</span>Toi et ta chaîne</div>
+      <details class="option" id="opt-toi">
+        <summary>Mon nom et la durée <small>Nom à l'écran, compte, limite</small></summary>
+        <div class="option-corps">
       <div class="grille2">
         <div><label class="champ" for="f-hote" style="margin-top:0">Ton nom à l'écran</label><input type="text" id="f-hote" maxlength="28"></div>
         <div><label class="champ" for="f-handle" style="margin-top:0">Compte affiché à la fin</label><input type="text" id="f-handle" maxlength="40"></div>
@@ -269,23 +321,13 @@
       </select>
       <p class="aide">Le compte démarre avec le bouton « Démarrer le direct ». Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le direct s'arrête sur l'écran de fin.</p>
 
+        </div>
+      </details>
+        <p class="aide" id="note-modif" hidden>Après une modification, renvoie le lien invités et remets le lien OBS à jour : ils contiennent le thème.</p>
+      </div>
       <div class="pied-form">
         <button class="primaire" id="btn-creer">Créer le live</button>
         <button id="btn-annuler">Annuler</button>
-      </div>
-      <p class="aide" id="note-modif" hidden>Après une modification, renvoie le lien invités et remets le lien OBS à jour : ils contiennent le thème.</p>
-    </div>
-
-    <aside class="creation-apercu">
-      <span class="etiquette">Aperçu en vrai</span>
-      <div class="cadre169"><iframe id="apercu-theme" title="Aperçu du thème"></iframe></div>
-      <div class="segment" style="margin-top:10px">
-        <button type="button" data-apercu="intro">Intro</button>
-        <button type="button" data-apercu="live" class="actif">3 pers.</button>
-        <button type="button" data-apercu="live6">6 pers.</button>
-        <button type="button" data-apercu="quiz">Quiz</button>
-        <button type="button" data-apercu="fin">Fin</button>
-        <button type="button" data-apercu="vertical">Vertical</button>
       </div>
     </aside>
   </div>
