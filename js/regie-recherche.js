@@ -6,6 +6,7 @@ const CLE_ONGLET = 'studioSeb:onglet';
 /* Sur téléphone, un seul volet à la fois : le plateau (caméras, invités) ou l'outil choisi dans la barre du bas */
 const PETIT_ECRAN = matchMedia('(max-width: 1000px)');
 function montrerPlateau() { document.body.classList.add('volet-plateau'); }
+let nonLus = 0;   // déclaré avant le premier ouvrirOnglet : la régie rouverte sur l'onglet Chat plantait ici
 function ouvrirOnglet(nom, auDepart) {
   if (nom === 'plateau') return montrerPlateau();
   if (!auDepart) document.body.classList.remove('volet-plateau');
@@ -22,7 +23,6 @@ try { ongletDepart = localStorage.getItem(CLE_ONGLET) || ongletDepart; } catch (
 ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habillage', true);
 
 /* Messages du chat non lus quand l'onglet Chat est fermé */
-let nonLus = 0;
 function majNonLus() { const p = $('#chat-non-lus'); p.hidden = !nonLus; p.textContent = nonLus > 99 ? '99+' : nonLus; }
 new MutationObserver(muts => {
   if (!$('[data-onglet="chat"]').hidden) return;

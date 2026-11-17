@@ -211,22 +211,6 @@ body.vertical .qz-choix { grid-template-columns: 1fr; }
 #classement-liste li span { flex: 1; }
 #classement-liste li em { font-style: normal; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* ----- Message du chat à l'écran ----- */
-#chat-bulle {
-  position: absolute; right: 70px; bottom: 58px; z-index: 6; width: 820px; max-height: 120px; overflow: hidden;
-  background: color-mix(in srgb, var(--bg) 90%, transparent); border-left: 6px solid var(--accent); border-radius: 14px;
-  padding: 12px 22px 14px; box-shadow: 0 20px 60px rgba(0,0,0,.6); transition: transform .45s ease, opacity .45s ease;
-}
-#chat-bulle.cachee { opacity: 0; transform: translateX(40px); }
-body.chat-on #bandeau { right: 920px; }
-#chat-bulle .cb-tete { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-#chat-bulle i { font: 700 16px var(--font-body); font-style: normal; color: #fff; border-radius: 6px; padding: 4px 8px; }
-#chat-bulle b { font: 700 22px var(--font-body); color: var(--accent); }
-#cb-texte { font: 600 27px/1.2 var(--font-body); color: var(--text); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-body.vertical #chat-bulle { left: 40px; right: 120px; top: 240px; bottom: auto; width: auto; max-height: 150px; }
-body.vertical #cb-texte { font-size: 32px; }
-body.vertical.chat-on #bandeau { opacity: 0; right: 40px; }
-
 /* Repères des zones sûres (aperçu de la régie uniquement, jamais diffusés) */
 #zones-sures { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
 #zones-sures div { position: absolute; background: repeating-linear-gradient(45deg, rgba(255,59,59,.22) 0 14px, rgba(255,59,59,.08) 14px 28px); border: 2px dashed rgba(255,90,90,.8); color: #fff; font: 700 22px Montserrat, sans-serif; display: grid; place-items: center; text-align: center; text-shadow: 0 2px 6px #000; }
@@ -511,10 +495,6 @@ body.vertical .plein .compte { font-size: calc(170px * var(--kt, 1)); }
 [data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .message { flex: 0 1 auto; min-width: 0; color: var(--muted); font-size: 22px; }
 [data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .direct { flex: none; order: 2; }
 /* un message du chat à l'écran : il se pose à droite du socle, aligné sur lui */
-[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #chat-bulle { bottom: 78px; height: 100px; max-height: 100px; box-sizing: border-box; padding: 7px 20px 8px; border-radius: 6px; box-shadow: none; display: flex; flex-direction: column; justify-content: center; }
-[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #chat-bulle .cb-tete { margin-bottom: 2px; }
-[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #cb-texte { font-size: 24px; line-height: 1.15; }
-[data-plateau="mur"][data-bandeau="classique"] body.chat-on:not(.vertical) #bandeau { right: 896px; }
 [data-plateau="mur"][data-bandeau="classique"] body.chat-on:not(.vertical) #bandeau .message { display: none; }
 [data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau { top: 254px; }
 [data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau .logo { --h: 140px; }

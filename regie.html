@@ -294,7 +294,7 @@
   .interrupteur span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
   .interrupteur input:checked + span { background: var(--ui-accent); }
   .interrupteur input:checked + span::after { transform: translateX(16px); background: var(--ui-sur-accent); }
-  #vue-invite { position: fixed; left: 18px; bottom: 18px; z-index: 70; width: 400px; height: min(700px, calc(100vh - 36px)); min-width: 300px; min-height: 320px; display: flex; flex-direction: column; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; box-shadow: 0 24px 80px rgba(0,0,0,.6); overflow: hidden; resize: both; }
+  #vue-invite { position: fixed; left: 18px; bottom: 18px; z-index: 70; width: 340px; height: min(700px, calc(100vh - 36px)); min-width: 300px; min-height: 320px; display: flex; flex-direction: column; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; box-shadow: 0 24px 80px rgba(0,0,0,.6); overflow: hidden; resize: both; }
   #vue-invite[hidden] { display: none; }
   .vi-tete { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; cursor: grab; user-select: none; border-bottom: 1px solid var(--ui-line); flex: none; }
   .vi-tete b { flex: 1; font-size: 13px; }
@@ -321,6 +321,7 @@
   .qz-image-apercu { display: flex; gap: 10px; align-items: center; }
   .qz-image-apercu img { width: 120px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #000; }
   .qz-dispos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .chat-styles { grid-template-columns: repeat(4, 1fr); } .chat-styles svg { width: 100%; height: auto; aspect-ratio: 16/9; } .chat-styles path.q { fill: var(--ui-accent); }
   .qz-dispos button { display: grid; justify-items: center; gap: 6px; font-size: 12px; padding: 8px 4px; }
   .qz-dispos svg { width: 64px; height: 36px; background: var(--ui-input); border-radius: 4px; }
   .qz-dispos rect { fill: var(--ui-line2); } .qz-dispos rect.q { fill: var(--ui-accent); }
@@ -747,12 +748,23 @@
           <input type="password" id="chat-cle-yt" placeholder="Colle ta clé d'API YouTube ici" autocomplete="off">
         </details>
         <div id="chat-liste"><div class="vide">Clique sur un message pour l'afficher.</div></div>
-        <label class="ligne-case" style="margin-top:10px" title="Dans une colonne à côté des caméras, jamais par-dessus."><input type="checkbox" id="chat-fil"> <span><b>Tout le chat à l'écran</b></span></label>
-        <div class="ligne-boutons" style="margin-top:8px;align-items:center;flex-wrap:nowrap">
-          <span class="aide" style="white-space:nowrap" title="Durée d'affichage du message sur lequel tu cliques">À l'écran pendant</span>
-          <select id="chat-duree" style="width:auto"><option value="5">5 s</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="60">1 min</option><option value="0">sans limite</option></select>
-          <button class="petit" id="chat-masquer" style="margin-left:auto">Masquer</button>
+        <h3 class="sous-titre" title="La façon dont le message sur lequel tu cliques arrive à l'écran. Tu peux changer pendant qu'un message est affiché.">Message à l'écran</h3>
+        <div class="qz-dispos chat-styles" id="chat-styles">
+          <button data-cstyle="bulle" title="Une bulle de BD qui saute à l'écran">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><path class="q" d="M30 12h26a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4H38l-5 5v-5h-3a4 4 0 0 1-4-4v-9a4 4 0 0 1 4-4z"/></svg>Bulle</button>
+          <button data-cstyle="depeche" title="Un bandeau sur toute la largeur, le message tapé lettre par lettre">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="4" y="22" width="14" height="10" rx="1.5"/><rect x="18" y="22" width="42" height="10" rx="1.5"/></svg>Dépêche</button>
+          <button data-cstyle="affiche" title="Une grande citation sur le bas de l'image, les mots arrivent un à un">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="12" y="16" width="40" height="4" rx="1.5"/><rect class="q" x="18" y="23" width="28" height="4" rx="1.5"/><rect x="26" y="30" width="12" height="2.5" rx="1"/></svg>Affiche</button>
+          <button data-cstyle="postit" title="Une note collée de travers, plaquée sur l'image">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="34" y="11" width="24" height="20" rx="1.5" transform="rotate(-6 46 21)"/></svg>Post-it</button>
         </div>
+        <div class="ligne-boutons" style="margin-top:8px;align-items:center;flex-wrap:nowrap">
+          <button class="petit" id="chat-test" title="Ajoute un faux message et l'affiche à l'écran, pour essayer sans attendre le chat">Message de test</button>
+          <select id="chat-duree" style="width:auto;margin-left:auto" title="Durée d'affichage du message sur lequel tu cliques"><option value="5">5 s</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="60">1 min</option><option value="0">sans limite</option></select>
+          <button class="petit" id="chat-masquer">Masquer</button>
+        </div>
+        <label class="ligne-case" style="margin-top:10px" title="Dans une colonne à côté des caméras, jamais par-dessus."><input type="checkbox" id="chat-fil"> <span><b>Tout le chat à l'écran</b></span></label>
       </section>
       <section class="onglet" data-onglet="musique" hidden>
         <button class="primaire mu-ajout" id="mu-ajouter">+ Ajouter une musique</button>
@@ -821,9 +833,9 @@
 <script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>
-<script src="js/regie-chat.js?v=79a3ced6"></script>
+<script src="js/regie-chat.js?v=77ecb09b"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
-<script src="js/regie-recherche.js?v=8986a628"></script>
+<script src="js/regie-recherche.js?v=3de71803"></script>
 <script src="js/regie-direct.js?v=6a52613d"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>

@@ -14,6 +14,7 @@ const lireCleYt = () => { try { return localStorage.getItem(CLE_YT) || ''; } cat
 const PLATEFORMES = {
   youtube: { nom: 'YouTube', court: 'YT', couleur: '#FF0000' },
   twitch: { nom: 'Twitch', court: 'TW', couleur: '#9146FF' },
+  test: { nom: 'Test', court: 'TEST', couleur: '#6b7280' },
 };
 const messagesChat = [];
 const MAX_MESSAGES = 200;
@@ -62,6 +63,28 @@ function masquerMessageChat() {
   envoyer();
 }
 $('#chat-masquer').onclick = masquerMessageChat;
+
+/* Message de test : pour essayer le chat et la mise en avant sans attendre un vrai message */
+const ESSAIS_CHAT = [
+  ['Camille', 'Salut ! On vous entend super bien, vous parlez de quel film ce soir ?'],
+  ['BondFan_007', 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !'],
+  ['lea_cine', 'Trop bien ce live, continuez !'],
+  ['Malik', 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours ?'],
+];
+let nEssaiChat = 0;
+$('#chat-test').onclick = () => {
+  const [auteur, texte] = ESSAIS_CHAT[nEssaiChat++ % ESSAIS_CHAT.length];
+  const m = { p: 'test', auteur, texte };
+  ajouterMessage(m);
+  afficherMessageChat(m, $('#chat-liste').lastElementChild);
+};
+
+/* Les quatre façons de mettre un message en avant */
+const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit'];
+if (!STYLES_CHAT.includes(etat.chatStyle)) etat.chatStyle = 'bulle';
+function majStylesChat() { $$('#chat-styles button').forEach(b => b.classList.toggle('actif', b.dataset.cstyle === etat.chatStyle)); }
+$$('#chat-styles button').forEach(b => b.onclick = () => { etat.chatStyle = b.dataset.cstyle; majStylesChat(); envoyer(); });
+majStylesChat();
 
 function statut(p, texte, ok) {
   const el = $('#chat-etat-' + p);

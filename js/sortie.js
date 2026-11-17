@@ -305,19 +305,31 @@ function gererMusique(scene) {
 }
 
 /* ----- Message du chat mis en avant ----- */
-const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'] };
-let chatAfficheTs = 0;
+const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'], test: ['#6b7280', 'Test'] };
+const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit'];
+let chatAfficheCle = '', chatFrappe = null;
 function gererChat() {
   const c = etat && etat.chatAffiche;
+  const style = STYLES_CHAT.includes(etat && etat.chatStyle) ? etat.chatStyle : 'bulle';
   const visible = !!c && sceneCameras(etat.scene);
+  document.body.dataset.chatStyle = style;
   $('#chat-bulle').classList.toggle('cachee', !visible);
   document.body.classList.toggle('chat-on', visible);
-  if (!c || c.ts === chatAfficheTs) return;
-  chatAfficheTs = c.ts;
+  if (!c) { chatAfficheCle = ''; return; }
+  if (c.ts + style === chatAfficheCle) return;      // nouveau message, ou autre style : il rejoue son arrivée
+  chatAfficheCle = c.ts + style;
   const [coul, nom] = COULEURS_CHAT[c.p] || ['#555', ''];
   $('#cb-p').style.background = coul; $('#cb-p').textContent = nom;
   $('#cb-auteur').textContent = c.auteur;
-  $('#cb-texte').textContent = c.texte;
+  const t = $('#cb-texte'), texte = String(c.texte || '');
+  t.style.setProperty('--k', texte.length > 190 ? .68 : texte.length > 120 ? .8 : texte.length > 70 ? .9 : 1);   // un long message s'écrit plus petit
+  clearInterval(chatFrappe);
+  if (style === 'depeche') {                        // tapé à la machine, en 2 à 3 secondes quelle que soit la longueur
+    let n = 0; const pas = Math.max(1, Math.ceil(texte.length / 70));
+    t.textContent = '';
+    chatFrappe = setInterval(() => { n = Math.min(texte.length, n + pas); t.textContent = texte.slice(0, n); if (n >= texte.length) clearInterval(chatFrappe); }, 35);
+  } else t.innerHTML = texte.split(/\s+/).map((m, i) => `<span style="--i:${i}">${esc(m)}</span>`).join(' ');
+  const b = $('#chat-bulle .cb-boite'); b.classList.remove('entree'); void b.offsetWidth; b.classList.add('entree');
 }
 
 /* ----- Tout le chat à l'écran : une colonne à côté des caméras ----- */
@@ -710,7 +722,7 @@ if (DEMO) {
   if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
-  if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
+  if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
