@@ -47,8 +47,10 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     iframe = document.createElement('iframe');
     iframe.allow = IFRAME_ALLOW;
     const nb = etat ? etat.onair.length : 1;
+    // Aperçu : l'hôte reste net (flux local), les invités en qualité réduite pour ne pas saturer leur connexion
+    const debitApercu = id === idHote(session) ? 2500 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
     const opts = PREVIEW
-      ? { bitrate: nb > 6 ? 150 : 300, noaudio: true }
+      ? { bitrate: ecran ? 1500 : debitApercu, noaudio: true }
       : { bitrate: ecran ? 8000 : 6000, audiobitrate: 128 };
     iframe.src = urlVoir(session, id, opts);
     iframe.addEventListener('load', () => {

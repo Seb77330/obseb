@@ -57,7 +57,7 @@ maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true });
 
 /* ----- Aperçu de l'antenne ----- */
 const apercu = $('#apercu');
-apercu.src = `sortie.html?preview=1${location.hash.replace(/&k=[^&]*/, '')}`;
+apercu.src = `sortie.html?preview=regie${location.hash.replace(/&k=[^&]*/, '')}`;
 apercu.addEventListener('load', () => envoyer());
 
 /* ----- Partage d'écran ----- */
