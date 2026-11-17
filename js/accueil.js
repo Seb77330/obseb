@@ -278,3 +278,11 @@ if (location.hash === '#nouveau') montrerVue('creation', false);
 document.addEventListener('click', e => {
   $$('details.plus[open]').forEach(d => { if (!d.contains(e.target) || e.target.closest('.menu button')) d.open = false; });
 });
+
+/* ----- Les formules ----- */
+$('#btn-formules').onclick = () => { if ($('#vue-liste').hidden) montrerVue('liste'); $('#formules').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+$$('#formules [data-formule]').forEach(b => b.onclick = () => {
+  if (b.dataset.formule === 'gratuit') { $('#btn-nouveau').click(); return; }
+  // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
+  toast("Le paiement en ligne n'est pas encore ouvert. Pour l'instant, tout le studio est accessible gratuitement.");
+});
