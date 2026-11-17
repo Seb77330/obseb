@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Watch Party : le minuteur du film",
+  "short_name": "Watch Party",
+  "version": "1.0.0",
+  "description": "Envoie le minuteur du film que tu regardes (Netflix, Prime Video, Disney+, YouTube, VLC…) à ta régie de live. Le film lui-même n'est jamais envoyé.",
+  "icons": { "16": "icone16.png", "48": "icone48.png", "128": "icone128.png" },
+  "action": { "default_popup": "popup.html", "default_icon": { "16": "icone16.png", "48": "icone48.png" }, "default_title": "Watch Party" },
+  "background": { "service_worker": "fond.js" },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://127.0.0.1:8080/*"],
+  "content_scripts": [
+    { "matches": ["https://seb77330.github.io/obseb/*"], "js": ["pont.js"], "run_at": "document_idle" }
+  ]
+}

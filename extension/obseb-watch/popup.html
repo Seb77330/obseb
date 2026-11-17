@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; width: 320px; background: #101216; color: #e9ebef; font: 14px/1.45 system-ui, 'Segoe UI', sans-serif; }
+  .wrap { padding: 14px; }
+  h1 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
+  .sous { margin: 0 0 12px; color: #9299a6; font-size: 12.5px; }
+  .ecran { background: #08090b; border: 1px solid #23272f; border-radius: 10px; padding: 12px; text-align: center; margin-bottom: 12px; }
+  .temps { font: 500 30px/1 ui-monospace, 'Cascadia Mono', Consolas, monospace; letter-spacing: .04em; }
+  .etat { margin-top: 6px; font-size: 12px; color: #9299a6; }
+  .etat b { color: #2fd27a; font-weight: 600; }
+  button { display: block; width: 100%; box-sizing: border-box; border: 1px solid #2e333d; background: #171a20; color: inherit; font: inherit; font-weight: 500; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-top: 8px; }
+  button:hover { background: #1e222a; }
+  button.primaire { background: #ffd21f; border-color: #ffd21f; color: #111; font-weight: 600; }
+  button.primaire:hover { background: #ffdb4d; }
+  input { width: 100%; box-sizing: border-box; background: #08090b; border: 1px solid #2e333d; color: inherit; font: inherit; padding: 9px 10px; border-radius: 8px; margin-top: 8px; }
+  details { margin-top: 10px; border-top: 1px solid #23272f; padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 500; }
+  .aide { color: #9299a6; font-size: 12px; margin: 8px 0 0; }
+  .erreur { color: #ff8a80; font-size: 12.5px; margin: 8px 0 0; }
+  .voyant { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3a404b; margin-right: 6px; }
+  .voyant.ok { background: #2fd27a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Watch Party</h1>
+  <p class="sous">Le minuteur du film part vers ta régie. Le film, lui, n'est jamais envoyé.</p>
+  <div class="ecran">
+    <div class="temps" id="temps">–:––:––</div>
+    <div class="etat" id="etat">Rien n'est suivi pour l'instant.</div>
+  </div>
+  <button class="primaire" id="suivre">Suivre le film de cet onglet</button>
+  <button id="arreter" hidden>Arrêter de suivre</button>
+  <p class="erreur" id="erreur" hidden></p>
+  <p class="aide"><span class="voyant" id="v-studio"></span><span id="t-studio">Studio : aucune page ouverte.</span></p>
+  <details id="bloc-vlc">
+    <summary>Mon film est dans VLC</summary>
+    <p class="aide">Dans VLC : Outils, Préférences, Tous, Interface, Interfaces principales, coche Web. Puis Lua, Lua HTTP, choisis un mot de passe. Relance VLC et ouvre ton film.</p>
+    <input type="password" id="mdp" placeholder="Mot de passe choisi dans VLC" autocomplete="off">
+    <button id="vlc">Suivre VLC</button>
+  </details>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
