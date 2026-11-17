@@ -53,6 +53,7 @@ function remplirForm() {
   $('#f-logotexte').value = t.logoTexte || '';
   $('#f-mintro').value = t.musiqueIntro || ''; $('#f-mfin').value = t.musiqueFin || '';
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
+  $('#f-limite').value = String(brouillon.limite || 0);
   $$('.preset').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
 }
 function surcharge(champ, valeur) {
@@ -73,6 +74,7 @@ $('#f-mfin').onchange = e => surcharge('musiqueFin', e.target.value.trim());
 $('#f-logotexte').oninput = e => surcharge('logoTexte', e.target.value.trim());
 $('#f-hote').oninput = e => { brouillon.hote = e.target.value || 'Sebastian'; apercu(); };
 $('#f-handle').oninput = e => { brouillon.handle = e.target.value || HANDLE_DEFAUT; apercu(); };
+$('#f-limite').onchange = e => { brouillon.limite = +e.target.value || 0; };
 $$('[data-apercu]').forEach(b => b.onclick = () => {
   modeApercu = b.dataset.apercu;
   $$('[data-apercu]').forEach(x => x.classList.toggle('actif', x === b));
@@ -151,7 +153,7 @@ function afficherSessions() {
     };
     el.querySelector('[data-a=dupliquer]').onclick = () => {
       enEdition = null;
-      brouillon = Object.assign(nouvelleSession('', session.theme.preset), { theme: JSON.parse(JSON.stringify(session.theme)), hote: session.hote, handle: session.handle });
+      brouillon = Object.assign(nouvelleSession('', session.theme.preset), { theme: JSON.parse(JSON.stringify(session.theme)), hote: session.hote, handle: session.handle, limite: session.limite || 0 });
       $('#titre-form').textContent = 'Nouvelle session (même thème)';
       $('#btn-creer').textContent = 'Créer la session';
       $('#btn-annuler').hidden = false; $('#note-modif').hidden = true;

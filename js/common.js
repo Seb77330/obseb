@@ -128,7 +128,7 @@ function queryParams() {
    { v, titre, hote, handle, room, theme:{preset,...surcharges} } */
 function nouvelleSession(titre, preset = 'minimal') {
   return {
-    v: 1, titre: titre ?? 'Mon live', hote: 'Sebastian', handle: HANDLE_DEFAUT,
+    v: 1, titre: titre ?? 'Mon live', hote: 'Sebastian', handle: HANDLE_DEFAUT, limite: 135,
     room: 'sebcs' + rnd(10), theme: { preset }, cree: Date.now()
   };
 }
@@ -265,8 +265,7 @@ function grilleCols(n) {
   if (n <= 4) return [2, 2];
   if (n <= 6) return [3, 2];
   if (n <= 9) return [3, 3];
-  if (n <= 12) return [4, 3];
-  return [5, 3];   // jusqu'à 13 : toi + 12 invités
+  return [4, 3];   // jusqu'à 11 : toi + 10 invités
 }
 /* Rectangle 16:9 le plus grand qui tient dans (w,h), centré */
 function fit169(x, y, w, h) {
@@ -332,7 +331,7 @@ function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
       r[k] = { x: x0 + col * (t.w + gap) + dx, y: y0 + row * (t.h + gap), w: t.w, h: t.h };
     });
   }
-  const max = Math.min(ids.length, 13);
+  const max = Math.min(ids.length, 11);
   const g2 = 12, cw = (colW - g2 * (nc - 1)) / (nc || 1), cellH = cw * 9 / 16;
   const nr = Math.ceil(max / (nc || 1));
   const totalH = nr * cellH + (nr - 1) * g2;
@@ -406,7 +405,7 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
   }
   if (ids.length) {
     const y = zone.y + hautH + (hautH ? gap : 0), h = zone.h - (y - zone.y);
-    const m = Math.min(ids.length, 13);
+    const m = Math.min(ids.length, 11);
     const nc = m <= 2 ? m : m <= 6 ? 2 : m <= 9 ? 3 : 4;
     Object.assign(r, grilleCellules(ids.slice(0, m), zone.x, y, zone.w, h, gap, [nc, Math.ceil(m / nc)]));
   }

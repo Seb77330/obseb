@@ -379,7 +379,7 @@ if (DEMO) {
   const st = etatParDefaut(session);
   st.scene = SCENE_FORCEE || 'live';
   st.noms = {}; st.onair = [];
-  for (let i = 0; i < Math.min(DEMO, 13); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
+  for (let i = 0; i < Math.min(DEMO, 11); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
   const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };

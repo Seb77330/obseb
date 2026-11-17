@@ -177,6 +177,14 @@
         <div><label class="champ" for="f-hote" style="margin-top:0">Ton nom à l'écran</label><input type="text" id="f-hote" maxlength="28"></div>
         <div><label class="champ" for="f-handle" style="margin-top:0">Compte affiché à la fin</label><input type="text" id="f-handle" maxlength="40"></div>
       </div>
+      <label class="champ" for="f-limite">Durée maximale du live</label>
+      <select id="f-limite">
+        <option value="0">Pas de limite</option>
+        <option value="60">1 h</option>
+        <option value="90">1 h 30</option>
+        <option value="135">2 h 15</option>
+      </select>
+      <p class="aide">Le compte commence quand tu passes en Live. Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le live passe sur l'écran de fin tout seul. Tu peux toujours finir avant.</p>
 
       <div class="ligne-boutons" style="margin-top:18px">
         <button class="primaire" id="btn-creer">Créer la session</button>

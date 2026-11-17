@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const session = lireSession();
 const cle = hashParams().get('k');
-const MAX_ANTENNE = 13;          // toi + 12 invités
+const MAX_ANTENNE = 11;          // toi + 10 invités
 
 if (!session || !cle) {
   $('#bloque').hidden = false;
@@ -119,11 +119,38 @@ function noterLiveTermine() {
 }
 function changerScene(s) {
   if (s === 'fin' && etat.scene !== 'fin') noterLiveTermine();
+  // limiteur : le compte part au premier passage en Live, et repart de zéro si on revient à l'intro après la fin
+  if ((s === 'live' || s === 'partage') && !etat.debutLive) etat.debutLive = Date.now();
+  if (s === 'intro' && etat.scene === 'fin') { etat.debutLive = 0; limiteAtteinte = false; }
   if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) toast('Aucune source affichée : active au moins une source (colonne de gauche)');
   etat.scene = s; envoyer();
 }
 function changerLayout(l) { etat.layout = l; envoyer(); }
 $$('[data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene));
+
+/* ----- Limiteur de durée : visible dans la régie seulement (ni les invités ni les spectateurs) ----- */
+const LIMITE_MS = (+session.limite || 0) * 60000;
+let limiteAtteinte = false;
+const hms = ms => { const t = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0'); };
+const dureeTexte = min => (min >= 60 ? Math.floor(min / 60) + ' h' : '') + (min % 60 ? ' ' + (min % 60) + (min >= 60 ? '' : ' min') : '');
+function majLimiteur() {
+  const el = $('#limiteur');
+  if (!LIMITE_MS) { el.hidden = true; return; }
+  el.hidden = false;
+  if (!etat.debutLive) { el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()} · démarre au passage en Live`; return; }
+  const reste = etat.debutLive + LIMITE_MS - Date.now();
+  if (etat.scene === 'fin') { el.className = 'limiteur'; el.textContent = 'Live terminé'; return; }
+  if (reste <= 0) {
+    el.className = 'limiteur alerte'; el.textContent = 'Temps écoulé';
+    if (!limiteAtteinte) { limiteAtteinte = true; changerScene('fin'); toast('Durée maximale atteinte : le live passe sur l\'écran de fin'); }
+    return;
+  }
+  const alerte = reste <= 20 * 60000;
+  el.className = 'limiteur' + (alerte ? ' alerte' : '');
+  el.textContent = alerte ? `Attention : plus que ${hms(reste)}` : `Fin du live dans ${hms(reste)}`;
+}
+setInterval(majLimiteur, 250); majLimiteur();
 $$('[data-layout]').forEach(b => b.onclick = () => changerLayout(b.dataset.layout));
 $('#auto-antenne').checked = !!etat.autoAntenne;
 $('#auto-antenne').onchange = e => { etat.autoAntenne = e.target.checked; envoyer(); };

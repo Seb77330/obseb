@@ -99,3 +99,9 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .affichage-pop label small { display: block; color: var(--ui-muted); font-size: 12px; }
 .bouton-affichage { position: relative; }
 .affichage-pop[hidden] { display: none; }
+
+/* Limiteur de durée (régie) */
+.limiteur { font-size: 13px; font-weight: 500; line-height: 1; color: var(--ui-muted); background: var(--ui-panel2); border-radius: 999px; padding: 6px 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.limiteur.alerte { color: #fff; background: #d62c2c; font-size: 16px; font-weight: 700; padding: 8px 16px; animation: limite-pouls 1s ease-in-out infinite; }
+@keyframes limite-pouls { 50% { box-shadow: 0 0 0 6px rgba(214,44,44,.25); } }
+@media (prefers-reduced-motion: reduce) { .limiteur.alerte { animation: none; } }
