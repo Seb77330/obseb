@@ -74,11 +74,13 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     const nb = etat ? etat.onair.length : 1;
     // Aperçu : l'hôte reste net (flux local), les invités en qualité réduite pour ne pas saturer leur connexion
     const estHote = id === idHote(session);
-    const debitApercu = estHote ? 6000 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
+    // aperçus : basse qualité pour tout le monde, toi compris (chaque fenêtre qui te regarde coûte un encodage à ton PC)
+    const debitApercu = estHote ? 1500 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
     const opts = PREVIEW
       ? { bitrate: ecran ? 1500 : debitApercu, noaudio: true }
       // Sortie OBS : ta caméra passe par ton propre PC, donc on peut monter très haut sans coût internet
-      : { bitrate: ecran ? 10000 : (estHote ? 20000 : 8000), audiobitrate: 128, codec: 'vp9,h264' };
+      // scale=100 : la sortie OBS reçoit la définition d'origine (1080p), sans la réduction automatique à la taille de la tuile
+      : { bitrate: ecran ? 10000 : (estHote ? 20000 : 8000), audiobitrate: 128, codec: 'vp9,h264', scale: 100 };
     iframe.src = urlVoir(session, id, opts);
     iframe.addEventListener('load', () => {
       if (!PREVIEW) ordre(iframe, { getLoudness: true });

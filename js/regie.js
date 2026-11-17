@@ -328,7 +328,9 @@ addEventListener('message', e => {
       const n = d.stats.total_outbound_connections;
       const el = $('#etat-camera');
       if (typeof n === 'number' && n === 0) el.innerHTML = '<span style="color:var(--ui-red)">●</span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span style="color:var(--ui-green)">●</span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`;
+      else if (q.h || n) el.innerHTML = `<span style="color:var(--ui-green)">●</span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`
+        // les aperçus reçoivent volontairement une image réduite ; seule la sortie OBS demande la 1080p
+        + (q.h && q.h < 1000 ? '<br><span class="aide">Aperçus en qualité réduite : la 1080p part dès que la sortie OBS est ouverte.</span>' : '');
     }
     if (d.streamIDs) {
       listeRecue = true;
