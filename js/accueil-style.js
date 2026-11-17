@@ -50,6 +50,7 @@ $$('.depot[data-cible]').forEach(d => {
 function majVisuels() {
   const t = themeComplet(brouillon);
   $$('.police').forEach(b => b.classList.toggle('actif', b.dataset.font === t.fontTitle));
+  $$('.coins button').forEach(b => b.classList.toggle('actif', b.dataset.coin === (t.logoPlace || 'bg')));
   $$('.depot[data-cible]').forEach(d => {
     const v = t[CHAMP_THEME[d.dataset.cible]];
     const vue = d.querySelector('.depot-vue');
@@ -278,3 +279,6 @@ $('#style-enregistrer').onclick = () => {
 };
 $('#style-nom').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#style-enregistrer').click(); } };
 dessinerStyles();
+
+/* ----- Place du logo : un clic sur le coin voulu (en bas à gauche d'office) ----- */
+$$('.coins button').forEach(b => b.onclick = () => { surcharge('logoPlace', b.dataset.coin === 'bg' ? '' : b.dataset.coin); majVisuels(); });

@@ -80,6 +80,7 @@ body.sortie { background: #000; }
   background: linear-gradient(135deg, var(--bg2), var(--bg));
 }
 .tuile.demo .attente { color: #fff; font-size: 64px; font-family: var(--font-title); }
+.tuile.silhouette .attente { background-size: cover; background-position: center; }
 
 /* Bandeau bas */
 #bandeau {
@@ -105,6 +106,22 @@ body.sortie { background: #000; }
 #bandeau .direct b { width: 12px; height: 12px; border-radius: 50%; background: #fff; }
 @keyframes clign { 50% { opacity: .25; } }
 #bandeau .message { color: var(--text); letter-spacing: 0; text-transform: none; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ----- Place du logo : les quatre coins (thème : logoPlace) -----
+   En bas, il fait partie du bandeau, à gauche ou à droite. En haut, il se pose dans le coin de l'image.
+   En vertical il reste dans le bandeau (le haut et le bas de l'écran sont pris par l'appli) : seul le côté compte. */
+#logo-coin {
+  display: none; position: absolute; top: 88px; z-index: 5; --h: 84px; height: var(--h); min-width: var(--h); box-sizing: border-box;
+  padding: 0 14px; place-items: center; overflow: hidden; border-radius: 8px; background: var(--accent); color: var(--bg);
+  font: 400 32px/0.95 var(--font-title); text-align: center; transition: opacity .5s ease;
+}
+#logo-coin.image { padding: 0; min-width: 0; background: none; border-radius: 0; overflow: visible; filter: drop-shadow(0 4px 14px rgba(0,0,0,.45)); }
+#logo-coin img { height: var(--h); width: auto; max-width: calc(var(--h) * 3.2); object-fit: contain; display: block; }
+[data-logo="hg"] body:not(.vertical) #logo-coin { display: grid; left: 88px; }
+[data-logo="hd"] body:not(.vertical) #logo-coin { display: grid; right: 88px; }
+[data-logo^="h"] body:not(.vertical) #bandeau .logo { display: none; }
+[data-logo$="d"] #bandeau .logo { order: 2; }
+body.sans-decor #logo-coin { display: none !important; }
 
 /* Écrans plein cadre : intro, fin */
 .plein { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 160px; }
@@ -492,6 +509,44 @@ body.vertical .plein .compte { font-size: calc(170px * var(--kt, 1)); }
 #ecran .tuile { clip-path: none; }
 
 /* ----- Étiquette du nom sous chaque personne ----- */
+/* ----- Plateau « mur » : un seul écran partagé (caméras collées, sans cartes flottantes) ----- */
+[data-plateau="mur"] .tuile { border-radius: 6px; box-shadow: none; outline: 0; }
+/* qui parle : un cadre à la couleur du thème, par-dessus l'image */
+[data-plateau="mur"] .tuile::after { content: ''; position: absolute; inset: 0; z-index: 3; border: 3px solid var(--accent); border-radius: inherit; opacity: 0; transition: opacity .2s; pointer-events: none; }
+[data-plateau="mur"] .tuile.parle::after { opacity: 1; }
+[data-plateau="mur"][data-deco="minimal"] .deco { display: none; }   /* plus de filet sur le côté : l'écran et son socle suffisent */
+/* le nom : un onglet posé dans l'angle, qui passe à la couleur du thème quand la personne parle */
+[data-plateau="mur"][data-etiquette="barre"] .tuile .nom {
+  left: 0; bottom: 0; max-width: 86%; border-left: 0; border-radius: 0 6px 0 0; padding: 10px 18px 9px 36px;
+  background: linear-gradient(var(--accent), var(--accent)) 15px 50% / 9px 9px no-repeat, var(--bg); color: var(--text);
+  font-size: 21px; letter-spacing: .07em; transition: background-color .2s, color .2s;
+}
+[data-plateau="mur"][data-etiquette="barre"] .tuile.petite .nom { left: 0; bottom: 0; font-size: 16px; padding: 7px 12px 6px 27px; background-position: 11px 50%, 0 0; background-size: 7px 7px, auto; }
+[data-plateau="mur"][data-etiquette="barre"] .tuile.parle .nom { background: linear-gradient(var(--sur-accent), var(--sur-accent)) 15px 50% / 9px 9px no-repeat, var(--accent); color: var(--sur-accent); }
+[data-plateau="mur"][data-etiquette="barre"] .tuile.petite.parle .nom { background-position: 11px 50%, 0 0; background-size: 7px 7px, auto; }
+[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile .nom { font-size: 24px; }
+[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile.petite .nom { font-size: 19px; }
+/* le titre : un socle collé sous l'écran, sur une seule ligne (logo, titre, message, « En direct ») */
+[data-plateau="mur"][data-bandeau="classique"] #bandeau { gap: 0; border-radius: 6px; overflow: hidden; background: color-mix(in srgb, var(--text) 9%, var(--bg)); }
+[data-plateau="mur"][data-bandeau="classique"] #bandeau .logo { --h: 100px; height: 100%; border-radius: 0; font-size: 36px; }
+[data-plateau="mur"][data-bandeau="classique"] #bandeau .titre { text-shadow: none; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau { bottom: 78px; height: 100px; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .txt { display: flex; align-items: center; gap: 30px; height: 100%; padding: 0 30px 0 32px; box-sizing: border-box; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .titre { flex: 0 1 auto; min-width: 0; font-size: calc(44px * var(--kt, 1)); }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .sous { flex: 1 1 190px; min-width: 190px; margin: 0; justify-content: flex-end; gap: 24px; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .message { flex: 0 1 auto; min-width: 0; color: var(--muted); font-size: 22px; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #bandeau .direct { flex: none; order: 2; }
+/* un message du chat à l'écran : il se pose à droite du socle, aligné sur lui */
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #chat-bulle { bottom: 78px; height: 100px; max-height: 100px; box-sizing: border-box; padding: 7px 20px 8px; border-radius: 6px; box-shadow: none; display: flex; flex-direction: column; justify-content: center; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #chat-bulle .cb-tete { margin-bottom: 2px; }
+[data-plateau="mur"][data-bandeau="classique"] body:not(.vertical) #cb-texte { font-size: 24px; line-height: 1.15; }
+[data-plateau="mur"][data-bandeau="classique"] body.chat-on:not(.vertical) #bandeau { right: 896px; }
+[data-plateau="mur"][data-bandeau="classique"] body.chat-on:not(.vertical) #bandeau .message { display: none; }
+[data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau { top: 254px; }
+[data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau .logo { --h: 140px; }
+[data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau .txt { padding: 0 24px; }
+[data-plateau="mur"][data-bandeau="classique"] body.vertical #bandeau .titre { font-size: calc(40px * var(--kt, 1)); }
+
 [data-etiquette="plein"] .tuile .nom { background: var(--accent); color: var(--sur-accent); border-left: 0; border-radius: 4px; padding: 6px 14px; }
 [data-etiquette="capsule"] .tuile .nom { background: rgba(255,255,255,.94); color: #1b1b1f; border-left: 0; border-radius: 999px; padding: 7px 18px; text-transform: none; letter-spacing: 0; }
 [data-etiquette="ligne"] .tuile .nom { background: none; border-left: 0; border-bottom: 2px solid var(--accent); border-radius: 0; padding: 0 2px 5px; text-shadow: 0 2px 10px rgba(0,0,0,.95), 0 0 3px rgba(0,0,0,.95); }

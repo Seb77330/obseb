@@ -280,6 +280,15 @@
   .police.actif { background: color-mix(in srgb, var(--ui-accent) 13%, var(--ui-panel2)); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: inset 0 0 0 1px var(--ui-accent); }
   #polices-tout { margin-top: 8px; }
   .depots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  /* Place du logo : un petit écran, on clique sur le coin voulu */
+  .place-logo { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; font-size: 14px; }
+  .coins { flex: none; position: relative; width: 132px; aspect-ratio: 16/9; border: 1.5px solid var(--ui-line2); border-radius: 10px; background: var(--ui-input); }
+  .coins button { position: absolute; width: 34px; height: 22px; min-height: 0; padding: 0; border-radius: 5px; border: 1.5px solid var(--ui-line2); background: var(--ui-panel2); cursor: pointer; transition: border-color .15s, background .15s; }
+  .coins button::after { content: ''; position: absolute; inset: -8px; }   /* zone de clic plus large que le coin */
+  .coins button[data-coin^="h"] { top: 7px; } .coins button[data-coin^="b"] { bottom: 7px; }
+  .coins button[data-coin$="g"] { left: 7px; } .coins button[data-coin$="d"] { right: 7px; }
+  .coins button:hover { border-color: var(--ui-accent); }
+  .coins button.actif { background: var(--ui-accent); border-color: var(--ui-accent); }
   .depot { position: relative; border: 1.5px dashed var(--ui-line2); border-radius: 12px; padding: 12px; display: grid; justify-items: center; text-align: center; gap: 2px; cursor: pointer; transition: border-color .15s, background .15s; }
   .depot:hover, .depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
   .depot b { font-size: 13px; font-weight: 600; } .depot small { font-size: 12px; color: var(--ui-muted); }
@@ -495,6 +504,15 @@
               <div class="depot" data-cible="f-logo" title="Glisse ton logo ici, ou clique pour le choisir. Un PNG transparent est idéal."><div class="depot-vue"></div><b>Logo</b><input type="file" accept="image/*" hidden></div>
             </div>
             <input type="text" id="f-logotexte" maxlength="10" placeholder="Pas de logo ? Écris un texte court, ex. SEB" aria-label="Texte du logo s'il n'y a pas d'image" style="margin-top:8px">
+            <div class="place-logo">
+              <span>Place du logo</span>
+              <div class="coins" role="group" aria-label="Place du logo à l'écran">
+                <button type="button" data-coin="hg" title="En haut à gauche" aria-label="En haut à gauche"></button>
+                <button type="button" data-coin="hd" title="En haut à droite" aria-label="En haut à droite"></button>
+                <button type="button" data-coin="bg" title="En bas à gauche" aria-label="En bas à gauche"></button>
+                <button type="button" data-coin="bd" title="En bas à droite" aria-label="En bas à droite"></button>
+              </div>
+            </div>
             <p class="aide" style="margin:8px 0 0" title="Les plateformes sanctionnent le compte qui diffuse.">Rien de choquant ni de volé : ces images passent en direct.</p>
             <input type="url" id="f-image" hidden><input type="url" id="f-logo" hidden>
           </div>
@@ -577,10 +595,10 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=36014d33"></script>
+<script src="js/common.js?v=6cbb29c8"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/accueil.js?v=2bef9961"></script>
-<script src="js/accueil-style.js?v=662f1963"></script>
+<script src="js/accueil-style.js?v=bb624fa4"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>
 </html>

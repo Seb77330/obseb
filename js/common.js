@@ -299,6 +299,8 @@ function appliquerTheme(theme, el = document.documentElement) {
   el.style.setProperty('--kt', ECHELLE_POLICES[theme.fontTitle] || 1);
   el.style.setProperty('--pt', POIDS_TITRE[theme.fontTitle] || 400);
   el.dataset.pack = theme.pack || '';
+  el.dataset.plateau = plateauDe(theme);
+  el.dataset.logo = /^(hg|hd|bg|bd)$/.test(theme.logoPlace) ? theme.logoPlace : 'bg';   // coin où se pose le logo
   chargerPolices([theme.fontTitle, theme.fontBody]);
   if (theme.pack) chargerPack(theme.pack, false);
 }
@@ -433,6 +435,57 @@ function calculerDisposition(layout, ids, focus, zone = ZONE, gap = 22) {
   });
   return r;
 }
+/* ---------- Plateau « mur » : la signature du studio ----------
+   Un seul écran partagé au lieu de cartes flottantes : les caméras remplissent toute la zone, collées les unes
+   aux autres par un joint fin (elles sont recadrées, jamais déformées), et chaque rangée occupe toute la largeur.
+   C'est le plateau de tous les thèmes qui n'ont pas de cadre à eux (forme, pack). */
+const ZONE_MUR = { x: 70, y: 70, w: 1780, h: 826 };   // descend jusqu'au socle du titre, qui s'y colle
+const JOINT_MUR = 6;
+const plateauDe = theme => theme.plateau || (theme.forme || theme.pack ? 'cartes' : 'mur');   // un thème qui dessine ses propres cadres les garde
+/* Combien de caméras par rangée : le découpage où la caméra la plus recadrée l'est le moins
+   (une image trop large coupe les têtes : elle compte un peu plus qu'une image trop étroite) */
+function rangeesMur(n, w, h, gap) {
+  let mieux = null;
+  for (let R = 1; R <= n; R++) {
+    const base = Math.floor(n / R), plus = n % R, ch = (h - gap * (R - 1)) / R;
+    const rangs = Array.from({ length: R }, (_, i) => base + (i >= R - plus ? 1 : 0));   // les rangées les moins pleines en haut : toi en plus grand
+    const pire = Math.max(...rangs.map(k => {
+      const ratio = (w - gap * (k - 1)) / k / ch;
+      return ratio > 16 / 9 ? Math.log(ratio / (16 / 9)) * 1.3 : Math.log(16 / 9 / ratio);
+    }));
+    if (!mieux || pire < mieux.pire - 1e-9) mieux = { rangs, pire };
+  }
+  return mieux.rangs;
+}
+function mosaique(ids, zone, gap) {
+  const r = {};
+  if (!ids.length) return r;
+  const rangs = rangeesMur(ids.length, zone.w, zone.h, gap);
+  const ch = (zone.h - gap * (rangs.length - 1)) / rangs.length;
+  let i = 0;
+  rangs.forEach((k, row) => {
+    const cw = (zone.w - gap * (k - 1)) / k;
+    for (let col = 0; col < k; col++) r[ids[i++]] = { x: zone.x + col * (cw + gap), y: zone.y + row * (ch + gap), w: cw, h: ch };
+  });
+  return r;
+}
+function dispositionMur(layout, ids, focus, zone, vertical = false, gap = JOINT_MUR) {
+  const n = ids.length;
+  if (!n) return {};
+  if (layout === 'solo') return { [ids.includes(focus) ? focus : ids[0]]: { x: zone.x, y: zone.y, w: zone.w, h: zone.h } };
+  // une grande image et les autres à côté : en interview, et à trois (trois colonnes couperaient les épaules)
+  if (n >= 2 && (layout === 'interview' || (n === 3 && !vertical))) {
+    const reste = ids.slice(1);
+    if (vertical) {
+      const hautH = Math.round((zone.h - gap) * 0.56);
+      return Object.assign({ [ids[0]]: { x: zone.x, y: zone.y, w: zone.w, h: hautH } }, mosaique(reste, { x: zone.x, y: zone.y + hautH + gap, w: zone.w, h: zone.h - hautH - gap }, gap));
+    }
+    const grandW = Math.round((zone.w - gap) * 0.62);
+    return Object.assign({ [ids[0]]: { x: zone.x, y: zone.y, w: grandW, h: zone.h } }, mosaique(reste, { x: zone.x + grandW + gap, y: zone.y, w: zone.w - grandW - gap, h: zone.h }, gap));
+  }
+  return mosaique(ids, zone, gap);
+}
+
 /* Scène Partage : jusqu'à 4 sources (écrans, images, vidéos, pages web) + colonne de caméras */
 function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
   const r = {};

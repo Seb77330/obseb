@@ -39,6 +39,7 @@ if (!session) {
 }
 
 const theme = themeComplet(session);
+const MUR = plateauDe(theme) === 'mur';   // plateau en un seul écran partagé (voir common.js)
 appliquerTheme(theme);
 if (theme.pack && theme.packJs) chargerPack(theme.pack, true);
 document.querySelectorAll('[data-champ="titre"]').forEach(e => {
@@ -61,14 +62,26 @@ document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = se
 document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
 $('#logo').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="">` : esc(theme.logoTexte || 'SEB');
 $('#logo').classList.toggle('image', !!theme.logo);
+/* le même logo, pour les coins du haut : il sort alors du bandeau et se pose sur l'image, comme le logo d'une chaîne */
+$('#logo-coin').innerHTML = $('#logo').innerHTML;
+$('#logo-coin').classList.toggle('image', !!theme.logo);
 document.title = `${session.titre} · Sortie`;
 
 /* ----- Tuiles ----- */
+/* Aperçus sans caméra : une silhouette au format 16:9, recadrée comme le sera la vraie image */
+const TEINTES_DEMO = [42, 205, 268, 152, 14, 322, 186, 96, 232, 28, 292];
+function silhouette(i) {
+  const h = TEINTES_DEMO[i % TEINTES_DEMO.length], dx = [0, -46, 38, 22, -30, 12, -18, 44, -8, 30, -40][i % 11];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},26%,27%)"/><stop offset="1" stop-color="hsl(${h},32%,12%)"/></linearGradient></defs>`
+    + `<rect width="1600" height="900" fill="url(#g)"/><g fill="hsl(${h},24%,43%)" transform="translate(${dx} 0)"><circle cx="800" cy="392" r="122"/><path d="M470 900c0-196 134-326 330-326s330 130 330 326z"/></g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
 function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
   if (tuiles.has(id)) return tuiles.get(id);
   const el = document.createElement('div');
   el.className = 'tuile horsantenne' + (demo ? ' demo' : '');
-  el.innerHTML = `<div class="attente">${demo ? esc(nom.slice(0, 1)) : 'Connexion…'}</div><div class="nom"></div>`;
+  el.innerHTML = `<div class="attente">${demo ? (ecran ? '' : '') : 'Connexion…'}</div><div class="nom"></div>`;
+  if (demo && !ecran) { el.classList.add('silhouette'); el.querySelector('.attente').style.backgroundImage = silhouette(tuiles.size); }
   el.querySelector('.nom').textContent = nom || '';
   let iframe = null;
   if (!demo) {
@@ -190,6 +203,7 @@ function appliquerEtat(st) {
   $('#intro').classList.toggle('cachee', scene !== 'intro');
   $('#fin').classList.toggle('cachee', scene !== 'fin');
   $('#tuiles').classList.toggle('cachee', !sceneCameras(scene));
+  $('#logo-coin').classList.toggle('cachee', !sceneCameras(scene));
   $('#ecran').classList.toggle('cachee', scene !== 'partage');
   $('#bandeau').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
   document.body.dataset.scene = scene;
@@ -224,11 +238,11 @@ function appliquerEtat(st) {
   // tout le chat à l'écran : les caméras lui laissent une colonne (ou une bande en vertical), il ne passe jamais sur une image
   const filChat = !!(st.chatFil && st.chatFil.actif) && !quizEnCours && sceneCameras(scene);
   const cote = z => !filChat ? z : VERTICAL ? Object.assign({}, z, { h: z.h - 300 }) : Object.assign({}, z, { w: z.w - 400 });
-  const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(ZONE, 720));
+  const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(MUR ? ZONE_MUR : ZONE, 720));
   const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
-    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : calculerDispositionV(st.layout, ids, st.focus, zone))
-    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : calculerDisposition(st.layout, ids, st.focus, zone));
+    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : MUR ? dispositionMur(st.layout, ids, st.focus, zone, true) : calculerDispositionV(st.layout, ids, st.focus, zone))
+    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : MUR ? dispositionMur(st.layout, ids, st.focus, zone) : calculerDisposition(st.layout, ids, st.focus, zone));
   if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, zoneWatch) : calculerDisposition(st.layout, ids, st.focus, zoneWatch));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
