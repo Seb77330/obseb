@@ -31,6 +31,7 @@
   .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: 320px; background: var(--ui-panel); border: 1px solid var(--ui-line2); border-radius: 10px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.55); }
   .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; font-size: 14px; }
   .menu button:hover { background: var(--ui-panel2); }
+  .menu-titre { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); padding: 10px 12px 4px; border-top: 1px solid var(--ui-line); margin-top: 4px; }
   .menu button small { display: block; font-weight: 400; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
   /* Le bouton du direct : le seul qui met à l'antenne */
   .btn-direct { display: flex; align-items: center; gap: 9px; border: 1px solid var(--ui-red); color: var(--ui-text); background: color-mix(in srgb, var(--ui-red) 12%, transparent); font-weight: 600; padding: 8px 14px; }
@@ -292,6 +293,9 @@
         <button id="btn-obs">Copier le lien OBS (horizontal)<small>À coller dans une source navigateur 1920 × 1080</small></button>
         <button id="btn-vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 pour TikTok, Shorts, Reels</small></button>
         <button id="btn-sortie">Ouvrir la sortie<small>Dans une nouvelle fenêtre, pour vérifier</small></button>
+        <div class="menu-titre">Je garde mon OBS</div>
+        <button id="btn-cameras">Copier le lien « caméras seules »<small>Fond transparent : ton habillage reste dans OBS, les caméras se posent dessus</small></button>
+        <button id="btn-cameras-v">Caméras seules, en vertical<small>La même chose en 1080 × 1920</small></button>
       </div>
     </div>
     <button id="btn-invite" title="Copier le lien à envoyer à tes invités"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg> Inviter</button>
@@ -582,9 +586,9 @@
   </div>
 </div>
 
-<script src="js/common.js?v=cfb253ce"></script>
+<script src="js/common.js?v=c33ad272"></script>
 <script src="js/reglages-media.js?v=2b1fab4a"></script>
-<script src="js/regie.js?v=ac0e73d7"></script>
+<script src="js/regie.js?v=f9907f46"></script>
 <script src="js/regie-sources.js?v=8d47ddb4"></script>
 <script src="js/regie-quiz.js?v=378bbe17"></script>
 <script src="js/regie-chat.js?v=0f5d0210"></script>

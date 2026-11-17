@@ -56,6 +56,8 @@ async function copier(txt, msg) {
 $('#btn-invite').onclick = () => copier(L.invite, 'Lien invités copié : envoie-le à tes invités');
 $('#btn-obs').onclick = () => copier(L.sortie, 'Lien OBS copié : colle-le dans une source navigateur 1920x1080');
 $('#btn-vertical').onclick = () => copier(L.vertical, 'Lien vertical copié : source navigateur 1080x1920');
+$('#btn-cameras').onclick = () => copier(L.cameras, 'Lien copié : source navigateur 1920x1080, posée au-dessus de ton décor dans OBS');
+$('#btn-cameras-v').onclick = () => copier(L.camerasVertical, 'Lien copié : source navigateur 1080x1920, posée au-dessus de ton décor dans OBS');
 $('#btn-sortie').onclick = () => window.open(L.sortie, 'sortie', 'width=960,height=540');
 
 /* ----- Ma caméra (le seul endroit qui ouvre la Cam Link) ----- */

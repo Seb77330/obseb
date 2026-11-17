@@ -520,3 +520,9 @@ body.vertical .plein .compte { font-size: calc(170px * var(--kt, 1)); }
 [data-bandeau="etiquette"] body:not(.vertical) #bandeau .titre { display: inline-block; max-width: 100%; box-sizing: border-box; background: var(--accent); color: var(--sur-accent); padding: 8px 28px 6px; transform: skewX(-8deg); transform-origin: left bottom; text-shadow: none; }
 [data-bandeau="etiquette"] #bandeau .logo { background: var(--text); color: var(--bg); border-radius: 0; transform: skewX(-8deg); }
 [data-bandeau="etiquette"] #bandeau .sous { margin-top: 10px; color: var(--text); }
+
+/* ----- « Je garde mon OBS » : les caméras seules, sur fond transparent ----- */
+body.sans-decor, body.sans-decor.sortie { background: transparent; }
+body.sans-decor #stage { background: none; }
+body.sans-decor #stage::before, body.sans-decor #stage::after, body.sans-decor .deco,
+body.sans-decor #intro, body.sans-decor #fin, body.sans-decor #bandeau, body.sans-decor #defilant { display: none; }

@@ -8,6 +8,8 @@ const SCENE_FORCEE = Q.get('scene');
 const VERTICAL = Q.get('format') === 'vertical';
 const LARG = VERTICAL ? SCENE_VW : SCENE_W, HAUT = VERTICAL ? SCENE_VH : SCENE_H;
 if (VERTICAL) document.body.classList.add('vertical');
+/* « Je garde mon OBS » : les caméras seules sur fond transparent, l'habillage reste dans OBS */
+if (Q.get('decor') === '0') document.body.classList.add('sans-decor');
 if (VERTICAL && Q.get('zones')) addEventListener('DOMContentLoaded', () => {
   const z = document.createElement('div'); z.id = 'zones-sures';
   z.innerHTML = `<div style="left:0;right:0;top:0;height:${SURES_V.haut}px">Profil et spectateurs<br>(TikTok, Instagram)</div>

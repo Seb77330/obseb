@@ -259,7 +259,10 @@ function liens(session, cle) {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
     invite: `${baseUrl()}invite.html#s=${sInvite}`,
     sortie: `${baseUrl()}sortie.html#s=${s}`,
-    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}`
+    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}`,
+    // « Je garde mon OBS » : les caméras seules, sur fond transparent
+    cameras: `${baseUrl()}sortie.html?decor=0#s=${s}`,
+    camerasVertical: `${baseUrl()}sortie.html?decor=0&format=vertical#s=${s}`
   };
 }
 const idHote = s => s.room + '_seb';
