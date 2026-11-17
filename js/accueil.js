@@ -163,6 +163,42 @@ function afficherSessions() {
   });
 }
 
+/* ----- Mes lives (sessions terminées) ----- */
+function afficherLives() {
+  const box = $('#lives');
+  box.innerHTML = '';
+  const l = lire().filter(x => x.live && x.live.date).sort((a, b) => b.live.date - a.live.date);
+  if (!l.length) { box.innerHTML = '<p class="aide">Aucun live terminé pour le moment.</p>'; return; }
+  l.forEach(entree => {
+    const { session, live } = entree;
+    const jours = Math.floor((Date.now() - live.date) / 86400000);
+    const el = document.createElement('div');
+    el.className = 'session';
+    el.innerHTML = `
+      <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'fin'))}"></iframe></div>
+      <div>
+        <h3>${esc(session.titre)}</h3>
+        <div class="meta">Diffusé le ${new Date(live.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${new Date(live.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} · ${jours === 0 ? "aujourd'hui" : 'il y a ' + jours + ' jour' + (jours > 1 ? 's' : '')}</div>
+        <label class="champ" style="margin-top:4px">Replay YouTube</label>
+        <div class="ligne-boutons" style="flex-wrap:nowrap"><input type="url" class="replay" placeholder="Colle le lien du replay"><a class="ouvrir" target="_blank" rel="noopener"><button class="petit">Ouvrir</button></a></div>
+        <label class="champ">Fichier enregistré par OBS</label>
+        <input type="text" class="fichier" placeholder="Ex. C:\\Users\\sebou\\Videos\\…\\live.mkv">
+      </div>`;
+    const replay = el.querySelector('.replay'), fichier = el.querySelector('.fichier'), ouvrir = el.querySelector('.ouvrir');
+    replay.value = live.replay || ''; fichier.value = live.fichier || '';
+    const majLien = () => { const ok = /^https:\/\//.test(replay.value); ouvrir.hidden = !ok; if (ok) ouvrir.href = replay.value; };
+    majLien();
+    const sauver = () => {
+      const tout = lire(); const e = tout.find(x => x.session.room === session.room);
+      if (e) { e.live = Object.assign({}, e.live, { replay: replay.value.trim(), fichier: fichier.value.trim() }); ecrire(tout); }
+      majLien();
+    };
+    replay.onchange = sauver; fichier.onchange = sauver;
+    box.appendChild(el);
+  });
+}
+
 remplirForm();
 apercu();
 afficherSessions();
+afficherLives();

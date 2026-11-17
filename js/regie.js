@@ -92,7 +92,18 @@ function envoyer() {
 setInterval(envoyer, 2000);   // renvoi régulier : un OBS relancé retrouve l'état tout seul
 
 /* ----- Scènes et mises en page ----- */
+/* Quand tu passes sur la scène Fin, le live est rangé dans « Mes lives » */
+function noterLiveTermine() {
+  try {
+    const l = JSON.parse(localStorage.getItem('studioSeb:sessions') || '[]');
+    let e = l.find(x => x.session.room === session.room);
+    if (!e) { e = { session, cle }; l.unshift(e); }
+    e.live = Object.assign({ fichier: '', replay: '' }, e.live, { date: Date.now() });
+    localStorage.setItem('studioSeb:sessions', JSON.stringify(l));
+  } catch (err) { /* stockage indisponible */ }
+}
 function changerScene(s) {
+  if (s === 'fin' && etat.scene !== 'fin') noterLiveTermine();
   if (s === 'partage' && !presents.has(ID_ECRAN)) toast("Lance d'abord le partage d'écran (colonne de gauche)");
   etat.scene = s; envoyer();
 }
