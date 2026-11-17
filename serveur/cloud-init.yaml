@@ -15,6 +15,17 @@ write_files:
       OBSEB_DOSSIER=/var/lib/obseb/enregistrements
       OBSEB_GARDE_JOURS=10
       PORT=8080
+  - path: /etc/systemd/system/livekit.service
+    content: |
+      [Unit]
+      Description=OBSeb vidéo (LiveKit)
+      After=network-online.target
+      [Service]
+      ExecStart=/usr/local/bin/livekit-server --config /etc/livekit.yaml
+      Restart=always
+      LimitNOFILE=500000
+      [Install]
+      WantedBy=multi-user.target
   - path: /etc/systemd/system/obseb.service
     content: |
       [Unit]
@@ -47,5 +58,33 @@ runcmd:
   - |
     IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
     printf '%s.sslip.io {\n  reverse_proxy 127.0.0.1:8080\n}\n' "$(echo $IP | tr . -)" > /etc/caddy/Caddyfile
+  # Serveur vidéo LiveKit : clés tirées au hasard sur la machine, jamais écrites ailleurs
+  - curl -sSL https://get.livekit.io | bash
+  - |
+    IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
+    DOM="$(echo $IP | tr . -).sslip.io"
+    CLE="OB$(openssl rand -hex 6)"; SEC="$(openssl rand -hex 32)"
+    cat > /etc/livekit.yaml <<LKEOF
+    port: 7880
+    bind_addresses: ["127.0.0.1"]
+    rtc:
+      tcp_port: 7881
+      port_range_start: 50000
+      port_range_end: 60000
+      use_external_ip: true
+    turn:
+      enabled: true
+      udp_port: 3478
+      domain: lk.$DOM
+    keys:
+      $CLE: $SEC
+    room:
+      max_participants: 40
+      empty_timeout: 600
+    LKEOF
+    chmod 600 /etc/livekit.yaml
+    printf 'LIVEKIT_API_KEY=%s\nLIVEKIT_API_SECRET=%s\nLIVEKIT_URL_PUBLIQUE=wss://lk.%s\n' "$CLE" "$SEC" "$DOM" >> /etc/obseb.env
+    printf 'lk.%s {\n  reverse_proxy 127.0.0.1:7880\n}\n' "$DOM" >> /etc/caddy/Caddyfile
+  - systemctl daemon-reload && systemctl enable --now livekit
   - systemctl restart caddy
   - systemctl daemon-reload && systemctl enable --now obseb
