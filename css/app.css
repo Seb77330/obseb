@@ -87,6 +87,7 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .rm-go { margin-top: 6px; }
 #ma-camera { display: block; }
 .rm-vide[hidden] { display: none; }
+[hidden] { display: none !important; }
 
 /* Menu Affichage */
 .affichage-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: 280px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.35); display: grid; gap: 10px; }

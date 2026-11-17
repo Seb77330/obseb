@@ -24,6 +24,7 @@
   #accueil p { color: var(--muted); font-size: 16px; }
   #accueil form { display: flex; gap: 10px; margin: 28px auto 0; max-width: 460px; }
   #accueil input { font-size: 17px; padding: 14px 16px; }
+  .rm-go, .primaire { background: var(--accent) !important; border-color: var(--accent) !important; color: var(--bg) !important; }
   #accueil button { white-space: nowrap; padding: 14px 20px; background: var(--accent); border-color: var(--accent); color: var(--bg); }
   .conseils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 34px; text-align: left; }
   .conseils div { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 14px; font-size: 14px; color: var(--muted); }
@@ -56,7 +57,7 @@
     <p>Avec <span id="hote"></span>. Tu arrives d'abord en coulisses : personne ne te voit tant que tu n'es pas mis(e) à l'antenne.</p>
     <form id="form">
       <input type="text" id="prenom" placeholder="Ton prénom ou ton pseudo" maxlength="28" required autocomplete="nickname">
-      <button type="submit">Entrer en coulisses</button>
+      <button type="submit">Continuer</button>
     </form>
     <div class="conseils">
       <div><b>🎧 Un casque</b>Ça évite l'écho pour tout le monde.</div>

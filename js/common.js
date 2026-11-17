@@ -414,7 +414,7 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
 }
 
 /* Pendant un quiz : tout le monde en rangée(s) en haut, le panneau du quiz dessous (jamais sur un visage) */
-const ZONE_QUIZ = { x: 70, y: 36, w: 1780, h: 430 };   // les visages gardent presque la moitié de l'écran
+const ZONE_QUIZ = { x: 70, y: 40, w: 1780, h: 620 };   // les visages gardent presque la moitié de l'écran
 const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 560 };
 function dispositionQuiz(ids, vertical) {
   const n = ids.length; if (!n) return {};

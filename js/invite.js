@@ -36,7 +36,7 @@ function entrer() {
   $('#coulisses').hidden = false;
   // réglage caméra + micro avec aperçu, puis la caméra rejoint le live avec ces appareils
   const cle = 'studioSeb:appareils:invite';
-  const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Rejoindre les coulisses avec cette caméra', surDemarrer: demarrer });
+  const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Entrer en coulisses', surDemarrer: demarrer });
   function demarrer(app) {
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
     $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');

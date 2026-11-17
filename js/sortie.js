@@ -343,8 +343,13 @@ setInterval(() => {
     t.niveau *= 0.6;
     if (!t.ecran && etat.onair.includes(t.id) && t.niveau > 6 && (!max || t.niveau > max.niveau)) max = t;
   }
-  for (const t of tuiles.values()) t.el.classList.toggle('parle', !!(etat.surbrillance && max === t && etat.onair.length > 1));
+  // le cadre ne change de personne qu'après 1,2 s de parole continue (pas de clignotement)
+  const candidat = (etat.surbrillance && etat.onair.length > 1) ? max : null;
+  if (candidat !== parleCandidat) { parleCandidat = candidat; parleDepuis = Date.now(); }
+  if (Date.now() - parleDepuis >= 1200 || (parleActuel && !etat.onair.includes(parleActuel.id))) parleActuel = parleCandidat;
+  for (const t of tuiles.values()) t.el.classList.toggle('parle', parleActuel === t);
 }, 200);
+let parleCandidat = null, parleDepuis = 0, parleActuel = null;
 
 /* ----- Messages reçus ----- */
 addEventListener('message', e => {

@@ -65,7 +65,7 @@ async function preparerSysteme() {
     await attendre(1200);
   }
   try { execFileSync('pactl', ['list', 'short', 'sinks']).toString().includes('obseb') ||
-    execFileSync('pactl', ['load-module', 'module-null-sink', 'sink_name=obseb', 'sink_properties=device.description=OBSeb']); } catch (e) { journal('pactl', e.message); }
+    execFileSync('pactl', ['load-module', 'module-null-sink', 'sink_name=obseb', 'rate=48000', 'channels=2', 'sink_properties=device.description=OBSeb']); } catch (e) { journal('pactl', e.message); }
   try { execFileSync('pactl', ['set-default-sink', 'obseb']); } catch (e) { /* rien */ }
 }
 
@@ -97,10 +97,12 @@ async function demarrer({ url, rtmp }) {
     '-f', 'x11grab', '-draw_mouse', '0', '-framerate', String(FPS), '-video_size', `${W}x${H}`, '-i', `${ECRAN}.0`,
     '-thread_queue_size', '1024', '-f', 'pulse', '-ac', '2', '-ar', '48000', '-i', 'obseb.monitor',
     '-map', '0:v', '-map', '1:a',
+    // son : resynchronisé sur l'image (pas de dérive sur 3 h), compression douce, limiteur à -1 dB (les fous rires ne saturent plus)
+    '-af', 'aresample=async=1:first_pts=0,acompressor=threshold=-18dB:ratio=2.5:attack=15:release=200,alimiter=limit=0.89:level=false',
     '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
     '-b:v', DEBIT_VIDEO, '-maxrate', DEBIT_VIDEO, '-bufsize', String(parseInt(DEBIT_VIDEO, 10) * 2) + 'k',
     '-g', String(FPS * 2), '-keyint_min', String(FPS * 2), '-sc_threshold', '0',
-    '-c:a', 'aac', '-b:a', '160k', '-ar', '48000', '-flags', '+global_header',
+    '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-flags', '+global_header',
     '-f', 'tee', sorties.join('|')
   ]);
   etat = { enDirect: true, depuis: Date.now(), fichier: path.basename(fichier), url, youtube: !!rtmp, erreur: null };
