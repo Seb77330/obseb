@@ -374,9 +374,17 @@
   .wp-ecran.lecture .tc { color: var(--ui-green); }
   .wp-barre { height: 4px; border-radius: 2px; background: var(--ui-line); margin-top: 10px; overflow: hidden; }
   .wp-barre i { display: block; height: 100%; width: 0; background: var(--ui-accent); }
-  .wp-transport { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+  .wp-transport { display: grid; grid-template-columns: 1fr 1fr 1.7fr 1fr 1fr; gap: 6px; margin-top: 8px; align-items: stretch; }
   .wp-transport button { padding: 9px 2px; font-size: 13px; }
-  .wp-transport .wp-jouer { grid-column: span 5; font-weight: 600; padding: 11px; }
+  .wp-transport .wp-jouer { display: flex; align-items: center; justify-content: center; gap: 7px; font-weight: 600; padding: 12px 4px; }
+  .wp-jouer svg { width: 18px; height: 18px; fill: currentColor; } .wp-jouer .i-pause, .wp-jouer.joue .i-lecture { display: none; } .wp-jouer.joue .i-pause { display: block; }
+  .wp-film { font-size: 12.5px; color: var(--ui-muted); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .wp-film:empty { display: none; }
+  .wp-styles { grid-template-columns: repeat(5, 1fr); } .wp-styles button { font-size: 11px; padding: 6px 2px; } .wp-styles svg { width: 100%; height: auto; aspect-ratio: 16/9; } .wp-styles .q { fill: var(--ui-accent); } .wp-styles .t { fill: none; stroke: var(--ui-accent); stroke-width: 2.4; }
+  .wp-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .wp-modes button { display: grid; gap: 3px; justify-items: center; padding: 8px 2px; font-size: 11px; color: var(--ui-muted); }
+  .wp-modes button b { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ui-text); white-space: nowrap; } .wp-modes button i { font-style: normal; font-weight: 400; color: var(--ui-muted); }
+  .wp-modes button.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; color: var(--ui-text); background: var(--ui-panel2); }
+  .wp-modes button.faute { opacity: .5; }
   .wp-ligne { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
   .wp-ligne input { flex: 1; min-width: 0; }
   .wp-source { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 9px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-panel2); }
@@ -746,28 +754,57 @@
       <section class="onglet" data-onglet="watch" hidden>
         <p class="intro-onglet" title="Le film n'est pas diffusé : c'est son minuteur qui passe à l'écran, pour que tout le monde se cale dessus.">Chacun lance le film chez soi, le minuteur passe à l'écran.</p>
         <div class="wp-ecran" id="wp-ecran">
+          <div class="wp-film" id="wp-film"></div>
           <div class="tc" id="wp-temps">0:00:00</div>
           <div class="wp-etat" id="wp-etat">En pause</div>
           <div class="wp-barre"><i id="wp-barre"></i></div>
         </div>
-        <div class="wp-ligne"><input type="text" id="wp-titre" placeholder="Titre du film ou de l'épisode" maxlength="60"></div>
         <div class="wp-transport">
-          <button class="wp-jouer primaire" id="wp-jouer">Lecture</button>
           <button data-wp-saut="-10" title="Reculer le minuteur de 10 secondes">−10 s</button>
           <button data-wp-saut="-1" title="Reculer d'une seconde">−1 s</button>
-          <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps">Top départ</button>
+          <button class="wp-jouer primaire" id="wp-jouer" title="Lecture ou pause du minuteur (ton film, lui, reste dans ton lecteur)"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-lecture" d="M8 5.5v13l11-6.5z"/><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span>Lecture</span></button>
           <button data-wp-saut="1" title="Avancer d'une seconde">+1 s</button>
           <button data-wp-saut="10" title="Avancer de 10 secondes">+10 s</button>
         </div>
         <div class="wp-ligne">
+          <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps">Top départ</button>
           <input type="text" id="wp-caler" class="tc" placeholder="0:42:17" inputmode="numeric" aria-label="Position du film">
           <button id="wp-caler-btn" title="Mettre le minuteur à cette position du film">Caler ici</button>
         </div>
 
+        <h3 class="sous-titre">Le film</h3>
+        <input type="text" id="wp-titre" placeholder="Titre du film ou de la série" maxlength="60">
+        <div class="wp-ligne">
+          <input type="text" id="wp-episode" placeholder="Saison 1, épisode 4 (facultatif)" maxlength="40" title="Écris « s1e4 » ou « 1x04 » : c'est mis en forme tout seul">
+          <input type="text" id="wp-duree" class="tc" placeholder="Durée 2:46:00" inputmode="numeric" style="flex:0 0 132px" title="La durée du film : elle sert à la barre de progression, au temps restant et à l'heure de fin. Avec l'extension, elle se remplit toute seule.">
+        </div>
+
+        <h3 class="sous-titre">Habillage</h3>
+        <div class="qz-dispos wp-styles" id="wp-styles">
+          <button data-wstyle="bandeau" title="Un bandeau aux couleurs de ton thème">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="4" y="13" width="56" height="16" rx="3"/><circle class="q" cx="13" cy="21" r="4.5"/><rect class="q" x="40" y="18" width="16" height="6" rx="1"/></svg>Bandeau</button>
+          <button data-wstyle="pellicule" title="Une bande de film avec ses perforations, qui défile pendant la lecture">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="2" y="11" width="60" height="20" rx="1.5"/><path class="q" d="M6 13.5h4v2.5H6zM14 13.5h4v2.5h-4zM22 13.5h4v2.5h-4zM30 13.5h4v2.5h-4zM38 13.5h4v2.5h-4zM46 13.5h4v2.5h-4zM54 13.5h4v2.5h-4zM6 26h4v2.5H6zM14 26h4v2.5h-4zM22 26h4v2.5h-4zM30 26h4v2.5h-4zM38 26h4v2.5h-4zM46 26h4v2.5h-4zM54 26h4v2.5h-4z"/></svg>Pellicule</button>
+          <button data-wstyle="panneau" title="Le tableau des départs : chaque chiffre tourne sur sa palette">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="4" y="12" width="56" height="18" rx="2"/><rect class="q" x="22" y="16" width="6" height="10" rx="1"/><rect class="q" x="30" y="16" width="6" height="10" rx="1"/><rect class="q" x="40" y="16" width="6" height="10" rx="1"/><rect class="q" x="48" y="16" width="6" height="10" rx="1"/></svg>Panneau</button>
+          <button data-wstyle="anneau" title="La progression du film dessinée en cercle, dans une pilule de verre">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="4" y="12" width="56" height="18" rx="9"/><circle class="t" cx="15" cy="21" r="5.5"/><rect class="q" x="40" y="18.5" width="14" height="5" rx="1"/></svg>Anneau</button>
+          <button data-wstyle="epure" title="Rien que le temps, en très grand, posé sur l'image">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="30" y="13" width="30" height="10" rx="1.5"/><rect x="4" y="28" width="56" height="1.6" rx=".8"/><circle class="q" cx="24" cy="28.8" r="2.4"/></svg>Épuré</button>
+        </div>
+        <h3 class="sous-titre">Le minuteur affiche</h3>
+        <div class="wp-modes" id="wp-modes">
+          <button data-wmode="ecoule" title="Le temps écoulé depuis le début du film"><b>0:42:17</b>Écoulé</button>
+          <button data-wmode="restant" title="Le temps qu'il reste avant la fin"><b>−2:03:43</b>Restant</button>
+          <button data-wmode="double" title="Le temps écoulé, et la durée du film"><b>0:42 <i>sur</i> 2:46</b>Les deux</button>
+          <button data-wmode="fin" title="Le temps écoulé, et l'heure à laquelle le film se termine"><b>fin à 23 h 14</b>Heure de fin</button>
+        </div>
+        <p class="aide" id="wp-mode-aide" hidden>Indique la durée du film juste au-dessus : sans elle, le minuteur montre le temps écoulé.</p>
+
         <div class="ligne-boutons" style="margin-top:14px">
           <button id="wp-scene" class="primaire">Scène Watch Party</button>
         </div>
-        <label class="aide coche" style="margin-top:10px" title="Sur Plateau et Écran partagé, le minuteur reste dans un coin"><input type="checkbox" id="wp-pastille"> Minuteur en petit sur les autres scènes</label>
+        <label class="aide coche" style="margin-top:10px" title="Sur les autres scènes, le minuteur reste dans un coin"><input type="checkbox" id="wp-pastille"> Minuteur en petit sur les autres scènes</label>
 
                 <div class="wp-source" id="wp-source" style="margin-top:16px"><span class="voyant"></span><span id="wp-source-txt">Minuteur manuel</span></div>
         <details class="aide" style="margin-top:8px">
@@ -930,7 +967,7 @@
 <script src="js/regie-direct.js?v=6a52613d"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
-<script src="js/regie-watch.js?v=d4ce3fab"></script>
+<script src="js/regie-watch.js?v=c3869c85"></script>
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 </body>

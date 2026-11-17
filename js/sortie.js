@@ -399,6 +399,34 @@ function afficherST(m) {
 setInterval(() => { if (stVus && Date.now() - stVus > 8000) { stVus = 0; $('#sous-titres').classList.add('cachee'); } }, 1000);
 
 /* ----- Watch Party : le minuteur du film ----- */
+const STYLES_WATCH = ['bandeau', 'pellicule', 'panneau', 'anneau', 'epure'];
+/* Ce que montre le minuteur (etat.watch.mode) : le temps écoulé, le temps restant, les deux, ou l'heure de fin.
+   Sans durée connue, tout revient au temps écoulé. Un épisode de moins d'une heure s'écrit « 42:17 ». */
+function tempsWatch(w, pos) {
+  const court = w.duree > 0 && w.duree < 3600;
+  const f = s => { const x = texteFilm(s); return court ? x.slice(2) : x; };
+  const mode = w.duree ? w.mode : 'ecoule';
+  if (mode === 'restant') return { principal: '−' + f(Math.max(0, w.duree - pos)), sous: 'restant' };
+  if (mode === 'double') return { principal: f(pos), sous: 'sur ' + f(w.duree) };
+  if (mode === 'fin') {
+    const fin = new Date(Date.now() + Math.max(0, w.duree - pos) * 1000);
+    return { principal: f(pos), sous: `fin à ${fin.getHours()} h ${String(fin.getMinutes()).padStart(2, '0')}` };
+  }
+  return { principal: f(pos), sous: '' };
+}
+/* Un chiffre par case : seuls ceux qui changent sont réécrits (et, sur le panneau, leur palette tourne) */
+function poserChiffres(el, txt) {
+  if (el.dataset.t === txt) return;
+  const avant = el.dataset.t || '';
+  el.dataset.t = txt;
+  if (avant.length !== txt.length) { el.innerHTML = [...txt].map(c => `<span class="${/\d/.test(c) ? 'c' : 's'}">${c}</span>`).join(''); return; }
+  [...txt].forEach((c, i) => {
+    if (c === avant[i]) return;
+    const s = el.children[i];
+    s.textContent = c; s.className = /\d/.test(c) ? 'c' : 's';
+    s.classList.remove('tourne'); void s.offsetWidth; s.classList.add('tourne');
+  });
+}
 function gererWatch() {
   const w = etat && etat.watch, scene = SCENE_FORCEE || (etat && etat.scene);
   const grand = !!w && scene === 'watch';
@@ -409,8 +437,14 @@ function gererWatch() {
   const top = $('#watch-top');
   if (!w) { top.classList.add('cachee'); return; }
   const t = maintenantHote(), pos = positionFilm(w, t);
+  el.dataset.style = STYLES_WATCH.includes(w.style) ? w.style : 'bandeau';
   $('#wp-titre').textContent = w.titre || 'Le film';
-  $('#wp-temps').textContent = texteFilm(pos);
+  $('#wp-sur').textContent = w.episode || 'On regarde ensemble';      // « Saison 1 · Épisode 4 » prend la place de la mention
+  const aff = tempsWatch(w, pos);
+  poserChiffres($('#wp-temps'), aff.principal);
+  $('#wp-sous').textContent = petit ? '' : aff.sous;
+  el.classList.toggle('sans-duree', !w.duree);
+  el.style.setProperty('--p', w.duree ? Math.min(100, pos / w.duree * 100).toFixed(2) : 0);
   const enCompte = w.top && t < w.top;
   el.classList.toggle('lecture', !!w.lecture && !enCompte);
   $('#wp-etat span').textContent = enCompte ? 'Top départ' : w.lecture ? 'Lecture' : 'En pause';
@@ -739,7 +773,7 @@ if (DEMO) {
   if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
-  if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
+  if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: Q.get('wsans') ? 0 : 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true, style: Q.get('wstyle') || 'bandeau', mode: Q.get('wmode') || 'ecoule', episode: Q.get('wep') || '' };
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };

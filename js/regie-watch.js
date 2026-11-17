@@ -4,7 +4,7 @@
    (Netflix, Prime Video, Disney+, YouTube… ou VLC). */
 'use strict';
 
-etat.watch = Object.assign({ titre: '', pos: 0, ref: Date.now(), lecture: false, duree: 0, top: null, pastille: false }, etat.watch || {});
+etat.watch = Object.assign({ titre: '', episode: '', pos: 0, ref: Date.now(), lecture: false, duree: 0, top: null, pastille: false, style: 'bandeau', mode: 'ecoule' }, etat.watch || {});
 // au rechargement de la régie, un minuteur resté en lecture est figé là où il en était
 if (etat.watch.lecture) { etat.watch.pos = positionFilm(etat.watch, Date.now()); etat.watch.lecture = false; etat.watch.top = null; }
 
@@ -37,6 +37,27 @@ $('#wp-top').onclick = () => {
 };
 $('#wp-titre').value = etat.watch.titre || '';
 $('#wp-titre').oninput = e => { etat.watch.titre = e.target.value.slice(0, 60); envoyerBientot(); };
+/* Épisode : « s1e4 », « 1x04 », « S01 E04 » deviennent « Saison 1 · Épisode 4 » ; tout autre texte est gardé tel quel */
+function wpEpisode(t) {
+  t = String(t || '').trim().slice(0, 40);
+  const m = t.match(/^s(?:aison)?\s*(\d{1,2})\s*[,·.x-]?\s*[eé](?:p|pisode)?\.?\s*(\d{1,3})$/i) || t.match(/^(\d{1,2})\s*x\s*(\d{1,3})$/i);
+  return m ? `Saison ${+m[1]} · Épisode ${+m[2]}` : t;
+}
+$('#wp-episode').value = etat.watch.episode || '';
+$('#wp-episode').onchange = e => { etat.watch.episode = e.target.value = wpEpisode(e.target.value); envoyer(); majWatch(); };
+/* Durée : écrite à la main, ou donnée par l'extension (elle a alors le dernier mot) */
+$('#wp-duree').value = etat.watch.duree ? wpTexte(etat.watch.duree) : '';
+$('#wp-duree').onchange = e => {
+  const s = e.target.value.trim() ? wpLire(e.target.value) : 0;
+  if (s === null) return toast('Écris la durée comme 2:46:00');
+  etat.watch.duree = Math.round(s); e.target.value = s ? wpTexte(s) : '';
+  envoyer(); majWatch();
+};
+const STYLES_WATCH = ['bandeau', 'pellicule', 'panneau', 'anneau', 'epure'], MODES_WATCH = ['ecoule', 'restant', 'double', 'fin'];
+if (!STYLES_WATCH.includes(etat.watch.style)) etat.watch.style = 'bandeau';
+if (!MODES_WATCH.includes(etat.watch.mode)) etat.watch.mode = 'ecoule';
+$$('#wp-styles button').forEach(b => b.onclick = () => { etat.watch.style = b.dataset.wstyle; envoyer(); majWatch(); });
+$$('#wp-modes button').forEach(b => b.onclick = () => { etat.watch.mode = b.dataset.wmode; envoyer(); majWatch(); });
 $('#wp-pastille').checked = !!etat.watch.pastille;
 $('#wp-pastille').onchange = e => { etat.watch.pastille = e.target.checked; envoyer(); };
 $('#wp-scene').onclick = () => changerScene(etat.scene === 'watch' ? 'live' : 'watch');
@@ -55,7 +76,7 @@ addEventListener('message', e => {
   if (w.top && Date.now() < w.top) return;                         // pendant un top départ, on laisse le compte aller au bout
   if (lecture !== w.lecture || Math.abs(pos - wpPos()) > 0.7) { Object.assign(w, { pos, ref: Date.now(), lecture, top: null }); change = true; }
   const duree = isFinite(f.duree) && f.duree > 0 ? Math.round(f.duree) : 0;
-  if (duree !== w.duree) { w.duree = duree; change = true; }
+  if (duree && duree !== w.duree) { w.duree = duree; change = true; if (!$('#wp-duree').matches(':focus')) $('#wp-duree').value = wpTexte(duree); }
   if (titre && !$('#wp-titre').matches(':focus') && !w.titreManuel && titre !== w.titre) { w.titre = titre; $('#wp-titre').value = titre; change = true; }
   if (change) { envoyer(); majWatch(); }
 });
@@ -70,7 +91,11 @@ function majWatch() {
   $('#wp-etat').textContent = enCompte ? `Top départ dans ${Math.ceil((w.top - Date.now()) / 1000)}…` : w.lecture ? 'Lecture' : 'En pause';
   $('#wp-barre').style.width = w.duree ? Math.min(100, pos / w.duree * 100) + '%' : '0%';
   const j = $('#wp-jouer');
-  j.textContent = w.lecture ? 'Pause' : 'Lecture'; j.classList.toggle('primaire', !w.lecture);
+  j.querySelector('span').textContent = w.lecture ? 'Pause' : 'Lecture'; j.classList.toggle('primaire', !w.lecture); j.classList.toggle('joue', !!w.lecture);
+  $('#wp-film').textContent = [w.titre, w.episode].filter(Boolean).join(' · ');
+  $$('#wp-styles button').forEach(b => b.classList.toggle('actif', b.dataset.wstyle === w.style));
+  $$('#wp-modes button').forEach(b => { b.classList.toggle('actif', b.dataset.wmode === w.mode); b.classList.toggle('faute', !w.duree && b.dataset.wmode !== 'ecoule'); });
+  $('#wp-mode-aide').hidden = !!w.duree || w.mode === 'ecoule';
   $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir au plateau' : 'Scène Watch Party';
   $('#wp-scene').classList.toggle('primaire', etat.scene !== 'watch');
   $('#watch-point').hidden = !(w.lecture || etat.scene === 'watch');

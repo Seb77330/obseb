@@ -1,0 +1,82 @@
+/* OBSeb : Watch Party, les habillages du minuteur (onglet Watch de la régie).
+   Le socle (place, taille, version « pastille », vertical) est dans scene.css ; ici, cinq dessins au choix :
+   bandeau (le socle), pellicule, panneau (tableau des départs), anneau, epure. */
+#watch .wp-ep { display: none; }
+#watch .wp-sous { font: 600 20px var(--font-body); letter-spacing: .08em; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+#watch .wp-sous:empty { display: none; }
+#watch .wp-temps .c, #watch .wp-temps .s { display: inline-block; }
+#watch.pastille .wp-sous { display: none; }
+#watch .wp-compteur { display: grid; justify-items: end; }
+#watch:not(.pastille) .wp-etat { margin-top: 2px; }
+
+/* ---------- Pellicule : une bande de film, avec ses perforations ---------- */
+#watch[data-style="pellicule"]:not(.pastille) { border: 0; border-radius: 8px; padding: 0 60px; box-shadow: 0 24px 70px rgba(0,0,0,.6);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 16px, #efe8d6 16px 42px, transparent 42px 58px) 0 13px / 100% 17px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 16px, #efe8d6 16px 42px, transparent 42px 58px) 0 calc(100% - 13px) / 100% 17px no-repeat,
+    linear-gradient(#17130f, #0b0907); }
+#watch[data-style="pellicule"]:not(.pastille) .wp-icone { width: 92px; height: 68px; border-radius: 6px; background: #efe8d6; color: #17130f; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-icone svg { width: 34px; height: 34px; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-sur { color: #e8b04a; font-size: 16px; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-titre { color: #f4eedf; font-size: calc(44px * var(--kt, 1)); margin-top: 2px; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-temps { color: #f4eedf; font-size: calc(74px * var(--kt, 1)); }
+#watch[data-style="pellicule"]:not(.pastille) .wp-sous { color: #b9ad94; font-size: 17px; margin-top: 0; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-etat { display: none; }
+#watch[data-style="pellicule"]:not(.pastille) .wp-barre { left: 0; right: 0; bottom: 0; height: 6px; background: rgba(239,232,214,.14); }
+#watch[data-style="pellicule"]:not(.pastille) .wp-barre i { background: #e8b04a; }
+#watch[data-style="pellicule"].lecture:not(.pastille) { animation: wp-defile 1.2s linear infinite; }
+@keyframes wp-defile { to { background-position: -58px 13px, -58px calc(100% - 13px), 0 0; } }
+
+/* ---------- Panneau : le tableau des départs, chaque chiffre sur sa palette ---------- */
+#watch[data-style="panneau"]:not(.pastille) { background: linear-gradient(#1a1b1f, #0d0e10); border: 2px solid #2c2d33; border-radius: 16px; box-shadow: 0 0 0 6px #08080a, 0 24px 70px rgba(0,0,0,.6); }
+#watch[data-style="panneau"]:not(.pastille) .wp-icone { width: 70px; height: 70px; border-radius: 12px; background: #ffc83d; color: #111; }
+#watch[data-style="panneau"]:not(.pastille) .wp-icone svg { width: 36px; height: 36px; margin-left: 3px; }
+#watch[data-style="panneau"]:not(.pastille) .wp-sur { color: #8f9198; font-size: 16px; letter-spacing: .32em; }
+#watch[data-style="panneau"]:not(.pastille) .wp-titre { font: 700 calc(42px * var(--kt, 1))/1.1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: #ffc83d; margin-top: 6px; }
+#watch[data-style="panneau"]:not(.pastille) .wp-temps { font: 700 78px/1 var(--font-body); letter-spacing: 0; perspective: 400px; white-space: nowrap; }
+#watch[data-style="panneau"]:not(.pastille) .wp-temps .c { width: .74em; margin: 0 3px; padding: .1em 0 .12em; text-align: center; border-radius: 9px; color: #f6f2e7;
+  background: linear-gradient(#34353b 0 48.5%, #050506 48.5% 51.5%, #25262b 51.5%); box-shadow: 0 3px 0 #000, 0 0 0 1px rgba(255,255,255,.06) inset; }
+#watch[data-style="panneau"]:not(.pastille) .wp-temps .s { color: #ffc83d; margin: 0 2px; }
+#watch[data-style="panneau"]:not(.pastille) .wp-temps .c.tourne { animation: wp-palette .32s ease-out both; }
+@keyframes wp-palette { from { transform: rotateX(-88deg); } }
+#watch[data-style="panneau"]:not(.pastille) .wp-sous { color: #ffc83d; letter-spacing: .2em; text-transform: uppercase; font-size: 16px; margin-top: 8px; }
+#watch[data-style="panneau"]:not(.pastille) .wp-etat { font-size: 14px; margin-top: 4px; }
+#watch[data-style="panneau"]:not(.pastille) .wp-barre { height: 6px; background: #000; } #watch[data-style="panneau"]:not(.pastille) .wp-barre i { background: #ffc83d; }
+
+/* ---------- Anneau : la progression du film en cercle, dans une pilule de verre ---------- */
+#watch[data-style="anneau"]:not(.pastille) { border-radius: 999px; padding: 0 64px 0 26px; column-gap: 28px; background: color-mix(in srgb, var(--bg) 62%, transparent); backdrop-filter: blur(18px) saturate(1.3); border: 1.5px solid rgba(255,255,255,.16); }
+#watch[data-style="anneau"]:not(.pastille) .wp-icone { width: 128px; height: 128px; color: var(--accent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--bg) 90%, transparent) 76%, transparent 77% 100%), conic-gradient(var(--accent) calc(var(--p, 0) * 1%), rgba(255,255,255,.16) 0); }
+#watch[data-style="anneau"].sans-duree:not(.pastille) .wp-icone { background: radial-gradient(closest-side, color-mix(in srgb, var(--bg) 90%, transparent) 76%, transparent 77% 100%), conic-gradient(var(--accent) 22%, rgba(255,255,255,.16) 0); }
+#watch[data-style="anneau"].sans-duree.lecture:not(.pastille) .wp-icone { animation: wp-tourne 2.4s linear infinite; }
+#watch[data-style="anneau"].sans-duree.lecture:not(.pastille) .wp-icone svg { animation: wp-tourne 2.4s linear infinite reverse; }
+@keyframes wp-tourne { to { transform: rotate(360deg); } }
+#watch[data-style="anneau"]:not(.pastille) .wp-icone svg { width: 46px; height: 46px; }
+#watch[data-style="anneau"]:not(.pastille) .wp-barre { display: none; }
+#watch[data-style="anneau"]:not(.pastille) .wp-temps { font-size: calc(88px * var(--kt, 1)); }
+
+/* ---------- Épuré : rien que le temps, en grand, posé sur l'image ---------- */
+#watch[data-style="epure"]:not(.pastille) { background: none; border: 0; box-shadow: none; overflow: visible; padding: 0 10px 18px; text-shadow: 0 2px 18px rgba(0,0,0,.75); }
+#watch[data-style="epure"]:not(.pastille) .wp-icone { display: none; }
+body:not(.vertical) #watch[data-style="epure"]:not(.pastille) { grid-template-columns: minmax(0, 1fr) auto; }
+#watch[data-style="epure"]:not(.pastille) .wp-sur { letter-spacing: .4em; }
+#watch[data-style="epure"]:not(.pastille) .wp-titre { font-size: calc(58px * var(--kt, 1)); }
+#watch[data-style="epure"]:not(.pastille) .wp-temps { font-size: calc(124px * var(--kt, 1)); letter-spacing: .01em; }
+#watch[data-style="epure"]:not(.pastille) .wp-compteur { grid-template-columns: auto auto; column-gap: 20px; align-items: baseline; }
+#watch[data-style="epure"]:not(.pastille) .wp-temps { grid-column: 1 / -1; }
+#watch[data-style="epure"]:not(.pastille) .wp-sous { grid-column: 1; justify-self: end; }
+#watch[data-style="epure"]:not(.pastille) .wp-etat { grid-column: 2; margin: 0; }
+#watch[data-style="epure"]:not(.pastille) .wp-sous:empty + .wp-etat { grid-column: 1 / -1; }
+#watch[data-style="epure"]:not(.pastille) .wp-barre { height: 4px; border-radius: 2px; background: rgba(255,255,255,.28); overflow: visible; }
+#watch[data-style="epure"]:not(.pastille) .wp-barre i { position: relative; border-radius: 2px; }
+#watch[data-style="epure"]:not(.pastille) .wp-barre i::after { content: ''; position: absolute; right: -8px; top: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(0,0,0,.35); }
+
+/* vertical : même dessin, plus serré */
+body.vertical #watch[data-style="panneau"]:not(.pastille) .wp-temps { font-size: 58px; }
+body.vertical #watch[data-style="pellicule"]:not(.pastille) { padding: 0 30px; }
+body.vertical #watch[data-style="pellicule"]:not(.pastille) .wp-temps { font-size: 60px; }
+body.vertical #watch[data-style="pellicule"]:not(.pastille) .wp-titre { font-size: 32px; }
+body.vertical #watch[data-style="anneau"]:not(.pastille) { padding: 0 44px; border-radius: 40px; }
+body.vertical #watch[data-style="epure"]:not(.pastille) .wp-temps { font-size: 84px; }
+body.vertical #watch[data-style="epure"]:not(.pastille) .wp-titre { font-size: 36px; }
+body.vertical #watch:not(.pastille) .wp-sous { font-size: 16px; }
