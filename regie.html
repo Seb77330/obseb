@@ -120,9 +120,12 @@
     <div class="colonne">
 <div class="panneau">
         <h2>Ma caméra</h2>
-        <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
-        <p class="aide" id="etat-camera" style="color:var(--ui-text)"><span style="color:var(--ui-accent)">●</span> Caméra pas encore démarrée</p>
-        <p class="aide" style="margin-bottom:0">Choisis ta Cam Link et ton micro, puis Démarrer. Ferme-la dans OBS avant.</p>
+        <div id="cam-reglage" hidden></div>
+        <div id="cam-direct" hidden>
+          <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+          <p class="aide" id="etat-camera" style="color:var(--ui-text)"><span style="color:var(--ui-accent)">●</span> Démarrage de ta caméra…</p>
+          <div class="ligne-boutons" style="align-items:center"><span class="aide" id="cam-appareils" style="flex:1;min-width:0"></span><button class="petit" id="btn-cam-changer">Changer</button></div>
+        </div>
       </div>
 <div class="panneau">
         <h2>Participants</h2><p class="aide" id="nb-part" style="margin:-6px 0 8px"></p>
@@ -295,6 +298,7 @@
 </div>
 
 <script src="js/common.js"></script>
+<script src="js/reglages-media.js"></script>
 <script src="js/regie.js"></script>
 <script src="js/regie-sources.js"></script>
 <script src="js/regie-quiz.js"></script>

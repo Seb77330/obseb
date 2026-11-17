@@ -35,7 +35,7 @@
   .boite h2 { margin: 0 0 12px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #statut { font-size: 12px; font-weight: 800; letter-spacing: .12em; padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,.1); color: var(--text); }
   #statut.direct { background: #e01e1e; color: #fff; }
-  #ma-camera { width: 100%; height: 400px; border: 0; border-radius: 10px; background: #000; }
+  #ma-camera { width: 100%; height: 300px; border: 0; border-radius: 10px; background: #000; }
   .qz-btn { padding: 18px 14px; font-size: 18px; text-align: left; border-radius: 12px; background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.15); color: var(--text); }
   .qz-btn b { color: var(--accent); margin-right: 10px; }
   .qz-btn.choisi { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 20%, transparent); }
@@ -80,12 +80,11 @@
     </div>
     <div class="boite">
       <h2>Ta caméra</h2>
-      <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
-      <ol class="etapes">
-        <li>Autorise la caméra et le micro.</li>
-        <li>Vérifie ton image, puis clique sur <b>Démarrer</b>.</li>
-        <li>Garde cette page ouverte pendant tout le live.</li>
-      </ol>
+      <div id="cam-reglage"></div>
+      <div id="cam-direct" hidden>
+        <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span class="aide" id="cam-appareils" style="flex:1;min-width:0;margin:0"></span><button type="button" id="btn-cam-changer" style="padding:6px 12px">Changer</button></div>
+      </div>
       <p class="aide" id="ma-qualite" style="margin:10px 0 0"></p>
       <form id="form-nom" style="display:flex;gap:8px;margin-top:14px">
         <input type="text" id="mon-nom" maxlength="28" placeholder="Ton nom à l'écran" style="flex:1">
@@ -100,6 +99,7 @@
   </section>
 </div>
 <script src="js/common.js"></script>
+<script src="js/reglages-media.js"></script>
 <script src="js/invite.js"></script>
 </body>
 </html>

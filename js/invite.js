@@ -34,8 +34,20 @@ let maCamera, apercu;
 function entrer() {
   $('#accueil').hidden = true;
   $('#coulisses').hidden = false;
-  maCamera = $('#ma-camera');
-  maCamera.src = urlPublier(session, moi.id, moi.nom);   // l'invité entend tout le monde ici
+  // réglage caméra + micro avec aperçu, puis la caméra rejoint le live avec ces appareils
+  const cle = 'studioSeb:appareils:invite';
+  const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Rejoindre les coulisses avec cette caméra', surDemarrer: demarrer });
+  function demarrer(app) {
+    $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
+    $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
+    maCamera = $('#ma-camera');
+    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true });   // l'invité entend tout le monde ici
+  }
+  $('#btn-cam-changer').onclick = () => {
+    $('#ma-camera').src = 'about:blank'; maCamera = null;
+    $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false; reglage.ouvrir();
+  };
+  reglage.ouvrir();
   apercu = $('#apercu');
   apercu.src = `sortie.html?preview=1#s=${hashParams().get('s')}`;
   $('#mon-nom').value = moi.nom;

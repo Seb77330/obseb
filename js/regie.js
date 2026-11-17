@@ -56,7 +56,23 @@ $('#btn-sortie').onclick = () => window.open(L.sortie, 'sortie', 'width=960,heig
 
 /* ----- Ma caméra (le seul endroit qui ouvre la Cam Link) ----- */
 const maCamera = $('#ma-camera');
-maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true });
+const CLE_CAM = 'studioSeb:appareils:hote';
+const reglageCam = ReglagesMedia({ boite: $('#cam-reglage'), cle: CLE_CAM, texteBouton: 'Démarrer ma caméra', surDemarrer: demarrerCamera });
+function demarrerCamera(app) {
+  $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
+  $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
+  // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true });
+}
+$('#btn-cam-changer').onclick = () => {
+  if (etat.scene !== 'intro' && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
+  maCamera.src = 'about:blank';
+  $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false;
+  reglageCam.ouvrir();
+};
+const retenus = appareilsRetenus(CLE_CAM);
+if (retenus) demarrerCamera(retenus);
+else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
 
 /* ----- Aperçu de l'antenne ----- */
 const apercu = $('#apercu');
@@ -275,7 +291,7 @@ addEventListener('message', e => {
       const q = resumeStats(d.stats);
       const n = d.stats.total_outbound_connections;
       const el = $('#etat-camera');
-      if (typeof n === 'number' && n === 0) el.innerHTML = '<span style="color:var(--ui-red)">●</span> Personne ne reçoit ta caméra pour l\'instant (clique sur Démarrer, puis vérifie la source OBS)';
+      if (typeof n === 'number' && n === 0) el.innerHTML = '<span style="color:var(--ui-red)">●</span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
       else if (q.h || n) el.innerHTML = `<span style="color:var(--ui-green)">●</span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`;
     }
     if (d.streamIDs) {

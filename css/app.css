@@ -59,3 +59,19 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .chat-msg.affiche { background: rgba(255,210,31,.16); outline: 1px solid rgba(255,210,31,.5); }
 .chat-msg b { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat-msg span { overflow-wrap: anywhere; }
+
+/* ----- Réglage caméra + micro ----- */
+.rm { display: grid; gap: 6px; }
+.rm-video { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }
+.rm-video video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+.rm-vide { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; font-size: 13px; color: var(--ui-muted); cursor: pointer; }
+.rm-res { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 6px; }
+.rm-res:empty { display: none; }
+.rm-champ { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin-top: 6px; }
+.rm-vu { height: 6px; border-radius: 3px; background: #2a2e38; overflow: hidden; }
+.rm-vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .08s; }
+.rm-aide { margin: 0; font-size: 12px; color: var(--ui-accent); }
+.rm-aide:empty { display: none; }
+.rm-go { margin-top: 6px; }
+#ma-camera { display: block; }
+.rm-vide[hidden] { display: none; }
