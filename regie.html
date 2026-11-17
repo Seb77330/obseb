@@ -139,10 +139,10 @@
   .rangee { flex: none; display: flex; align-items: center; gap: 10px; }
   .rangee > .etiquette { width: 62px; flex: none; }
   .scenes { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .scenes button { position: relative; padding: 9px 10px 8px; text-align: left; display: grid; gap: 1px; background: var(--ui-panel2); border-radius: 7px; }
+  .scenes button { position: relative; padding: 11px 12px; text-align: left; display: grid; gap: 1px; background: var(--ui-panel2); border-radius: 7px; }
   .scenes button b { font-weight: 600; font-size: 14px; }
   .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .scenes button kbd { position: absolute; right: 7px; top: 7px; opacity: .6; }
+  .scenes button kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); opacity: .5; }
   .scenes button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
   body.en-direct .scenes button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
   .scenes button.actif small { color: inherit; opacity: .8; }
@@ -186,6 +186,15 @@
   #chat-liste { height: 360px; }
   .compte { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; background: var(--ui-panel2); }
   .compte.on { border-color: color-mix(in srgb, var(--ui-accent) 55%, transparent); }
+  .comptes-plus { margin-top: 12px; }
+  .comptes-plus > summary { cursor: pointer; list-style: none; padding: 8px 2px; font-size: 13px; color: var(--ui-muted); user-select: none; }
+  .comptes-plus > summary::-webkit-details-marker { display: none; }
+  .comptes-plus > summary::before { content: '+'; display: inline-block; width: 16px; color: var(--ui-accent); font-weight: 600; }
+  .comptes-plus[open] > summary::before { content: '−'; }
+  .comptes-plus > summary:hover { color: var(--ui-text); }
+  .comptes-plus[open] > summary { margin-bottom: 6px; }
+  #etat-studio button[data-niveau=off] { opacity: .55; }
+  #etat-studio button[data-niveau=off]:hover { opacity: 1; }
   .compte-tete { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; }
   .compte-tete i { font-style: normal; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; border: 1px solid rgba(255,255,255,.15); }
   .compte-tete b { flex: 1; font-weight: 500; }
@@ -351,7 +360,6 @@
       <div class="colonne-tete">
         <span class="etiquette">Programme</span>
         <span class="badge-direct" id="badge-scene">Hors direct</span>
-        <span class="aide">Ce que voient les spectateurs</span>
         <button class="petit" id="btn-apercu-format">Voir en vertical</button>
       </div>
       <div class="colonne-corps">
@@ -367,11 +375,11 @@
         <div class="rangee">
           <span class="etiquette">Scènes</span>
           <div class="scenes" role="group" aria-label="Scène à l'antenne">
-            <button data-scene="intro"><b>Intro</b><small>Compte à rebours</small><kbd>1</kbd></button>
-            <button data-scene="live"><b>Plateau</b><small>Les caméras</small><kbd>2</kbd></button>
-            <button data-scene="partage"><b>Écran partagé</b><small>Écran, image, vidéo</small><kbd>3</kbd></button>
-            <button data-scene="watch"><b>Watch Party</b><small>Minuteur du film</small><kbd>4</kbd></button>
-            <button data-scene="fin"><b>Fin</b><small>Écran de fin</small><kbd>5</kbd></button>
+            <button data-scene="intro" title="Intro : compte à rebours"><b>Intro</b><kbd>1</kbd></button>
+            <button data-scene="live" title="Plateau : les caméras"><b>Plateau</b><kbd>2</kbd></button>
+            <button data-scene="partage" title="Écran partagé : écran, image ou vidéo"><b>Écran partagé</b><kbd>3</kbd></button>
+            <button data-scene="watch" title="Watch Party : minuteur du film"><b>Watch Party</b><kbd>4</kbd></button>
+            <button data-scene="fin" title="Fin : écran de fin"><b>Fin</b><kbd>5</kbd></button>
           </div>
         </div>
         <div class="rangee">
@@ -580,7 +588,6 @@
         <input type="range" id="vol-musique" min="0" max="100" step="1">
       </section>
       <section class="onglet" data-onglet="comptes" hidden>
-          <p class="intro-onglet">Où ton live sera diffusé en même temps. Clique sur une plateforme pour coller sa clé de stream (elle reste dans ce navigateur).</p>
           <div class="aide" id="comptes-resume" style="margin-bottom:10px;color:var(--ui-text)"></div>
           <div id="comptes-liste"></div>
       </section>
@@ -607,17 +614,17 @@
 <script src="js/common.js?v=c33ad272"></script>
 <script src="js/reglages-media.js?v=2b1fab4a"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=d9a2a7cd"></script>
+<script src="js/regie.js?v=4cf5e135"></script>
 <script src="js/regie-sources.js?v=8d47ddb4"></script>
 <script src="js/regie-quiz.js?v=378bbe17"></script>
 <script src="js/regie-chat.js?v=0f5d0210"></script>
-<script src="js/regie-comptes.js?v=96b9b2c1"></script>
-<script src="js/regie-recherche.js?v=cafca40d"></script>
+<script src="js/regie-comptes.js?v=03347cc5"></script>
+<script src="js/regie-recherche.js?v=17004b3e"></script>
 <script src="js/regie-direct.js?v=38fcf347"></script>
 <script src="js/regie-guide.js?v=f11bbb1f"></script>
 <script src="js/regie-cams.js?v=a329af3e"></script>
 <script src="js/regie-watch.js?v=15a93a62"></script>
-<script src="js/regie-etat.js?v=20a00c2b"></script>
+<script src="js/regie-etat.js?v=4a026ff0"></script>
 <script src="js/regie-st.js?v=918d355c"></script>
 </body>
 </html>

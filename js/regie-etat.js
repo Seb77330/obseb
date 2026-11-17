@@ -44,9 +44,11 @@ const cameraDemarree = () => !$('#cam-direct').hidden;
 /* ----- Barre d'état ----- */
 const barre = $('#etat-studio');
 const VOYANTS = ['camera', 'micro', 'sortie', 'invites', 'chat', 'diffusion', 'serveur'];
+const NOMS_VOYANTS = { camera: 'Caméra', micro: 'Micro', sortie: 'Sortie OBS', invites: 'Invités', chat: 'Chat', diffusion: 'Diffusion', serveur: 'Serveur' };
 const elsVoyant = {};
 for (const id of VOYANTS) {
   const b = document.createElement('button');
+  b.dataset.court = NOMS_VOYANTS[id];
   b.innerHTML = '<span class="voyant"></span><span class="txt"></span>';
   barre.appendChild(b); elsVoyant[id] = b;
 }
@@ -59,8 +61,10 @@ const frais = (t, ms) => !!t && Date.now() - t < ms;
 function poser(el, niveau, texte, aide) {
   el.querySelector('.voyant').className = 'voyant' + (niveau === 'off' ? '' : ' ' + niveau);
   el.dataset.niveau = niveau;
-  el.querySelector('.txt').innerHTML = texte;
-  el.title = aide || '';
+  // tout va bien, ou pas utilisé : juste le nom. Le détail s'affiche au survol, et en clair dès qu'il y a un souci.
+  const calme = niveau === 'ok' || niveau === 'off', court = el.dataset.court;
+  el.querySelector('.txt').innerHTML = court && calme ? court : texte;
+  el.title = [court && calme ? texte.replace(/<[^>]+>/g, '') : '', aide || ''].filter(Boolean).join('. ');
 }
 function majEtatStudio() {
   // le micro n'est écouté que quand ta caméra tourne (et relâché si tu changes d'appareil)

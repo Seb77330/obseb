@@ -139,7 +139,7 @@ function majLimiteur() {
   if (!LIMITE_MS) { el.hidden = true; return; }
   el.hidden = false;
   // le compte suit le direct (bouton « Démarrer le direct »), pas les scènes
-  if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()} · démarre avec le direct`; return; }
+  if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()}`; el.title = 'Le décompte démarre avec le direct'; return; }
   const reste = etat.direct.debut + LIMITE_MS - Date.now();
   if (reste <= 0) {
     el.className = 'limiteur alerte'; el.textContent = 'Temps écoulé';
@@ -339,9 +339,9 @@ addEventListener('message', e => {
       const el = $('#etat-camera');
       statsCamera = { h: q.h, kbps: q.kbps, n: typeof n === 'number' ? n : null, vu: Date.now() };
       if (typeof n === 'number' && n === 0) el.innerHTML = '<span class="voyant att"></span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`
-        // les aperçus reçoivent volontairement une image réduite ; seule la sortie OBS demande la 1080p
-        + (q.h && q.h < 1000 ? '<br><span class="aide">Aperçus en qualité réduite : la 1080p part dès que la sortie OBS est ouverte.</span>' : '');
+      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${q.h ? ' · ' + q.h + 'p' : ''}`;
+      // les aperçus reçoivent volontairement une image réduite ; seule la sortie OBS demande la 1080p
+      el.title = q.h && q.h < 1000 ? 'Aperçus en qualité réduite : la 1080p part dès que la sortie OBS est ouverte.' : '';
     }
     if (d.streamIDs) {
       listeRecue = true;

@@ -62,12 +62,17 @@ function resumeComptes() {
   const h = d.filter(x => x.format === 'horizontal').length, v = d.length - h;
   $('#comptes-resume').innerHTML = d.length
     ? `<b>${d.length} plateforme${d.length > 1 ? 's' : ''} prête${d.length > 1 ? 's' : ''}</b> : ${h} en horizontal, ${v} en vertical. Le même direct part partout en même temps.`
-    : 'Aucune plateforme prête. Active celles où tu veux diffuser et colle leur clé de stream.';
+    : 'Active une plateforme, puis colle sa clé de stream.';
 }
 
+/* Les plateformes peu utilisées sont rangées dans un repli, sauf celles que tu as activées */
+const PLATEFORMES_RARES = ['linkedin', 'rumble', 'dailymotion', 'vimeo', 'trovo', 'dlive', 'telegram', 'autre'];
 function dessinerComptes() {
   const box = $('#comptes-liste');
   box.innerHTML = '';
+  const plus = document.createElement('details');
+  plus.className = 'comptes-plus';
+  plus.innerHTML = '<summary></summary>';
   for (const p of PLATEFORMES_LIVE) {
     const c = compte(p);
     const el = document.createElement('div');
@@ -105,8 +110,11 @@ function dessinerComptes() {
     el.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { c.format = b.dataset.f; sauverComptes(); majEtat(); });
     el.querySelector('.compte-tete').addEventListener('click', e => { if (!e.target.closest('.interrupteur')) el.classList.toggle('ouvert'); });
     majEtat();
-    box.appendChild(el);
+    el.dataset.id = p.id;
+    (PLATEFORMES_RARES.includes(p.id) && !c.actif ? plus : box).appendChild(el);
   }
+  const n = plus.children.length - 1;
+  if (n) { plus.querySelector('summary').textContent = `Autres plateformes (${n})`; box.appendChild(plus); }
   resumeComptes();
 }
 dessinerComptes();
