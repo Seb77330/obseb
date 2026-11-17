@@ -214,6 +214,10 @@
   .src-choix.seul .src-choix-titre { font-size: 15px; color: var(--ui-text); }
   .src-choix-grille { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .src-choix-grille button { display: grid; justify-items: start; gap: 2px; padding: 12px; text-align: left; border-radius: 12px; background: var(--ui-panel2); border: 1px solid var(--ui-line); }
+  .src-choix-grille button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .src-console { display: grid; gap: 8px; margin-bottom: 8px; } .src-console[hidden] { display: none; }
+  .src-console label { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 8px; }
+  .cs-aide { margin: 8px 0 0; }
   .src-choix-grille button:hover { border-color: var(--ui-accent); background: var(--ui-hover); }
   .src-choix-grille svg { width: 22px; height: 22px; color: var(--ui-accent); margin-bottom: 6px; }
   .src-choix-grille b { font-size: 14px; font-weight: 600; }
@@ -829,7 +833,7 @@
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/regie.js?v=77a6caa4"></script>
-<script src="js/regie-sources.js?v=94d9b4e0"></script>
+<script src="js/regie-sources.js?v=04c1ea9c"></script>
 <script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>

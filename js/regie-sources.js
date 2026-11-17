@@ -7,15 +7,17 @@ const ICONE_SRC = {
   monecran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/></svg>',
   ecraninvite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.400 1.900 7 5.500"/></svg>',
   image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.500" y="4.500" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l4.500-4 3.500 3 3-2.500 5 4"/></svg>',
+  console: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8h10a5 5 0 0 1 4.900 4l.800 4a2.300 2.300 0 0 1-4 2l-1.700-2H7l-1.700 2a2.300 2.300 0 0 1-4-2l.800-4A5 5 0 0 1 7 8z"/><path d="M7.500 11v3M6 12.500h3M16 11.500h.01M18 13.500h.01"/></svg>',
   lien: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/></svg>'
 };
 const CHOIX_SOURCE = [
   ['monecran', 'Mon écran', 'Fenêtre, onglet ou écran entier'],
   ['ecraninvite', "Écran d'un invité", 'Quand il partage le sien'],
+  ['console', 'Console', "Avec un boîtier d'acquisition"],
   ['image', 'Image', 'Depuis ton ordinateur'],
   ['lien', 'Lien', 'Vidéo MP4, YouTube, page web']
 ];
-const NOM_SOURCE = { monecran: 'Mon écran', ecraninvite: "Écran d'un invité", image: 'Image', lien: 'Lien' };
+const NOM_SOURCE = { monecran: 'Mon écran', ecraninvite: "Écran d'un invité", console: 'Console', image: 'Image', lien: 'Lien' };
 const ecransActifs = new Set();      // tes partages d'écran en cours (ids vdo.ninja)
 const iframesEcran = new Map();      // n° de source -> iframe de partage
 
@@ -30,6 +32,8 @@ etat.sources.forEach(s => {
 etat.sources.forEach((s, i) => { if (s.fichier) fichiers.lire(s.fichier.id).then(b => { if (!b) { viderSource(i); majSlots(); } }).catch(() => {}); });
 // au rechargement de la page, tes partages d'écran sont coupés : la source se vide
 etat.sources.forEach(s => { if (s.ui === 'monecran') Object.assign(s, { ui: '', type: '', ref: '', nom: '', actif: false }); });
+// la console reste choisie, avec son boîtier : il suffit de la rebrancher
+etat.sources.forEach(s => { if (s.ui === 'console') Object.assign(s, { ref: '', actif: false }); });
 etat.bandeaux = etat.bandeaux || [];
 etat.defilant = etat.defilant || { texte: '', actif: false };
 etat.playlist = etat.playlist || [];
@@ -149,7 +153,7 @@ function construireSlots() {
       <div class="ecran-cadre" hidden></div>
       <div class="corps"></div>`;
     el.querySelector('.actif').onchange = e => {
-      if (e.target.checked && !src.ref) { e.target.checked = false; return toast(src.ui === 'monecran' ? 'Choisis d\'abord l\'écran à partager' : 'Il n\'y a encore rien à montrer ici'); }
+      if (e.target.checked && !src.ref) { e.target.checked = false; return toast(src.ui === 'monecran' ? 'Choisis d\'abord l\'écran à partager' : src.ui === 'console' ? 'Branche d\'abord la console' : 'Il n\'y a encore rien à montrer ici'); }
       src.actif = e.target.checked; envoyer(); majSlots();
     };
     el.querySelector('.src-oter').onclick = () => { viderSource(i); envoyer(); majSlots(); };
@@ -166,6 +170,7 @@ function construireSlots() {
     if (ui === 'monecran') return demarrerMonEcran(i);
     if (ui === 'image') return champImage.click();
     etat.sources[i].ui = ui;
+    if (ui === 'console') Object.assign(etat.sources[i], { type: 'ecran', nom: 'Console' });
     if (ui === 'ecraninvite') {
       etat.sources[i].type = 'ecran';
       const ids = ecransInvites();
@@ -214,7 +219,7 @@ async function choisirImage(i, f) {
 function majSonSource(i) {
   const src = etat.sources[i], corps = slotsEl[i].querySelector('.corps');
   const ancien = corps.querySelector('.son-src'); if (ancien) ancien.remove();
-  if (!(src.ui === 'monecran' || src.ui === 'ecraninvite' || src.type === 'video') || !src.ref) return;
+  if (!(src.ui === 'monecran' || src.ui === 'ecraninvite' || src.ui === 'console' || src.type === 'video') || !src.ref) return;
   const v = document.createElement('div');
   v.className = 'reglages son-src'; v.style.cssText = 'display:flex;gap:8px;align-items:center';
   v.innerHTML = '<span class="aide">🔊 Son</span><input type="range" min="0" max="100" class="vol-src" style="flex:1"><span class="aide pct-src"></span>';
@@ -236,6 +241,8 @@ function remplirCorps(i) {
     b.onclick = () => { if (iframesEcran.has(i)) { viderSource(i); envoyer(); majSlots(); } else demarrerMonEcran(i); };
     corps.appendChild(b);
     corps.insertAdjacentHTML('beforeend', '<span class="aide">La fenêtre de choix s\'ouvre toute seule. Si rien ne s\'ouvre, clique sur le bouton du cadre. Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
+  } else if (src.ui === 'console') {
+    remplirConsole(i);
   } else if (src.ui === 'ecraninvite') {
     const sel = document.createElement('select');
     sel.className = 'ecran-invite';
@@ -299,6 +306,80 @@ function cadreEcran(i) {
   slotsEl[i].querySelector('.ecran-cadre').appendChild(f);
   return o;
 }
+/* ---------- Console de jeu : un boîtier d'acquisition (Cam Link, Elgato…) est vu par le navigateur comme une caméra
+   avec son propre son. On l'envoie comme un écran partagé : image jusqu'à 60 images par seconde, son du jeu en stéréo
+   et sans traitement de voix. Jamais de taille imposée, comme pour les caméras. ---------- */
+const BOITIER = /cam ?link|elgato|game ?capture|hd60|4k60|capture|avermedia|live ?gamer|hdmi|usb video|usb3\.? ?0|razer ripsaw|genki|shadowcast|uvc/i;
+async function appareilsConsole() {
+  let tous = [];
+  try { tous = await navigator.mediaDevices.enumerateDevices(); } catch (e) { /* rien */ }
+  let principale = '';
+  try { principale = JSON.parse(localStorage.getItem(CLE_CAM) || '{}').nomCam || ''; } catch (e) { /* rien */ }
+  const prises = new Set([principale, ...(typeof camsLocales !== 'undefined' ? [...camsLocales.values()].map(c => c.appareil) : [])]);
+  const uniques = l => [...new Set(l.map(d => nomAppareil(d.label)).filter(Boolean))];
+  const images = uniques(tous.filter(d => d.kind === 'videoinput')).filter(n => !prises.has(n)).sort((a, b) => BOITIER.test(b) - BOITIER.test(a));
+  const sons = uniques(tous.filter(d => d.kind === 'audioinput' && d.deviceId !== 'default' && d.deviceId !== 'communications'));
+  return { images, sons };
+}
+// le son qui va avec ce boîtier : « Cam Link 4K » -> « Interface audio numérique (Cam Link 4K) »
+function sonDuBoitier(image, sons) {
+  const coeur = String(image).replace(/\s*\(.*$/, '').trim().toLowerCase();
+  return (coeur.length > 3 && sons.find(s => s.toLowerCase().includes(coeur))) || sons.find(s => BOITIER.test(s)) || '';
+}
+function remplirConsole(i) {
+  const src = etat.sources[i], corps = slotsEl[i].querySelector('.corps');
+  const branchee = iframesEcran.has(i);
+  corps.innerHTML = `
+    <div class="src-console" ${branchee ? 'hidden' : ''}>
+      <label><span class="aide">Boîtier</span><select class="cs-image"></select></label>
+      <label><span class="aide">Son du jeu</span><select class="cs-son"></select></label>
+    </div>
+    <button type="button" class="petit cs-brancher ${branchee ? '' : 'primaire'}">${branchee ? 'Débrancher la console' : 'Brancher la console'}</button>
+    <p class="aide cs-aide"></p>`;
+  const selI = corps.querySelector('.cs-image'), selS = corps.querySelector('.cs-son'), bouton = corps.querySelector('.cs-brancher'), aide = corps.querySelector('.cs-aide');
+  const sansBoitier = () => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'lien-bouton'; b.textContent = 'Partager la fenêtre du jeu';
+    b.onclick = () => { viderSource(i); demarrerMonEcran(i); };
+    aide.append('Pas de boîtier ? Ouvre PS Remote Play ou l\'appli Xbox sur ce PC : la console s\'affiche dans une fenêtre. ', b);
+  };
+  if (branchee) {
+    aide.textContent = `${src.appareil || 'Boîtier'}${src.appareilSon ? ' · son : ' + src.appareilSon : ' · sans le son'}. Si l'image reste noire, ferme l'autre logiciel qui utilise le boîtier (OBS, par exemple).`;
+    bouton.onclick = () => { arreterMonEcran(i); remplirCorps(i); envoyer(); majSlots(); };
+    return;
+  }
+  bouton.disabled = true;
+  appareilsConsole().then(({ images, sons }) => {
+    if (etat.sources[i] !== src || src.ui !== 'console' || iframesEcran.has(i)) return;
+    selI.innerHTML = images.length ? images.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option value="">Aucun boîtier trouvé</option>';
+    if (images.includes(src.appareil)) selI.value = src.appareil;
+    const majSons = () => {
+      const devine = sonDuBoitier(selI.value, sons);
+      selS.innerHTML = '<option value="">Sans le son</option>' + sons.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+      selS.value = sons.includes(src.appareilSon) && selI.value === src.appareil ? src.appareilSon : devine;
+    };
+    majSons(); selI.onchange = majSons;
+    bouton.disabled = !images.length;
+    if (!images.length) {
+      aide.textContent = 'Branche ton boîtier d\'acquisition en USB, puis ';
+      const r = document.createElement('button'); r.type = 'button'; r.className = 'lien-bouton'; r.textContent = 'cherche à nouveau'; r.onclick = () => remplirCorps(i);
+      aide.append(r, '. '); sansBoitier();
+    } else { aide.textContent = 'Ta caméra reste à côté. Le jeu part avec son propre son, sans retard pour toi : tu continues de jouer sur ta télé ou ton écran. '; sansBoitier(); }
+    bouton.onclick = () => { if (selI.value) brancherConsole(i, selI.value, selS.value); };
+  });
+}
+function brancherConsole(i, image, son) {
+  const src = etat.sources[i], id = idEcran(session, i + 1);
+  if (ecranPret && ecranPret.i === i) { ecranPret.f.src = 'about:blank'; ecranPret.f.remove(); ecranPret = null; }   // le cadre « Mon écran » chargé d'avance laisse la place
+  const f = document.createElement('iframe');
+  f.allow = IFRAME_ALLOW;
+  f.src = urlPublier(session, id, 'Console', Object.assign({ noaudio: true, vd: paramAppareil(image), ad: son ? paramAppareil(son) : 0, autostart: true, maxframerate: 60, contenthint: 'motion' }, son ? { proaudio: true } : {}));
+  slotsEl[i].querySelector('.ecran-cadre').appendChild(f);
+  iframesEcran.set(i, f); ecransActifs.add(id); presents.set(id, { vu: Date.now() });
+  Object.assign(src, { type: 'ecran', ref: id, nom: 'Console', appareil: image, appareilSon: son || '', actif: true });
+  remplirCorps(i); envoyer(); majSlots();
+}
+
 function preparerEcran() {
   const i = premierVide();
   if (ecranPret && ecranPret.i !== i) { ecranPret.f.src = 'about:blank'; ecranPret.f.remove(); ecranPret = null; }
@@ -339,11 +420,11 @@ function majSlots() {
     const el = slotsEl[i];
     if (!el) return;
     el.hidden = !src.ui;
-    el.querySelector('.ecran-cadre').hidden = src.ui !== 'monecran';
+    el.querySelector('.ecran-cadre').hidden = !(src.ui === 'monecran' || (src.ui === 'console' && iframesEcran.has(i)));
     if (src.ui) pleins++;
     el.classList.toggle('on', !!(src.actif && src.ref));
     el.querySelector('.actif').checked = !!(src.actif && src.ref);
-    el.querySelector('.src-nom').textContent = src.ui === 'lien' ? (src.ref ? ({ video: 'Vidéo', image: 'Image' }[src.type] || src.nom || 'Page web') : 'Lien') : src.ui === 'image' ? 'Image' : src.ui === 'ecraninvite' ? (src.ref ? src.nom : NOM_SOURCE.ecraninvite) : (NOM_SOURCE[src.ui] || '');
+    el.querySelector('.src-nom').textContent = src.ui === 'lien' ? (src.ref ? ({ video: 'Vidéo', image: 'Image' }[src.type] || src.nom || 'Page web') : 'Lien') : src.ui === 'image' ? 'Image' : src.ui === 'console' ? 'Console' : src.ui === 'ecraninvite' ? (src.ref ? src.nom : NOM_SOURCE.ecraninvite) : (NOM_SOURCE[src.ui] || '');
   });
   const choix = $('#src-choix');
   if (!choix) return;
