@@ -66,6 +66,35 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
   tuiles.set(id, t);
   return t;
 }
+/* Sources : partage d'écran (flux vdo.ninja), image, vidéo, page web */
+const sourcesEl = new Map();   // clé -> { el, type, ref, video }
+function cleSource(src) { return src.type === 'ecran' ? src.ref : src.type + ':' + src.ref; }
+function creerSource(src) {
+  const cle = cleSource(src);
+  if (src.type === 'ecran') {
+    const t = creerTuile(src.ref, src.nom || 'Partage', { ecran: true, demo: !!src.demo });
+    if (src.demo) t.el.querySelector('.attente').textContent = src.nom;
+    return t;
+  }
+  if (sourcesEl.has(cle)) return sourcesEl.get(cle);
+  const el = document.createElement('div');
+  el.className = 'tuile source horsantenne';
+  let video = null;
+  if (src.type === 'image') el.innerHTML = `<img src="${esc(src.ref)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000">`;
+  else if (src.type === 'video') {
+    video = document.createElement('video');
+    Object.assign(video, { src: src.ref, loop: true, playsInline: true, muted: PREVIEW, autoplay: true });
+    video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000';
+    el.appendChild(video);
+  } else if (src.type === 'web') {
+    const f = document.createElement('iframe'); f.src = src.ref; f.allow = 'autoplay *; fullscreen *';
+    el.appendChild(f);
+  }
+  $('#ecran').appendChild(el);
+  const o = { el, type: src.type, ref: src.ref, video };
+  sourcesEl.set(cle, o);
+  return o;
+}
 function supprimerTuile(id) {
   const t = tuiles.get(id);
   if (!t) return;
@@ -87,13 +116,20 @@ function appliquerVolumes() {
     let v = 0;
     if (!PREVIEW) {
       const visible = etat.scene === 'live' || etat.scene === 'partage';
-      const enDirect = t.ecran ? etat.scene === 'partage' : etat.onair.includes(t.id);
+      const enDirect = t.ecran ? (etat.scene === 'partage' && sourcesActives().some(x => x.ref === t.id)) : etat.onair.includes(t.id);
       v = visible && enDirect ? (etat.vol[t.id] ?? 1) : 0;
       if (etat.muet && etat.muet[t.id]) v = 0;
     }
     ordre(t.iframe, { volume: v });
   }
+  for (const [cle, o] of sourcesEl) {
+    if (!o.video) continue;
+    const actif = etat.scene === 'partage' && sourcesActives().some(x => cleSource(x) === cle);
+    o.video.volume = PREVIEW || !actif ? 0 : Math.min(1, etat.vol[cle] ?? 1);
+    if (actif && o.video.paused) o.video.play().catch(() => {});
+  }
 }
+function sourcesActives() { return ((etat && etat.sources) || []).filter(x => x && x.actif && x.ref).slice(0, 4); }
 
 /* ----- Appliquer l'état envoyé par la régie ----- */
 function appliquerEtat(st) {
@@ -107,6 +143,7 @@ function appliquerEtat(st) {
     for (const id of [...tuiles.keys()]) {
       const t = tuiles.get(id);
       if (!t.ecran && !(id in (st.noms || {}))) supprimerTuile(id);
+      if (t.ecran && !sourcesActives().some(x => x.ref === id) && !(st.sources || []).some(x => x && x.ref === id)) supprimerTuile(id);
     }
   }
   for (const t of tuiles.values()) {
@@ -118,15 +155,35 @@ function appliquerEtat(st) {
   $('#tuiles').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
   $('#ecran').classList.toggle('cachee', scene !== 'partage');
   $('#bandeau').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
-  $('#bandeau-titre').textContent = st.bandeau || session.titre;
-  $('#bandeau-msg').textContent = st.message || '';
+  // bandeau : celui de la bibliothèque s'il y en a un d'affiché, sinon le titre du live
+  const ba = st.bandeauActif;
+  const titre = ba ? ba.titre : (st.bandeau || session.titre), sous = ba ? (ba.sous || '') : (st.message || '');
+  const bt = $('#bandeau-titre');
+  if (bt.textContent !== titre) { bt.textContent = titre; bt.classList.remove('entree'); void bt.offsetWidth; bt.classList.add('entree'); }
+  $('#bandeau-msg').textContent = sous;
+  // texte défilant
+  const def = st.defilant || {};
+  $('#defilant').classList.toggle('cachee', !(def.actif && def.texte && (scene === 'live' || scene === 'partage')));
+  const piste = $('#defilant .piste');
+  if (piste.dataset.texte !== (def.texte || '')) {
+    piste.dataset.texte = def.texte || '';
+    piste.textContent = def.texte ? (def.texte + '   ✦   ').repeat(6) : '';
+    piste.style.animationDuration = Math.max(20, (def.texte || '').length * 0.9) + 's';
+  }
 
-  const ids = (st.onair || []).filter(id => tuiles.has(id));
-  const disp = scene === 'partage' ? dispositionPartage(ids) : calculerDisposition(st.layout, ids, st.focus);
+  // sources de la scène Partage
+  const actives = sourcesActives();
+  if (scene === 'partage') actives.forEach(creerSource);
+  const clesActives = actives.map(cleSource);
+
+  const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
+  const disp = scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus);
   for (const t of tuiles.values()) {
-    if (t.ecran) placer(t, scene === 'partage' ? disp.__ecran : null);
+    if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);
   }
+  for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
+  gererPlaylist();
   appliquerVolumes();
   compteARebours();
   gererMusique(scene);
@@ -154,6 +211,29 @@ function gererMusique(scene) {
       if (a.volume === but) { clearInterval(a._fondu); if (!active) a.pause(); }
     }, 60);
   }
+}
+
+/* ----- Playlist de la régie ----- */
+const lecteur = new Audio(); lecteur.preload = 'auto';
+let pisteLocale = { idx: -1, n: -1 };
+lecteur.addEventListener('ended', () => {
+  const l = (etat && etat.playlist) || [];
+  if (!l.length) return;
+  pisteLocale.idx = (pisteLocale.idx + 1) % l.length;
+  lecteur.src = l[pisteLocale.idx].url; lecteur.play().catch(() => {});
+});
+function gererPlaylist() {
+  if (PREVIEW || DEMO || !etat) return;
+  const l = etat.playlist || [], m = etat.musique || {};
+  if (!l.length) { lecteur.pause(); return; }
+  if (m.idx !== pisteLocale.idx || m.n !== pisteLocale.n) {
+    pisteLocale = { idx: m.idx, n: m.n };
+    const piste = l[m.idx] || l[0];
+    if (lecteur.src !== piste.url) lecteur.src = piste.url;
+  }
+  lecteur.volume = Math.min(1, etat.volMusique ?? 0.5);
+  if (m.lecture && lecteur.paused) lecteur.play().catch(() => {});
+  if (!m.lecture && !lecteur.paused) lecteur.pause();
 }
 
 /* ----- Compte à rebours de l'intro ----- */
@@ -208,13 +288,13 @@ if (DEMO) {
   st.scene = SCENE_FORCEE || 'live';
   st.noms = {}; st.onair = [];
   for (let i = 0; i < Math.min(DEMO, 10); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
-  const ec = creerTuile('__ecran', 'Partage', { demo: true, ecran: true });
-  ec.el.querySelector('.attente').textContent = 'Partage d’écran';
+  const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
+  st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
+  if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {
   hote = creerTuile(idHote(session), session.hote);
-  creerTuile(idEcran(session), 'Partage', { ecran: true });
   appliquerEtat(etatParDefaut(session));
 }

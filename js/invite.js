@@ -41,12 +41,22 @@ function entrer() {
 }
 
 /* L'animateur envoie l'état du live : on affiche « À l'antenne » ou « En coulisses » */
+/* Partage d'écran de l'invité (l'animateur décide s'il l'affiche) */
+let ecranActif = false;
+document.getElementById('btn-mon-ecran').onclick = () => {
+  const f = $('#mon-ecran'), b = $('#btn-mon-ecran');
+  if (ecranActif) { f.src = 'about:blank'; f.hidden = true; ecranActif = false; b.textContent = '🖥️ Partager mon écran'; return; }
+  f.src = vdo({ room: session.room, push: moi.id + 'ecr', label: moi.nom + ' (écran)', screenshare: true, quality: 0,
+    novideo: true, noaudio: true, ln: 'fr', cleanish: true });
+  f.hidden = false; ecranActif = true; b.textContent = 'Arrêter le partage d\'écran';
+};
+
 /* Toutes les 3 s : on mesure sa qualité d'envoi et on dit « je suis là » à l'animateur */
 let maQualite = null;
 setInterval(() => {
   if (!maCamera) return;
   ordre(maCamera, { getStats: true });
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite } }, type: 'rpcs' });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null } }, type: 'rpcs' });
 }, 3000);
 
 addEventListener('message', e => {

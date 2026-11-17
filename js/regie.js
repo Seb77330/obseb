@@ -13,7 +13,7 @@ if (!session || !cle) {
 }
 $('#app').hidden = false;
 
-const ID_HOTE = idHote(session), ID_ECRAN = idEcran(session);
+const ID_HOTE = idHote(session);
 const L = liens(session, cle);
 const theme = themeComplet(session);
 const CLE_STOCKAGE = 'studioSeb:etat:' + session.room;
@@ -30,6 +30,7 @@ etat.noms[ID_HOTE] = etat.noms[ID_HOTE] || session.hote;
 const presents = new Map();   // id -> { vu: timestamp } (connectés en ce moment)
 const cartes = new Map();     // id -> { el, iframe, vu }
 let listeRecue = false;
+const nomsEcrans = new Map();  // id d'écran -> nom affiché
 const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
 
 /* ----- En-tête ----- */
@@ -61,21 +62,6 @@ const apercu = $('#apercu');
 apercu.src = `sortie.html?preview=regie${location.hash.replace(/&k=[^&]*/, '')}`;
 apercu.addEventListener('load', () => envoyer());
 
-/* ----- Partage d'écran ----- */
-$('#btn-ecran').onclick = () => {
-  const f = $('#mon-ecran');
-  f.src = vdo({ room: session.room, push: ID_ECRAN, label: 'Partage', screenshare: true, quality: 0,
-    novideo: true, noaudio: true, ln: 'fr', cleanish: true });
-  f.hidden = false; $('#btn-ecran').hidden = true; $('#btn-ecran-stop').hidden = false;
-  partageActif = true;
-};
-$('#btn-ecran-stop').onclick = () => {
-  const f = $('#mon-ecran'); f.src = 'about:blank'; f.hidden = true;
-  $('#btn-ecran').hidden = false; $('#btn-ecran-stop').hidden = true;
-  partageActif = false; presents.delete(ID_ECRAN);
-  if (etat.scene === 'partage') changerScene('live');
-};
-
 /* ----- Envoi de l'état vers la sortie OBS et les invités ----- */
 function envoyer() {
   etat.ts = Date.now();
@@ -104,7 +90,7 @@ function noterLiveTermine() {
 }
 function changerScene(s) {
   if (s === 'fin' && etat.scene !== 'fin') noterLiveTermine();
-  if (s === 'partage' && !presents.has(ID_ECRAN)) toast("Lance d'abord le partage d'écran (colonne de gauche)");
+  if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) toast('Aucune source affichée : active au moins une source (colonne de gauche)');
   etat.scene = s; envoyer();
 }
 function changerLayout(l) { etat.layout = l; envoyer(); }
@@ -112,8 +98,6 @@ $$('[data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene))
 $$('[data-layout]').forEach(b => b.onclick = () => changerLayout(b.dataset.layout));
 $('#auto-antenne').checked = !!etat.autoAntenne;
 $('#auto-antenne').onchange = e => { etat.autoAntenne = e.target.checked; envoyer(); };
-$('#vol-musique').value = Math.round((etat.volMusique ?? 0.5) * 100);
-$('#vol-musique').oninput = e => { etat.volMusique = e.target.value / 100; envoyerBientot(); };
 $('#surbrillance').onchange = e => { etat.surbrillance = e.target.checked; envoyer(); };
 $('#bandeau').oninput = e => { etat.bandeau = e.target.value; envoyerBientot(); };
 $('#message').oninput = e => { etat.message = e.target.value; envoyerBientot(); };
@@ -129,7 +113,7 @@ $('#btn-heure').onclick = () => {
 $('#btn-sans-compte').onclick = () => { etat.fin = null; envoyer(); };
 
 addEventListener('keydown', e => {
-  if (e.target.matches('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target.matches('input:not([type=checkbox]):not([type=range]):not([type=radio]), textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
   const scenes = { '1': 'intro', '2': 'live', '3': 'partage', '4': 'fin', '&': 'intro', 'é': 'live', '"': 'partage', "'": 'fin' };
   const layouts = { g: 'grille', i: 'interview', s: 'solo' };
   if (scenes[e.key]) changerScene(scenes[e.key]);
@@ -221,7 +205,7 @@ function majCarte(id) {
 }
 function majInterface() {
   const liste = $('#liste');
-  const ids = [ID_HOTE, ...[...presents.keys()].filter(id => id !== ID_HOTE && id !== ID_ECRAN)];
+  const ids = [ID_HOTE, ...[...presents.keys()].filter(id => id !== ID_HOTE && !estEcran(id))];
   for (const id of ids) if (!cartes.has(id)) liste.appendChild(creerCarte(id).el);
   for (const [id, c] of cartes) if (!ids.includes(id)) { c.el.remove(); cartes.delete(id); }
   // ordre : à l'antenne d'abord (dans l'ordre d'affichage), puis coulisses
@@ -245,20 +229,22 @@ function arrivee(id, label) {
   if (!id || id === ID_HOTE) return;
   const nouveau = !presents.has(id);
   presents.set(id, { vu: Date.now() });
-  if (id !== ID_ECRAN && label && !etat.noms[id]) etat.noms[id] = label;
-  if (id !== ID_ECRAN && !etat.noms[id]) etat.noms[id] = 'Invité';
-  if (nouveau && id !== ID_ECRAN && etat.autoAntenne && !etat.onair.includes(id) && etat.onair.length < MAX_ANTENNE) etat.onair.push(id);
+  if (estEcran(id)) { if (label) nomsEcrans.set(id, label); if (nouveau && typeof majSources === 'function') majSources(); }
+  else {
+    if (label && !etat.noms[id]) etat.noms[id] = label;
+    if (!etat.noms[id]) etat.noms[id] = 'Invité';
+  }
+  if (nouveau && !estEcran(id) && etat.autoAntenne && !etat.onair.includes(id) && etat.onair.length < MAX_ANTENNE) etat.onair.push(id);
   if (nouveau) {
-    if (id === ID_ECRAN) toast("Partage d'écran prêt : touche 3 pour l'afficher");
+    if (estEcran(id)) toast(`Nouvel écran partagé : ${nomsEcrans.get(id) || 'écran'} (voir Sources)`);
     else toast(`${etat.noms[id]} est en coulisses`);
     envoyer();
   }
 }
-let partageActif = false;
 setInterval(() => {
   ordre(maCamera, { getStreamIDs: true });
   ordre(maCamera, { getStats: true });
-  if (partageActif) presents.set(ID_ECRAN, { vu: Date.now() });
+  if (typeof ecransActifs !== 'undefined') for (const id of ecransActifs) presents.set(id, { vu: Date.now() });
   // retire ceux qui ne répondent plus depuis 12 s (seulement si vdo.ninja fournit bien la liste)
   if (!listeRecue) return;
   let change = false;
@@ -288,6 +274,7 @@ addEventListener('message', e => {
       listeRecue = true;
       arrivee(salut.id, String(salut.nom || '').slice(0, 28));
       if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
+      if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');
     }
     if (d.action === 'push-connection' && d.streamID && d.value === false) {
       presents.delete(d.streamID); envoyer();

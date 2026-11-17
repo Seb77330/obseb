@@ -117,3 +117,19 @@ body.sortie { background: #000; }
 /* Partage d'écran */
 #ecran { z-index: 3; }
 #ecran .tuile .nom { display: none; }
+
+/* Texte défilant (tout en bas) */
+#defilant {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 44px; z-index: 6; overflow: hidden;
+  background: var(--accent); color: var(--bg); display: flex; align-items: center; transition: transform .5s ease;
+}
+#defilant.cachee { transform: translateY(44px); opacity: 1; }
+#defilant .piste {
+  white-space: nowrap; font: 800 22px var(--font-body); letter-spacing: .06em; text-transform: uppercase;
+  padding-left: 100%; animation: defile 40s linear infinite;
+}
+@keyframes defile { to { transform: translateX(-100%); } }
+/* Changement de bandeau : glissement */
+#bandeau .titre.entree { animation: entree .55s cubic-bezier(.2,.8,.2,1); }
+@keyframes entree { from { transform: translateY(18px); opacity: 0; } }
+.tuile.source iframe { background: #fff; }

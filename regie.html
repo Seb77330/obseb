@@ -39,6 +39,17 @@
   .vu { height: 5px; border-radius: 3px; background: #2a2e38; overflow: hidden; margin-top: 6px; }
   .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .12s; }
   .participant .qualite { font-size: 12px; margin-top: 4px; }
+  .slot { border: 1px solid var(--ui-line); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--ui-panel2); }
+  .slot.on { border-color: var(--ui-accent); }
+  .slot .tete { display: flex; gap: 8px; align-items: center; }
+  .slot .tete b { min-width: 18px; }
+  .slot select, .slot input[type=url] { padding: 6px 8px; }
+  .slot iframe { width: 100%; height: 150px; border: 0; border-radius: 8px; background: #000; margin-top: 8px; }
+  .slot .corps { margin-top: 8px; display: grid; gap: 8px; }
+  .elt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 9px; margin-bottom: 6px; background: var(--ui-panel2); }
+  .elt.on { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  .elt .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .elt .txt small { color: var(--ui-muted); margin-left: 6px; }
   .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; }
   kbd { color: var(--ui-text); background: #0f1116; border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
   #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
@@ -64,13 +75,9 @@
         <p class="aide">Choisis ta caméra (Cam Link) et ton micro, puis clique sur Démarrer. Ferme la caméra dans OBS avant : ici, c'est le seul endroit qui l'utilise.</p>
       </div>
       <div class="panneau">
-        <h2>Partage d'écran</h2>
-        <div class="ligne-boutons">
-          <button id="btn-ecran">Partager un écran ou un onglet</button>
-          <button id="btn-ecran-stop" hidden>Arrêter le partage</button>
-        </div>
-        <iframe id="mon-ecran" hidden allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
-        <p class="aide">Pour un extrait vidéo, partage l'onglet et coche « Partager l'audio de l'onglet ».</p>
+        <h2>Sources <span class="aide">jusqu'à 4 à la fois</span></h2>
+        <p class="aide" style="margin-top:-6px">Elles s'affichent dans la scène Partage (touche 3). Écrans (les tiens ou ceux des invités), images, vidéos ou pages web.</p>
+        <div id="sources"></div>
       </div>
     </div>
 
@@ -108,9 +115,38 @@
           <button class="petit" id="btn-heure">Jusqu'à cette heure</button>
           <button class="petit" id="btn-sans-compte">Sans compte à rebours</button>
         </div>
-        <label class="champ" for="vol-musique">Volume de la musique (intro et fin)</label>
+
+      </div>
+      <div class="panneau">
+        <h2>Bandeaux</h2>
+        <div class="ligne-boutons" style="flex-wrap:nowrap">
+          <input type="text" id="bd-titre" placeholder="Titre (ex. Antho, spécialiste Marvel)">
+          <input type="text" id="bd-sous" placeholder="Sous-titre (optionnel)">
+          <button class="primaire" id="bd-ajouter">Ajouter</button>
+        </div>
+        <div id="bd-liste" style="margin-top:10px"></div>
+        <label class="champ" for="defilant-txt">Texte défilant (en bas de l'écran)</label>
+        <div class="ligne-boutons" style="flex-wrap:nowrap">
+          <input type="text" id="defilant-txt" placeholder="Ex. Abonne-toi et pose tes questions dans le chat">
+          <button id="defilant-btn">Afficher</button>
+        </div>
+      </div>
+
+      <div class="panneau">
+        <h2>Musique</h2>
+        <div class="ligne-boutons" style="flex-wrap:nowrap">
+          <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
+          <input type="url" id="mu-url" placeholder="Lien du MP3">
+          <button class="primaire" id="mu-ajouter">Ajouter</button>
+        </div>
+        <div id="mu-liste" style="margin-top:10px"></div>
+        <div class="ligne-boutons" style="margin-top:10px;align-items:center">
+          <button id="mu-lecture">▶ Lecture</button>
+          <button id="mu-suivante">⏭ Suivante</button>
+          <span class="aide" id="mu-etat"></span>
+        </div>
+        <label class="champ" for="vol-musique">Volume de la musique (playlist, intro et fin)</label>
         <input type="range" id="vol-musique" min="0" max="100" step="1">
-        <p class="aide" style="margin:4px 0 0">Les musiques se choisissent dans le thème de la session (Mes sessions, Modifier).</p>
       </div>
     </div>
 
@@ -133,5 +169,6 @@
 
 <script src="js/common.js"></script>
 <script src="js/regie.js"></script>
+<script src="js/regie-sources.js"></script>
 </body>
 </html>

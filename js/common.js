@@ -104,7 +104,8 @@ function liens(session, cle) {
   };
 }
 const idHote = s => s.room + '_seb';
-const idEcran = s => s.room + '_ecran';
+const idEcran = (s, n = 1) => s.room + '_ecran' + n;   // tes partages d'écran : 1 à 4
+const estEcran = id => /_ecran\d$|ecr$/.test(id);
 
 /* ---------- Thème -> page ---------- */
 function appliquerTheme(theme, el = document.documentElement) {
@@ -236,17 +237,33 @@ function calculerDisposition(layout, ids, focus, zone = ZONE, gap = 22) {
   });
   return r;
 }
-function dispositionPartage(ids, zone = ZONE, gap = 22) {
+/* Scène Partage : jusqu'à 4 sources (écrans, images, vidéos, pages web) + colonne de caméras */
+function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
   const r = {};
   const colW = ids.length ? 360 : 0;
-  const ecranW = zone.w - (colW ? colW + gap : 0);
-  r.__ecran = fit169(zone.x, zone.y, ecranW, zone.h);
+  const zoneW = zone.w - (colW ? colW + gap : 0);
+  const n = sources.length;
+  if (n === 1) r[sources[0]] = fit169(zone.x, zone.y, zoneW, zone.h);
+  else if (n === 2) {
+    const w = (zoneW - gap) / 2;
+    sources.forEach((k, i) => { r[k] = fit169(zone.x + i * (w + gap), zone.y, w, zone.h); });
+  } else if (n > 2) {
+    const w = (zoneW - gap) / 2, h = (zone.h - gap) / 2;
+    const t = fit169(0, 0, w, h);
+    const x0 = zone.x + (zoneW - (2 * t.w + gap)) / 2, y0 = zone.y + (zone.h - (2 * t.h + gap)) / 2;
+    sources.slice(0, 4).forEach((k, i) => {
+      const row = Math.floor(i / 2), col = i % 2;
+      // 3 sources : la dernière centrée sur la 2e ligne
+      const dx = n === 3 && i === 2 ? (t.w + gap) / 2 : 0;
+      r[k] = { x: x0 + col * (t.w + gap) + dx, y: y0 + row * (t.h + gap), w: t.w, h: t.h };
+    });
+  }
   const max = Math.min(ids.length, 4);
   const cellH = colW * 9 / 16;
   const totalH = max * cellH + (max - 1) * gap;
   const y0 = zone.y + (zone.h - totalH) / 2;
   ids.slice(0, max).forEach((id, i) => {
-    r[id] = { x: zone.x + ecranW + gap, y: y0 + i * (cellH + gap), w: colW, h: cellH };
+    r[id] = { x: zone.x + zoneW + gap, y: y0 + i * (cellH + gap), w: colW, h: cellH };
   });
   return r;
 }
@@ -255,7 +272,9 @@ function dispositionPartage(ids, zone = ZONE, gap = 22) {
 function etatParDefaut(session) {
   return {
     scene: 'intro', layout: 'grille', onair: [idHote(session)], noms: { [idHote(session)]: session.hote },
-    vol: {}, focus: null, bandeau: session.titre, message: '', fin: null, surbrillance: true, ts: Date.now()
+    vol: {}, focus: null, bandeau: session.titre, message: '', fin: null, surbrillance: true,
+    sources: [], bandeaux: [], bandeauActif: null, defilant: { texte: '', actif: false },
+    playlist: [], musique: { idx: 0, lecture: false, n: 0 }, ts: Date.now()
   };
 }
 const CANAL = 'studioSeb';
