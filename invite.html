@@ -87,6 +87,10 @@
         <li>Garde cette page ouverte pendant tout le live.</li>
       </ol>
       <p class="aide" id="ma-qualite" style="margin:10px 0 0"></p>
+      <form id="form-nom" style="display:flex;gap:8px;margin-top:14px">
+        <input type="text" id="mon-nom" maxlength="28" placeholder="Ton nom à l'écran" style="flex:1">
+        <button type="submit">Renommer</button>
+      </form>
       <div style="margin-top:14px">
         <button id="btn-mon-ecran" style="width:100%">🖥️ Partager mon écran</button>
         <iframe id="mon-ecran" hidden style="width:100%;height:160px;border:0;border-radius:10px;background:#000;margin-top:10px" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>

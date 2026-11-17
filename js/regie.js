@@ -171,7 +171,7 @@ function creerCarte(id) {
   }
   const nom = el.querySelector('.nom');
   nom.value = etat.noms[id] || '';
-  nom.oninput = () => { etat.noms[id] = nom.value; envoyerBientot(); };
+  nom.oninput = () => { etat.noms[id] = nom.value; renommesParMoi.add(id); envoyerBientot(); };
   const vol = el.querySelector('.vol');
   vol.value = Math.round((etat.vol[id] ?? 1) * 100);
   vol.oninput = () => { etat.vol[id] = vol.value / 100; volumeCasque(id); majCarte(id); envoyerBientot(); };
@@ -238,6 +238,8 @@ function majInterface() {
 }
 
 /* ----- Qui est connecté ? (liste fournie par vdo.ninja) ----- */
+const nomsInvites = new Map();      // dernier nom choisi par chaque invité
+const renommesParMoi = new Set();   // invités que tu as renommés : leur propre nom ne t'écrase plus
 function arrivee(id, label) {
   if (!id || id === ID_HOTE) return;
   const nouveau = !presents.has(id);
@@ -285,7 +287,15 @@ addEventListener('message', e => {
     const salut = d.dataReceived && d.dataReceived.studioSebSalut;
     if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')) {
       listeRecue = true;
-      arrivee(salut.id, String(salut.nom || '').slice(0, 28));
+      const nomInvite = String(salut.nom || '').trim().slice(0, 28);
+      arrivee(salut.id, nomInvite);
+      // l'invité s'est renommé lui-même : on suit, sauf si tu l'as renommé toi-même
+      if (nomInvite && !renommesParMoi.has(salut.id) && nomsInvites.has(salut.id) && nomsInvites.get(salut.id) !== nomInvite) {
+        etat.noms[salut.id] = nomInvite;
+        const c = cartes.get(salut.id); if (c) c.el.querySelector('.nom').value = nomInvite;
+        toast(`Un invité s'appelle maintenant ${nomInvite}`); envoyerBientot();
+      }
+      if (nomInvite) nomsInvites.set(salut.id, nomInvite);
       if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
       if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');
     }

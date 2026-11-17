@@ -38,7 +38,19 @@ function entrer() {
   maCamera.src = urlPublier(session, moi.id, moi.nom);   // l'invité entend tout le monde ici
   apercu = $('#apercu');
   apercu.src = `sortie.html?preview=1#s=${hashParams().get('s')}`;
+  $('#mon-nom').value = moi.nom;
 }
+
+/* L'invité peut changer le nom affiché sous sa caméra (sans changer d'identifiant) */
+$('#form-nom').onsubmit = e => {
+  e.preventDefault();
+  const nom = $('#mon-nom').value.trim().slice(0, 28);
+  if (!nom || nom === moi.nom) return;
+  moi.nom = nom;
+  try { localStorage.setItem(CLE, JSON.stringify(moi)); } catch (err) { /* rien */ }
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null } }, type: 'rpcs' });
+  const b = e.submitter || $('#form-nom button'); b.textContent = 'C\'est fait ✓'; setTimeout(() => b.textContent = 'Renommer', 2000);
+};
 
 /* L'animateur envoie l'état du live : on affiche « À l'antenne » ou « En coulisses » */
 /* Partage d'écran de l'invité (l'animateur décide s'il l'affiche) */
