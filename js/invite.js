@@ -26,6 +26,9 @@ if (CAM_DISTANTE) {
   $('#prenom').placeholder = 'Ex. Caméra salon, Plan large';
   $('#form button').textContent = 'Brancher cette caméra';
 }
+/* « Vue invité » de la régie (invite.html?essai=1) : la même page, sans caméra, reliée à la régie ouverte dans ce navigateur.
+   L'animateur voit ce que voit un invité et peut répondre au quiz lui-même. */
+const ESSAI = !CAM_DISTANTE && new URLSearchParams(location.search).get('essai') === '1';
 const CLE = 'studioSeb:' + (CAM_DISTANTE ? 'camdist:' : 'invite:') + session.room;
 let moi = null;
 try { moi = JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { /* rien */ }
@@ -44,6 +47,18 @@ let maCamera, apercu;
 function entrer() {
   $('#accueil').hidden = true;
   $('#coulisses').hidden = false;
+  if (ESSAI) {
+    document.body.classList.add('essai'); $('#bandeau-essai').hidden = false;
+    maCamera = $('#ma-camera');   // cadre vide : rien n'est filmé ni envoyé
+    const canal = new BroadcastChannel('obseb-essai-' + session.room);
+    // ce que la page enverrait à la salle part vers la régie, et ce que la régie envoie arrive comme si la salle l'apportait
+    maCamera.contentWindow.addEventListener('message', e => { if (e.data && e.data.sendData) canal.postMessage({ sendData: e.data.sendData }); });
+    canal.onmessage = e => dispatchEvent(new MessageEvent('message', { data: e.data, source: maCamera.contentWindow }));
+    apercu = $('#apercu');
+    apercu.src = `sortie.html?preview=1&musique=0#s=${hashParams().get('s')}`;
+    ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom } }, type: 'rpcs' });   // « je suis là » : la régie répond avec l'état du live
+    return;
+  }
   // réglage caméra + micro avec aperçu, puis la caméra rejoint le live avec ces appareils
   const cle = 'studioSeb:appareils:invite';
   const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Entrer en coulisses', surDemarrer: demarrer });
@@ -157,51 +172,86 @@ setInterval(() => {
 addEventListener('message', e => { if (e.source === window && e.data && e.data.source === 'obseb-watch-ext') extInvite = Date.now(); });
 
 /* ----- Mode quiz : répondre le plus vite possible ----- */
-let quizVu = null;      // { qid, vuA (heure locale d'affichage), choix, envoye }
+let quizVu = null;      // { qid, vuA (heure locale d'affichage), choix, duree, revele }
+const vibrer = v => { try { if (navigator.vibrate) navigator.vibrate(v); } catch (e) { /* rien */ } };
+const CLAVIER = matchMedia('(hover: hover) and (pointer: fine)').matches;
 function gererQuiz(qz) {
   const box = $('#quiz');
   const a = qz && qz.active;
   if (!a) { box.hidden = true; quizVu = null; return; }
-  box.hidden = false;
+  const style = qz.style || 'theme';
+  box.dataset.style = style;                       // la carte prend l'ambiance choisie en régie
+  if (style === 'arcade') chargerPolices(['Press Start 2P']);
+  if (style === 'bd') chargerPolices(['Bangers']);
   if (!quizVu || quizVu.qid !== a.qid) {
     quizVu = { qid: a.qid, vuA: performance.now(), choix: null, duree: a.duree, revele: false };
+    box.hidden = true; void box.offsetWidth;        // nouvelle question : la carte rejoue son arrivée
+    box.className = '';
     $('#qz-question').textContent = a.q;
-    const im = $('#qz-image'); im.hidden = !a.img; if (a.img) im.src = a.img;
+    const im = $('#qz-image'); im.hidden = !a.img; if (a.img) im.src = a.img; else im.removeAttribute('src');
     const c = $('#qz-choix'); c.innerHTML = '';
     a.choix.forEach((txt, i) => {
       const b = document.createElement('button');
-      b.className = 'qz-btn'; b.innerHTML = `<b>${'ABCD'[i]}</b>`; b.append(txt);
+      b.type = 'button'; b.className = 'qz-btn'; b.style.setProperty('--i', i);
+      b.innerHTML = `<b>${'ABCD'[i]}</b><span></span>`; b.querySelector('span').textContent = txt;
       b.onclick = () => repondre(i);
       c.appendChild(b);
     });
-    $('#qz-retour').textContent = 'Réponds le plus vite possible !';
+    $('#qz-retour').textContent = CLAVIER ? 'Clique, ou tape A, B, C, D' : 'Touche ta réponse';
+    $('#qz-verdict').className = ''; $('#qz-verdict').textContent = '';
+    $('#qz-anneau').style.strokeDashoffset = 0;
+    box.hidden = false;
+    const r = box.getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * .5) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    vibrer(40);
   }
-  const btns = [...document.querySelectorAll('.qz-btn')];
-  quizVu.revele = !!a.revele;
-  if (a.revele) {
-    btns.forEach((b, i) => { b.disabled = true; b.classList.toggle('bonne', i === a.bonne); b.classList.toggle('fausse', i !== a.bonne); });
-    const moi_r = (a.resultats || []).find(r => r.id === moi.id);
-    $('#qz-retour').textContent = moi_r ? `Bonne réponse ! +${moi_r.pts} points` : (quizVu.choix === null ? 'Temps écoulé.' : 'Raté, ce sera pour la prochaine !');
-    $('#qz-temps').textContent = '';
+  box.hidden = false;
+  if (a.revele && !quizVu.revele) {
+    quizVu.revele = true;
+    box.classList.add('revele'); box.classList.remove('urgent');
+    [...document.querySelectorAll('.qz-btn')].forEach((b, i) => { b.disabled = true; b.classList.toggle('bonne', i === a.bonne); b.classList.toggle('fausse', i !== a.bonne); });
+    const res = a.resultats || [], rang = res.findIndex(r => r.id === moi.id), v = $('#qz-verdict');
+    const bonne = a.choix[a.bonne] === undefined ? '' : `C'était ${'ABCD'[a.bonne]} : ${esc(a.choix[a.bonne])}`;
+    if (rang >= 0) {
+      v.className = 'gagne';
+      v.innerHTML = `<b>+${res[rang].pts}</b><span>Bonne réponse !<small>${rang === 0 ? 'Tu es le plus rapide' : `${rang + 1}e plus rapide`}${res.length > 1 ? ` sur ${res.length}` : ''}</small></span>`;
+      vibrer([60, 40, 140]);
+    } else if (quizVu.choix === null) { v.className = 'temps'; v.innerHTML = `<span>Pas de réponse<small>${bonne}</small></span>`; }
+    else { v.className = 'perdu'; v.innerHTML = `<span>Raté !<small>${bonne}</small></span>`; vibrer(180); }
+    $('#qz-retour').textContent = ''; $('#qz-temps').textContent = '';
   }
 }
 function repondre(i) {
-  if (!quizVu || quizVu.choix !== null) return;
+  if (!quizVu || quizVu.choix !== null || quizVu.revele) return;
   const ms = Math.round(performance.now() - quizVu.vuA);
+  if (ms > quizVu.duree * 1000) return;
   quizVu.choix = i;
+  $('#quiz').classList.add('repondu'); $('#quiz').classList.remove('urgent');
   document.querySelectorAll('.qz-btn').forEach((b, k) => { b.disabled = true; b.classList.toggle('choisi', k === i); });
-  $('#qz-retour').textContent = `Réponse envoyée en ${(ms / 1000).toFixed(1).replace('.', ',')} s. Attends la révélation…`;
+  $('#qz-retour').textContent = `Envoyé en ${(ms / 1000).toFixed(1).replace('.', ',')} s`;
+  vibrer(30);
   const msg = { studioSebQuiz: { qid: quizVu.qid, choix: i, ms, id: moi.id } };
   // envoyé 3 fois pour être sûr qu'il arrive (seule la première réception compte)
   [0, 700, 1600].forEach(d => setTimeout(() => ordre(maCamera, { sendData: msg, type: 'rpcs' }), d));
 }
+/* au clavier : A, B, C, D ou 1, 2, 3, 4 */
+addEventListener('keydown', e => {
+  if (!quizVu || quizVu.choix !== null || quizVu.revele || $('#quiz').hidden || e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  const k = (e.key || '').toLowerCase(), i = 'abcd'.indexOf(k) >= 0 && k ? 'abcd'.indexOf(k) : '1234'.indexOf(k);
+  const b = document.querySelectorAll('.qz-btn')[i];
+  if (k.length === 1 && b && !b.disabled) { e.preventDefault(); repondre(i); }
+});
 setInterval(() => {
   if (!quizVu || quizVu.revele || $('#quiz').hidden) return;
-  const reste = Math.max(0, Math.ceil(quizVu.duree - (performance.now() - quizVu.vuA) / 1000));
-  $('#qz-temps').textContent = reste + ' s';
-  if (reste === 0 && quizVu.choix === null) {
+  const ms = Math.max(0, quizVu.duree * 1000 - (performance.now() - quizVu.vuA));
+  $('#qz-temps').textContent = Math.ceil(ms / 1000);
+  $('#qz-anneau').style.strokeDashoffset = (119.4 * (1 - ms / (quizVu.duree * 1000))).toFixed(1);
+  $('#quiz').classList.toggle('urgent', quizVu.choix === null && ms > 0 && ms <= 5000);
+  if (ms === 0 && quizVu.choix === null) {
     document.querySelectorAll('.qz-btn').forEach(b => b.disabled = true);
-    $('#qz-retour').textContent = 'Temps écoulé.';
+    $('#quiz').classList.add('fini');
+    $('#qz-retour').textContent = 'Temps écoulé';
   }
 }, 250);
 garderEcranAllume();
+if (ESSAI) { moi = { nom: 'Invité d\'essai', id: session.room + '_essai' }; entrer(); }

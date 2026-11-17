@@ -294,6 +294,13 @@
   .interrupteur span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
   .interrupteur input:checked + span { background: var(--ui-accent); }
   .interrupteur input:checked + span::after { transform: translateX(16px); background: var(--ui-sur-accent); }
+  #vue-invite { position: fixed; left: 18px; bottom: 18px; z-index: 70; width: 400px; height: min(700px, calc(100vh - 36px)); min-width: 300px; min-height: 320px; display: flex; flex-direction: column; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; box-shadow: 0 24px 80px rgba(0,0,0,.6); overflow: hidden; resize: both; }
+  #vue-invite[hidden] { display: none; }
+  .vi-tete { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; cursor: grab; user-select: none; border-bottom: 1px solid var(--ui-line); flex: none; }
+  .vi-tete b { flex: 1; font-size: 13px; }
+  .vi-tete button { padding: 4px 9px; }
+  #vi-cadre { flex: 1; width: 100%; border: 0; background: #0b0b0d; }
+  #vue-invite.glisse #vi-cadre { pointer-events: none; }
   .qz-direct { background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
   .qz-direct.actif { border-color: var(--ui-red); }
   .qz-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -519,7 +526,7 @@
         <div class="commutation" id="commutation" hidden></div>
         <div id="cams"></div>
 
-        <div class="sous-tete"><span class="etiquette">Invités</span><label class="aide coche" style="margin-left:auto;font-size:12px" title="Tes invités passent à l'antenne dès leur arrivée, sans attendre en coulisses"><input type="checkbox" id="auto-antenne"> Antenne auto</label></div>
+        <div class="sous-tete"><span class="etiquette">Invités</span><button class="petit" id="btn-vue-invite" style="margin-left:auto" title="Ouvre la page d'un invité à côté de la régie : tu vois ce qu'il voit et tu peux répondre au quiz comme lui. Aucune caméra n'est envoyée.">Vue invité</button><label class="aide coche" style="font-size:12px" title="Tes invités passent à l'antenne dès leur arrivée, sans attendre en coulisses"><input type="checkbox" id="auto-antenne"> Antenne auto</label></div>
         <div id="liste"></div>
       </div>
     </section>
@@ -622,6 +629,7 @@
         <div id="sources"></div>
       </section>
       <section class="onglet" data-onglet="quiz" hidden>
+        <button class="lien-bouton" data-vue-invite style="margin:0 0 10px">Essayer comme un invité</button>
         <div class="qz-direct">
           <div class="aide" id="qz-statut">Aucune question à l'écran</div>
           <div class="ligne-boutons">
@@ -674,8 +682,10 @@
           <button data-qstyle="theme"><i style="background:var(--qs-theme, #D4AF37)"></i>Thème du live</button>
           <button data-qstyle="plateau"><i style="background:linear-gradient(135deg,#1b3cff,#7a2cff)"></i>Plateau TV</button>
           <button data-qstyle="neon"><i style="background:#ff2bd6;box-shadow:0 0 8px #ff2bd6"></i>Néon</button>
-          <button data-qstyle="clair"><i style="background:#fff;border:1px solid #ccc"></i>Clair</button>
-          <button data-qstyle="cinema"><i style="background:#c8102e"></i>Cinéma</button>
+          <button data-qstyle="clair"><i style="background:conic-gradient(#2563eb 0 25%,#f97316 0 50%,#16a34a 0 75%,#db2777 0)"></i>Pop</button>
+          <button data-qstyle="cinema"><i style="background:#c8102e;border:2px dotted #ffe9a8"></i>Cinéma</button>
+          <button data-qstyle="arcade"><i style="background:#0b1026;border:2px solid #ffd319;border-radius:0"></i>Arcade</button>
+          <button data-qstyle="bd"><i style="background:#ffdf2b;border:2px solid #111"></i>BD</button>
         </div>
         <button class="petit" id="qz-zero" style="margin-top:14px">Remettre les scores à zéro</button>
       </section>
@@ -799,13 +809,18 @@
   </div>
 </div>
 
+<div id="vue-invite" hidden>
+  <div class="vi-tete"><b>Vue invité</b><button id="vi-fenetre" title="Ouvrir dans une fenêtre à part (pratique sur un deuxième écran)">Fenêtre à part</button><button id="vi-fermer" title="Fermer la vue invité">✕</button></div>
+  <iframe id="vi-cadre" title="Ce que voit un invité"></iframe>
+</div>
 <script src="js/common.js?v=2c37dfc1"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=f344e773"></script>
+<script src="js/regie.js?v=77a6caa4"></script>
 <script src="js/regie-sources.js?v=94d9b4e0"></script>
 <script src="js/regie-musique.js?v=1b02f489"></script>
-<script src="js/regie-quiz.js?v=3e613d8e"></script>
+<script src="js/regie-quiz.js?v=cb582cbd"></script>
+<script src="js/regie-essai.js?v=9eadc51b"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
 <script src="js/regie-recherche.js?v=8986a628"></script>

@@ -41,12 +41,15 @@
   #wi-etat.top { background: var(--accent); color: var(--bg); }
   body.camera-distante .pas-cam { display: none !important; }
   #ma-camera { width: 100%; height: 300px; border: 0; border-radius: 10px; background: #000; }
-  .qz-btn { padding: 18px 14px; font-size: 18px; text-align: left; border-radius: 12px; background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.15); color: var(--text); }
-  .qz-btn b { color: var(--accent); margin-right: 10px; }
-  .qz-btn.choisi { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 20%, transparent); }
-  .qz-btn.bonne { border-color: #2fd27a; background: rgba(47,210,122,.2); }
-  .qz-btn.fausse { opacity: .45; }
-  @media (max-width: 640px) { #qz-choix { grid-template-columns: 1fr !important; } }
+  body.essai #boite-camera { display: none; }
+  body.essai #coulisses { grid-template-columns: 1fr; }
+  body.essai .wrap { padding: 14px 12px 24px; }
+  body.essai .entete { margin-bottom: 12px; }
+  #bandeau-essai { background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); border-radius: 12px; padding: 8px 12px; font-size: 13px; margin-bottom: 12px; }
+  #bandeau-essai[hidden] { display: none; }
+</style>
+<link rel="stylesheet" href="css/quiz-invite.css?v=638e5206">
+<style>
   .etapes { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
   .etapes li { margin: 4px 0; }
 </style>
@@ -70,12 +73,14 @@
     </div>
   </section>
 
-  <section id="quiz" class="boite" hidden style="margin-bottom:20px;border-color:var(--accent)">
-    <h2>Quiz <span id="qz-temps" style="color:var(--accent);font-size:20px"></span></h2>
-    <img id="qz-image" alt="" hidden style="display:block;max-width:100%;max-height:260px;border-radius:12px;margin:0 auto 14px">
-    <div id="qz-question" style="font:400 clamp(26px,4vw,40px)/1.15 var(--font-title);margin-bottom:16px"></div>
-    <div id="qz-choix" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
-    <p id="qz-retour" class="aide" style="font-size:16px;margin:14px 0 0"></p>
+  <div id="bandeau-essai" hidden>Tu vois ce que voit un invité, et tu réponds au quiz comme lui. Aucune caméra n'est envoyée.</div>
+
+  <section id="quiz" hidden>
+    <div class="qi-tete"><span class="qi-tag">Quiz</span><span class="qi-etat" id="qz-retour"></span><span class="qi-chrono"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="fond" cx="22" cy="22" r="19"/><circle class="reste" id="qz-anneau" cx="22" cy="22" r="19"/></svg><b id="qz-temps"></b></span></div>
+    <img id="qz-image" alt="" hidden>
+    <div id="qz-question"></div>
+    <div id="qz-verdict"></div>
+    <div id="qz-choix"></div>
   </section>
 
   <section id="watch-invite" class="boite" hidden style="margin-bottom:20px;border-color:var(--accent)">
@@ -93,7 +98,7 @@
       <div class="cadre169"><iframe id="apercu"></iframe></div>
       <p class="aide" style="margin:10px 0 0">C'est exactement ce que voient les spectateurs. Pas besoin de régler quoi que ce soit : <span id="hote2"></span> s'occupe de tout.</p>
     </div>
-    <div class="boite">
+    <div class="boite" id="boite-camera">
       <h2>Ta caméra</h2>
       <div id="cam-reglage"></div>
       <div id="cam-direct" hidden>
@@ -117,6 +122,6 @@
 <script src="js/common.js?v=2c37dfc1"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=f5961811"></script>
+<script src="js/invite.js?v=8f397c8a"></script>
 </body>
 </html>

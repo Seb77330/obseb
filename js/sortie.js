@@ -424,14 +424,22 @@ let quizAffiche = null;
 function gererQuiz() {
   const qz = (etat && etat.quiz) || {};
   const a = qz.active;
-  document.body.dataset.quizStyle = qz.style || 'theme';
+  const style = qz.style || 'theme';
+  document.body.dataset.quizStyle = style;
   $('#quiz').classList.toggle('cachee', !a || !!qz.afficherScores);
   $('#classement').classList.toggle('cachee', !qz.afficherScores);
+  if (style === 'arcade') chargerPolices(['Press Start 2P']);
+  if (style === 'bd') chargerPolices(['Bangers']);
   if (qz.afficherScores) {
-    $('#classement-liste').innerHTML = (qz.classement || []).length
-      ? qz.classement.map(c => `<li><span>${esc(c.nom)}</span><em>${c.pts} pts</em></li>`).join('')
-      : '<li><span>Pas encore de points</span></li>';
-  }
+    // on ne redessine que si le classement change, pour ne pas rejouer l'arrivée à chaque message
+    const cl = qz.classement || [], cle = JSON.stringify(cl), max = Math.max(1, ...cl.map(c => c.pts));
+    if (cle !== classementAffiche) {
+      classementAffiche = cle;
+      $('#classement-liste').innerHTML = cl.length
+        ? cl.map((c, i) => `<li style="--i:${i};--p:${(c.pts / max).toFixed(3)}"><span>${esc(c.nom)}</span><em>${c.pts} pts</em></li>`).join('')
+        : '<li><span>Pas encore de points</span></li>';
+    }
+  } else classementAffiche = null;
   if (!a) { quizAffiche = null; return; }
   if (quizAffiche !== a.qid) {
     quizAffiche = a.qid;
@@ -439,32 +447,45 @@ function gererQuiz() {
     const im = $('#qz-img');
     im.hidden = !a.img; if (a.img) im.src = a.img; else im.removeAttribute('src');
     $('#quiz').classList.toggle('avec-image', !!a.img);
-    $('#qz-choix').innerHTML = a.choix.map((c, i) => `<div class="qz-c"><b>${'ABCD'[i]}</b><span>${esc(c)}</span></div>`).join('');
+    $('#qz-choix').innerHTML = a.choix.map((c, i) => `<div class="qz-c" style="--i:${i}"><b>${'ABCD'[i]}</b><span>${esc(c)}</span><em class="qz-n"></em></div>`).join('');
     im.onload = () => ajusterQuiz();
+    // nouvelle question : le panneau rejoue son arrivée
+    const p = $('#quiz .qz-panneau'); p.classList.remove('entree'); void p.offsetWidth; p.classList.add('entree');
+    quizRevele = null;
     ajusterQuiz();
   }
-  [...document.querySelectorAll('.qz-c')].forEach((el, i) => {
-    el.classList.toggle('bonne', !!a.revele && i === a.bonne);
-    el.classList.toggle('fausse', !!a.revele && i !== a.bonne);
-  });
-  const res = $('#qz-res');
-  if (a.revele) {
-    const r = a.resultats || [];
-    res.innerHTML = r.length
-      ? `Le plus rapide : <b>${esc(r[0].nom)}</b> en ${(r[0].ms / 1000).toFixed(1).replace('.', ',')} s` + (r.length > 1 ? ` · ${r.length} bonnes réponses` : '')
-      : 'Personne n\'a trouvé !';
-  } else res.textContent = '';
-  if (!!a.revele !== quizRevele) { quizRevele = !!a.revele; ajusterQuiz(); }
+  $('#quiz').classList.toggle('revele', !!a.revele);
+  $('#qz-rep').textContent = !a.revele && a.nbRep ? a.nbRep + (a.nbRep > 1 ? ' réponses' : ' réponse') : '';
+  if (!!a.revele !== quizRevele) {
+    quizRevele = !!a.revele;
+    const votes = (a.revele && a.votes) || [], total = votes.reduce((x, y) => x + y, 0);
+    [...document.querySelectorAll('.qz-c')].forEach((el, i) => {
+      el.classList.toggle('bonne', !!a.revele && i === a.bonne);
+      el.classList.toggle('fausse', !!a.revele && i !== a.bonne);
+      el.querySelector('.qz-n').innerHTML = total ? PERSONNE + (votes[i] || 0) : '';
+    });
+    const res = $('#qz-res');
+    if (a.revele) {
+      const r = a.resultats || [];
+      res.innerHTML = r.length
+        ? r.slice(0, 3).map((x, i) => `<span class="qz-gagnant" style="--i:${i}"><i>${i + 1}</i>${esc(x.nom)}<em>+${x.pts}</em></span>`).join('') + (r.length > 3 ? `<span class="qz-gagnant" style="--i:3">et ${r.length - 3} de plus</span>` : '')
+        : 'Personne n\'a trouvé !';
+    } else res.textContent = '';
+    ajusterQuiz();
+  }
 }
-let quizRevele = false;
+let quizRevele = null, classementAffiche = null;
+const PERSONNE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5" r="3.2"/><path d="M1.5 15.5c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5z"/></svg>';
 setInterval(() => {
   const a = etat && etat.quiz && etat.quiz.active;
   if (!a) return;
   ajusterQuiz(false);   // filet de sécurité : police ou image arrivée après coup
-  if (a.revele) { $('#qz-temps').textContent = ''; $('#qz-barre').style.width = '0%'; return; }
+  if (a.revele) { $('#qz-temps').textContent = ''; $('#qz-barre').style.width = '0%'; $('#quiz').classList.remove('urgent'); return; }
   const ms = Math.max(0, a.duree * 1000 - (Date.now() - a.debut));
   $('#qz-temps').textContent = Math.ceil(ms / 1000);
   $('#qz-barre').style.width = (ms / (a.duree * 10)) + '%';
+  $('#qz-anneau').style.strokeDashoffset = (119.4 * (1 - ms / (a.duree * 1000))).toFixed(1);
+  $('#quiz').classList.toggle('urgent', ms > 0 && ms <= 5000);   // les 5 dernières secondes : le chrono bat
 }, 250);
 
 /* ----- Musiques de la régie -----
@@ -684,13 +705,13 @@ if (DEMO) {
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
-  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
-  if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
+  if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {

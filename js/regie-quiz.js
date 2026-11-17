@@ -115,7 +115,7 @@ function majStatutQuiz() {
   const st = $('#qz-statut');
   $('.qz-direct').classList.toggle('actif', !!a);
   if (!a) { st.textContent = 'Aucune question à l\'écran'; return; }
-  const n = (reponsesQuiz.get(a.qid) || new Map()).size, total = invitesPresents().length;
+  const n = (reponsesQuiz.get(a.qid) || new Map()).size, total = Math.max(n, invitesPresents().length);
   st.textContent = a.revele ? `À l'écran : « ${a.q} » · réponse révélée` : `À l'écran : « ${a.q} » · ${n}/${total} ont répondu`;
 }
 setInterval(majStatutQuiz, 1000);
@@ -185,6 +185,7 @@ $('#qz-reveler').onclick = () => {
     etat.quiz.scores[id] = (etat.quiz.scores[id] || 0) + pts;
     return { id, nom: etat.noms[id] || 'Invité', ms: r.ms, pts };
   });
+  a.votes = a.choix.map((_, i) => reps.filter(([, r]) => r.choix === i).length);
   a.revele = true; a.bonne = q.bonne;
   envoyer(); afficherQuiz();
 };
@@ -210,6 +211,7 @@ addEventListener('message', e => {
   if (m.has(r.id)) return;                       // seule la première réponse compte
   m.set(r.id, { choix: +r.choix, ms: Math.max(0, Math.min(+r.ms || 0, a.duree * 1000)) });
   reponsesQuiz.set(a.qid, m);
+  a.nbRep = m.size; envoyerBientot();   // « 3 réponses » à l'écran, sans dire lesquelles
   majStatutQuiz();
 });
 

@@ -117,6 +117,7 @@ function envoyer() {
   if (st.quiz) st.quiz = { active: st.quiz.active, afficherScores: st.quiz.afficherScores, classement: st.quiz.classement, style: st.quiz.style, dispo: st.quiz.dispo };
   ordre(maCamera, { sendData: { [CANAL]: st }, type: 'pcs' });     // vers OBS et les coulisses
   ordre(apercu, { [CANAL]: st });                                  // vers l'aperçu de la régie
+  if (typeof envoyerEssai === 'function') envoyerEssai(st);        // vers la « Vue invité », si elle est ouverte
   try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(etat)); } catch (e) { /* rien */ }
   majInterface();
 }
