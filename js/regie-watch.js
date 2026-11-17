@@ -16,7 +16,9 @@ function wpLire(txt) {
   return p.reduce((a, n) => a * 60 + n, 0);
 }
 const wpPos = () => positionFilm(etat.watch, Date.now());
+let wpAvant = null;                                              // le minuteur d'avant une remise à zéro, rétablissable dix secondes
 function wpPoser(pos, lecture = etat.watch.lecture) {
+  if (pos > 0 || lecture) wpAvant = null;                        // dès qu'on relance ou qu'on cale, il n'y a plus rien à rétablir
   Object.assign(etat.watch, { pos: Math.max(0, pos), ref: Date.now(), lecture, top: null });
   envoyer(); majWatch();
 }
@@ -30,10 +32,30 @@ $('#wp-caler-btn').onclick = () => {
 $('#wp-caler').onkeydown = e => { if (e.key === 'Enter') $('#wp-caler-btn').click(); };
 /* Top départ : 5, 4, 3, 2, 1 à l'écran et chez les invités ; le minuteur démarre tout seul à zéro du compte */
 $('#wp-top').onclick = () => {
+  if (etat.watch.top && Date.now() < etat.watch.top) {          // second clic pendant le compte : on annule, le minuteur reste où il était
+    wpPoser(etat.watch.pos, false);
+    return toast('Top départ annulé');
+  }
+  wpAvant = null;
   const t = Date.now() + 5000;
   Object.assign(etat.watch, { pos: wpPos(), ref: t, lecture: true, top: t });
   envoyer(); majWatch();
   toast('Top départ dans 5 secondes : appuie sur lecture à zéro');
+};
+/* Remettre à zéro : arrêt et retour à 0:00:00 ; pendant dix secondes, le même bouton rétablit le minuteur d'avant */
+$('#wp-zero').onclick = () => {
+  if (wpAvant && Date.now() < wpAvant.jusqua) {
+    const a = wpAvant; wpAvant = null;
+    wpPoser(a.lecture ? a.pos + (Date.now() - a.quand) / 1000 : a.pos, a.lecture);
+    return toast('Minuteur rétabli');
+  }
+  if (Date.now() - extVue < 5000 && extSite) return toast('Le minuteur suit ton film : clique d\'abord sur « Arrêter de suivre » dans l\'extension');
+  const enCompte = etat.watch.top && Date.now() < etat.watch.top, pos = enCompte ? etat.watch.pos : wpPos();
+  if (!pos && !etat.watch.lecture) return toast('Le minuteur est déjà à zéro');
+  const avant = { pos, lecture: etat.watch.lecture && !enCompte, quand: Date.now(), jusqua: Date.now() + 10000 };
+  wpPoser(0, false);
+  wpAvant = avant;
+  toast('Minuteur remis à zéro');
 };
 $('#wp-titre').value = etat.watch.titre || '';
 $('#wp-titre').oninput = e => { etat.watch.titre = e.target.value.slice(0, 60); envoyerBientot(); };
@@ -90,6 +112,9 @@ function majWatch() {
   $('#wp-ecran').classList.toggle('lecture', w.lecture && !enCompte);
   $('#wp-etat').textContent = enCompte ? `Top départ dans ${Math.ceil((w.top - Date.now()) / 1000)}…` : w.lecture ? 'Lecture' : 'En pause';
   $('#wp-barre').style.width = w.duree ? Math.min(100, pos / w.duree * 100) + '%' : '0%';
+  const t = $('#wp-top'); t.textContent = enCompte ? 'Annuler le top' : 'Top départ'; t.classList.toggle('annule', !!enCompte);
+  const retablir = wpAvant && Date.now() < wpAvant.jusqua;
+  $('#wp-zero').textContent = retablir ? `Rétablir ${wpTexte(wpAvant.pos)}` : 'Remettre à zéro';
   const j = $('#wp-jouer');
   j.querySelector('span').textContent = w.lecture ? 'Pause' : 'Lecture'; j.classList.toggle('primaire', !w.lecture); j.classList.toggle('joue', !!w.lecture);
   $('#wp-film').textContent = [w.titre, w.episode].filter(Boolean).join(' · ');

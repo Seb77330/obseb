@@ -139,7 +139,7 @@ addEventListener('message', e => {
   ordre(apercu, { [CANAL]: st });
   calerHorloge(st.ts);
   gererQuiz(st.quiz);
-  filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || st.watch.pastille || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
+  filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || (st.watch.pastille && st.watch.pos > 0) || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
   majWatchInvite();
   const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
   reglerSousTitres(!!(st.st && st.st.actif), enDirect && !(st.muet || {})[moi.id]);
@@ -175,7 +175,7 @@ function majWatchInvite() {
 setInterval(() => {
   majWatchInvite();
   const w = filmHote, t = maintenantHote();
-  window.postMessage({ source: 'obseb-watch-page', role: 'invite', cible: w && !(w.top && t < w.top) ? { pos: positionFilm(w, t), lecture: !!w.lecture } : null }, location.origin);
+  window.postMessage({ source: 'obseb-watch-page', role: 'invite', cible: w && (w.lecture || w.pos > 0) && !(w.top && t < w.top) ? { pos: positionFilm(w, t), lecture: !!w.lecture } : null }, location.origin);
 }, 500);
 addEventListener('message', e => { if (e.source === window && e.data && e.data.source === 'obseb-watch-ext') extInvite = Date.now(); });
 

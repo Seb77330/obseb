@@ -434,7 +434,7 @@ function poserChiffres(el, txt) {
 function gererWatch() {
   const w = etat && etat.watch, scene = SCENE_FORCEE || (etat && etat.scene);
   const grand = !!w && scene === 'watch';
-  const petit = !!w && !grand && w.pastille && (scene === 'live' || scene === 'partage') && !document.body.classList.contains('quiz-on');
+  const petit = !!w && !grand && w.pastille && (w.lecture || w.pos > 0) && (scene === 'live' || scene === 'partage') && !document.body.classList.contains('quiz-on');
   const el = $('#watch');
   el.classList.toggle('cachee', !(grand || petit));
   el.classList.toggle('pastille', petit);

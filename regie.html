@@ -412,6 +412,7 @@
   .wp-modes button.faute { opacity: .5; }
   .wp-ligne { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
   .wp-ligne input { flex: 1; min-width: 0; }
+  .wp-deux button { flex: 1; } .wp-deux button.annule { border-color: var(--ui-red, #e5484d); color: var(--ui-red, #e5484d); }
   .wp-source { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 9px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-panel2); }
   .wp-source b { font-weight: 600; }
   .wp-pas { padding-left: 18px; margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--ui-muted); }
@@ -781,8 +782,11 @@
           <button data-wp-saut="1" title="Avancer d'une seconde">+1 s</button>
           <button data-wp-saut="10" title="Avancer de 10 secondes">+10 s</button>
         </div>
+        <div class="wp-ligne wp-deux">
+          <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps. Un second clic pendant le compte l'annule.">Top départ</button>
+          <button id="wp-zero" title="Arrête le minuteur et le remet à 0:00:00. Tu peux le rétablir pendant dix secondes.">Remettre à zéro</button>
+        </div>
         <div class="wp-ligne">
-          <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps">Top départ</button>
           <input type="text" id="wp-caler" class="tc" placeholder="0:42:17" inputmode="numeric" aria-label="Position du film">
           <button id="wp-caler-btn" title="Mettre le minuteur à cette position du film">Caler ici</button>
         </div>
@@ -992,7 +996,7 @@
 <script src="js/regie-direct.js?v=351e17b3"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
-<script src="js/regie-watch.js?v=ac0b6d43"></script>
+<script src="js/regie-watch.js?v=d9f776ec"></script>
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 </body>
