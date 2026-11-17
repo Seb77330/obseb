@@ -60,6 +60,7 @@ if (document.fonts) document.fonts.ready.then(ajusterTitres);
 document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = session.hote);
 document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
 $('#logo').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="">` : esc(theme.logoTexte || 'SEB');
+$('#logo').classList.toggle('image', !!theme.logo);
 document.title = `${session.titre} · Sortie`;
 
 /* ----- Tuiles ----- */
