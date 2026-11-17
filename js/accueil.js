@@ -30,14 +30,19 @@ let enEdition = null;            // room de la session modifiée, sinon null
 let brouillon = nouvelleSession('', 'minimal');
 let modeApercu = 'live';
 
-const presets = $('#presets');
-for (const [id, t] of Object.entries(THEMES)) {
+/* Galerie : une carte par thème, avec une vraie image de son intro (le plateau au survol) */
+function carteTheme(id) {
+  const t = THEMES[id];
   const b = document.createElement('button');
-  b.className = 'preset'; b.dataset.preset = id; b.type = 'button';
-  b.innerHTML = `<div class="pas"><i style="background:${t.bg}"></i><i style="background:${t.accent}"></i><i style="background:${t.bg2}"></i></div>${esc(t.nom)}`;
+  b.className = 'theme-carte'; b.dataset.preset = id; b.type = 'button';
+  const nom = t.nom.replace(/\s*\(.*\)$/, ''), desc = t.desc || (t.nom.match(/\((.*)\)/) || [, ''])[1];
+  b.innerHTML = `<span class="theme-img"><img src="img/themes/${id}-intro.webp" alt="" loading="lazy"><img class="alt" src="img/themes/${id}-live.webp" alt="" loading="lazy"></span>
+    <span class="theme-txt"><b>${esc(nom)}</b><small>${esc(desc.charAt(0).toUpperCase() + desc.slice(1))}</small></span>`;
   b.onclick = () => { brouillon.theme = { preset: id }; remplirForm(); apercu(); };
-  presets.appendChild(b);
+  return b;
 }
+GALERIE.forEach(id => $('#galerie').appendChild(carteTheme(id)));
+Object.keys(THEMES).filter(id => !GALERIE.includes(id)).forEach(id => $('#galerie-plus').appendChild(carteTheme(id)));
 FONTS.forEach(f => $('#f-font').insertAdjacentHTML('beforeend', `<option>${esc(f)}</option>`));
 
 function remplirForm() {
@@ -49,7 +54,10 @@ function remplirForm() {
   $('#f-mintro').value = t.musiqueIntro || ''; $('#f-mfin').value = t.musiqueFin || '';
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
   $('#f-limite').value = String(brouillon.limite || 0);
-  $$('.preset').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
+  const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
+  $$('.theme-carte').forEach(b => b.classList.toggle('actif', b.dataset.preset === brouillon.theme.preset));
+  if (!GALERIE.includes(brouillon.theme.preset)) $('#opt-plus').open = true;
+  if (perso) $('#opt-perso').open = true;
 }
 function surcharge(champ, valeur) {
   const base = THEMES[brouillon.theme.preset] || THEMES.minimal;
@@ -77,13 +85,36 @@ $$('[data-apercu]').forEach(b => b.onclick = () => {
 });
 
 function urlApercu(s, mode) {
-  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', fin: 'demo=3&scene=fin', vertical: 'demo=3&format=vertical' }[mode];
+  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', quiz: 'demo=3&quiz=1', fin: 'demo=3&scene=fin', vertical: 'demo=3&format=vertical' }[mode];
   return `sortie.html?${p}#s=${b64e(Object.assign({}, s, { titre: s.titre || 'Titre de ton live' }))}`;
 }
 function apercu() {
   clearTimeout(apercu.t);
-  apercu.t = setTimeout(() => { $('#apercu-theme').src = urlApercu(brouillon, modeApercu); }, 200);
+  if ($('#vue-creation').hidden) return;
+  apercu.t = setTimeout(() => {
+    const f = $('#apercu-theme'), cadre = f.parentElement, v = modeApercu === 'vertical';
+    cadre.style.aspectRatio = v ? '9/16' : ''; cadre.style.width = v ? 'min(100%, 300px)' : ''; cadre.style.margin = v ? '0 auto' : '';
+    f.src = urlApercu(brouillon, modeApercu).replace('?', `?n=${++apercu.n}&`);
+  }, 200);
 }
+
+apercu.n = 0;
+
+/* ----- Deux vues : la liste de mes lives, et la création ----- */
+function montrerVue(v, pousser = true) {
+  $('#vue-liste').hidden = v !== 'liste'; $('#vue-creation').hidden = v !== 'creation';
+  $('#btn-nouveau').hidden = v === 'creation';
+  if (pousser) history.pushState(null, '', v === 'creation' ? '#nouveau' : location.pathname);
+  scrollTo(0, 0);
+  if (v === 'creation') { apercu(); if (!enEdition) setTimeout(() => $('#f-titre').focus(), 50); }
+}
+function ouvrirCreation(titre, bouton, modif) {
+  $('#titre-form').textContent = titre; $('#btn-creer').textContent = bouton; $('#note-modif').hidden = !modif;
+  $$('.option').forEach(d => { d.open = false; });
+  remplirForm(); montrerVue('creation');
+}
+addEventListener('popstate', () => montrerVue(location.hash === '#nouveau' ? 'creation' : 'liste', false));
+$('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSession('', 'minimal'); ouvrirCreation('Nouveau live', 'Créer le live', false); };
 
 $('#btn-creer').onclick = () => {
   if (!brouillon.titre.trim()) { $('#f-titre').focus(); return toast('Donne un titre à ton live'); }
@@ -98,27 +129,23 @@ $('#btn-creer').onclick = () => {
   }
   ecrire(l);
   annuler();
-  afficherSessions();
 };
 function annuler() {
   enEdition = null;
   brouillon = nouvelleSession('', 'minimal');
-  $('#titre-form').textContent = 'Nouveau live';
-  $('#btn-creer').textContent = 'Créer le live';
-  $('#btn-annuler').hidden = true; $('#note-modif').hidden = true;
-  remplirForm(); apercu();
+  afficherSessions(); afficherLives();
+  montrerVue('liste');
 }
 $('#btn-annuler').onclick = annuler;
+$('#btn-retour').onclick = annuler;
 
 /* ----- Liste des sessions ----- */
 function afficherSessions() {
   const box = $('#sessions');
   box.innerHTML = '';
   const l = lire();
-  if (!l.length) {
-    box.innerHTML = '<div class="vide-accueil"><b>Aucun live pour le moment</b><span>Donne un titre, choisis un style, et ta régie est prête.</span><button class="primaire" id="vide-creer">Créer mon premier live</button></div>';
-    $('#vide-creer').onclick = () => { $('#titre-form').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#f-titre').focus(); };
-  }
+  $('#bloc-lives').hidden = !l.length; $('#bloc-vide').hidden = !!l.length;
+  $('#nb-lives').textContent = l.length > 1 ? `${l.length} lives` : '';
   l.forEach(({ session, cle }) => {
     const L = liens(session, cle);
     const t = themeComplet(session);
@@ -126,19 +153,19 @@ function afficherSessions() {
     el.className = 'session';
     el.innerHTML = `
       <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'intro'))}"></iframe></div>
-      <div>
+      <div class="corps">
         <h3>${esc(session.titre)}</h3>
-        <div class="meta">Thème ${esc(t.nom || 'perso')} · créée le ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR')}</div>
-        <div class="ligne-boutons" style="align-items:center">
+        <div class="meta">Thème ${esc((t.nom || 'perso').replace(/\s*\(.*\)$/, ''))} · créé le ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR')}</div>
+        <div class="actions">
           <a href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
-          <button data-a="invite">Copier le lien invités</button>
+          <button data-a="invite" title="Copier le lien à envoyer à tes invités">Lien invités</button>
           <details class="plus">
             <summary title="Plus d'options">•••</summary>
             <div class="menu">
               <button data-a="obs">Copier le lien OBS<small>Source navigateur 1920 × 1080</small></button>
               <button data-a="vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)</small></button>
-              <button data-a="modifier">Modifier<small>Titre, style, durée maximale</small></button>
-              <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même style</small></button>
+              <button data-a="modifier">Modifier<small>Titre, thème, durée maximale</small></button>
+              <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même thème</small></button>
               <button data-a="suppr" class="danger">Supprimer</button>
             </div>
           </details>
@@ -149,18 +176,12 @@ function afficherSessions() {
     el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
     el.querySelector('[data-a=modifier]').onclick = () => {
       enEdition = session.room; brouillon = JSON.parse(JSON.stringify(session));
-      $('#titre-form').textContent = 'Modifier le live';
-      $('#btn-creer').textContent = 'Enregistrer';
-      $('#btn-annuler').hidden = false; $('#note-modif').hidden = false;
-      remplirForm(); apercu(); scrollTo({ top: 0, behavior: 'smooth' });
+      ouvrirCreation('Modifier le live', 'Enregistrer', true);
     };
     el.querySelector('[data-a=dupliquer]').onclick = () => {
       enEdition = null;
       brouillon = Object.assign(nouvelleSession('', session.theme.preset), { theme: JSON.parse(JSON.stringify(session.theme)), hote: session.hote, handle: session.handle, limite: session.limite || 0 });
-      $('#titre-form').textContent = 'Nouveau live (même style)';
-      $('#btn-creer').textContent = 'Créer le live';
-      $('#btn-annuler').hidden = false; $('#note-modif').hidden = true;
-      remplirForm(); apercu(); $('#f-titre').focus();
+      ouvrirCreation('Nouveau live (même thème)', 'Créer le live', false);
     };
     el.querySelector('[data-a=suppr]').onclick = async () => {
       if (!await confirmer(`Supprimer « ${session.titre} » ? Sa régie et ses liens ne seront plus dans ta liste.`, { oui: 'Oui, supprimer', non: 'Non' })) return;
@@ -175,14 +196,15 @@ function afficherLives() {
   const box = $('#lives');
   box.innerHTML = '';
   const l = lire().filter(x => x.live && x.live.date).sort((a, b) => b.live.date - a.live.date);
-  if (!l.length) { box.innerHTML = '<p class="aide">Aucun live terminé pour le moment.</p>'; return; }
+  $('#bloc-termines').hidden = !l.length; $('#nb-termines').textContent = l.length ? `(${l.length})` : '';
+  if (!l.length) return;
   l.forEach(entree => {
     const { session, live } = entree;
     const jours = Math.floor((Date.now() - live.date) / 86400000);
     const el = document.createElement('div');
-    el.className = 'session';
+    el.className = 'termine';
     el.innerHTML = `
-      <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'fin'))}"></iframe></div>
+      <div class="mini"><img src="img/themes/${THEMES[session.theme && session.theme.preset] ? session.theme.preset : 'minimal'}-intro.webp" alt=""></div>
       <div>
         <div style="display:flex;gap:10px;align-items:flex-start"><h3 style="flex:1">${esc(session.titre)}</h3><button class="petit btn-corbeille" data-a="suppr-live" title="Supprimer ce live terminé"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>Supprimer</button></div>
         <div class="meta">Diffusé le ${new Date(live.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${new Date(live.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} · ${jours === 0 ? "aujourd'hui" : 'il y a ' + jours + ' jour' + (jours > 1 ? 's' : '')}</div>
@@ -212,9 +234,10 @@ function afficherLives() {
 }
 
 remplirForm();
-apercu();
 afficherSessions();
 afficherLives();
+$('#vide-creer').onclick = () => $('#btn-nouveau').click();
+if (location.hash === '#nouveau') montrerVue('creation', false);
 
 /* Menus « ••• » : se ferment au clic ailleurs ou après un choix */
 document.addEventListener('click', e => {

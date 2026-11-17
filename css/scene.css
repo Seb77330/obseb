@@ -246,3 +246,10 @@ body.vertical #quiz.avec-image { padding-top: 560px; }
 [data-quiz-style="cinema"] .qz-c { background: rgba(200,16,46,.12); border-color: rgba(201,162,39,.55); color: #f6e7c1; }
 [data-quiz-style="cinema"] .qz-temps, [data-quiz-style="cinema"] .qz-res b { color: #c9a227; }
 [data-quiz-style="cinema"] .qz-barre i { background: #c9a227; }
+
+/* ----- Thèmes à fond clair ----- */
+[data-clair] #stage::after { display: none; }
+[data-clair] #bandeau .titre, [data-clair] .plein .grand-titre { text-shadow: none; }
+[data-clair] .tuile { box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+[data-clair] .tuile.demo .attente { color: var(--text); }
+[data-clair] .plein .grand-titre { font-weight: 400; }

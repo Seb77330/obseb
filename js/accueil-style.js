@@ -3,13 +3,6 @@
 
 boutonAffichage($('#place-affichage'));
 
-/* ----- Les trois façons de choisir le style ----- */
-function ouvrirVolet(m) {
-  $$('#mode-style button').forEach(b => b.classList.toggle('actif', b.dataset.mode === m));
-  $$('.volet').forEach(v => { v.hidden = v.dataset.volet !== m; });
-}
-$$('#mode-style button').forEach(b => b.onclick = () => ouvrirVolet(b.dataset.mode));
-
 /* ----- Polices : chaque carte s'affiche dans sa propre police ----- */
 chargerPolices(FONTS);
 const boitePolices = $('#polices');

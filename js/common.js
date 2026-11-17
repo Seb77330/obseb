@@ -7,12 +7,12 @@ const HANDLE_DEFAUT = '@sebastian_cineserie';
 /* ---------- Thèmes prêts à l'emploi ---------- */
 const THEMES = {
   minimal: {
-    nom: 'Sebastian (noir et jaune)',
+    nom: 'Sebastian', desc: 'Ta signature : noir et jaune, net et lisible.',
     bg: '#0b0b0d', bg2: '#1a1a1f', accent: '#FFD21F', text: '#ffffff', muted: '#a8a8b0',
     fontTitle: 'Outfit', fontBody: 'Inter', deco: 'minimal'
   },
   bond: {
-    nom: 'Espion (noir et or)',
+    nom: 'Espion', desc: 'Noir et or, façon générique de film d\'espionnage.',
     bg: '#050505', bg2: '#17130a', accent: '#D4AF37', text: '#f5f1e6', muted: '#9c9480',
     fontTitle: 'Cinzel', fontBody: 'Inter', deco: 'barillet'
   },
@@ -36,6 +36,26 @@ const THEMES = {
     bg: '#0c0a08', bg2: '#2a1608', accent: '#E0892B', text: '#f4ead9', muted: '#a8977f',
     fontTitle: 'Cinzel Decorative', fontBody: 'Inter', deco: 'aucun', pack: 'arene', packJs: true
   },
+  studio: {
+    nom: 'Studio', desc: 'Sobre et moderne : gris anthracite, touche bleue.',
+    bg: '#0e1013', bg2: '#1b2129', accent: '#5AB0FF', text: '#f4f6f8', muted: '#9aa4b1',
+    fontTitle: 'Space Grotesk', fontBody: 'Inter', deco: 'aucun'
+  },
+  cinema: {
+    nom: 'Cinéma', desc: 'Élégant : noir profond, rouge velours, titres fins.',
+    bg: '#0a0607', bg2: '#2a0b10', accent: '#D7263D', text: '#f6efe6', muted: '#b39f97',
+    fontTitle: 'Cormorant Garamond', fontBody: 'Inter', deco: 'aucun'
+  },
+  neon: {
+    nom: 'Néon', desc: 'Nuit électrique : rose et violet.',
+    bg: '#07051a', bg2: '#22104a', accent: '#FF3EA5', text: '#ffffff', muted: '#b6a8e0',
+    fontTitle: 'Outfit', fontBody: 'Inter', deco: 'aucun'
+  },
+  clair: {
+    nom: 'Clair', desc: 'Lumineux et éditorial : fond crème, texte noir.',
+    bg: '#f4f1ea', bg2: '#e4ddcf', accent: '#1d1d1f', text: '#141414', muted: '#6b6559',
+    fontTitle: 'Fraunces', fontBody: 'Inter', deco: 'aucun'
+  },
   anime: {
     nom: 'Animation (orange vif)',
     bg: '#120a1f', bg2: '#2b1650', accent: '#FF8A00', text: '#ffffff', muted: '#c6b5e8',
@@ -43,11 +63,13 @@ const THEMES = {
   }
 };
 // Polices fines en premier ; les plus grasses restent disponibles pour certains thèmes
+/* Thèmes mis en avant dans la galerie ; les autres restent dans « Plus de thèmes » */
+const GALERIE = ['minimal', 'studio', 'cinema', 'bond', 'neon', 'clair'];
 const FONTS = ['Outfit', 'Inter', 'Cormorant Garamond', 'Marcellus', 'Italiana', 'Cinzel', 'Josefin Sans', 'DM Serif Display',
   'Fraunces', 'Space Grotesk', 'Playfair Display', 'Cinzel Decorative', 'Bebas Neue', 'Oswald', 'Montserrat',
   'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous'];
 const POIDS_POLICES = { Inter: '400;500;600;700', Outfit: '300;400;500;600', Montserrat: '500;700;800', 'Josefin Sans': '300;400;600',
-  'Cormorant Garamond': '400;500;600', 'Space Grotesk': '400;500;600', Fraunces: '300;400;600' };
+  'Cormorant Garamond': '400;500;600', 'Space Grotesk': '400;500;600', Fraunces: '300;400;500' };
 
 /* ---------- Affichage de l'interface : auto / sombre / clair, daltonien, contraste, taille ---------- */
 const CLE_AFFICHAGE = 'studioSeb:affichage';
@@ -174,6 +196,10 @@ function appliquerTheme(theme, el = document.documentElement) {
   for (const k in v) el.style.setProperty(k, v[k]);
   el.style.setProperty('--bg-image', theme.bgImage ? `url("${theme.bgImage}")` : 'none');
   el.dataset.deco = theme.deco || 'minimal';
+  // fond clair : pas d'ombres sombres ni de vignette
+  const m = /^#?([0-9a-f]{6})$/i.exec(theme.bg || '');
+  const lum = m ? (parseInt(m[1].slice(0, 2), 16) * 299 + parseInt(m[1].slice(2, 4), 16) * 587 + parseInt(m[1].slice(4, 6), 16) * 114) / 255000 : 0;
+  if (lum > 0.6) el.dataset.clair = ''; else delete el.dataset.clair;
   el.dataset.pack = theme.pack || '';
   chargerPolices([theme.fontTitle, theme.fontBody]);
   if (theme.pack) chargerPack(theme.pack, false);

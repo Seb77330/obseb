@@ -1,16 +1,18 @@
 /* Interface du OBSeb (accueil, régie, coulisses invité) */
 :root {
-  --ui-bg: #0d0e12; --ui-panel: #16181e; --ui-panel2: #1d2028; --ui-line: #2a2e38;
-  --ui-text: #f1f2f5; --ui-muted: #9097a6; --ui-accent: #FFD21F; --ui-sur-accent: #111;
-  --ui-red: #ff3b3b; --ui-green: #2fd27a; --ui-ko: #ff6b6b;
-  --ui-header: #0a0b0e; --ui-input: #0f1116; --ui-hover: #232733; --ui-line2: #3c4250;
-  --radius: 12px; --ui-taille: 15px;
+  --ui-bg: #08090b; --ui-panel: #101216; --ui-panel2: #171a20; --ui-line: #23272f;
+  --ui-text: #eceef2; --ui-muted: #8a92a0; --ui-accent: #FFD21F; --ui-sur-accent: #111;
+  --ui-red: #f0353b; --ui-green: #34d17d; --ui-ambre: #ffb224; --ui-ko: #ff6b6b;
+  --ui-header: #0b0c0f; --ui-input: #0b0d10; --ui-hover: #1e222a; --ui-line2: #363c48;
+  --radius: 10px; --ui-taille: 15px;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 }
 /* Modes d'affichage (bouton « Affichage ») */
 :root[data-mode="clair"] {
   --ui-bg: #f4f5f7; --ui-panel: #ffffff; --ui-panel2: #f1f2f5; --ui-line: #dcdfe5;
   --ui-text: #15171c; --ui-muted: #5d6472; --ui-accent: #F2C200; --ui-sur-accent: #111;
   --ui-header: #ffffff; --ui-input: #ffffff; --ui-hover: #e8eaef; --ui-line2: #c3c8d1;
+  --ui-red: #d92b31; --ui-green: #14934f; --ui-ambre: #b97700;
 }
 :root[data-daltonien] { --ui-red: #E66100; --ui-green: #1A85FF; --ui-ko: #E66100; }
 :root[data-contraste] { --ui-muted: #c9ced8; --ui-line: #565d6b; --ui-line2: #7a8291; }
@@ -21,7 +23,7 @@ html, body { margin: 0; background: var(--ui-bg); color: var(--ui-text); font: 4
 a { color: var(--ui-accent); }
 button, input, select { font: inherit; color: inherit; }
 button {
-  background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 14px;
+  background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 7px; padding: 9px 14px;
   cursor: pointer; font-weight: 500; transition: background .15s, border-color .15s, transform .05s;
 }
 button:hover { border-color: var(--ui-line2); background: var(--ui-hover); }
@@ -114,3 +116,12 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .btn-corbeille { display: inline-flex; align-items: center; gap: 6px; color: var(--ui-muted); }
 .btn-corbeille:hover { color: var(--ui-ko, #e5484d); border-color: var(--ui-ko, #e5484d); }
 .btn-corbeille svg { width: 16px; height: 16px; }
+
+/* ----- Éléments de régie : étiquettes, voyants, codes temporels ----- */
+.etiquette { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
+.tc { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.voyant { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-line2); flex: none; }
+.voyant.ok { background: var(--ui-green); box-shadow: 0 0 6px color-mix(in srgb, var(--ui-green) 70%, transparent); }
+.voyant.att { background: var(--ui-ambre); box-shadow: 0 0 6px color-mix(in srgb, var(--ui-ambre) 70%, transparent); }
+.voyant.ko { background: var(--ui-red); box-shadow: 0 0 6px color-mix(in srgb, var(--ui-red) 70%, transparent); }
+button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }

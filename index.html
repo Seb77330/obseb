@@ -3,35 +3,106 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>OBSeb</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css">
 <style>
-  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 20px 60px; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
-  header .marque { font-size: 30px; }
-  .grille { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; align-items: start; }
-  @media (max-width: 1000px) { .grille { grid-template-columns: 1fr; } }
-  .sessions { display: grid; gap: 12px; }
-  .session { display: grid; grid-template-columns: 220px 1fr; gap: 16px; padding: 12px; background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 12px; }
-  @media (max-width: 640px) { .session { grid-template-columns: 1fr; } }
-  .session .mini { position: relative; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; }
+  .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
+  .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
+  .barre .etiquette { padding-left: 14px; border-left: 1px solid var(--ui-line); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 36px 24px 80px; }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+  .tete-section { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+  .tete-section .aide { margin: 0; }
+
+  /* Mes lives : une carte par live */
+  .cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .session { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; overflow: visible; display: flex; flex-direction: column; }
+  .session .mini { position: relative; aspect-ratio: 16/9; border-radius: 11px 11px 0 0; overflow: hidden; background: #000; }
   .session .mini iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
-  .session h3 { margin: 2px 0 4px; font-size: 18px; }
+  .session .corps { padding: 14px; display: grid; gap: 4px; }
+  .session h3 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.3; }
   .session .meta { color: var(--ui-muted); font-size: 13px; margin-bottom: 10px; }
-  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .preset { padding: 10px 8px; border-radius: 10px; text-align: left; font-size: 12px; line-height: 1.25; }
-  .preset .pas { display: flex; gap: 4px; margin-bottom: 6px; }
-  .preset .pas i { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,.2); }
-  .preset.actif { outline: 2px solid var(--ui-accent); background: var(--ui-panel2); color: inherit; }
-  .couleurs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .couleurs label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-muted); }
-  details { margin-top: 14px; }
-  summary { cursor: pointer; font-weight: 500; color: var(--ui-muted); font-size: 13px; }
-  .etape { display: flex; align-items: center; gap: 10px; margin: 22px 0 10px; font-size: 15px; }
-  .etape .num { width: 24px; height: 24px; border-radius: 50%; background: var(--ui-accent); color: var(--ui-sur-accent); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-  #mode-style { margin-bottom: 12px; }
+  .session .actions { display: flex; gap: 8px; align-items: center; }
+  .session .actions a { flex: 1; } .session .actions a button { width: 100%; }
+
+  /* Accueil vide */
+  .vide-accueil { text-align: center; padding: 70px 20px 40px; max-width: 620px; margin: 0 auto; }
+  .vide-accueil h1 { font-size: 34px; margin-bottom: 10px; }
+  .vide-accueil p { color: var(--ui-muted); font-size: 16px; margin: 0 0 24px; }
+  .vide-accueil button { padding: 12px 22px; font-size: 16px; }
+  .vitrine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin: 10px auto 0; }
+  .vitrine img { width: 100%; aspect-ratio: 16/9; display: block; border-radius: 10px; border: 1px solid var(--ui-line); }
+  @media (max-width: 700px) { .vitrine { grid-template-columns: 1fr; } }
+
+  /* Blocs repliés : lives terminés, aide */
+  .repli { margin-top: 28px; border-top: 1px solid var(--ui-line); padding-top: 16px; }
+  .repli > summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; display: flex; align-items: center; gap: 10px; user-select: none; }
+  .repli > summary::-webkit-details-marker { display: none; }
+  .repli > summary::before { content: ''; width: 7px; height: 7px; border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(-45deg); transition: transform .15s; }
+  .repli[open] > summary::before { transform: rotate(45deg); }
+  .repli > summary small { color: var(--ui-muted); font-weight: 400; }
+  .repli > *:not(summary) { margin-top: 14px; }
+  .termine { display: grid; grid-template-columns: 200px 1fr; gap: 16px; padding: 12px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; margin-bottom: 10px; }
+  .termine .mini { position: relative; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; align-self: start; }
+  .termine .mini img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .7; }
+  .termine h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .termine .meta { color: var(--ui-muted); font-size: 13px; }
+  @media (max-width: 640px) { .termine { grid-template-columns: 1fr; } }
+  .etapes3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 700px) { .etapes3 { grid-template-columns: 1fr; } }
+  .etapes3 > div { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px; }
+  .etapes3 span { font-family: var(--mono); font-size: 12px; color: var(--ui-accent); }
+  .etapes3 b { display: block; font-weight: 600; margin: 4px 0; }
+  .etapes3 p { margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
+
+  /* Menu « ••• » */
+  .plus { position: relative; }
+  .plus > summary { list-style: none; cursor: pointer; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 7px; color: var(--ui-muted); font-size: 12px; letter-spacing: .1em; user-select: none; }
+  .plus > summary::-webkit-details-marker { display: none; }
+  .plus[open] > summary { background: var(--ui-panel2); color: var(--ui-text); }
+  .plus .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 300px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .plus .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 12px; font-weight: 500; }
+  .plus .menu button:hover { background: var(--ui-panel2); }
+  .plus .menu small { display: block; color: var(--ui-muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
+  .plus .menu .danger { color: var(--ui-ko); }
+
+  /* Création d'un live : le formulaire à gauche, l'aperçu qui suit à droite */
+  .creation { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: 40px; align-items: start; }
+  @media (max-width: 1000px) { .creation { grid-template-columns: 1fr; } .creation-apercu { order: -1; position: static !important; } }
+  .creation-apercu { position: sticky; top: 84px; }
+  .creation-apercu .etiquette { display: block; margin-bottom: 8px; }
+  .retour { border: 0; background: none; padding: 0; color: var(--ui-muted); font-size: 14px; margin-bottom: 14px; }
+  .retour:hover { color: var(--ui-text); background: none; }
+  .etape { display: flex; align-items: baseline; gap: 10px; margin: 34px 0 12px; font-size: 16px; font-weight: 600; }
+  .etape .num { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ui-accent); }
+  #f-titre { font-size: 17px; padding: 12px 14px; }
+
+  /* Galerie de thèmes : une image par thème, comme une vitrine */
+  .galerie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  @media (max-width: 520px) { .galerie { grid-template-columns: 1fr; } }
+  .theme-carte { position: relative; padding: 0; text-align: left; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; font-weight: 400; }
+  .theme-carte:hover { border-color: var(--ui-line2); background: var(--ui-panel); }
+  .theme-carte:active { transform: none; }
+  .theme-img { position: relative; display: block; aspect-ratio: 16/9; background: #000; }
+  .theme-img img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transition: opacity .25s; }
+  .theme-img img.alt { opacity: 0; }
+  .theme-carte:hover .theme-img img.alt { opacity: 1; }
+  .theme-txt { display: block; padding: 10px 12px 12px; }
+  .theme-txt b { display: block; font-weight: 600; font-size: 15px; }
+  .theme-txt small { display: block; color: var(--ui-muted); font-size: 13px; line-height: 1.4; margin-top: 2px; }
+  .theme-carte.actif { background: var(--ui-panel); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
+  .theme-carte.actif::after { content: '✓ Choisi'; position: absolute; top: 10px; left: 10px; background: var(--ui-accent); color: #111; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 6px; }
+  .option { margin-top: 12px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-panel); }
+  .option > summary { cursor: pointer; padding: 12px 14px; font-weight: 500; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 10px; }
+  .option > summary::-webkit-details-marker { display: none; }
+  .option > summary::after { content: ''; margin-left: auto; width: 7px; height: 7px; border-right: 1.5px solid var(--ui-muted); border-bottom: 1.5px solid var(--ui-muted); transform: rotate(45deg); transition: transform .15s; }
+  .option[open] > summary::after { transform: rotate(-135deg); }
+  .option > summary small { color: var(--ui-muted); font-weight: 400; }
+  .option-corps { padding: 0 14px 14px; }
+
   .bloc { padding: 14px 0; border-top: 1px solid var(--ui-line); }
   .bloc:first-child { border-top: 0; padding-top: 2px; }
   .bloc-titre { font-size: 12px; font-weight: 600; color: var(--ui-muted); margin-bottom: 10px; }
@@ -52,173 +123,173 @@
   .depot-vue .retirer { position: absolute; top: 4px; right: 4px; padding: 2px 7px; font-size: 12px; }
   .depot.grand { padding: 28px 16px; margin-top: 10px; }
   .depot.grand b { font-size: 15px; }
-  .plus { margin-top: 10px; }
-  .plus summary { margin-bottom: 8px; }
+  .sous-option { margin-top: 10px; }
+  .sous-option summary { cursor: pointer; font-weight: 500; color: var(--ui-muted); font-size: 13px; margin-bottom: 8px; }
   .pas-obs { padding-left: 20px; margin: 0; font-size: 14px; } .pas-obs li { margin: 6px 0; }
   #obs-rapport { margin-top: 10px; font-size: 13px; }
   #obs-rapport .ok { color: var(--ui-green); } #obs-rapport .ko { color: var(--ui-ko); }
   #obs-rapport ul { margin: 6px 0 0; padding-left: 18px; color: var(--ui-muted); }
   .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .guide ol { padding-left: 20px; margin: 8px 0 0; }
-  .guide li { margin: 6px 0; }
+  @media (max-width: 520px) { .grille2 { grid-template-columns: 1fr; } }
   code { background: var(--ui-input); border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
-  header .marque { text-decoration: none; color: var(--ui-text); }
-  .vide-accueil { display: grid; gap: 8px; justify-items: start; padding: 22px; border: 1px dashed var(--ui-line2); border-radius: 12px; }
-  .vide-accueil span { color: var(--ui-muted); font-size: 14px; }
-  .plus { position: relative; }
-  .plus summary { list-style: none; cursor: pointer; padding: 8px 12px; border: 1px solid var(--ui-line); border-radius: 9px; color: var(--ui-muted); font-size: 12px; letter-spacing: .1em; user-select: none; }
-  .plus summary::-webkit-details-marker { display: none; }
-  .plus[open] summary { background: var(--ui-panel2); color: var(--ui-text); }
-  .plus .menu { position: absolute; left: 0; top: calc(100% + 6px); z-index: 20; width: 300px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
-  .plus .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 12px; font-weight: 500; }
-  .plus .menu button:hover { background: var(--ui-panel2); }
-  .plus .menu small { display: block; color: var(--ui-muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
-  .plus .menu .danger { color: var(--ui-ko, #e5484d); }
-  .etapes3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 700px) { .etapes3 { grid-template-columns: 1fr; } }
-  .etapes3 > div { background: var(--ui-panel2); border-radius: 12px; padding: 14px; }
-  .etapes3 span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 600; font-size: 13px; margin-bottom: 8px; }
-  .etapes3 b { display: block; font-weight: 600; margin-bottom: 4px; }
-  .etapes3 p { margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
+  kbd { color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
+  .pied-form { display: flex; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--ui-line); }
+  .pied-form .primaire { padding: 12px 22px; font-size: 16px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <a class="marque" href="index.html" title="Accueil">OBS<b>eb</b></a>
-    <span style="flex:1;color:var(--ui-muted);font-size:14px">Ta régie live : un lien pour tes invités, un lien pour OBS, un style par live.</span>
-    <span id="place-affichage"></span>
-  </header>
+<header class="barre">
+  <a class="marque" href="index.html" title="Accueil">OBS<b>eb</b></a>
+  <span class="etiquette">Studio live</span>
+  <span style="flex:1"></span>
+  <span id="place-affichage"></span>
+  <button class="primaire" id="btn-nouveau">Nouveau live</button>
+</header>
 
-  <div class="grille">
-    <div style="display:grid;gap:18px">
-      <div class="panneau">
-        <h2>Mes lives</h2>
-        <div class="sessions" id="sessions"></div>
-      </div>
-
-      <div class="panneau">
-        <h2>Lives terminés</h2>
-        <p class="aide" style="margin-top:-6px">Un live arrive ici quand tu arrêtes le direct.</p>
-        <div class="sessions" id="lives"></div>
-      </div>
-
-      <div class="panneau guide">
-        <h2>Comment ça marche</h2>
-        <div class="etapes3">
-          <div><span>1</span><b>Ouvre la régie</b><p>Choisis ta caméra et ton micro, puis « Démarrer ma caméra ». Mets un casque.</p></div>
-          <div><span>2</span><b>Invite</b><p>Bouton « Inviter » : envoie le lien. Tes invités arrivent en coulisses, tu les mets à l'antenne d'un clic.</p></div>
-          <div><span>3</span><b>Branche OBS</b><p>Dans OBS, une source Navigateur avec le lien OBS (1920 × 1080). C'est la seule source à ajouter.</p></div>
-        </div>
-        <details class="aide" style="margin-top:12px">
-          <summary>Plus de détails</summary>
-          <ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">
-            <li>Ferme ta Cam Link dans OBS : c'est la régie qui l'utilise.</li>
-            <li>Dans la source Navigateur, coche « Contrôler l'audio via OBS ».</li>
-            <li>Pendant le live : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Live, <kbd>3</kbd> Écran partagé, <kbd>4</kbd> Fin.</li>
-            <li>Vertical (TikTok, Shorts) : même chose avec le lien vertical, en 1080 × 1920. La régie pilote les deux en même temps.</li>
-            <li>N'ouvre pas la webcam dans YouTube Studio : OBS envoie le live comme d'habitude.</li>
-          </ul>
-        </details>
-      </div>
+<!-- Vue 1 : mes lives -->
+<main class="wrap" id="vue-liste">
+  <div id="bloc-lives">
+    <div class="tete-section"><h1>Mes lives</h1><p class="aide" id="nb-lives"></p></div>
+    <div class="cartes" id="sessions"></div>
+  </div>
+  <div id="bloc-vide" hidden>
+    <div class="vide-accueil">
+      <h1>Ton studio est prêt</h1>
+      <p>Donne un titre, choisis un thème : ta régie, le lien de tes invités et le lien pour OBS sont créés d'un coup.</p>
+      <button class="primaire" id="vide-creer">Créer mon premier live</button>
     </div>
+    <div class="vitrine">
+      <img src="img/themes/minimal-live.webp" alt="Thème Sebastian" loading="lazy">
+      <img src="img/themes/cinema-intro.webp" alt="Thème Cinéma" loading="lazy">
+      <img src="img/themes/studio-live.webp" alt="Thème Studio" loading="lazy">
+    </div>
+  </div>
 
-    <div class="panneau">
-      <h2 id="titre-form">Nouveau live</h2>
-      <div class="cadre169"><iframe id="apercu-theme" title="Aperçu du thème"></iframe></div>
-      <div class="ligne-boutons" style="margin-top:8px">
-        <button class="petit" data-apercu="intro">Intro</button>
-        <button class="petit actif" data-apercu="live">Live à 3</button>
-        <button class="petit" data-apercu="live6">Live à 6</button>
-        <button class="petit" data-apercu="fin">Fin</button>
-        <button class="petit" data-apercu="vertical">Vertical</button>
-      </div>
+  <details class="repli" id="bloc-termines" hidden>
+    <summary>Lives terminés <small id="nb-termines"></small></summary>
+    <div id="lives"></div>
+  </details>
 
-      <div class="etape"><span class="num">1</span><b>Le titre du live</b></div>
+  <details class="repli">
+    <summary>Comment ça marche</summary>
+    <div class="etapes3">
+      <div><span>01</span><b>Ouvre la régie</b><p>Choisis ta caméra et ton micro, puis « Démarrer ma caméra ». Mets un casque.</p></div>
+      <div><span>02</span><b>Invite</b><p>Bouton « Inviter » : envoie le lien. Tes invités arrivent en coulisses, tu les mets à l'antenne d'un clic.</p></div>
+      <div><span>03</span><b>Branche OBS</b><p>Dans OBS, une source Navigateur avec le lien OBS (1920 × 1080). C'est la seule source à ajouter.</p></div>
+    </div>
+    <ul class="aide" style="padding-left:18px;line-height:1.7">
+      <li>Ferme ta Cam Link dans OBS : c'est la régie qui l'utilise.</li>
+      <li>Dans la source Navigateur, coche « Contrôler l'audio via OBS ».</li>
+      <li>Pendant le live : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Plateau, <kbd>3</kbd> Écran partagé, <kbd>4</kbd> Fin.</li>
+      <li>Vertical (TikTok, Shorts) : même chose avec le lien vertical, en 1080 × 1920. La régie pilote les deux en même temps.</li>
+    </ul>
+  </details>
+</main>
+
+<!-- Vue 2 : créer ou modifier un live -->
+<main class="wrap" id="vue-creation" hidden>
+  <div class="creation">
+    <div>
+      <button class="retour" id="btn-retour" type="button">← Mes lives</button>
+      <h1 id="titre-form">Nouveau live</h1>
+
+      <div class="etape"><span class="num">01</span>Le titre</div>
       <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
 
-      <div class="etape"><span class="num">2</span><b>Le style</b></div>
-      <div class="segment" id="mode-style">
-        <button type="button" data-mode="prets" class="actif">Thèmes prêts</button>
-        <button type="button" data-mode="perso">Personnaliser</button>
-        <button type="button" data-mode="obs">Importer depuis OBS</button>
-      </div>
-
-      <section class="volet" data-volet="prets">
-        <div class="presets" id="presets"></div>
-        <p class="aide" style="margin:8px 0 0">Choisis une base, puis affine-la dans « Personnaliser » si tu veux.</p>
-      </section>
-
-      <section class="volet" data-volet="perso" hidden>
-        <div class="bloc">
-          <div class="bloc-titre">Couleurs</div>
-          <div class="nuancier">
-            <label class="nuance"><input type="color" id="f-accent"><span>Accent</span></label>
-            <label class="nuance"><input type="color" id="f-bg"><span>Fond</span></label>
-            <label class="nuance"><input type="color" id="f-bg2"><span>Halo</span></label>
-            <label class="nuance"><input type="color" id="f-text"><span>Texte</span></label>
+      <div class="etape"><span class="num">02</span>Le thème</div>
+      <div class="galerie" id="galerie"></div>
+      <details class="option" id="opt-plus">
+        <summary>Plus de thèmes <small>Super-héros, Horreur, Polar, Arène, Animation</small></summary>
+        <div class="option-corps"><div class="galerie" id="galerie-plus"></div></div>
+      </details>
+      <details class="option" id="opt-perso">
+        <summary>Personnaliser <small>Couleurs, police, logo, image de fond</small></summary>
+        <div class="option-corps">
+          <div class="bloc">
+            <div class="bloc-titre">Couleurs</div>
+            <div class="nuancier">
+              <label class="nuance"><input type="color" id="f-accent"><span>Accent</span></label>
+              <label class="nuance"><input type="color" id="f-bg"><span>Fond</span></label>
+              <label class="nuance"><input type="color" id="f-bg2"><span>Halo</span></label>
+              <label class="nuance"><input type="color" id="f-text"><span>Texte</span></label>
+            </div>
           </div>
-        </div>
-        <div class="bloc">
-          <div class="bloc-titre">Police des titres</div>
-          <select id="f-font" hidden></select>
-          <div class="polices" id="polices"></div>
-        </div>
-        <div class="bloc">
-          <div class="bloc-titre">Images</div>
-          <div class="depots">
-            <div class="depot" data-cible="f-image"><div class="depot-vue"></div><b>Image de fond</b><small>Glisse une image ou clique</small><input type="file" accept="image/*" hidden></div>
-            <div class="depot" data-cible="f-logo"><div class="depot-vue"></div><b>Logo</b><small>PNG transparent idéal</small><input type="file" accept="image/*" hidden></div>
+          <div class="bloc">
+            <div class="bloc-titre">Police des titres</div>
+            <select id="f-font" hidden></select>
+            <div class="polices" id="polices"></div>
           </div>
-          <details class="plus"><summary>Ou coller un lien d'image</summary>
-            <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
-            <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
+          <div class="bloc">
+            <div class="bloc-titre">Images</div>
+            <div class="depots">
+              <div class="depot" data-cible="f-image"><div class="depot-vue"></div><b>Image de fond</b><small>Glisse une image ou clique</small><input type="file" accept="image/*" hidden></div>
+              <div class="depot" data-cible="f-logo"><div class="depot-vue"></div><b>Logo</b><small>PNG transparent idéal</small><input type="file" accept="image/*" hidden></div>
+            </div>
+            <details class="sous-option"><summary>Ou coller un lien d'image</summary>
+              <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
+              <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
+            </details>
+            <label class="champ" for="f-logotexte">Texte du logo s'il n'y a pas d'image</label>
+            <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
+          </div>
+          <details class="bloc sous-option"><summary>Musiques d'intro et de fin</summary>
+            <input type="url" id="f-mintro" placeholder="Lien du MP3 d'intro (https://…)">
+            <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
+            <p class="aide" style="margin:6px 0 0">Elles passent dans le son du live, pas dans les aperçus.</p>
           </details>
-          <label class="champ" for="f-logotexte">Texte du logo s'il n'y a pas d'image</label>
-          <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
         </div>
-        <details class="bloc plus"><summary>Musiques d'intro et de fin</summary>
-          <input type="url" id="f-mintro" placeholder="Lien du MP3 d'intro (https://…)">
-          <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
-          <p class="aide" style="margin:6px 0 0">Elles passent dans le son du live, pas dans les aperçus.</p>
-        </details>
-      </section>
-
-      <section class="volet" data-volet="obs" hidden>
-        <ol class="pas-obs">
-          <li>Dans OBS : <b>Outils &gt; Scripts</b>, ajoute <a href="obs/exporter-vers-obseb.lua" download>exporter-vers-obseb.lua</a> (une seule fois), puis clique sur <b>Exporter vers OBSeb</b>.</li>
-          <li>Glisse ici le dossier créé (dans <code>Vidéos\SEBASTIAN\SEBASTIAN Ciné Série\OBSeb\Exports</code>), ou directement le fichier <code>.json</code> de ta collection et ses images.</li>
-        </ol>
-        <div class="depot grand" id="depot-obs">
-          <b>Glisse ton export OBS ici</b><small>ou <u>choisis le dossier</u> · <u>choisis des fichiers</u></small>
-          <input type="file" id="obs-dossier" webkitdirectory hidden>
-          <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
+      </details>
+      <details class="option" id="opt-obs">
+        <summary>Importer mon habillage depuis OBS <small>Fond, logo, police, couleurs</small></summary>
+        <div class="option-corps">
+          <ol class="pas-obs">
+            <li>Dans OBS : <b>Outils &gt; Scripts</b>, ajoute <a href="obs/exporter-vers-obseb.lua" download>exporter-vers-obseb.lua</a> (une seule fois), puis clique sur <b>Exporter vers OBSeb</b>.</li>
+            <li>Glisse ici le dossier créé (dans <code>Vidéos\SEBASTIAN\SEBASTIAN Ciné Série\OBSeb\Exports</code>), ou directement le fichier <code>.json</code> de ta collection et ses images.</li>
+          </ol>
+          <div class="depot grand" id="depot-obs">
+            <b>Glisse ton export OBS ici</b><small>ou <u>choisis le dossier</u> · <u>choisis des fichiers</u></small>
+            <input type="file" id="obs-dossier" webkitdirectory hidden>
+            <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
+          </div>
+          <div id="obs-rapport"></div>
         </div>
-        <div id="obs-rapport"></div>
-      </section>
+      </details>
 
-      <div class="etape"><span class="num">3</span><b>Toi et ta chaîne</b></div>
+      <div class="etape"><span class="num">03</span>Toi et ta chaîne</div>
       <div class="grille2">
         <div><label class="champ" for="f-hote" style="margin-top:0">Ton nom à l'écran</label><input type="text" id="f-hote" maxlength="28"></div>
         <div><label class="champ" for="f-handle" style="margin-top:0">Compte affiché à la fin</label><input type="text" id="f-handle" maxlength="40"></div>
       </div>
-      <label class="champ" for="f-limite">Durée maximale du live</label>
+      <label class="champ" for="f-limite">Durée maximale du direct</label>
       <select id="f-limite">
         <option value="0">Pas de limite</option>
         <option value="60">1 h</option>
         <option value="90">1 h 30</option>
         <option value="135">2 h 15</option>
       </select>
-      <p class="aide">Le compte commence quand tu passes en Live. Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le live passe sur l'écran de fin tout seul. Tu peux toujours finir avant.</p>
+      <p class="aide">Le compte démarre avec le bouton « Démarrer le direct ». Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le direct s'arrête sur l'écran de fin.</p>
 
-      <div class="ligne-boutons" style="margin-top:18px">
+      <div class="pied-form">
         <button class="primaire" id="btn-creer">Créer le live</button>
-        <button id="btn-annuler" hidden>Annuler</button>
+        <button id="btn-annuler">Annuler</button>
       </div>
       <p class="aide" id="note-modif" hidden>Après une modification, renvoie le lien invités et remets le lien OBS à jour : ils contiennent le thème.</p>
     </div>
+
+    <aside class="creation-apercu">
+      <span class="etiquette">Aperçu en vrai</span>
+      <div class="cadre169"><iframe id="apercu-theme" title="Aperçu du thème"></iframe></div>
+      <div class="segment" style="margin-top:10px">
+        <button type="button" data-apercu="intro">Intro</button>
+        <button type="button" data-apercu="live" class="actif">3 pers.</button>
+        <button type="button" data-apercu="live6">6 pers.</button>
+        <button type="button" data-apercu="quiz">Quiz</button>
+        <button type="button" data-apercu="fin">Fin</button>
+        <button type="button" data-apercu="vertical">Vertical</button>
+      </div>
+    </aside>
   </div>
-</div>
+</main>
 <div class="toast" id="toast"></div>
 <script src="js/common.js"></script>
 <script src="js/accueil.js"></script>
