@@ -238,6 +238,37 @@ function nouvelleSession(titre, preset = 'minimal') {
     room: 'sebcs' + rnd(10), theme: { preset }, cree: Date.now()
   };
 }
+/* ----- Un live programmé : sa date en clair, le temps qu'il reste, et le rendez-vous pour l'agenda ----- */
+function quandTexte(ts) {
+  const d = new Date(ts), j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return j.charAt(0).toUpperCase() + j.slice(1) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+function dansTexte(ts) {
+  const min = Math.round((ts - Date.now()) / 60000);
+  if (min < -10) return 'heure dépassée';
+  if (min <= 5) return 'c\'est l\'heure';
+  if (min < 60) return `dans ${min} min`;
+  const jour = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const jours = Math.round((jour(ts) - jour(Date.now())) / 86400000);
+  if (jours === 0) return `aujourd'hui, dans ${Math.round(min / 60)} h`;
+  return jours === 1 ? 'demain' : `dans ${jours} jours`;
+}
+function telechargerAgenda(session, lien) {
+  if (!session.debut) return;
+  const z = t => new Date(t).toISOString().replace(/[-:]|\.\d{3}/g, '');
+  const echap = s => String(s).replace(/([\;,])/g, '\\$1').replace(/\n/g, '\\n');
+  const plier = l => l.match(/.{1,72}/g).join('\r\n ');          // une ligne d'agenda ne dépasse pas 75 caractères
+  const fin = session.debut + Math.min(session.limite || 120, 240) * 60000;
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//OBSeb//Live//FR', 'BEGIN:VEVENT', `UID:${session.room}@obseb`, `DTSTAMP:${z(Date.now())}`,
+    `DTSTART:${z(session.debut)}`, `DTEND:${z(fin)}`, `SUMMARY:${echap('Live : ' + session.titre)}`,
+    `DESCRIPTION:${echap('Avec ' + session.hote + (lien ? '\nTon lien : ' + lien : ''))}`, lien ? `URL:${lien}` : '',
+    'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Le live commence dans 15 minutes', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR']
+    .filter(Boolean).map(plier).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `live-${slug(session.titre, 30) || 'obseb'}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
 function lireSession() {
   const s = hashParams().get('s');
   if (!s) return null;

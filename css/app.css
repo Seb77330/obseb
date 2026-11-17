@@ -41,7 +41,9 @@ button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border
 button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
 button.petit { padding: 5px 10px; font-size: 13px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
-input[type=text], input[type=password], input[type=number], input[type=url], input[type=time], select {
+input[type=date], input[type=time] { color-scheme: dark; }
+:root[data-mode="clair"] input[type=date], :root[data-mode="clair"] input[type=time] { color-scheme: light; }
+input[type=text], input[type=password], input[type=number], input[type=url], input[type=time], input[type=date], select {
   background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 12px; width: 100%; outline: none;
 }
 input:focus, select:focus { border-color: var(--ui-accent); }

@@ -6,7 +6,7 @@
 <title>Invitation au live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/app.css?v=6e5b97aa">
+<link rel="stylesheet" href="css/app.css?v=fe38768c">
 <style>
   body {
     min-height: 100vh; color: var(--text, #fff);
@@ -22,6 +22,10 @@
   #accueil .sur { font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--accent); font-size: 13px; }
   #accueil h1 { font: 400 clamp(44px, 8vw, 84px)/1.02 var(--font-title); text-transform: uppercase; margin: 14px 0 10px; }
   #accueil p { color: var(--muted); font-size: 16px; }
+  #accueil #rdv { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; margin: 0 0 14px; padding: 10px 16px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); color: var(--text); }
+  #accueil #rdv[hidden] { display: none; }
+  #accueil #rdv span { color: var(--accent); font-weight: 600; }
+  #accueil #rdv button { padding: 6px 12px; font-size: 13px; background: none; border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); color: var(--text); }
   #accueil form { display: flex; gap: 10px; margin: 28px auto 0; max-width: 460px; }
   #accueil input { font-size: 17px; padding: 14px 16px; }
   .rm-go, .primaire { background: var(--accent) !important; border-color: var(--accent) !important; color: var(--bg) !important; }
@@ -61,6 +65,7 @@
   <section id="accueil">
     <div class="sur">Tu es invité(e) au live</div>
     <h1 id="titre"></h1>
+    <p id="rdv" hidden><b></b><span></span><button type="button" id="rdv-agenda">Ajouter à mon agenda</button></p>
     <p>Avec <span id="hote"></span>. Tu arrives d'abord en coulisses : personne ne te voit tant que tu n'es pas mis(e) à l'antenne.</p>
     <form id="form">
       <input type="text" id="prenom" placeholder="Ton prénom ou ton pseudo" maxlength="28" required autocomplete="nickname">
@@ -119,9 +124,9 @@
     </div>
   </section>
 </div>
-<script src="js/common.js?v=2c37dfc1"></script>
+<script src="js/common.js?v=c972618d"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=8f397c8a"></script>
+<script src="js/invite.js?v=efe14d2f"></script>
 </body>
 </html>

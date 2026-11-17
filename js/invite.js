@@ -12,6 +12,14 @@ appliquerTheme(theme);
 document.title = `Invitation · ${session.titre}`;
 $('#titre').textContent = session.titre;
 $('#hote').textContent = session.hote;
+// live programmé : le rendez-vous, à l'heure de l'invité (pas affiché une fois l'heure passée depuis longtemps)
+if (session.debut && session.debut > Date.now() - 6 * 3600e3) {
+  $('#rdv').hidden = false;
+  $('#rdv b').textContent = quandTexte(session.debut);
+  const majRdv = () => { $('#rdv span').textContent = dansTexte(session.debut); };
+  majRdv(); setInterval(majRdv, 30000);
+  $('#rdv-agenda').onclick = () => telechargerAgenda(session, location.href);
+}
 $('#hote2').textContent = session.hote;
 $('#chaine').textContent = session.handle || HANDLE_DEFAUT;
 $('#pastille').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="" style="height:28px;display:block">` : esc(theme.logoTexte || 'SEB');

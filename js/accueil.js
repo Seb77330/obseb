@@ -63,6 +63,7 @@ function remplirForm() {
   $('#f-mintro').value = t.musiqueIntro || ''; $('#f-mfin').value = t.musiqueFin || '';
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
   $('#f-limite').value = String(brouillon.limite || 0);
+  if (typeof majQuand === 'function') majQuand();
   const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
   if (!GALERIE.includes(brouillon.theme.preset)) deplierGalerie(true);
   const styleActif = typeof styleCorrespondant === 'function' ? styleCorrespondant(brouillon.theme) : null;
@@ -152,6 +153,8 @@ $('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSessio
 
 $('#btn-creer').onclick = () => {
   if (!brouillon.titre.trim()) { $('#f-titre').focus(); return toast('Donne un titre à ton live'); }
+  if (brouillon.debut && brouillon.debut < Date.now() && !enEdition) return toast('L\'heure choisie est déjà passée');
+  const programme = brouillon.debut && brouillon.debut > Date.now() ? brouillon.debut : 0;
   const l = lire();
   if (enEdition) {
     const i = l.findIndex(x => x.session.room === enEdition);
@@ -159,7 +162,7 @@ $('#btn-creer').onclick = () => {
     toast('Live modifié');
   } else {
     l.unshift({ session: brouillon, cle: rnd(12) });
-    toast('Live créé : clique sur « Ouvrir la régie »');
+    toast(programme ? `Live programmé : ${quandTexte(programme)}` : 'Live créé : clique sur « Ouvrir la régie »');
   }
   ecrire(l);
   annuler();
@@ -180,16 +183,19 @@ function afficherSessions() {
   const l = lire();
   $('#bloc-lives').hidden = !l.length; $('#bloc-vide').hidden = !!l.length;
   $('#nb-lives').textContent = l.length > 1 ? `${l.length} lives` : '';
-  l.forEach(({ session, cle }) => {
+  // les lives programmés d'abord, le plus proche en premier ; les autres gardent leur ordre
+  const proche = s => (s.debut && s.debut > Date.now() - 6 * 3600e3 ? s.debut : Infinity);
+  l.map((x, i) => [x, i]).sort((a, b) => (proche(a[0].session) - proche(b[0].session)) || (a[1] - b[1])).forEach(([{ session, cle }]) => {
     const L = liens(session, cle);
     const t = themeComplet(session);
     const el = document.createElement('div');
-    el.className = 'session';
+    el.className = 'session'; el.dataset.room = session.room;
     el.innerHTML = `
       <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'intro'))}"></iframe></div>
       <div class="corps">
         <h3>${esc(session.titre)}</h3>
         <div class="meta">Thème ${esc((t.nom || 'perso').replace(/\s*\(.*\)$/, ''))} · créé le ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR')}</div>
+        <div class="prog-zone" hidden></div>
         <div class="actions">
           <a href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
           <button data-a="invite" title="Copier le lien à envoyer à tes invités">Lien invités</button>
@@ -198,6 +204,8 @@ function afficherSessions() {
             <div class="menu">
               <button data-a="obs">Copier le lien OBS<small>Source navigateur 1920 × 1080</small></button>
               <button data-a="vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)</small></button>
+              <button data-a="programmer">Programmer<small>Le jour et l'heure, puis les miniatures</small></button>
+              <button data-a="agenda" hidden>Ajouter à mon agenda<small>Un rappel 15 minutes avant</small></button>
               <button data-a="modifier">Modifier<small>Titre, thème, durée maximale</small></button>
               <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même thème</small></button>
               <button data-a="suppr" class="danger">Supprimer</button>
@@ -208,6 +216,8 @@ function afficherSessions() {
     el.querySelector('[data-a=invite]').onclick = () => copier(L.invite, 'Lien invités copié');
     el.querySelector('[data-a=obs]').onclick = () => copier(L.sortie, 'Lien OBS copié');
     el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
+    el.querySelector('[data-a=programmer]').onclick = () => ouvrirProgrammation(session.room);
+    el.querySelector('[data-a=agenda]').onclick = () => telechargerAgenda(session, baseUrl());
     el.querySelector('[data-a=modifier]').onclick = () => {
       enEdition = session.room; brouillon = JSON.parse(JSON.stringify(session));
       ouvrirCreation('Modifier le live', 'Enregistrer', true);
@@ -219,9 +229,11 @@ function afficherSessions() {
     };
     el.querySelector('[data-a=suppr]').onclick = async () => {
       if (!await confirmer(`Supprimer « ${session.titre} » ? Sa régie et ses liens ne seront plus dans ta liste.`, { oui: 'Oui, supprimer', non: 'Non' })) return;
+      if (typeof oublierMinis === 'function') oublierMinis(session.room);
       ecrire(lire().filter(x => x.session.room !== session.room)); afficherSessions(); afficherLives();
     };
     box.appendChild(el);
+    if (typeof garnirProg === 'function') garnirProg(el, session);
   });
 }
 

@@ -7,7 +7,7 @@
 <title>OBSeb</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/app.css?v=6e5b97aa">
+<link rel="stylesheet" href="css/app.css?v=fe38768c">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -27,6 +27,36 @@
   .session .meta { color: var(--ui-muted); font-size: 13px; margin-bottom: 10px; }
   .session .actions { display: flex; gap: 8px; align-items: center; }
   .session .actions a { flex: 1; } .session .actions a button { width: 100%; }
+
+  /* Live programmé : la date, puis les miniatures */
+  .quand { display: grid; gap: 8px; margin-top: 10px; }
+  .quand-date { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; } .quand-date[hidden] { display: none; }
+  .quand .aide { margin: 0; } .quand .aide:empty { display: none; }
+  .prog-zone { display: grid; gap: 8px; margin: 0 0 12px; } .prog-zone[hidden] { display: none; }
+  .prog-badge { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 9px; background: color-mix(in srgb, var(--ui-accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--ui-accent) 45%, transparent); color: var(--ui-text); font-size: 13px; }
+  .prog-badge svg { width: 16px; height: 16px; color: var(--ui-accent); flex: none; }
+  .prog-badge b { font-weight: 600; flex: 1; min-width: 0; } .prog-badge span { color: var(--ui-accent); font-weight: 600; white-space: nowrap; }
+  .minis-tete { display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); margin-top: 2px; }
+  .minis-tete small { font-weight: 400; letter-spacing: 0; text-transform: none; }
+  .minis { display: flex; gap: 8px; align-items: stretch; }
+  .mini-case { position: relative; border-radius: 9px; overflow: hidden; background: var(--ui-input); border: 1px dashed var(--ui-line2); }
+  .mini-case.h { flex: 256 1 0; aspect-ratio: 16/9; } .mini-case.v { flex: 81 1 0; aspect-ratio: 9/16; }
+  .mini-case.pleine { border-style: solid; border-color: var(--ui-line); } .mini-case.survol { border-color: var(--ui-accent); background: var(--ui-hover); }
+  .mini-ajout { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 1px; border: 0; background: none; padding: 4px; color: var(--ui-muted); }
+  .mini-ajout[hidden] { display: none; }
+  .mini-ajout:hover { color: var(--ui-text); }
+  .mini-ajout i { font-style: normal; font-size: 22px; line-height: 1; color: var(--ui-accent); } .mini-ajout b { font-size: 13px; font-weight: 600; } .mini-ajout small { font-size: 11px; }
+  .mini-case.v .mini-ajout b { font-size: 11px; } .mini-case.v .mini-ajout small { font-size: 9.5px; }
+  .mini-case img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+  .mini-actions { position: absolute; left: 4px; right: 4px; bottom: 4px; display: flex; gap: 4px; justify-content: flex-end; } .mini-actions[hidden] { display: none; }
+  .mini-actions button { padding: 4px 8px; font-size: 11.5px; background: rgba(10,10,12,.82); color: #fff; border-color: rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+  .mini-case.v .mini-actions { top: 4px; flex-direction: column-reverse; justify-content: space-between; align-items: stretch; pointer-events: none; } .mini-case.v .mini-actions button { padding: 4px 2px; font-size: 10.5px; pointer-events: auto; } .mini-case.v .mini-actions [data-m="oter"] { align-self: flex-end; padding: 2px 7px; }
+  .prog-boite { width: min(460px, 100%); }
+  .prog-boite h3 { margin: 0 0 14px; font-size: 17px; }
+  .prog-champs { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; } .prog-champs label { display: grid; gap: 5px; font-size: 13px; color: var(--ui-muted); }
+  .prog-raccourcis { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .prog-boite .prog-resume { margin: 0 0 8px; font-weight: 600; } .prog-resume.ko { color: var(--ui-ko); }
+  .prog-boite .aide { font-size: 13px; margin: 0 0 16px; }
 
   /* Accueil vide */
   .vide-accueil { text-align: center; padding: 70px 20px 40px; max-width: 620px; margin: 0 auto; }
@@ -467,6 +497,11 @@
 
         <div class="etape"><span class="num">1</span>Le titre</div>
         <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
+        <div class="quand">
+          <div class="segment" id="f-quand" title="Tu peux aussi programmer plus tard, depuis la carte du live"><button type="button" data-q="maintenant">Tout de suite</button><button type="button" data-q="plus-tard">Programmer</button></div>
+          <div class="quand-date" id="f-quand-date" hidden><input type="date" id="f-date" aria-label="Le jour"><input type="time" id="f-heure" step="300" aria-label="L'heure"></div>
+          <p class="aide" id="f-quand-resume"></p>
+        </div>
 
         <div class="etape"><span class="num">2</span>Le thème</div>
         <div id="mes-styles" hidden>
@@ -595,9 +630,10 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=2c37dfc1"></script>
+<script src="js/common.js?v=c972618d"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=2bef9961"></script>
+<script src="js/accueil.js?v=1c7cfa2b"></script>
+<script src="js/accueil-prog.js?v=931882b1"></script>
 <script src="js/accueil-style.js?v=41260911"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>
