@@ -172,7 +172,7 @@
   kbd { white-space: nowrap; color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font: 11px var(--mono); }
 
   /* Outils : onglets à droite */
-  .onglets { flex: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; padding: 4px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
+  .onglets { flex: none; display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; padding: 4px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
   .onglets button { position: relative; border: 0; background: none; padding: 7px 0 6px; font-size: 11px; font-weight: 500; color: var(--ui-muted); border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .onglets button:hover { color: var(--ui-text); background: var(--ui-panel2); }
   .onglets button.actif { background: var(--ui-panel2); color: var(--ui-accent); box-shadow: inset 0 -2px 0 var(--ui-accent); }
@@ -325,7 +325,39 @@
   .qz-image-apercu { display: flex; gap: 10px; align-items: center; }
   .qz-image-apercu img { width: 120px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: #000; }
   .qz-dispos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .chat-styles { grid-template-columns: repeat(4, 1fr); } .chat-styles svg { width: 100%; height: auto; aspect-ratio: 16/9; } .chat-styles path.q { fill: var(--ui-accent); }
+  /* Onglet QR */
+  .qr-form { display: grid; gap: 6px; margin-bottom: 12px; }
+  #qr-idees { gap: 6px; } #qr-idees:empty { display: none; }
+  .qr-item { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--ui-line); border-radius: 10px; margin-bottom: 6px; background: var(--ui-panel); }
+  .qr-item.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  .qr-mini { width: 52px; height: 52px; border-radius: 6px; overflow: hidden; background: #fff; } .qr-mini svg { display: block; width: 100%; height: 100%; }
+  .qr-info { display: grid; gap: 2px; min-width: 0; }
+  .qr-info input { padding: 3px 6px; font-size: 13.5px; font-weight: 600; background: none; border-color: transparent; } .qr-info input:hover, .qr-info input:focus { border-color: var(--ui-line2); background: var(--ui-input); }
+  .qr-info span { padding: 0 7px; font-size: 11.5px; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qr-oter { padding: 5px 8px; color: var(--ui-muted); }
+  .qr-place { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 14px; align-items: center; }
+  .qr-coins { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; aspect-ratio: 16/9; padding: 5px; border: 1px solid var(--ui-line2); border-radius: 8px; background: var(--ui-input); }
+  .qr-coins button { padding: 0; border: 0; background: none; border-radius: 4px; position: relative; }
+  .qr-coins button:hover { background: var(--ui-hover); }
+  .qr-coins button::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 3px; background: var(--ui-line2); }
+  .qr-coins [data-coin="hg"]::after { left: 3px; top: 3px; } .qr-coins [data-coin="hd"]::after { right: 3px; top: 3px; }
+  .qr-coins [data-coin="bg"]::after { left: 3px; bottom: 3px; } .qr-coins [data-coin="bd"]::after { right: 3px; bottom: 3px; }
+  .qr-coins button.actif::after { background: var(--ui-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 30%, transparent); }
+  .qr-reglages { display: grid; gap: 8px; } .qr-reglages select { width: auto; }
+  /* Fenêtre « Inviter » */
+  .inviter-pop { width: 380px; padding: 14px; }
+  .inv-tete { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; } .inv-tete b { font-size: 15px; } .inv-tete span { font-size: 12.5px; color: var(--ui-ok, #2fd27a); }
+  .inv-corps { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .inv-corps:has(#inv-qr-bloc[hidden]) { grid-template-columns: 1fr; }
+  .inv-qr { display: grid; gap: 6px; justify-items: center; } .inv-qr small { font-size: 11px; color: var(--ui-muted); text-align: center; }
+  #inv-qr { width: 150px; height: 150px; border-radius: 8px; overflow: hidden; background: #fff; } #inv-qr svg { display: block; width: 100%; height: 100%; }
+  .inv-actions { display: grid; gap: 7px; }
+  .inviter-pop .inv-actions button, .inviter-pop .inv-lien-btn, .inviter-pop .inv-ligne button { display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 9px 12px; font-size: 13.5px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-panel2); color: var(--ui-text); text-decoration: none; }
+  .inviter-pop .inv-actions button.primaire { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); font-weight: 600; }
+  .inviter-pop .inv-lien-btn:hover, .inviter-pop .inv-actions button:not(.primaire):hover { background: var(--ui-hover); }
+  .inv-ligne { margin-top: 12px; flex-wrap: nowrap; } .inv-ligne input { font-size: 12px; min-width: 0; } .inviter-pop .inv-ligne button { width: auto; }
+  .inviter-pop .lien-bouton { width: auto; padding: 0; margin-top: 10px; font-size: 12.5px; }
+  .chat-styles { grid-template-columns: repeat(3, 1fr); } .chat-styles .q { fill: var(--ui-accent); } .chat-styles .t { fill: none; stroke: var(--ui-accent); stroke-width: 2; } .chat-styles svg { width: 100%; height: auto; aspect-ratio: 16/9; } .chat-styles path.q { fill: var(--ui-accent); }
   .qz-dispos button { display: grid; justify-items: center; gap: 6px; font-size: 12px; padding: 8px 4px; }
   .qz-dispos svg { width: 64px; height: 36px; background: var(--ui-input); border-radius: 4px; }
   .qz-dispos rect { fill: var(--ui-line2); } .qz-dispos rect.q { fill: var(--ui-accent); }
@@ -499,7 +531,23 @@
         <button id="btn-cameras-v">Caméras seules, en vertical<small>La même chose en 1080 × 1920</small></button>
       </div>
     </div>
-    <button id="btn-invite" title="Copier le lien à envoyer à tes invités"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>Inviter</span></button>
+    <div class="menu-liens" id="zone-invite">
+      <button id="btn-invite" title="Copier le lien à envoyer à tes invités"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>Inviter</span></button>
+      <div class="menu inviter-pop" id="invite-pop" hidden>
+        <div class="inv-tete"><b>Invite du monde</b><span>Le lien est déjà copié.</span></div>
+        <div class="inv-corps">
+          <div class="inv-qr" id="inv-qr-bloc"><div id="inv-qr"></div><small>À scanner avec un téléphone</small></div>
+          <div class="inv-actions">
+            <button class="primaire" id="inv-message" title="Un petit message tout prêt, avec le titre du live, la date si tu l'as programmé, et le lien">Copier l'invitation</button>
+            <a class="inv-lien-btn" id="inv-whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="inv-lien-btn" id="inv-mail">E-mail</a>
+            <button id="inv-partager" hidden>Partager…</button>
+          </div>
+        </div>
+        <div class="ligne-boutons inv-ligne"><input type="text" id="inv-lien" readonly aria-label="Lien des invités"><button id="inv-copier">Copier</button></div>
+        <button class="lien-bouton" id="inv-essai">Voir ce que verra ton invité</button>
+      </div>
+    </div>
     <div class="direct-zone">
       <button id="btn-direct" class="btn-direct"><i></i><span>Démarrer le direct</span></button>
       <div class="menu direct-pop" id="direct-pop" hidden></div>
@@ -583,6 +631,7 @@
         <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Quiz</span><span class="point" id="quiz-point" hidden></span></button>
         <button data-tab="watch"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Watch</span><span class="point" id="watch-point" hidden></span></button>
         <button data-tab="chat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span>Chat</span><span class="pastille-n" id="chat-non-lus" hidden></span></button>
+        <button data-tab="qr"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><path d="M14 14h2.5v2.5M20.5 14v2.5M14 20.5h2.5M20.5 20.5h-1.5v-1.5"/></svg><span>QR</span><span class="point" id="qr-point" hidden></span></button>
         <button data-tab="musique"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Musique</span></button>
         <button data-tab="comptes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg><span>Diffusion</span></button>
       </nav>
@@ -762,6 +811,16 @@
             <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="12" y="16" width="40" height="4" rx="1.5"/><rect class="q" x="18" y="23" width="28" height="4" rx="1.5"/><rect x="26" y="30" width="12" height="2.5" rx="1"/></svg>Affiche</button>
           <button data-cstyle="postit" title="Une note collée de travers, plaquée sur l'image">
             <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="34" y="11" width="24" height="20" rx="1.5" transform="rotate(-6 46 21)"/></svg>Post-it</button>
+          <button data-cstyle="billet" title="Un billet de cinéma qui sort de la caisse">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="22" y="17" width="10" height="14" rx="1.5"/><rect x="33" y="17" width="27" height="14" rx="1.5"/></svg>Billet</button>
+          <button data-cstyle="clap" title="Une ardoise de tournage : le clap se referme sur le message">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="30" y="9" width="30" height="5" rx="1" transform="rotate(-10 30 14)"/><rect class="q" x="30" y="14" width="30" height="4" rx="1"/><rect x="30" y="19" width="30" height="13" rx="1.5"/></svg>Clap</button>
+          <button data-cstyle="neon" title="Une enseigne au néon qui s'allume en grésillant">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="t" x="27" y="14" width="33" height="17" rx="5"/><rect class="q" x="32" y="19" width="22" height="2.5" rx="1"/><rect class="q" x="32" y="24" width="15" height="2.5" rx="1"/></svg>Néon</button>
+          <button data-cstyle="scope" title="Deux bandes noires se referment comme au cinéma, le message devient un sous-titre de film">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="0" y="0" width="64" height="6"/><rect x="0" y="28" width="64" height="8"/><rect class="q" x="16" y="30.5" width="32" height="3" rx="1"/></svg>Cinémascope</button>
+          <button data-cstyle="notif" title="Une notification de téléphone qui tombe du haut de l'écran">
+            <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="12" y="4" width="40" height="12" rx="4"/><rect class="q" x="15" y="6.5" width="7" height="7" rx="2"/></svg>Notif</button>
         </div>
         <div class="ligne-boutons" style="margin-top:8px;align-items:center;flex-wrap:nowrap">
           <button class="petit" id="chat-test" title="Ajoute un faux message et l'affiche à l'écran, pour essayer sans attendre le chat">Message de test</button>
@@ -769,6 +828,32 @@
           <button class="petit" id="chat-masquer">Masquer</button>
         </div>
         <label class="ligne-case" style="margin-top:10px" title="Dans une colonne à côté des caméras, jamais par-dessus."><input type="checkbox" id="chat-fil"> <span><b>Tout le chat à l'écran</b></span></label>
+      </section>
+      <section class="onglet" data-onglet="qr" hidden>
+        <p class="intro-onglet" title="Tes codes sont gardés dans ce navigateur : tu les retrouves à chaque live.">Un code que tes spectateurs scannent avec leur téléphone.</p>
+        <div class="qr-form">
+          <input type="text" id="qr-lien" placeholder="Colle un lien : chaîne, événement, billetterie…" maxlength="600">
+          <div class="ligne-boutons" style="flex-wrap:nowrap">
+            <input type="text" id="qr-titre" placeholder="Texte sous le code (ex. Abonne-toi)" maxlength="40">
+            <button class="primaire" id="qr-ajouter">Ajouter</button>
+          </div>
+          <div class="ligne-boutons" id="qr-idees"></div>
+        </div>
+        <div id="qr-liste"></div>
+        <h3 class="sous-titre">Place à l'écran</h3>
+        <div class="qr-place">
+          <div class="qr-coins" id="qr-coins" role="group" aria-label="Coin de l'écran">
+            <button data-coin="hg" title="En haut à gauche"></button><button data-coin="hd" title="En haut à droite"></button>
+            <button data-coin="bg" title="En bas à gauche"></button><button data-coin="bd" title="En bas à droite"></button>
+          </div>
+          <div class="qr-reglages">
+            <div class="segment" id="qr-tailles"><button data-taille="p">Petit</button><button data-taille="m">Moyen</button><button data-taille="g">Grand</button></div>
+            <div class="ligne-boutons" style="flex-wrap:nowrap;align-items:center">
+              <select id="qr-duree" title="Le code se retire tout seul après ce temps"><option value="15">15 s</option><option value="30">30 s</option><option value="60">1 min</option><option value="300">5 min</option><option value="0">sans limite</option></select>
+              <button class="petit" id="qr-masquer" style="margin-left:auto">Masquer</button>
+            </div>
+          </div>
+        </div>
       </section>
       <section class="onglet" data-onglet="musique" hidden>
         <button class="primaire mu-ajout" id="mu-ajouter">+ Ajouter une musique</button>
@@ -829,17 +914,19 @@
   <div class="vi-tete"><b>Vue invité</b><button id="vi-fenetre" title="Ouvrir dans une fenêtre à part (pratique sur un deuxième écran)">Fenêtre à part</button><button id="vi-fermer" title="Fermer la vue invité">✕</button></div>
   <iframe id="vi-cadre" title="Ce que voit un invité"></iframe>
 </div>
-<script src="js/common.js?v=c972618d"></script>
+<script src="js/vendor/qrcode.js?v=105f38a7"></script>
+<script src="js/common.js?v=a028cbcf"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=77a6caa4"></script>
+<script src="js/regie.js?v=6a0e157e"></script>
 <script src="js/regie-sources.js?v=04c1ea9c"></script>
 <script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>
-<script src="js/regie-chat.js?v=77ecb09b"></script>
+<script src="js/regie-qr.js?v=e4030782"></script>
+<script src="js/regie-chat.js?v=b8aad86c"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
-<script src="js/regie-recherche.js?v=3de71803"></script>
+<script src="js/regie-recherche.js?v=b0acdbae"></script>
 <script src="js/regie-direct.js?v=6a52613d"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>

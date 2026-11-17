@@ -91,6 +91,7 @@ function actions() {
   add('Musique', 'Ajouter une musique', () => { ouvrirOnglet('musique'); $('#mu-ajouter').click(); }, 'mp3 playlist fichier morceau');
   add('Musique', 'Régler le volume de la musique', champ('musique', '#vol-musique'), 'son');
   // Chat
+  add('QR', 'Afficher un code QR à l\'écran', () => ouvrirOnglet('qr'), 'qrcode scanner lien chaine evenement');
   add('Chat', 'Ouvrir le chat', () => ouvrirOnglet('chat'), 'twitch youtube messages');
   add('Chat', 'Masquer le message affiché', cliquer('#chat-masquer'), 'chat ecran');
   add('Chat', 'Connecter Twitch', champ('chat', '#chat-twitch'), 'chat');

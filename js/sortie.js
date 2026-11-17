@@ -272,6 +272,7 @@ function appliquerEtat(st) {
   gererPlaylist();
   gererQuiz();
   gererChat();
+  gererQR();
   gererFilChat(filChat, scene === 'watch' ? zoneWatch : zone);
   gererWatch();
   appliquerVolumes();
@@ -306,7 +307,7 @@ function gererMusique(scene) {
 
 /* ----- Message du chat mis en avant ----- */
 const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'], test: ['#6b7280', 'Test'] };
-const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit'];
+const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif'];
 let chatAfficheCle = '', chatFrappe = null;
 function gererChat() {
   const c = etat && etat.chatAffiche;
@@ -330,6 +331,24 @@ function gererChat() {
     chatFrappe = setInterval(() => { n = Math.min(texte.length, n + pas); t.textContent = texte.slice(0, n); if (n >= texte.length) clearInterval(chatFrappe); }, 35);
   } else t.innerHTML = texte.split(/\s+/).map((m, i) => `<span style="--i:${i}">${esc(m)}</span>`).join(' ');
   const b = $('#chat-bulle .cb-boite'); b.classList.remove('entree'); void b.offsetWidth; b.classList.add('entree');
+}
+
+/* ----- Code QR posé dans un coin (onglet QR de la régie) ----- */
+let qrAffiche = '';
+function gererQR() {
+  const q = etat && etat.qr, el = $('#qr-ecran');
+  const svg = q && q.lien ? (qrAffiche === q.lien + q.ts ? 'x' : svgQR(q.lien)) : '';
+  const coin = q && ['hg', 'hd', 'bg', 'bd'].includes(q.coin) ? q.coin : 'hd';
+  el.classList.toggle('cachee', !svg);
+  for (const c of ['hg', 'hd', 'bg', 'bd']) document.body.classList.toggle('qr-' + c, !!svg && c === coin);
+  if (!svg) { qrAffiche = ''; return; }
+  el.dataset.coin = coin;
+  el.dataset.taille = ['p', 'm', 'g'].includes(q.taille) ? q.taille : 'm';
+  el.querySelector('.qr-texte').textContent = String(q.titre || '').slice(0, 40);
+  if (svg === 'x') return;                        // même code : on ne le redessine pas
+  qrAffiche = q.lien + q.ts;
+  el.querySelector('.qr-code').innerHTML = svg;
+  const c = el.querySelector('.qr-carte'); c.classList.remove('entree'); void c.offsetWidth; c.classList.add('entree');
 }
 
 /* ----- Tout le chat à l'écran : une colonne à côté des caméras ----- */
@@ -724,6 +743,7 @@ if (DEMO) {
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
+  if (Q.get('qr')) st.qr = { lien: 'https://www.youtube.com/@sebastian_cineserie', titre: Q.get('qrtitre') ?? 'Abonne-toi à la chaîne', coin: Q.get('qr'), taille: Q.get('qrtaille') || 'm', ts: 1 };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {

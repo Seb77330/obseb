@@ -269,6 +269,20 @@ function telechargerAgenda(session, lien) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+/* Un code QR en SVG (js/vendor/qrcode.js). Vide si le texte est trop long pour un code. */
+function svgQR(texte, niveau = 'M') {
+  if (typeof qrcode !== 'function' || !texte) return '';
+  let q;
+  try { q = qrcode(0, niveau); q.addData(String(texte)); q.make(); } catch (e) { return ''; }
+  const n = q.getModuleCount(), m = 2;       // marge blanche de 2 cases : la carte blanche autour fait le reste
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    if (!q.isDark(r, c)) continue;
+    let l = 1; while (c + l < n && q.isDark(r, c + l)) l++;      // les cases voisines sont dessinées d'un seul trait
+    d += `M${c + m} ${r + m}h${l}v1h-${l}z`; c += l - 1;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges" role="img" aria-label="Code QR"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
 function lireSession() {
   const s = hashParams().get('s');
   if (!s) return null;
