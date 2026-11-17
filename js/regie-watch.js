@@ -96,7 +96,7 @@ function majWatch() {
   $$('#wp-styles button').forEach(b => b.classList.toggle('actif', b.dataset.wstyle === w.style));
   $$('#wp-modes button').forEach(b => { b.classList.toggle('actif', b.dataset.wmode === w.mode); b.classList.toggle('faute', !w.duree && b.dataset.wmode !== 'ecoule'); });
   $('#wp-mode-aide').hidden = !!w.duree || w.mode === 'ecoule';
-  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir au plateau' : 'Scène Watch Party';
+  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir aux caméras' : 'Scène Watch Party';
   $('#wp-scene').classList.toggle('primaire', etat.scene !== 'watch');
   $('#watch-point').hidden = !(w.lecture || etat.scene === 'watch');
   const auto = Date.now() - extVue < 5000;

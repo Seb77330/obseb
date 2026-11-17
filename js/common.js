@@ -541,6 +541,59 @@ function dispositionMur(layout, ids, focus, zone, vertical = false, gap = JOINT_
   return mosaique(ids, zone, gap);
 }
 
+/* ---------- Les six cadrages ----------
+   grille, interview, solo (plus haut) et trois autres : vedette (une personne en grand, les autres en bande dessous),
+   incrust (une personne en plein cadre, les autres en médaillons posés dessus) et duel (deux personnes face à face,
+   séparées par une diagonale). Une case peut porter `z` (elle passe au-dessus) et `pts` (son contour, en pixels
+   depuis son coin : la sortie en fait une découpe). `mur` : caméras collées et recadrées ; sinon cartes 16:9. */
+const CADRAGES = ['grille', 'interview', 'solo', 'vedette', 'incrust', 'duel'];
+function dispositionCadrage(layout, ids, focus, zone, { vertical = false, mur = false } = {}) {
+  const n = ids.length, gap = mur ? JOINT_MUR : vertical ? 18 : 22;
+  const classique = l => vertical ? (mur ? dispositionMur(l, ids, focus, zone, true) : calculerDispositionV(l, ids, focus, zone))
+    : (mur ? dispositionMur(l, ids, focus, zone) : calculerDisposition(l, ids, focus, zone));
+  if (!['vedette', 'incrust', 'duel'].includes(layout)) return classique(layout);
+  if (n < 2) return classique('solo');
+  const r = {};
+  const plein = z => mur || vertical ? { x: z.x, y: z.y, w: z.w, h: z.h } : fit169(z.x, z.y, z.w, z.h);
+  /* les autres, en bande sous la grande image */
+  const bande = (reste, y, h) => {
+    if (!reste.length) return;
+    if (vertical) { const c = Math.min(reste.length, 3); Object.assign(r, grilleCellules(reste, zone.x, y, zone.w, h, gap, [c, Math.ceil(reste.length / c)])); return; }
+    const w = Math.min((zone.w - gap * (reste.length - 1)) / reste.length, h * (mur ? 2.1 : 16 / 9)), hh = mur ? h : Math.min(h, w * 9 / 16);
+    const x0 = zone.x + (zone.w - (reste.length * w + (reste.length - 1) * gap)) / 2;
+    reste.forEach((id, i) => { r[id] = { x: x0 + i * (w + gap), y: y + (h - hh) / 2, w, h: hh }; });
+  };
+  if (layout === 'vedette') {
+    const hautH = Math.round((zone.h - gap) * (vertical ? 0.62 : 0.72));
+    r[ids[0]] = plein({ x: zone.x, y: zone.y, w: zone.w, h: hautH });
+    bande(ids.slice(1), zone.y + hautH + gap, zone.h - hautH - gap);
+    return r;
+  }
+  if (layout === 'incrust') {
+    const g = r[ids[0]] = plein(zone), reste = ids.slice(1), marge = vertical ? 18 : 26, e = vertical ? 12 : 16;
+    const parRang = vertical ? 3 : 4, k = Math.min(reste.length, parRang);      // jamais jusqu'au nom de la personne en grand, en bas à gauche
+    const w = Math.min(g.w * (vertical ? 0.3 : 0.2), (g.w - 2 * marge - e * (k - 1)) / k), h = w * (vertical ? 1 : 9 / 16);
+    reste.forEach((id, i) => {
+      const rang = Math.floor(i / parRang), dans = Math.min(parRang, reste.length - rang * parRang), col = i - rang * parRang;
+      r[id] = { x: g.x + g.w - marge - (dans - col) * w - (dans - 1 - col) * e, y: g.y + g.h - marge - (rang + 1) * h - rang * e, w, h, z: 2 };
+    });
+    return r;
+  }
+  // duel : les deux premières personnes face à face ; s'il y en a d'autres, elles passent en bande dessous
+  const reste = ids.slice(2), H = reste.length ? Math.round((zone.h - gap) * 0.72) : zone.h, j = Math.max(gap, 8) / 2;
+  if (vertical) {
+    const d = Math.round(H * 0.08), a = (H + d) / 2;
+    r[ids[0]] = { x: zone.x, y: zone.y, w: zone.w, h: a, pts: [[0, 0], [zone.w, 0], [zone.w, a - d - j], [0, a - j]] };
+    r[ids[1]] = { x: zone.x, y: zone.y + H - a, w: zone.w, h: a, pts: [[0, d + j], [zone.w, j], [zone.w, a], [0, a]] };
+  } else {
+    const d = Math.round(zone.w * 0.09), a = (zone.w + d) / 2;
+    r[ids[0]] = { x: zone.x, y: zone.y, w: a, h: H, pts: [[0, 0], [a - j, 0], [a - d - j, H], [0, H]] };
+    r[ids[1]] = { x: zone.x + zone.w - a, y: zone.y, w: a, h: H, pts: [[d + j, 0], [a, 0], [a, H], [j, H]] };
+  }
+  bande(reste, zone.y + H + gap, zone.h - H - gap);
+  return r;
+}
+
 /* Scène Partage : jusqu'à 4 sources (écrans, images, vidéos, pages web) + colonne de caméras */
 function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
   const r = {};

@@ -564,3 +564,9 @@ body.vertical #sous-titres b { font-size: 19px; margin-right: 12px; }
 #chat-fil .cf-msg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; }
 #chat-fil .cf-vide { font: 500 20px var(--font-body); color: var(--muted); }
 body.vertical #chat-fil .cf-msg { font-size: 26px; -webkit-line-clamp: 2; }
+
+/* ----- Cadrages « médaillon » et « duel » (voir dispositionCadrage) ----- */
+.tuile.medaillon { border-radius: 16px; box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--accent), 0 16px 36px rgba(0,0,0,.6); }
+.tuile.medaillon .nom { font-size: 15px; padding: 4px 9px 4px 7px; left: 8px; bottom: 7px; }
+body.vertical .tuile.medaillon { border-radius: 50%; } body.vertical .tuile.medaillon .nom { display: none; }
+.tuile.decoupee { border-radius: 0; box-shadow: none; outline: 0; }

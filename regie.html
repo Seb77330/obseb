@@ -138,11 +138,36 @@
   .moniteur.vertical .cadre169 { width: min(100cqw, 100cqh * 9 / 16); aspect-ratio: 9/16; }
   .rangee { flex: none; display: flex; align-items: center; gap: 10px; }
   .rangee > .etiquette { width: 62px; flex: none; }
-  .scenes { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .scenes button { position: relative; padding: 11px 12px; text-align: left; display: grid; gap: 1px; background: var(--ui-panel2); border-radius: 7px; }
-  .scenes button b { font-weight: 600; font-size: 14px; }
+  .scenes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); gap: 6px; }
+  .scenes button { position: relative; padding: 5px 5px 6px; text-align: center; display: grid; gap: 5px; justify-items: stretch; min-width: 0; background: var(--ui-panel2); border-radius: 9px; }
+  .scenes button b { min-width: 0; font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scenes .sc-vue { width: 100%; aspect-ratio: 16/8; max-height: 54px; border-radius: 5px; }
+  .sc-vue { flex: none; width: 42px; aspect-ratio: 16/9; border-radius: 4px; background: var(--ui-input); display: grid; place-items: center; overflow: hidden; color: var(--ui-muted); font-size: 18px; line-height: 1; }
+  .sc-vue svg { display: block; width: 100%; height: 100%; } .sc-vue rect, .sc-vue polygon { fill: var(--ui-line2); } .sc-vue .q { fill: var(--ui-accent); } .sc-vue .m { fill: var(--ui-muted); stroke: var(--ui-input); stroke-width: 40; }
+  .scenes button.actif .sc-vue { background: rgba(0,0,0,.28); } .scenes button.actif .sc-vue rect, .scenes button.actif .sc-vue polygon { fill: rgba(255,255,255,.45); } .scenes button.actif .sc-vue .q { fill: #fff; }
+  .scenes .sc-mod { position: absolute; right: 8px; top: 8px; width: 18px; height: 18px; border-radius: 5px; display: none; place-items: center; font-size: 11px; background: var(--ui-panel); color: var(--ui-text); border: 1px solid var(--ui-line2); cursor: pointer; }
+  .scenes button:hover .sc-mod, .scenes button:focus-within .sc-mod, .scenes button.actif .sc-mod { display: grid; }
+  .scenes .sc-plus { border-style: dashed; color: var(--ui-muted); background: none; } .scenes .sc-plus:hover { color: var(--ui-text); border-color: var(--ui-accent); }
+  .cadrages { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 3px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-input); }
+  .cadrages button { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 6px 3px; border: 0; background: none; font-size: 12px; font-weight: 500; border-radius: 7px; }
+  .cadrages button b { font-weight: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cadrages .sc-vue { width: 28px; background: var(--ui-panel2); border-radius: 3px; }
+  .cadrages button:hover { background: var(--ui-hover); }
+  .cadrages button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); } .cadrages button.actif .sc-vue { background: rgba(0,0,0,.25); } .cadrages button.actif .sc-vue rect, .cadrages button.actif .sc-vue polygon { fill: rgba(255,255,255,.5); } .cadrages button.actif .sc-vue .q { fill: #fff; }
+  #rangee-cadrage .coche { flex: none; white-space: nowrap; }
+  .scene-edit { position: fixed; z-index: 45; width: 310px; box-sizing: border-box; background: var(--ui-panel); border: 1px solid var(--ui-line2); border-radius: 12px; padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .scene-edit .aide { margin: 8px 0 12px; font-size: 12.5px; }
+  .se-gens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .se-gens button { padding: 5px 10px; font-size: 13px; border-radius: 999px; } .se-gens button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
+  @media (max-width: 1500px) { .cadrages .sc-vue { display: none; } .cadrages button { padding: 8px 4px; } }
+  @media (max-width: 1000px) {
+    .scenes { display: flex; overflow-x: auto; scrollbar-width: none; } .scenes::-webkit-scrollbar { display: none; }
+    .scenes button { flex: 1 0 auto; justify-content: center; } .scenes .sc-vue, .scenes .sc-mod { display: none !important; }
+    .scenes button { display: flex; align-items: center; padding: 10px 12px; } .scenes button.actif[data-plan]::after { content: '✎'; font-size: 11px; opacity: .7; margin-left: 5px; }
+    .cadrages { grid-template-columns: repeat(3, 1fr); } #rangee-cadrage { flex-wrap: wrap; }
+    .scene-edit { left: 8px !important; right: 8px; width: auto; }
+  }
   .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .scenes button kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); opacity: .5; }
+  .scenes button kbd { position: absolute; left: 8px; top: 8px; opacity: .85; font-size: 10px; padding: 0 4px; }
   .scenes button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
   body.en-direct .scenes button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
   .scenes button.actif small { color: inherit; opacity: .8; }
@@ -610,22 +635,12 @@
         <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe></div></div>
         <div class="rangee">
           <span class="etiquette">Scènes</span>
-          <div class="scenes" role="group" aria-label="Scène à l'antenne">
-            <button data-scene="intro" title="Intro : compte à rebours"><b>Intro</b><kbd>1</kbd></button>
-            <button data-scene="live" title="Plateau : les caméras"><b>Plateau</b><kbd>2</kbd></button>
-            <button data-scene="partage" title="Écran partagé : écran, image ou vidéo"><b data-court="Partage">Écran partagé</b><kbd>3</kbd></button>
-            <button data-scene="watch" title="Watch Party : minuteur du film"><b data-court="Watch">Watch Party</b><kbd>4</kbd></button>
-            <button data-scene="fin" title="Fin : écran de fin"><b>Fin</b><kbd>5</kbd></button>
-          </div>
+          <div class="scenes" id="scenes" role="group" aria-label="Scène à l'antenne"></div>
         </div>
         <div class="rangee" id="rangee-cadrage">
           <span class="etiquette">Cadrage</span>
-          <div class="segment">
-            <button data-layout="grille" title="Tout le monde à la même taille (touche G)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="8" height="6" rx="1.2"/><rect x="13" y="5" width="8" height="6" rx="1.2"/><rect x="3" y="13" width="8" height="6" rx="1.2"/><rect x="13" y="13" width="8" height="6" rx="1.2"/></svg>Grille</button>
-            <button data-layout="interview" title="Une personne en grand, les autres à côté (touche I)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11.5" height="14" rx="1.5"/><rect x="16.5" y="5" width="4.5" height="6" rx="1"/><rect x="16.5" y="13" width="4.5" height="6" rx="1"/></svg>Interview</button>
-            <button data-layout="solo" title="Une seule personne à l'écran (touche S)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="10.5" r="1.9"/><path d="M8.8 16a3.2 3.2 0 0 1 6.4 0"/></svg>Solo</button>
-          </div>
-          <label class="aide coche" style="margin-left:auto"><input type="checkbox" id="surbrillance" checked> Cadre sur qui parle</label>
+          <div class="cadrages" id="cadrages" role="group" aria-label="Cadrage des caméras"></div>
+          <label class="aide coche" style="margin-left:auto" title="Un cadre de couleur entoure la personne qui parle"><input type="checkbox" id="surbrillance" checked> Qui parle</label>
         </div>
       </div>
     </section>
@@ -947,27 +962,37 @@
   </div>
 </div>
 
+<div class="scene-edit" id="scene-edit" hidden>
+  <label class="champ" for="se-nom" style="margin-top:0">Nom de la scène</label>
+  <input type="text" id="se-nom" maxlength="18">
+  <label class="champ" id="se-qui-titre">À l'image</label>
+  <div class="segment" id="se-qui" role="group" aria-labelledby="se-qui-titre"><button data-q="tous">Tous</button><button data-q="1">1</button><button data-q="2">2</button><button data-q="3">3</button><button data-q="4">4</button><button data-q="choix">Choisir</button></div>
+  <div class="se-gens" id="se-gens" hidden></div>
+  <p class="aide" id="se-aide"></p>
+  <div class="ligne-boutons"><button class="petit" id="se-suppr">Supprimer la scène</button><button class="primaire petit" id="se-ok" style="margin-left:auto">OK</button></div>
+</div>
 <div id="vue-invite" hidden>
   <div class="vi-tete"><b>Vue invité</b><button id="vi-fenetre" title="Ouvrir dans une fenêtre à part (pratique sur un deuxième écran)">Fenêtre à part</button><button id="vi-fermer" title="Fermer la vue invité">✕</button></div>
   <iframe id="vi-cadre" title="Ce que voit un invité"></iframe>
 </div>
 <script src="js/vendor/qrcode.js?v=105f38a7"></script>
-<script src="js/common.js?v=a028cbcf"></script>
+<script src="js/common.js?v=d2ef47b1"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=6a0e157e"></script>
+<script src="js/regie.js?v=63b8062e"></script>
+<script src="js/regie-scenes.js?v=4b4137a7"></script>
 <script src="js/regie-sources.js?v=04c1ea9c"></script>
-<script src="js/regie-musique.js?v=1b02f489"></script>
+<script src="js/regie-musique.js?v=b5e4eb31"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>
 <script src="js/regie-qr.js?v=e4030782"></script>
 <script src="js/regie-chat.js?v=b8aad86c"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
-<script src="js/regie-recherche.js?v=b0acdbae"></script>
-<script src="js/regie-direct.js?v=6a52613d"></script>
+<script src="js/regie-recherche.js?v=ebc5e800"></script>
+<script src="js/regie-direct.js?v=351e17b3"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
-<script src="js/regie-watch.js?v=c3869c85"></script>
+<script src="js/regie-watch.js?v=ac0b6d43"></script>
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 </body>

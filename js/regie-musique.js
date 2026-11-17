@@ -4,7 +4,7 @@
    Chaque morceau peut être lié à une scène : il démarre tout seul quand tu passes sur cette scène. */
 'use strict';
 
-const SCENES_MUSIQUE = [['intro', 'Intro', 'Intro'], ['live', 'Plateau', 'Plateau'], ['partage', 'Partage', 'Écran partagé'], ['watch', 'Watch', 'Watch Party'], ['fin', 'Fin', 'Fin'], ['quiz', 'Quiz', 'Quiz']];
+const SCENES_MUSIQUE = [['intro', 'Intro', 'Intro'], ['live', 'Caméras', 'Solo, Duo, Plateau'], ['partage', 'Partage', 'Écran partagé'], ['watch', 'Watch', 'Watch Party'], ['fin', 'Outro', 'Outro'], ['quiz', 'Quiz', 'Quiz']];
 const TAILLE_MAX_MUSIQUE = 15 * 1024 * 1024;
 const idMusique = () => 'm' + Math.random().toString(36).slice(2, 10);
 const maxMusiques = () => LIMITES[formuleActuelle()].musiques;

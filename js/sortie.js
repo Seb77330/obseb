@@ -169,7 +169,9 @@ function supprimerTuile(id) {
 }
 function placer(t, r) {
   if (!r) { t.el.classList.add('horsantenne'); return; }
-  Object.assign(t.el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+  Object.assign(t.el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px',
+    zIndex: r.z || '', clipPath: r.pts ? `polygon(${r.pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(',')})` : '' });
+  t.el.classList.toggle('decoupee', !!r.pts); t.el.classList.toggle('medaillon', !!r.z);
   t.el.classList.toggle('petite', r.w < 560);
   t.el.classList.remove('horsantenne');
 }
@@ -247,8 +249,10 @@ function appliquerEtat(st) {
   if (scene === 'partage') actives.forEach(creerSource);
   const clesActives = actives.map(cleSource);
 
-  const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
+  let ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
   const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && (scene === 'live' || scene === 'partage');
+  // une scène peut ne montrer qu'une partie des personnes à l'antenne (Solo, Duo…) : les autres restent entendues
+  if (scene === 'live' && !quizEnCours && Array.isArray(st.visibles)) { const v = ids.filter(id => st.visibles.includes(id)); if (v.length) ids = v; }
   document.body.classList.toggle('quiz-on', !!quizEnCours);
   // sous-titres à l'écran : les caméras laissent une bande libre en dessous, les sous-titres ne passent jamais sur une image
   const bandeST = !!(st.st && st.st.actif && st.st.ecran) && !quizEnCours && sceneCameras(scene);
@@ -260,9 +264,9 @@ function appliquerEtat(st) {
   const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(MUR ? ZONE_MUR : ZONE, 720));
   const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
-    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : MUR ? dispositionMur(st.layout, ids, st.focus, zone, true) : calculerDispositionV(st.layout, ids, st.focus, zone))
-    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : MUR ? dispositionMur(st.layout, ids, st.focus, zone) : calculerDisposition(st.layout, ids, st.focus, zone));
-  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, zoneWatch) : calculerDisposition(st.layout, ids, st.focus, zoneWatch));
+    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR }))
+    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR }));
+  if (scene === 'watch' && !quizEnCours) Object.assign(disp, dispositionCadrage(st.layout, ids, st.focus, zoneWatch, { vertical: VERTICAL }));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);
@@ -770,6 +774,7 @@ if (DEMO) {
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
+  if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));
   if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };

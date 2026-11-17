@@ -136,6 +136,8 @@
   .offre li { position: relative; padding-left: 22px; line-height: 1.4; }
   .offre li::before, .entreprises li::before { content: ''; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 1.5px solid var(--ct); border-bottom: 1.5px solid var(--ct); transform: rotate(-45deg); }
   .offre li.moins { color: var(--ui-muted); }
+  .offre li.base { padding-left: 0; font-weight: 600; color: var(--ct); } .offre li.base::before { display: none; }
+  .chiffres-cles b.comme-pro { color: var(--t-pro); }
   .offre li.moins::before { top: 9px; width: 9px; height: 0; border-left: 0; border-color: var(--ui-muted); transform: none; }
   .offre button { margin-top: auto; width: 100%; padding: 12px 16px; font-size: 15px; border-radius: 12px; }
   .offre button:not(.primaire), .ent-prix button { background: color-mix(in srgb, var(--c) 7%, var(--ui-panel2)); border-color: color-mix(in srgb, var(--c) 26%, var(--ui-line)); }
@@ -404,10 +406,10 @@
     <div class="offres">
       <article data-teinte="essai" class="offre">
         
-        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l1.9 5.1a2 2 0 0 0 1.2 1.2l5.1 1.9-5.1 1.9a2 2 0 0 0-1.2 1.2L12 19.9l-1.9-5.1a2 2 0 0 0-1.2-1.2l-5.1-1.9 5.1-1.9a2 2 0 0 0 1.2-1.2z"/></svg></span><div><h3>Essai</h3><p class="pour">Pour tout tester.</p></div></div>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l1.9 5.1a2 2 0 0 0 1.2 1.2l5.1 1.9-5.1 1.9a2 2 0 0 0-1.2 1.2L12 19.9l-1.9-5.1a2 2 0 0 0-1.2-1.2l-5.1-1.9 5.1-1.9a2 2 0 0 0 1.2-1.2z"/></svg></span><div><h3>Essai</h3><p class="pour">La formule Pro, offerte.</p></div></div>
         <p class="prix"><b>0</b><i class="seul">€</i><span>pendant 30 jours</span></p>
-        <div class="chiffres-cles"><div><b>6 h</b><span>de direct</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li>Tout ce qu'offre Pro</li><li>Vertical, Watch Party, quiz</li><li>Sans carte bancaire</li><li class="moins">Ensuite, une formule au choix</li></ul>
+        <div class="chiffres-cles"><div><b>6 h</b><span>de direct</span></div><div><b>30 j</b><span>pour tester</span></div><div><b class="comme-pro">Pro</b><span>tout inclus</span></div></div>
+        <ul><li>Exactement la formule Pro</li><li>Seule limite : 6 heures de direct</li><li>Sans carte bancaire</li><li class="moins">Ensuite, tu choisis ta formule</li></ul>
         <button type="button" data-formule="gratuit">Commencer</button>
       </article>
       <article data-teinte="essentiel" class="offre vedette">
@@ -423,7 +425,7 @@
         <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.8" y="6" width="12.4" height="9" rx="2"/><rect x="13.2" y="8.5" width="8" height="12.5" rx="2" fill="var(--ui-panel)"/><path d="M6 19h4"/></svg></span><div><h3>Pro</h3><p class="pour">Partout à la fois.</p></div></div>
         <p class="prix"><b>11</b><i>,99 €</i><span>par mois</span></p>
         <div class="chiffres-cles"><div><b>30 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li>Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Replay 10 jours, sous-titres à corriger</li><li>Quiz : 25 questions</li></ul>
+        <ul><li class="base">Tout Essentiel, et en plus :</li><li>Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Replay 10 jours, sous-titres à corriger</li><li>Quiz : 25 questions</li></ul>
         <button type="button" data-formule="pro">Bientôt disponible</button>
       </article>
       <article data-teinte="regie" class="offre">
@@ -431,7 +433,7 @@
         <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><rect x="4" y="13" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="10" y="6.5" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="16" y="11" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/></svg></span><div><h3>Régie</h3><p class="pour">Avec ton OBS.</p></div></div>
         <p class="prix"><b>19</b><i>,99 €</i><span>par mois</span></p>
         <div class="chiffres-cles"><div><b>60 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li>Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li>Replay 30 jours</li><li>Quiz : 50 questions</li></ul>
+        <ul><li class="base">Tout Pro, et en plus :</li><li>Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li>Replay 30 jours</li><li>Quiz : 50 questions</li></ul>
         <button type="button" data-formule="regie">Bientôt disponible</button>
       </article>
     </div>
@@ -460,7 +462,7 @@
     <ul class="astuces">
       <li>Dans OBS, une seule source à ajouter : « Navigateur », avec le lien OBS de ton live, en 1920 × 1080 (1080 × 1920 pour le vertical).</li>
       <li>Si OBS utilise déjà ta caméra, ferme-la dans OBS : c'est le studio qui la prend.</li>
-      <li>Pendant le live, les touches <kbd>1</kbd> à <kbd>5</kbd> changent de scène : Intro, Plateau, Écran partagé, Watch Party, Fin.</li>
+      <li>Pendant le live, les touches <kbd>1</kbd> à <kbd>7</kbd> changent de scène : Intro, Solo, Duo, Plateau, Écran partagé, Watch Party, Outro.</li>
     </ul>
   </details>
 </main>
@@ -475,7 +477,7 @@
           <button type="button" data-apercu="live" class="actif">Plateau</button>
           <button type="button" data-apercu="live6">À six</button>
           <button type="button" data-apercu="quiz">Quiz</button>
-          <button type="button" data-apercu="fin">Fin</button>
+          <button type="button" data-apercu="fin">Outro</button>
         </div>
         <span style="flex:1"></span>
         <div class="segment" id="apercu-formats" title="Le format de l'image">
@@ -630,7 +632,7 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=a028cbcf"></script>
+<script src="js/common.js?v=d2ef47b1"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/accueil.js?v=1c7cfa2b"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>

@@ -44,10 +44,11 @@ function actions() {
   const A = [];
   const add = (groupe, titre, faire, mots = '') => A.push({ groupe, titre, faire, mots });
   // Scènes et mises en page
-  [['intro', 'Intro', '1'], ['live', 'Plateau', '2'], ['partage', 'Écran partagé', '3'], ['watch', 'Watch Party', '4'], ['fin', 'Fin', '5']]
-    .forEach(([s, n, k]) => add('Scène', `Passer en scène ${n}`, () => changerScene(s), `touche ${k} scene`));
-  [['grille', 'Grille'], ['interview', 'Interview'], ['solo', 'Une personne']]
-    .forEach(([l, n]) => add('Mise en page', `Mise en page ${n}`, () => changerLayout(l), 'disposition layout'));
+  [['intro', 'Intro'], ['partage', 'Écran partagé'], ['watch', 'Watch Party'], ['fin', 'Outro']]
+    .forEach(([s, n]) => add('Scène', `Passer en scène ${n}`, () => changerScene(s), 'scene fin'));
+  etat.plans.forEach(p => add('Scène', `Passer en scène ${p.nom}`, () => allerPlan(p.id), 'scene plateau cameras'));
+  add('Scène', 'Ajouter une scène de caméras', () => ajouterScene(), 'plateau nouvelle scene');
+  LISTE_CADRAGES.forEach(([l, n, aide]) => add('Cadrage', `Cadrage ${n}`, () => changerLayout(l), 'disposition layout mise en page ' + aide));
   add('Aperçu', 'Voir l\'aperçu en vertical / horizontal', cliquer('#btn-apercu-format'), 'tiktok shorts reels format');
   // Liens
   add('Liens', 'Copier le lien invités', cliquer('#btn-invite'), 'inviter partager url');

@@ -112,6 +112,8 @@ function envoyer() {
   st.noms = {};
   for (const [id, nom] of Object.entries(etat.noms)) if (id === ID_HOTE || presents.has(id)) st.noms[id] = nom;
   st.onair = etat.onair.filter(id => id in st.noms);
+  if (typeof visiblesPlan === 'function') st.visibles = visiblesPlan(st.onair);   // la scène peut ne montrer qu'une partie des personnes à l'antenne
+  delete st.plans;
   // les questions préparées (avec les bonnes réponses) restent dans la régie
   if (st.quiz) st.quiz = { active: st.quiz.active, afficherScores: st.quiz.afficherScores, classement: st.quiz.classement, style: st.quiz.style, dispo: st.quiz.dispo };
   ordre(maCamera, { sendData: { [CANAL]: st }, type: 'pcs' });     // vers OBS et les coulisses
@@ -143,7 +145,12 @@ function changerScene(s) {
   }
   etat.scene = s; envoyer();
 }
-function changerLayout(l) { etat.layout = l; envoyer(); }
+function changerLayout(l) {
+  etat.layout = l;
+  // la scène de caméras à l'antenne retient son cadrage : on le retrouve en y revenant
+  if (etat.scene === 'live' && typeof planActif === 'function' && planActif()) planActif().layout = l;
+  envoyer();
+}
 $$('[data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene));
 
 /* ----- Limiteur de durée : visible dans la régie seulement (ni les invités ni les spectateurs) ----- */
@@ -197,10 +204,7 @@ $('#heure-debut').onchange = () => { if ($('#heure-debut').value) $('#btn-heure'
 
 addEventListener('keydown', e => {
   if (e.target.matches('input:not([type=checkbox]):not([type=range]):not([type=radio]), textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
-  const scenes = { '1': 'intro', '2': 'live', '3': 'partage', '4': 'watch', '5': 'fin', '&': 'intro', 'é': 'live', '"': 'partage', "'": 'watch', '(': 'fin' };
-  const layouts = { g: 'grille', i: 'interview', s: 'solo' };
-  if (scenes[e.key]) changerScene(scenes[e.key]);
-  else if (layouts[e.key.toLowerCase()]) changerLayout(layouts[e.key.toLowerCase()]);
+  /* scènes et cadrages : voir regie-scenes.js */
 });
 
 /* ----- Participants ----- */
@@ -328,8 +332,7 @@ function majInterface() {
     $('#vide-inviter').onclick = () => $('#btn-invite').click();
   }
   if (nbInvites > 0) $('#liste .vide')?.remove();
-  $$('[data-scene]').forEach(b => b.classList.toggle('actif', b.dataset.scene === etat.scene));
-  $$('[data-layout]').forEach(b => b.classList.toggle('actif', b.dataset.layout === etat.layout));
+  if (typeof dessinerScenes === 'function') dessinerScenes();
   if (typeof majDirect === 'function') majDirect();
   if (typeof majCommutation === 'function') majCommutation();
 }
