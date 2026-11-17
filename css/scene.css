@@ -1,0 +1,119 @@
+/* Scène 1920x1080 du OBSeb (sortie OBS, aperçus) */
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+body.sortie { background: #000; }
+#scale { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+#stage {
+  position: absolute; inset: 0; overflow: hidden; color: var(--text);
+  font-family: var(--font-body);
+  background: radial-gradient(ellipse at 30% 35%, var(--bg2) 0%, var(--bg) 62%), var(--bg);
+}
+#stage::before { /* image de fond du thème */
+  content: ''; position: absolute; inset: 0; background: var(--bg-image) center/cover no-repeat; opacity: .35;
+}
+#stage::after { /* vignette */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+
+/* ----- Décors par thème ----- */
+.deco { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+[data-deco="barillet"] .deco {
+  background:
+    repeating-radial-gradient(circle at 78% 50%, transparent 0 58px, color-mix(in srgb, var(--accent) 14%, transparent) 58px 60px);
+  -webkit-mask-image: radial-gradient(circle at 78% 50%, #000 0, #000 30%, transparent 62%);
+          mask-image: radial-gradient(circle at 78% 50%, #000 0, #000 30%, transparent 62%);
+}
+[data-deco="trame"] .deco {
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 2px, transparent 2.5px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(120deg, #000 0%, transparent 45%, transparent 70%, #000 100%);
+          mask-image: linear-gradient(120deg, #000 0%, transparent 45%, transparent 70%, #000 100%);
+}
+[data-deco="brume"] .deco {
+  background: radial-gradient(ellipse at 20% 110%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 55%),
+              radial-gradient(ellipse at 85% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 50%);
+  animation: brume 14s ease-in-out infinite alternate;
+}
+@keyframes brume { to { transform: translateX(-60px) scale(1.06); } }
+[data-deco="stores"] .deco {
+  background: repeating-linear-gradient(-14deg, rgba(255,255,255,.05) 0 26px, transparent 26px 64px);
+}
+[data-deco="bulles"] .deco {
+  background:
+    radial-gradient(circle at 12% 20%, color-mix(in srgb, var(--accent) 25%, transparent) 0 90px, transparent 91px),
+    radial-gradient(circle at 88% 78%, color-mix(in srgb, var(--accent) 18%, transparent) 0 140px, transparent 141px),
+    radial-gradient(circle at 70% 12%, rgba(255,255,255,.06) 0 60px, transparent 61px);
+}
+[data-deco="minimal"] .deco {
+  background: linear-gradient(90deg, transparent 0 34px, color-mix(in srgb, var(--accent) 60%, transparent) 34px 37px, transparent 37px);
+  opacity: .5;
+}
+
+/* ----- Couches ----- */
+.couche { position: absolute; inset: 0; z-index: 2; transition: opacity .6s ease; }
+.cachee { opacity: 0; pointer-events: none; }
+
+/* Tuiles vidéo */
+#tuiles { z-index: 3; }
+.tuile {
+  position: absolute; border-radius: 16px; overflow: hidden; background: #000;
+  box-shadow: 0 18px 50px rgba(0,0,0,.55);
+  outline: 3px solid color-mix(in srgb, var(--accent) 0%, transparent); outline-offset: -3px;
+  transition: left .45s cubic-bezier(.2,.8,.2,1), top .45s cubic-bezier(.2,.8,.2,1),
+              width .45s cubic-bezier(.2,.8,.2,1), height .45s cubic-bezier(.2,.8,.2,1),
+              opacity .35s ease, outline-color .2s ease;
+}
+.tuile.horsantenne { opacity: 0; pointer-events: none; }
+.tuile.parle { outline-color: var(--accent); }
+.tuile iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.tuile .nom {
+  position: absolute; left: 16px; bottom: 14px; z-index: 2;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+  border-left: 5px solid var(--accent); padding: 8px 16px 8px 12px; border-radius: 6px;
+  font: 800 24px/1.1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tuile.petite .nom { font-size: 17px; padding: 5px 10px 5px 8px; left: 10px; bottom: 9px; }
+.tuile .attente {
+  position: absolute; inset: 0; display: grid; place-items: center; z-index: 0;
+  color: var(--muted); font: 700 22px var(--font-body); letter-spacing: .1em; text-transform: uppercase;
+  background: linear-gradient(135deg, var(--bg2), var(--bg));
+}
+.tuile.demo .attente { color: #fff; font-size: 64px; font-family: var(--font-title); }
+
+/* Bandeau bas */
+#bandeau {
+  position: absolute; left: 70px; right: 70px; bottom: 58px; height: 120px; z-index: 5;
+  display: flex; align-items: center; gap: 28px; transition: transform .5s ease, opacity .5s ease;
+}
+#bandeau.cachee { transform: translateY(40px); }
+#bandeau .logo {
+  height: 104px; min-width: 104px; border-radius: 14px; display: grid; place-items: center; overflow: hidden;
+  background: var(--accent); color: var(--bg); font: 400 34px/0.95 var(--font-title); text-align: center; padding: 0 14px;
+}
+#bandeau .logo img { height: 100%; width: auto; display: block; }
+#bandeau .txt { flex: 1; min-width: 0; }
+#bandeau .titre {
+  font: 400 52px/1.05 var(--font-title); text-transform: uppercase; letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text);
+  text-shadow: 0 4px 18px rgba(0,0,0,.6);
+}
+#bandeau .sous { margin-top: 8px; display: flex; gap: 18px; align-items: center; font: 800 22px var(--font-body); letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+#bandeau .direct { display: inline-flex; align-items: center; gap: 10px; background: #e01e1e; color: #fff; padding: 6px 14px; border-radius: 6px; letter-spacing: .14em; }
+#bandeau .direct b { width: 12px; height: 12px; border-radius: 50%; background: #fff; animation: clign 1.4s infinite; }
+@keyframes clign { 50% { opacity: .25; } }
+#bandeau .message { color: var(--text); letter-spacing: .04em; text-transform: none; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Écrans plein cadre : intro, fin */
+.plein { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 160px; }
+.plein .sur-titre { font: 800 26px var(--font-body); letter-spacing: .5em; text-transform: uppercase; color: var(--accent); margin-bottom: 26px; }
+.plein .grand-titre { font: 400 128px/1.02 var(--font-title); text-transform: uppercase; margin: 0; text-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.plein .ligne { width: 260px; height: 5px; background: var(--accent); border-radius: 3px; margin: 40px auto 34px; }
+.plein .info { font: 700 30px var(--font-body); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.plein .compte { font: 400 150px/1 var(--font-title); color: var(--accent); margin-top: 22px; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.plein .hote { margin-top: 46px; font: 800 26px var(--font-body); letter-spacing: .35em; text-transform: uppercase; color: var(--text); }
+.plein .handle { margin-top: 12px; font: 800 26px var(--font-body); letter-spacing: .25em; color: var(--accent); }
+
+/* Partage d'écran */
+#ecran { z-index: 3; }
+#ecran .tuile .nom { display: none; }

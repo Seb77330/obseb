@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OBSeb · Sortie</title>
+<link rel="stylesheet" href="css/scene.css">
+</head>
+<body class="sortie">
+<div id="scale">
+  <div id="stage">
+    <div class="deco"></div>
+
+    <section id="intro" class="couche plein">
+      <div class="sur-titre">Le live commence dans un instant</div>
+      <h1 class="grand-titre" data-champ="titre"></h1>
+      <div class="ligne"></div>
+      <div class="info" id="intro-info">Installe-toi, on arrive</div>
+      <div class="compte" id="compte"></div>
+      <div class="hote">avec <span data-champ="hote"></span></div>
+    </section>
+
+    <section id="ecran" class="couche"></section>
+    <section id="tuiles" class="couche"></section>
+
+    <section id="fin" class="couche plein cachee">
+      <div class="sur-titre">Merci d'avoir regardé</div>
+      <h1 class="grand-titre" data-champ="titre"></h1>
+      <div class="ligne"></div>
+      <div class="info">Abonne-toi pour ne rien rater</div>
+      <div class="handle" data-champ="handle"></div>
+    </section>
+
+    <div id="bandeau" class="cachee">
+      <div class="logo" id="logo"></div>
+      <div class="txt">
+        <div class="titre" id="bandeau-titre"></div>
+        <div class="sous"><span class="direct"><b></b>En direct</span><span class="message" id="bandeau-msg"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/common.js"></script>
+<script src="js/sortie.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OBSeb · Régie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  body { min-height: 100vh; }
+  header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--ui-line); background: #0a0b0e; position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
+  header .session { flex: 1; min-width: 200px; }
+  header .session .t { font-weight: 800; font-size: 17px; }
+  header .session .s { color: var(--ui-muted); font-size: 12px; }
+  main { display: grid; grid-template-columns: 330px minmax(0, 1fr) 390px; gap: 16px; padding: 16px 20px; align-items: start; }
+  @media (max-width: 1300px) { main { grid-template-columns: 300px minmax(0, 1fr); } #col-droite { grid-column: 1 / -1; } }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .colonne { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  #ma-camera { width: 100%; height: 300px; border: 0; border-radius: 10px; background: #000; }
+  #mon-ecran { width: 100%; height: 220px; border: 0; border-radius: 10px; background: #000; margin-top: 10px; }
+  .antenne-titre { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .scenes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .scenes button { padding: 14px 8px; font-size: 15px; }
+  .scenes button small { display: block; font-weight: 500; opacity: .7; font-size: 11px; }
+  .dispos { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .participant { display: grid; grid-template-columns: 112px 1fr; gap: 10px; padding: 10px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-panel2); margin-bottom: 10px; }
+  .participant.antenne { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  .participant.parti { opacity: .45; }
+  .participant .vignette { position: relative; width: 112px; aspect-ratio: 16/9; background: #000; border-radius: 7px; overflow: hidden; }
+  .participant .vignette iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+  .participant .vignette .moi { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; color: var(--ui-muted); text-align: center; padding: 4px; }
+  .participant input[type=text] { padding: 5px 8px; font-weight: 700; }
+  .participant .reglages { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .participant .reglages input[type=range] { flex: 1; }
+  .participant .pct { width: 40px; text-align: right; font-size: 12px; color: var(--ui-muted); font-variant-numeric: tabular-nums; }
+  .participant .actions { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+  .vu { height: 5px; border-radius: 3px; background: #2a2e38; overflow: hidden; margin-top: 6px; }
+  .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .12s; }
+  .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; }
+  kbd { color: var(--ui-text); background: #0f1116; border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
+  #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+<div id="app" hidden>
+  <header>
+    <div class="marque">OBS<b>eb</b></div>
+    <div class="session"><div class="t" id="titre-session"></div><div class="s" id="sous-session"></div></div>
+    <button class="primaire" id="btn-invite">Copier le lien invités</button>
+    <button id="btn-obs">Copier le lien OBS</button>
+    <button id="btn-sortie">Ouvrir la sortie</button>
+    <a href="index.html" style="font-size:13px">Mes sessions</a>
+  </header>
+
+  <main>
+    <div class="colonne">
+      <div class="panneau">
+        <h2>Ma caméra</h2>
+        <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+        <p class="aide">Choisis ta caméra (Cam Link) et ton micro, puis clique sur Démarrer. Ferme la caméra dans OBS avant : ici, c'est le seul endroit qui l'utilise.</p>
+      </div>
+      <div class="panneau">
+        <h2>Partage d'écran</h2>
+        <div class="ligne-boutons">
+          <button id="btn-ecran">Partager un écran ou un onglet</button>
+          <button id="btn-ecran-stop" hidden>Arrêter le partage</button>
+        </div>
+        <iframe id="mon-ecran" hidden allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+        <p class="aide">Pour un extrait vidéo, partage l'onglet et coche « Partager l'audio de l'onglet ».</p>
+      </div>
+    </div>
+
+    <div class="colonne">
+      <div class="panneau">
+        <div class="antenne-titre"><h2 style="margin:0">À l'antenne <span class="badge-direct" id="badge-scene">INTRO</span></h2><span class="aide">Ce que voient les spectateurs</span></div>
+        <div class="cadre169"><iframe id="apercu"></iframe></div>
+        <div class="scenes">
+          <button data-scene="intro">Intro<small>touche 1</small></button>
+          <button data-scene="live">Live<small>touche 2</small></button>
+          <button data-scene="partage">Partage<small>touche 3</small></button>
+          <button data-scene="fin">Fin<small>touche 4</small></button>
+        </div>
+        <div class="dispos">
+          <span class="aide">Mise en page :</span>
+          <button class="petit" data-layout="grille">Grille <kbd>G</kbd></button>
+          <button class="petit" data-layout="interview">Interview <kbd>I</kbd></button>
+          <button class="petit" data-layout="solo">Une personne <kbd>S</kbd></button>
+          <label class="aide" style="margin-left:auto;display:flex;gap:6px;align-items:center"><input type="checkbox" id="surbrillance" checked> Cadre sur qui parle</label>
+        </div>
+      </div>
+
+      <div class="panneau">
+        <h2>Habillage</h2>
+        <div class="grille2">
+          <div><label class="champ" for="bandeau">Titre du bandeau</label><input type="text" id="bandeau"></div>
+          <div><label class="champ" for="message">Message sous le titre</label><input type="text" id="message" placeholder="Ex. Pose tes questions dans le chat"></div>
+        </div>
+        <label class="champ">Compte à rebours de l'intro</label>
+        <div class="ligne-boutons" style="align-items:center">
+          <button class="petit" data-minutes="2">2 min</button>
+          <button class="petit" data-minutes="5">5 min</button>
+          <button class="petit" data-minutes="10">10 min</button>
+          <input type="time" id="heure-debut" style="width:auto">
+          <button class="petit" id="btn-heure">Jusqu'à cette heure</button>
+          <button class="petit" id="btn-sans-compte">Sans compte à rebours</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="colonne" id="col-droite">
+      <div class="panneau">
+        <h2>Participants <span id="nb-part" class="aide"></span></h2>
+        <p class="aide" style="margin-top:-6px">Les invités arrivent en coulisses. Tu les mets à l'antenne quand tu veux. Le volume réglé ici est celui du live (et de ton casque).</p>
+        <div id="liste"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="bloque" hidden>
+  <div class="marque" style="font-size:34px">OBS<b>eb</b></div>
+  <p>Ce lien n'est pas un lien de régie. Ouvre la régie depuis <a href="index.html">tes sessions</a>.</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="js/common.js"></script>
+<script src="js/regie.js"></script>
+</body>
+</html>

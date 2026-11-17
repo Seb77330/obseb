@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OBSeb</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 20px 60px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  header .marque { font-size: 30px; }
+  .grille { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; align-items: start; }
+  @media (max-width: 1000px) { .grille { grid-template-columns: 1fr; } }
+  .sessions { display: grid; gap: 12px; }
+  .session { display: grid; grid-template-columns: 220px 1fr; gap: 16px; padding: 12px; background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 12px; }
+  @media (max-width: 640px) { .session { grid-template-columns: 1fr; } }
+  .session .mini { position: relative; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; }
+  .session .mini iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+  .session h3 { margin: 2px 0 4px; font-size: 18px; }
+  .session .meta { color: var(--ui-muted); font-size: 13px; margin-bottom: 10px; }
+  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset { padding: 10px 8px; border-radius: 10px; text-align: left; font-size: 12px; line-height: 1.25; }
+  .preset .pas { display: flex; gap: 4px; margin-bottom: 6px; }
+  .preset .pas i { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,.2); }
+  .preset.actif { outline: 2px solid var(--ui-accent); background: var(--ui-panel2); color: inherit; }
+  .couleurs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .couleurs label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-muted); }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; font-weight: 800; color: var(--ui-muted); font-size: 13px; letter-spacing: .06em; }
+  .guide ol { padding-left: 20px; margin: 8px 0 0; }
+  .guide li { margin: 6px 0; }
+  code { background: #0f1116; border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="marque">OBS<b>eb</b></div>
+    <span class="aide">Ta régie live perso : un lien pour tes invités, un lien pour OBS, un thème par live.</span>
+  </header>
+
+  <div class="grille">
+    <div style="display:grid;gap:18px">
+      <div class="panneau">
+        <h2>Mes sessions</h2>
+        <div class="sessions" id="sessions"></div>
+      </div>
+
+      <div class="panneau guide">
+        <h2>Mode d'emploi (5 minutes avant le live)</h2>
+        <ol>
+          <li><b>OBS</b> : ferme ta caméra (Cam Link) dans OBS. Ajoute une <b>source Navigateur</b>, colle le <b>lien OBS</b>, largeur <code>1920</code>, hauteur <code>1080</code>, et coche <b>Contrôler l'audio via OBS</b>. C'est la seule source dont tu as besoin pour le plateau.</li>
+          <li><b>Régie</b> : ouvre la régie dans Chrome, choisis ta Cam Link et ton micro dans « Ma caméra », clique sur Démarrer. Mets un casque.</li>
+          <li><b>Invités</b> : clique sur « Copier le lien invités » et envoie-le. Ils arrivent en coulisses, tu les mets à l'antenne d'un clic.</li>
+          <li><b>Pendant le live</b> : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Live, <kbd>3</kbd> Partage, <kbd>4</kbd> Fin. Le volume de chaque invité se règle dans la régie, même si OBS est fermé tu continues de les entendre.</li>
+          <li>OBS envoie le direct sur YouTube comme d'habitude. N'ouvre pas la webcam dans YouTube Studio.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <h2 id="titre-form">Nouvelle session</h2>
+      <div class="cadre169"><iframe id="apercu-theme" title="Aperçu du thème"></iframe></div>
+      <div class="ligne-boutons" style="margin-top:8px">
+        <button class="petit" data-apercu="intro">Intro</button>
+        <button class="petit actif" data-apercu="live">Live à 3</button>
+        <button class="petit" data-apercu="live6">Live à 6</button>
+        <button class="petit" data-apercu="fin">Fin</button>
+      </div>
+
+      <label class="champ" for="f-titre">Titre du live</label>
+      <input type="text" id="f-titre" placeholder="Ex. Spécial Marvel : on refait la phase 6" maxlength="70">
+
+      <label class="champ">Thème</label>
+      <div class="presets" id="presets"></div>
+
+      <details>
+        <summary>Personnaliser le thème</summary>
+        <label class="champ">Couleurs</label>
+        <div class="couleurs">
+          <label><input type="color" id="f-accent"> Accent</label>
+          <label><input type="color" id="f-bg"> Fond</label>
+          <label><input type="color" id="f-bg2"> Halo</label>
+          <label><input type="color" id="f-text"> Texte</label>
+        </div>
+        <label class="champ" for="f-font">Police des titres</label>
+        <select id="f-font"></select>
+        <label class="champ" for="f-image">Image de fond (lien d'une image, optionnel)</label>
+        <input type="url" id="f-image" placeholder="https://…/fond.jpg">
+        <label class="champ" for="f-logo">Logo (lien d'une image, optionnel)</label>
+        <input type="url" id="f-logo" placeholder="https://…/logo.png">
+        <label class="champ" for="f-logotexte">Texte du logo si pas d'image</label>
+        <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
+      </details>
+      <details>
+        <summary>Présentateur et chaîne</summary>
+        <label class="champ" for="f-hote">Ton nom à l'écran</label>
+        <input type="text" id="f-hote" maxlength="28">
+        <label class="champ" for="f-handle">Compte affiché à la fin</label>
+        <input type="text" id="f-handle" maxlength="40">
+      </details>
+
+      <div class="ligne-boutons" style="margin-top:18px">
+        <button class="primaire" id="btn-creer">Créer la session</button>
+        <button id="btn-annuler" hidden>Annuler</button>
+      </div>
+      <p class="aide" id="note-modif" hidden>Après une modification, renvoie le lien invités et remets le lien OBS à jour : ils contiennent le thème.</p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="js/common.js"></script>
+<script src="js/accueil.js"></script>
+</body>
+</html>

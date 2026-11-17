@@ -1,0 +1,64 @@
+/* Pack « Arène » : braises, bronze, fumée. Aucun logo officiel, seulement l'ambiance. */
+[data-pack="arene"] #stage {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 115%, rgba(224,137,43,.55), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 15% 105%, rgba(190,60,20,.35), transparent 70%),
+    radial-gradient(ellipse at 50% 30%, #1d130b 0%, #0c0a08 60%), #0c0a08;
+}
+[data-pack="arene"] #stage::after {
+  background:
+    radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.7) 100%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,.012) 0 3px, transparent 3px 9px);
+}
+[data-pack="arene"] canvas.braises { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+/* Titres en bronze martelé */
+[data-pack="arene"] .grand-titre,
+[data-pack="arene"] #bandeau .titre {
+  background: linear-gradient(180deg, #fff1cf 0%, #f0b765 38%, #c46a1c 62%, #7a3a0e 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.85)) drop-shadow(0 0 22px rgba(224,137,43,.25));
+  text-shadow: none; letter-spacing: .04em;
+}
+[data-pack="arene"] .plein .grand-titre { font-size: 112px; font-weight: 700; }
+[data-pack="arene"] .plein .sur-titre { color: #f0b765; letter-spacing: .6em; }
+[data-pack="arene"] .plein .ligne {
+  width: 520px; height: 2px; background: linear-gradient(90deg, transparent, #e0892b, transparent); position: relative;
+}
+[data-pack="arene"] .plein .ligne::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; background: #e0892b;
+  transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 18px #e0892b;
+}
+[data-pack="arene"] .plein .compte { color: #ffd59a; text-shadow: 0 0 30px rgba(224,137,43,.6); }
+
+/* Emblème de l'intro (cercle et flèche, injecté par pack.js) */
+[data-pack="arene"] .embleme { width: 190px; height: 190px; margin-bottom: 26px; filter: drop-shadow(0 0 24px rgba(224,137,43,.45)); animation: embleme 6s ease-in-out infinite; }
+@keyframes embleme { 50% { filter: drop-shadow(0 0 40px rgba(224,137,43,.75)); } }
+
+/* Tuiles vidéo : cadre bronze et coins ciselés */
+[data-pack="arene"] .tuile {
+  border-radius: 4px; box-shadow: 0 0 0 1px rgba(224,137,43,.55), 0 20px 60px rgba(0,0,0,.7);
+}
+[data-pack="arene"] .tuile::before, [data-pack="arene"] .tuile::after {
+  content: ''; position: absolute; width: 34px; height: 34px; z-index: 3; pointer-events: none;
+  border: 3px solid #e0892b;
+}
+[data-pack="arene"] .tuile::before { left: 8px; top: 8px; border-right: 0; border-bottom: 0; }
+[data-pack="arene"] .tuile::after { right: 8px; bottom: 8px; border-left: 0; border-top: 0; }
+[data-pack="arene"] .tuile.parle { outline: 0; box-shadow: 0 0 0 2px #ffb45c, 0 0 40px rgba(224,137,43,.6), 0 20px 60px rgba(0,0,0,.7); }
+[data-pack="arene"] .tuile .nom {
+  border-left: 0; border-radius: 2px; color: #1a0f05;
+  background: linear-gradient(180deg, #f6c47c, #c9761f); backdrop-filter: none;
+  font-family: 'Cinzel Decorative', serif; font-weight: 700; letter-spacing: .08em; text-transform: none;
+  left: 50%; transform: translateX(-50%); bottom: 16px;
+}
+[data-pack="arene"] .tuile .attente { background: radial-gradient(ellipse at center, #22160c, #0c0a08); color: #a8977f; }
+
+/* Bandeau */
+[data-pack="arene"] #bandeau .logo {
+  background: linear-gradient(160deg, #f6c47c, #b45f17 70%, #6d330b); color: #1a0f05;
+  font-family: 'Cinzel Decorative', serif; font-weight: 700; border-radius: 50%; min-width: 104px; width: 104px;
+  box-shadow: 0 0 0 3px #0c0a08, 0 0 0 5px #e0892b, 0 0 30px rgba(224,137,43,.45);
+}
+[data-pack="arene"] #bandeau { border-top: 1px solid rgba(224,137,43,.35); padding-top: 14px; height: 134px; bottom: 44px; }
+[data-pack="arene"] #bandeau .sous { color: #f0b765; }
