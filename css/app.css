@@ -20,7 +20,7 @@ button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui
 button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
 button.petit { padding: 5px 10px; font-size: 13px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
-input[type=text], input[type=number], input[type=url], input[type=time], select {
+input[type=text], input[type=password], input[type=number], input[type=url], input[type=time], select {
   background: #0f1116; border: 1px solid var(--ui-line); border-radius: 9px; padding: 9px 12px; width: 100%; outline: none;
 }
 input:focus, select:focus { border-color: var(--ui-accent); }
@@ -44,3 +44,18 @@ label.champ { display: block; font-size: 12px; font-weight: 800; letter-spacing:
 .cadre169 iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); color: #111; }
+
+/* ----- Chat réuni ----- */
+.chat-src { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.chat-src input { flex: 1; min-width: 0; }
+.chat-src i, .chat-msg i { font-style: normal; font-size: 10px; font-weight: 800; color: #fff; border-radius: 5px; padding: 3px 5px; flex: none; }
+.chat-etat { min-height: 0; margin: 2px 0 0 36px; }
+.chat-etat:empty { display: none; }
+.chat-etat.ok { color: #2fd27a; }
+.chat-etat.ko { color: #ff6b6b; }
+#chat-liste { height: 300px; overflow-y: auto; background: rgba(0,0,0,.25); border-radius: 10px; padding: 6px; }
+.chat-msg { display: flex; gap: 6px; align-items: baseline; padding: 5px 6px; border-radius: 7px; cursor: pointer; font-size: 13px; line-height: 1.35; }
+.chat-msg:hover { background: rgba(255,255,255,.07); }
+.chat-msg.affiche { background: rgba(255,210,31,.16); outline: 1px solid rgba(255,210,31,.5); }
+.chat-msg b { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-msg span { overflow-wrap: anywhere; }

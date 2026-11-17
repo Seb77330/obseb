@@ -177,3 +177,17 @@ body.vertical .qz-choix { grid-template-columns: 1fr; }
 #classement-liste li:first-child::before { background: var(--accent); color: var(--bg); }
 #classement-liste li span { flex: 1; }
 #classement-liste li em { font-style: normal; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* ----- Message du chat à l'écran ----- */
+#chat-bulle {
+  position: absolute; left: 70px; bottom: 205px; z-index: 6; max-width: 900px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent); border-left: 6px solid var(--accent); border-radius: 14px;
+  padding: 18px 26px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.6); transition: transform .45s ease, opacity .45s ease;
+}
+#chat-bulle.cachee { opacity: 0; transform: translateX(-40px); }
+#chat-bulle .cb-tete { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+#chat-bulle i { font: 800 16px var(--font-body); font-style: normal; color: #fff; border-radius: 6px; padding: 4px 8px; }
+#chat-bulle b { font: 800 26px var(--font-body); color: var(--accent); }
+#cb-texte { font: 600 34px/1.25 var(--font-body); color: var(--text); overflow-wrap: anywhere; }
+body.vertical #chat-bulle { left: 40px; right: 40px; bottom: 300px; max-width: none; }
+body.vertical #cb-texte { font-size: 38px; }

@@ -190,6 +190,7 @@ function appliquerEtat(st) {
   for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
   gererPlaylist();
   gererQuiz();
+  gererChat();
   appliquerVolumes();
   compteARebours();
   gererMusique(scene);
@@ -217,6 +218,20 @@ function gererMusique(scene) {
       if (a.volume === but) { clearInterval(a._fondu); if (!active) a.pause(); }
     }, 60);
   }
+}
+
+/* ----- Message du chat mis en avant ----- */
+const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'] };
+let chatAfficheTs = 0;
+function gererChat() {
+  const c = etat && etat.chatAffiche;
+  $('#chat-bulle').classList.toggle('cachee', !c || etat.scene === 'intro' || etat.scene === 'fin');
+  if (!c || c.ts === chatAfficheTs) return;
+  chatAfficheTs = c.ts;
+  const [coul, nom] = COULEURS_CHAT[c.p] || ['#555', ''];
+  $('#cb-p').style.background = coul; $('#cb-p').textContent = nom;
+  $('#cb-auteur').textContent = c.auteur;
+  $('#cb-texte').textContent = c.texte;
 }
 
 /* ----- Quiz ----- */
@@ -338,6 +353,7 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('quiz')) st.quiz = { active: { qid: 'd', q: 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }] } };
+  if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { afficherScores: true, classement: [{ nom: 'Antho', pts: 2850 }, { nom: 'Landri', pts: 1900 }, { nom: 'Camille', pts: 870 }] };
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);

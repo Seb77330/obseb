@@ -182,6 +182,32 @@
         <p class="aide" style="margin-top:0">Les invités arrivent en coulisses. Tu les mets à l'antenne quand tu veux. Le volume réglé ici est celui du live (et de ton casque).</p>
         <div id="liste"></div>
       </div>
+      <div class="panneau">
+        <h2>Chat <span class="aide">Twitch + YouTube réunis</span></h2>
+        <div class="chat-src">
+          <i style="background:#9146FF">TW</i>
+          <input type="text" id="chat-twitch" placeholder="Ta chaîne Twitch (ex. sebastian_cineserie)">
+          <button class="petit" id="chat-btn-twitch">Connecter</button>
+        </div>
+        <div class="aide chat-etat" id="chat-etat-twitch"></div>
+        <div class="chat-src">
+          <i style="background:#FF0000">YT</i>
+          <input type="text" id="chat-youtube" placeholder="Lien de ton live YouTube">
+          <button class="petit" id="chat-btn-youtube">Connecter</button>
+        </div>
+        <div class="aide chat-etat" id="chat-etat-youtube"></div>
+        <details class="aide" style="margin:4px 0 8px">
+          <summary>Clé YouTube (une seule fois)</summary>
+          <p style="margin:6px 0">YouTube demande une clé gratuite pour lire le chat. Elle reste dans ce navigateur, jamais dans les liens.</p>
+          <input type="password" id="chat-cle-yt" placeholder="Colle ta clé d'API YouTube ici" autocomplete="off">
+        </details>
+        <div id="chat-liste"><div class="vide">Connecte ta chaîne Twitch et ton live YouTube : tous les messages arrivent ici. Clique sur un message pour l'afficher à l'écran.</div></div>
+        <div class="ligne-boutons" style="margin-top:8px;align-items:center">
+          <span class="aide">À l'écran pendant</span>
+          <select id="chat-duree" style="width:auto"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="0">jusqu'à ce que je masque</option></select>
+          <button class="petit" id="chat-masquer" style="margin-left:auto">Masquer le message</button>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -196,5 +222,6 @@
 <script src="js/regie.js"></script>
 <script src="js/regie-sources.js"></script>
 <script src="js/regie-quiz.js"></script>
+<script src="js/regie-chat.js"></script>
 </body>
 </html>
