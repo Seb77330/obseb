@@ -3,12 +3,14 @@
 
 const TYPES_SOURCE = [
   ['', '— vide —'], ['monecran', 'Mon écran'], ['ecraninvite', "Écran d'un invité"],
-  ['image', 'Image (lien)'], ['video', 'Vidéo (lien MP4)'], ['web', 'Page web (lien)']
+  ['image', 'Image'], ['video', 'Vidéo (lien MP4)'], ['web', 'Page web (lien)']
 ];
 const ecransActifs = new Set();      // tes partages d'écran en cours (ids vdo.ninja)
 const iframesEcran = new Map();      // n° de source -> iframe de partage
 
 etat.sources = Array.from({ length: 4 }, (_, i) => Object.assign({ ui: '', type: '', ref: '', nom: '', actif: false }, (etat.sources || [])[i] || {}));
+// une image choisie sur l'ordinateur reste dans ce navigateur : si elle n'y est plus, la source redevient vide
+etat.sources.forEach((s, i) => { if (s.fichier) fichiers.lire(s.fichier.id).then(b => { if (!b) { Object.assign(s, { ref: '', nom: '', actif: false, fichier: null }); remplirCorps(i); majSlots(); } }).catch(() => {}); });
 // au rechargement de la page, tes partages d'écran sont coupés : on les désactive
 etat.sources.forEach(s => { if (s.ui === 'monecran') { s.actif = false; s.ref = ''; } });
 etat.bandeaux = etat.bandeaux || [];
@@ -42,9 +44,35 @@ function construireSlots() {
   });
   majSlots();
 }
+/* Une image choisie sur l'ordinateur : réduite si elle est très grande, gardée dans ce navigateur, envoyée à la sortie à sa demande */
+function oublierImage(src) { if (src.fichier) { fichiers.oter(src.fichier.id).catch(() => {}); src.fichier = null; } }
+async function preparerImage(f) {
+  if (f.type === 'image/gif' || f.type === 'image/svg+xml') return f.size <= 4e6 ? f : null;
+  const bmp = await createImageBitmap(f);
+  const k = Math.min(1, 1920 / bmp.width, 1920 / bmp.height);
+  if (k === 1 && f.size <= 1.5e6) return f;
+  const c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, 'image/webp', 0.9));
+}
+async function choisirImage(i, f) {
+  const src = etat.sources[i];
+  if (!f) return;
+  if (!/^image\//.test(f.type)) return toast('Ce fichier n\'est pas une image');
+  let blob = null;
+  try { blob = await preparerImage(f); } catch (e) { /* image illisible */ }
+  if (!blob) return toast('Impossible de lire cette image (ou elle est trop lourde)');
+  const id = 'i' + rnd(8);
+  try { await fichiers.mettre(id, blob); } catch (e) { return toast('Ce navigateur refuse de garder le fichier'); }
+  oublierImage(src);
+  Object.assign(src, { ref: 'fichier:' + id, nom: f.name.replace(/\.\w+$/, '').slice(0, 40) || 'Image', fichier: { id, type: blob.type || f.type } });
+  remplirCorps(i); envoyer(); majSlots();
+}
 function changerType(i, ui) {
   const src = etat.sources[i];
   arreterMonEcran(i);
+  oublierImage(src);
   Object.assign(src, { ui, type: '', ref: '', nom: '', actif: false });
   if (ui === 'monecran') Object.assign(src, { type: 'ecran', nom: `Mon écran ${i + 1}` });
   if (ui === 'ecraninvite') src.type = 'ecran';
@@ -69,12 +97,28 @@ function remplirCorps(i) {
     remplirEcransInvites(i);
     sel.onchange = () => { src.ref = sel.value; src.nom = nomsEcrans.get(sel.value) || 'Écran invité'; if (!src.ref) src.actif = false; envoyer(); majSlots(); };
   } else if (['image', 'video', 'web'].includes(src.ui)) {
+    if (src.ui === 'image') {
+      // une image : on la choisit sur l'ordinateur (ou on colle un lien juste en dessous)
+      const ligne = document.createElement('div');
+      ligne.className = 'src-image';
+      ligne.innerHTML = '<img alt="" hidden><span class="txt"></span><button class="petit primaire" type="button"></button><input type="file" accept="image/*" hidden>';
+      const [vignette, nom, bouton, champ] = ligne.children;
+      bouton.textContent = src.fichier ? 'Changer' : 'Choisir une image';
+      nom.textContent = src.fichier ? src.nom : '';
+      if (src.fichier) fichiers.lire(src.fichier.id).then(b => { if (b) { vignette.src = URL.createObjectURL(b); vignette.hidden = false; } }).catch(() => {});
+      bouton.onclick = () => champ.click();
+      champ.onchange = () => choisirImage(i, champ.files[0]);
+      corps.appendChild(ligne);
+    }
     const inp = document.createElement('input');
-    inp.type = 'url'; inp.placeholder = 'https://…'; inp.value = src.ref || '';
+    inp.type = 'url'; inp.placeholder = src.ui === 'image' ? 'ou colle un lien https://…' : 'https://…'; inp.value = src.fichier ? '' : (src.ref || '');
     inp.onchange = () => {
       const v = inp.value.trim();
       if (v && !/^https:\/\//.test(v)) { toast('Le lien doit commencer par https://'); return; }
+      if (!v && src.fichier) return;
+      oublierImage(src);
       src.ref = v; src.nom = src.ui; if (!v) src.actif = false; envoyer(); majSlots();
+      if (src.ui === 'image') remplirCorps(i);
     };
     corps.appendChild(inp);
   }

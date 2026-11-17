@@ -67,7 +67,7 @@ function afficherQuiz() {
   const box = $('#qz-liste');
   const qz = etat.quiz;
   const liste = banque.filter(q => !filtreCat || (q.cat || 'Général') === filtreCat);
-  box.innerHTML = liste.length ? '' : '<div class="vide">Aucune question pour le moment. Ouvre « Nouvelle question » ci-dessous. Pendant le live, « Lancer » l\'affiche à l\'écran et chez tes invités : le plus rapide gagne le plus de points.</div>';
+  box.innerHTML = liste.length ? '' : '<div class="vide">Aucune question. Ajoute-en une ci-dessous. Pendant le live, « Lancer » l\'affiche à l\'écran et chez tes invités.</div>';
   if (!banque.length) $('#qz-form').open = true;
   liste.forEach(q => {
     const enCours = qz.active && qz.active.qid === q.id;

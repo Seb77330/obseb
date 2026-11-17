@@ -109,7 +109,11 @@ function creerSource(src) {
   const el = document.createElement('div');
   el.className = 'tuile source horsantenne';
   let video = null;
-  if (src.type === 'image') el.innerHTML = `<img src="${esc(src.ref)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000">`;
+  if (src.type === 'image') {
+    // image donnée par un lien, ou fichier choisi dans la régie (il arrive par le canal de la régie)
+    const adresse = idFichierSource(src) ? adresseFichier(idFichierSource(src)) : src.ref;
+    el.innerHTML = `<img ${adresse ? `src="${esc(adresse)}"` : ''} alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000">`;
+  }
   else if (src.type === 'video') {
     video = document.createElement('video');
     Object.assign(video, { src: src.ref, loop: true, playsInline: true, muted: PREVIEW, autoplay: true });
@@ -435,28 +439,38 @@ setInterval(() => {
 const adressesMusique = new Map();     // id -> adresse locale du fichier
 const recherchesMusique = new Map();   // id -> 'cherche' | 'absent'
 const recuMusique = { id: '', n: 0, parts: [], nb: 0 };
-function adressePiste(p) {
-  if (!p) return '';
-  if (p.url) return p.url;
-  if (!p.id) return '';
-  if (adressesMusique.has(p.id)) return adressesMusique.get(p.id);
-  if (!recherchesMusique.has(p.id)) {
-    recherchesMusique.set(p.id, 'cherche');
-    fichiers.lire(p.id).then(b => {
-      if (b) { adressesMusique.set(p.id, URL.createObjectURL(b)); gererPlaylist(); }
-      else recherchesMusique.set(p.id, 'absent');
-    }).catch(() => recherchesMusique.set(p.id, 'absent'));
+// adresse locale d'un fichier (musique ou image) ; vide tant qu'il n'est pas arrivé
+function adresseFichier(id) {
+  if (!id) return '';
+  if (adressesMusique.has(id)) return adressesMusique.get(id);
+  if (!recherchesMusique.has(id)) {
+    recherchesMusique.set(id, 'cherche');
+    fichiers.lire(id).then(b => {
+      if (b) { adressesMusique.set(id, URL.createObjectURL(b)); fichierPret(id); }
+      else recherchesMusique.set(id, 'absent');
+    }).catch(() => recherchesMusique.set(id, 'absent'));
   }
   return '';
 }
+function fichierPret(id) {
+  for (const o of sourcesEl.values()) if (o.ref === 'fichier:' + id) { const img = o.el.querySelector('img'); if (img) img.src = adressesMusique.get(id); }
+  gererPlaylist();
+}
+function adressePiste(p) { return !p ? '' : p.url ? p.url : adresseFichier(p.id); }
+const idFichierSource = s => s && typeof s.ref === 'string' && s.ref.startsWith('fichier:') ? s.ref.slice(8) : '';
+// les fichiers annoncés par la régie : les musiques (sauf dans un aperçu, qui est muet) et les images de la scène Partage
+function fichiersAnnonces() {
+  const ids = ((etat && etat.sources) || []).map(idFichierSource).filter(Boolean);
+  if (!PREVIEW) for (const m of (etat && etat.playlist) || []) if (m.fichier && m.id) ids.push(m.id);
+  return ids;
+}
 // le premier fichier qui manque ici : la régie l'envoie quand elle voit cette demande
 function fichierDemande() {
-  const p = ((etat && etat.playlist) || []).find(m => m.fichier && m.id && !adressesMusique.has(m.id) && recherchesMusique.get(m.id) === 'absent');
-  return p ? p.id : '';
+  return fichiersAnnonces().find(id => !adressesMusique.has(id) && recherchesMusique.get(id) === 'absent') || '';
 }
 function recevoirMorceau(f) {
   if (!f || typeof f.id !== 'string' || typeof f.d !== 'string' || adressesMusique.has(f.id)) return;
-  if (!((etat && etat.playlist) || []).some(m => m.id === f.id && m.fichier)) return;     // seulement un morceau annoncé par la régie
+  if (!fichiersAnnonces().includes(f.id)) return;     // seulement un fichier annoncé par la régie
   if (!Number.isInteger(f.i) || !Number.isInteger(f.n) || f.n < 1 || f.n > 700 || f.i < 0 || f.i >= f.n || f.d.length > 40000) return;
   if (recuMusique.id !== f.id || recuMusique.n !== f.n) Object.assign(recuMusique, { id: f.id, n: f.n, parts: new Array(f.n), nb: 0 });
   if (recuMusique.parts[f.i]) return;
@@ -466,11 +480,11 @@ function recevoirMorceau(f) {
   for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
   recuMusique.parts[f.i] = o; recuMusique.nb++;
   if (recuMusique.nb < recuMusique.n) return;
-  const blob = new Blob(recuMusique.parts, { type: /^audio\/[\w.+-]+$/.test(f.type) ? f.type : 'audio/mpeg' });
+  const blob = new Blob(recuMusique.parts, { type: /^(audio|image)\/[\w.+-]+$/.test(f.type) ? f.type : 'application/octet-stream' });
   Object.assign(recuMusique, { id: '', n: 0, parts: [], nb: 0 });
   adressesMusique.set(f.id, URL.createObjectURL(blob));
   fichiers.mettre(f.id, blob).catch(() => {});
-  gererPlaylist();
+  fichierPret(f.id);
 }
 
 const lecteur = new Audio(); lecteur.preload = 'auto';
@@ -492,6 +506,7 @@ function gererPlaylist() {
   if (PREVIEW || DEMO || !etat) return;
   const l = etat.playlist || [], m = etat.musique || {};
   l.forEach(p => { if (!p.url) adressePiste(p); });     // prépare les fichiers avant d'en avoir besoin
+
   if (!l.length) { lecteur.pause(); return; }
   if (m.idx !== pisteLocale.idx || m.n !== pisteLocale.n) pisteLocale = { idx: m.idx, n: m.n };
   const pret = chargerPiste(l[pisteLocale.idx] || l[0]);
@@ -548,6 +563,7 @@ addEventListener('message', e => {
     return;
   }
   if (hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebFichier) { recevoirMorceau(d.dataReceived.studioSebFichier); return; }
+  if (e.source === window.parent && window.parent !== window && d.studioSebFichier) { recevoirMorceau(d.studioSebFichier); return; }
   // sous-titres : envoyés par la régie (par la caméra de l'hôte, ou par la page qui m'intègre)
   if ((hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebST) || (e.source === window.parent && window.parent !== window && d.studioSebST)) {
     afficherST(d.studioSebST || d.dataReceived.studioSebST);
@@ -568,6 +584,8 @@ addEventListener('message', e => {
 
 /* ----- La sortie OBS signale sa présence à la régie (voyant « Sortie OBS ») ----- */
 if (!PREVIEW && !DEMO) setInterval(() => { if (hote) ordre(hote.iframe, { sendData: { studioSebSortie: { v: VERTICAL ? 1 : 0, besoin: fichierDemande() } }, type: 'rpcs' }); }, 3000);
+// dans un aperçu (chez un invité), c'est la page qui m'intègre qui demande le fichier à la régie
+if (PREVIEW && window.parent !== window) setInterval(() => { const b = fichierDemande(); if (b) window.parent.postMessage({ studioSebBesoin: b }, location.origin); }, 3000);
 
 /* ----- Démarrage ----- */
 if (DEMO) {

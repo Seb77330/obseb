@@ -141,9 +141,10 @@ function musiqueAuto(force) {
   setTimeout(afficherMusiques, 0);
 }
 
-/* ---------- Envoi du fichier à la sortie qui le demande ---------- */
-async function envoyerFichierMusique(id) {
-  const p = etat.playlist.find(m => m.id === id && m.fichier);
+/* ---------- Envoi d'un fichier (musique ou image) à la sortie qui le demande ---------- */
+async function envoyerFichier(id) {
+  // un morceau de la liste, ou une image de l'onglet Partage
+  const p = etat.playlist.find(m => m.id === id && m.fichier) || (etat.sources.find(s => s.fichier && s.fichier.id === id) || {}).fichier;
   if (!p) return;
   const suivi = envoisMusique.get(id);
   if (suivi && Date.now() - suivi.t < 20000) return;     // un envoi sert toutes les sorties : pas de doublon

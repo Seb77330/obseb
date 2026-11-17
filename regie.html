@@ -186,6 +186,10 @@
   .elt .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .elt .txt small { color: var(--ui-muted); margin-left: 6px; }
   .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; line-height: 1.5; }
+  .src-image { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .src-image img { width: 54px; height: 32px; object-fit: cover; border-radius: 4px; flex: none; background: #000; }
+  .src-image .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+  .src-image .txt:empty { display: none; }
   /* Musique */
   .mu-ajout { width: 100%; padding: 11px 14px; font-size: 14px; }
   .mu-ajout.plein { opacity: .55; }
@@ -461,10 +465,10 @@
         <label class="ligne-case"><input type="checkbox" id="st-couleurs"> <span><b>Une couleur par personne</b><small>On reconnaît qui parle d'un coup d'œil. Clique sur une pastille pour changer la couleur.</small></span></label>
         <div class="st-palette" id="st-palette"></div>
         <div class="wp-source" style="margin-top:8px"><span class="voyant" id="st-voyant"></span><span id="st-etat"></span></div>
-        <p class="aide" style="margin:8px 0 0">Gratuit. Après le direct, tu peux corriger les mots et les noms propres, puis télécharger les sous-titres depuis « Lives terminés », pendant 10 jours.</p>
+        <p class="aide" style="margin:8px 0 0">Après le direct, corrige et télécharge les sous-titres dans « Lives terminés », pendant 10 jours.</p>
       </section>
       <section class="onglet" data-onglet="sources" hidden>
-        <p class="intro-onglet">Ce qui s'affiche dans la scène Écran partagé (touche 3) : ton écran, celui d'un invité, une image, une vidéo ou une page web.</p>
+        <p class="intro-onglet">Ce que montre la scène Écran partagé : jusqu'à 4 sources.</p>
         
         <div id="sources"></div>
       </section>
@@ -641,10 +645,10 @@
 <script src="js/common.js?v=bfe7db35"></script>
 <script src="js/reglages-media.js?v=2b1fab4a"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=e8761c2d"></script>
-<script src="js/regie-sources.js?v=622c30a4"></script>
-<script src="js/regie-musique.js?v=a9c44f70"></script>
-<script src="js/regie-quiz.js?v=378bbe17"></script>
+<script src="js/regie.js?v=fad69a6f"></script>
+<script src="js/regie-sources.js?v=24721106"></script>
+<script src="js/regie-musique.js?v=dce7e645"></script>
+<script src="js/regie-quiz.js?v=a40898d9"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=03347cc5"></script>
 <script src="js/regie-recherche.js?v=23171b99"></script>

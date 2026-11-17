@@ -90,9 +90,11 @@ let maQualite = null;
 setInterval(() => {
   if (!maCamera) return;
   ordre(maCamera, { getStats: true });
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null } }, type: 'rpcs' });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu } }, type: 'rpcs' });
+  besoinApercu = '';
 }, 3000);
 
+let besoinApercu = '';   // fichier que mon aperçu attend de la régie
 addEventListener('message', e => {
   if (!maCamera || e.source !== maCamera.contentWindow) return;
   if (e.data && e.data.stats) {
@@ -100,6 +102,10 @@ addEventListener('message', e => {
     const el = $('#ma-qualite');
     if (el && maQualite.h) el.textContent = `Ton image part en ${maQualite.h}p${maQualite.kbps ? ' · ' + (maQualite.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`;
   }
+  // une image choisie dans la régie : les morceaux vont à mon aperçu ; s'il lui en manque une, je la demande à la régie
+  if (e.source === apercu.contentWindow && e.data && typeof e.data.studioSebBesoin === 'string') { besoinApercu = e.data.studioSebBesoin.slice(0, 40); return; }
+  const morceau = e.data && e.data.dataReceived && e.data.dataReceived.studioSebFichier;
+  if (morceau && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebFichier: morceau }); return; }
   const sousT = e.data && e.data.dataReceived && e.data.dataReceived.studioSebST;
   if (sousT && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebST: sousT }); return; }
   const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
