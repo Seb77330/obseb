@@ -84,8 +84,12 @@ $('#mu-lien').onclick = () => {
 };
 
 /* ---------- La liste ---------- */
+const melanger = l => { l = l.slice(); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } return l; };
+/* « Aléatoire » : le morceau choisi part tout de suite, les autres suivent dans le désordre */
+const suiteAleatoire = id => [id].concat(melanger(etat.playlist.filter(x => x.id !== id).map(x => x.id)));
 function jouerMorceau(i, options) {
   const meme = etat.musique.idx === i && !etat.musique.suite;
+  if (!options && etat.musiqueAleatoire && etat.playlist.length > 2) options = { suite: suiteAleatoire(etat.playlist[i].id) };
   // t0 et pos0 : quand la lecture est partie, et d'où. Les retours du studio s'en servent pour se caler sur le live.
   etat.musique = Object.assign({ idx: i, lecture: true, n: (etat.musique.n || 0) + (meme ? 0 : 1), t0: Date.now(), pos0: meme && !etat.musique.lecture ? etat.musique.pos0 || 0 : 0 }, options || {});
 }
@@ -122,7 +126,9 @@ function afficherMusiques() {
     titre.value = m.nom;
     titre.onchange = () => { m.nom = titre.value.trim() || m.nom; titre.value = m.nom; envoyer(); majEtatMusique(); };
     el.querySelector('.mu-jouer').onclick = () => {
-      if (on) pauseMusique(); else jouerMorceau(i);
+      if (on) pauseMusique();
+      else if (!etat.musique.lecture && (etat.musique.pos0 || 0) > 0 && (morceauCarte().m || {}).id === m.id) Object.assign(etat.musique, { lecture: true, t0: Date.now() });   // reprise là où il s'était arrêté
+      else jouerMorceau(i);
       envoyer(); afficherMusiques();
     };
     const monter = el.querySelector('.mu-monter');
@@ -153,29 +159,102 @@ function afficherMusiques() {
     });
     box.appendChild(el);
   });
-  $('#mu-compte').textContent = (n >= max ? `${n} sur ${max}. Plus de morceaux avec une formule au-dessus.` : `${n} sur ${max}`) + (n ? ' Coche les scènes de chaque morceau : plusieurs morceaux sur une scène jouent à la suite.' : '');
+  $('#mu-compte').textContent = (n >= max ? `${n} sur ${max}. Plus de morceaux avec une formule au-dessus.` : `${n} sur ${max}.`) + (n ? ' Coche les scènes de chaque morceau : plusieurs morceaux sur une scène jouent à la suite.' : '');
   $('#mu-ajouter').classList.toggle('plein', n >= max);
   majEtatMusique();
 }
 let dernierAffiche = '';
-function majEtatMusique() {
-  const m = etat.playlist.find(x => x.id === idEnCours()) || etat.playlist[etat.musique.idx];
-  $('#mu-lecture').textContent = etat.musique.lecture ? '⏸ Pause' : '▶ Lecture';
-  $('#mu-etat').textContent = m ? (etat.musique.lecture ? 'En cours : ' : 'Prêt : ') + m.nom : '';
+/* ---------- La carte « en cours » : titre, temps, barre, morceau suivant ---------- */
+const mmss = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const piste = id => etat.playlist.find(x => x.id === id);
+/* Le morceau montré : celui qui joue, ou celui qui attend en pause, avec sa position */
+function morceauCarte() {
+  const pos = positionMusique(etat, Date.now());
+  return { m: (pos && piste(pos.id)) || etat.playlist[etat.musique.idx] || etat.playlist[0] || null, pos };
 }
+function majEtatMusique() {
+  const { m, pos } = morceauCarte(), joue = !!etat.musique.lecture && !!m, carte = $('#mu-carte');
+  carte.hidden = !etat.playlist.length;
+  carte.classList.toggle('joue', joue);
+  $('#mu-lecture').classList.toggle('joue', joue);
+  $('#mu-lecture').classList.toggle('primaire', !joue);
+  $('#mu-lecture span').textContent = joue ? 'Pause' : 'Lecture';
+  $('#mu-c-titre').textContent = m ? m.nom : 'Aucune musique';
+  const connu = !!(m && m.d > 0 && pos && pos.connu);
+  carte.classList.toggle('sans-duree', !connu);
+  $('#mu-c-temps').textContent = connu ? `${mmss(pos.t)} / ${mmss(m.d)}` : '';
+  $('#mu-c-barre i').style.setProperty('--p', connu ? (pos.t / m.d * 100).toFixed(1) + '%' : '0%');
+  const suite = suiteMusique(etat), i = m ? suite.indexOf(m.id) : -1, suivant = suite.length > 1 && i >= 0 ? piste(suite[(i + 1) % suite.length]) : null;
+  $('#mu-etat').textContent = !m ? '' : suivant ? `Ensuite : ${suivant.nom}` : 'Ce morceau tourne en boucle';
+  $('#mu-aleatoire').classList.toggle('actif', !!etat.musiqueAleatoire);
+  $('#mu-aleatoire').setAttribute('aria-pressed', !!etat.musiqueAleatoire);
+}
+setInterval(majEtatMusique, 500);
 $('#mu-lecture').onclick = () => {
   if (!etat.playlist.length) return toast('Ajoute d\'abord une musique');
-  if (etat.musique.lecture) pauseMusique(); else Object.assign(etat.musique, { lecture: true, t0: Date.now() });
+  if (etat.musique.lecture) pauseMusique();
+  else if (etat.musiqueAleatoire && !etat.musique.suite && !(etat.musique.pos0 > 0) && etat.playlist.length > 2) jouerMorceau(Math.floor(Math.random() * etat.playlist.length));
+  else Object.assign(etat.musique, { lecture: true, t0: Date.now() });
   envoyer(); afficherMusiques();
 };
+/* Aller à un morceau de la suite en cours (la playlist de la scène, sinon toute la liste) ; les lecteurs enchaînent en fondu */
+function allerAuMorceau(id) {
+  const suite = suiteMusique(etat), i = Math.max(0, suite.indexOf(id)), tour = suite.slice(i).concat(suite.slice(0, i)), m = etat.musique;
+  etat.musique = Object.assign({}, m, { idx: Math.max(0, etat.playlist.findIndex(x => x.id === tour[0])), lecture: true, n: (m.n || 0) + 1, t0: Date.now(), pos0: 0, suite: Array.isArray(m.suite) ? tour : undefined });
+  envoyer(); afficherMusiques();
+}
 $('#mu-suivante').onclick = () => {
-  if (!etat.playlist.length) return;
-  // le suivant dans la suite en cours (la playlist de la scène, sinon toute la liste) ; les lecteurs enchaînent en fondu
-  const suite = suiteMusique(etat), actuel = idEnCours() || (etat.playlist[etat.musique.idx] || {}).id;
-  const i = suite.indexOf(actuel), tour = suite.slice(i + 1).concat(suite.slice(0, i + 1));
-  etat.musique = Object.assign({}, etat.musique, { idx: Math.max(0, etat.playlist.findIndex(x => x.id === tour[0])), lecture: true, n: (etat.musique.n || 0) + 1, t0: Date.now(), pos0: 0, suite: Array.isArray(etat.musique.suite) ? tour : undefined });
-  envoyer(); afficherMusiques();
+  const { m } = morceauCarte(); if (!m) return;
+  const suite = suiteMusique(etat);
+  allerAuMorceau(suite[(suite.indexOf(m.id) + 1) % suite.length]);
 };
+/* Précédent : après trois secondes, on revient au début du morceau ; avant, on passe à celui d'avant */
+$('#mu-precedente').onclick = () => {
+  const { m, pos } = morceauCarte(); if (!m) return;
+  const suite = suiteMusique(etat), i = suite.indexOf(m.id);
+  allerAuMorceau((pos && pos.connu && pos.t > 3) || suite.length < 2 ? m.id : suite[(i - 1 + suite.length) % suite.length]);
+};
+/* Un clic sur la barre : la musique saute à cet endroit du morceau, partout en même temps */
+$('#mu-c-barre').onclick = e => {
+  const { m, pos } = morceauCarte();
+  if (!m || !(m.d > 0) || !pos || !pos.connu) return;
+  const r = e.currentTarget.getBoundingClientRect(), part = Math.max(0, Math.min(0.995, (e.clientX - r.left) / r.width));
+  const suite = suiteMusique(etat), avant = suite.slice(0, Math.max(0, suite.indexOf(m.id))).reduce((a, id) => a + ((piste(id) || {}).d || 0), 0);
+  etat.musique = Object.assign({}, etat.musique, { n: (etat.musique.n || 0) + 1, t0: Date.now(), pos0: avant + part * m.d });
+  envoyer(); majEtatMusique();
+};
+/* Aléatoire : s'applique aux morceaux lancés à la main. Si l'un d'eux joue, la suite change sans le couper. */
+$('#mu-aleatoire').onclick = () => {
+  etat.musiqueAleatoire = !etat.musiqueAleatoire;
+  const m = etat.musique, { m: actuel, pos } = morceauCarte();
+  if (actuel && !m.auto && (m.lecture || m.pos0 > 0)) {
+    etat.musique = Object.assign({}, m, { idx: etat.playlist.indexOf(actuel), n: (m.n || 0) + 1, t0: Date.now(), pos0: pos && pos.connu ? pos.t : 0,
+      suite: etat.musiqueAleatoire && etat.playlist.length > 2 ? suiteAleatoire(actuel.id) : undefined });
+  }
+  envoyer(); afficherMusiques();
+  toast(etat.musiqueAleatoire ? 'Lecture aléatoire' : 'Lecture dans l\'ordre de la liste');
+};
+$('#mu-baisse').checked = !!etat.musiqueBaisse;
+$('#mu-baisse').onchange = e => { etat.musiqueBaisse = e.target.checked; envoyer(); };
+
+/* ---------- Effets sonores : fabriqués par le navigateur, ils passent dans le live par-dessus la musique ---------- */
+const ICONES_EFFETS = {
+  applaudissements: '<path d="M8.2 13.2 5.4 9.6a1.3 1.3 0 0 1 2-1.6l2.7 3.3M10.1 11.3 7.3 7.7a1.3 1.3 0 0 1 2-1.6l3 3.8M12.3 9.9l-1.6-2a1.3 1.3 0 0 1 2-1.6l3.4 4.3 .3-2.3a1.3 1.3 0 0 1 2.6.4l-.6 5.3a6 6 0 0 1-10.6 3.2l-2.2-2.8a1.3 1.3 0 0 1 2-1.6l.6.8M17 2.8v1.8M20.6 4.2l-1.2 1.3M13.4 2.9l.5 1.6"/>',
+  tambour: '<ellipse cx="12" cy="10.5" rx="7.5" ry="3"/><path d="M4.5 10.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6M3.5 3.5l6 4.6M20.5 3.5l-6 4.6M8 13.2v6M16 13.2v6"/>',
+  tada: '<path d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.6l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
+  ding: '<circle cx="12" cy="12" r="8.7"/><path d="M7.9 12.4l2.8 2.8 5.5-5.7"/>',
+  buzzer: '<circle cx="12" cy="12" r="8.7"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  whoosh: '<path d="M3 8.5h9.5A2.5 2.5 0 1 0 10 6M3 12.5h14.5A2.5 2.5 0 1 1 15 15M3 16.5h6.5a2 2 0 1 1-2 2"/>',
+};
+$('#mu-effets').innerHTML = EFFETS.map(([id, nom]) => `<button type="button" data-effet="${id}" title="Joue « ${nom} » dans le live, par-dessus la musique"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONES_EFFETS[id]}</svg>${nom}</button>`).join('');
+$$('#mu-effets button').forEach(b => b.onclick = () => {
+  etat.effet = { nom: b.dataset.effet, ts: Date.now() };
+  envoyer();
+  b.classList.add('envoi'); setTimeout(() => b.classList.remove('envoi'), 700);
+  if (etat.musiqueStudio === false) toast('Effet envoyé dans le live. Tu ne l\'entends pas ici : réglage « Le live seulement ».');
+});
+$('#vol-effets').value = Math.round((etat.volEffets ?? 0.7) * 100);
+$('#vol-effets').oninput = e => { etat.volEffets = e.target.value / 100; envoyerBientot(); };
 /* Qui entend la musique : tout le studio (toi et tes invités, par l'aperçu de chacun) ou seulement le live.
    Dans les deux cas elle part dans le son du live. */
 function majEcouteMusique() { $$('#mu-ecoute button').forEach(b => b.classList.toggle('actif', (b.dataset.v === 'studio') === (etat.musiqueStudio !== false))); }

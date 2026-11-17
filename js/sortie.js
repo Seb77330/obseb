@@ -274,6 +274,7 @@ function appliquerEtat(st) {
   for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
   placerPanneauQuiz(quizEnCours ? disp.__panneau : null);
   gererPlaylist();
+  gererEffet();
   gererQuiz();
   gererChat();
   gererQR();
@@ -625,9 +626,15 @@ let lecteur = lecteurs[0];
 let enCours = { cle: '', id: '', pause: false };     // l'ordre de la régie en cours, le morceau joué, et si la régie l'a mis en pause
 const volumeMusique = () => Math.max(0, Math.min(1, (etat && etat.volMusique) ?? 0.5));
 let dernierMixage = performance.now();
+const NIVEAU_SOUS_LA_VOIX = 0.3;
+let baisse = 1, dernierParole = -1e9;   // dernier instant où quelqu'un à l'antenne a parlé
 setInterval(() => {
-  const v = volumeMusique(), t = performance.now(), dt = t - dernierMixage;
+  const t = performance.now(), dt = t - dernierMixage;
   dernierMixage = t;
+  // « Baisser quand on parle » : dès qu'une personne à l'antenne parle, la musique descend vite ; elle remonte doucement après
+  const but = etat && etat.musiqueBaisse && sceneCameras(etat.scene) && t - dernierParole < 900 ? NIVEAU_SOUS_LA_VOIX : 1;
+  baisse += (but - baisse) * Math.min(1, dt / (but < baisse ? 160 : 800));
+  const v = volumeMusique() * baisse;
   for (const a of lecteurs) {
     const pas = dt / a._ms;
     if (a._gain !== a._but) a._gain = a._gain < a._but ? Math.min(a._but, a._gain + pas) : Math.max(a._but, a._gain - pas);
@@ -700,6 +707,16 @@ function gererPlaylist() {
   if (jouerId(pos.id, depuis)) { enCours.cle = cle; enCours.pause = false; }
 }
 
+/* ----- Effets sonores : la régie donne un nom et une heure ; on ne joue que si c'est tout frais ----- */
+let dernierEffet = 0;
+function gererEffet() {
+  const e = etat && etat.effet;
+  if (!e || !e.ts || e.ts === dernierEffet) return;
+  dernierEffet = e.ts;
+  if (Math.abs(maintenantHote() - e.ts) > 3000 || !musiqueIci()) return;      // un vieil ordre (page rechargée) ne rejoue pas
+  jouerEffet(e.nom, Math.max(0, Math.min(1, etat.volEffets ?? 0.7)));
+}
+
 /* ----- Compte à rebours de l'intro ----- */
 function compteARebours() {
   const el = $('#compte'), info = $('#intro-info');
@@ -753,7 +770,12 @@ addEventListener('message', e => {
   // 3) niveaux sonores des tuiles
   if (d.loudness !== undefined) {
     for (const t of tuiles.values()) {
-      if (t.iframe && e.source === t.iframe.contentWindow) { t.niveau = Math.max(t.niveau, niveauSonore(d)); break; }
+      if (t.iframe && e.source === t.iframe.contentWindow) {
+        const n = niveauSonore(d);
+        t.niveau = Math.max(t.niveau, n);
+        if (n > 6 && !t.ecran && etat && (etat.onair || []).includes(t.id)) dernierParole = performance.now();
+        break;
+      }
     }
   }
 });

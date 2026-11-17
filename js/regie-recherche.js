@@ -89,6 +89,7 @@ function actions() {
   // Musique
   add('Musique', $('#mu-lecture').textContent.replace(/^\S+\s/, '') + ' la musique', cliquer('#mu-lecture'), 'play pause playlist');
   add('Musique', 'Morceau suivant', cliquer('#mu-suivante'), 'playlist next');
+  for (const [id, nom] of EFFETS) add('Musique', 'Effet sonore : ' + nom, cliquer(`#mu-effets [data-effet="${id}"]`), 'son bruitage jingle effet');
   add('Musique', 'Ajouter une musique', () => { ouvrirOnglet('musique'); $('#mu-ajouter').click(); }, 'mp3 playlist fichier morceau');
   add('Musique', 'Régler le volume de la musique', champ('musique', '#vol-musique'), 'son');
   // Chat
