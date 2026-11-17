@@ -62,8 +62,8 @@
   .menu button:hover { background: var(--ui-panel2); }
   .menu button small { display: block; font-weight: 500; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
   .outils { padding: 0; overflow: hidden; }
-  .onglets { display: flex; gap: 2px; padding: 6px; background: #121419; border-bottom: 1px solid var(--ui-line); overflow-x: auto; }
-  .onglets button { flex: 1; border: 0; background: none; padding: 9px 6px; font-size: 13px; color: var(--ui-muted); border-radius: 8px; white-space: nowrap; }
+  .onglets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 6px; background: #121419; border-bottom: 1px solid var(--ui-line); }
+  .onglets button { flex: 1 0 auto; border: 0; background: none; padding: 8px 7px; font-size: 13px; color: var(--ui-muted); border-radius: 8px; white-space: nowrap; }
   .onglets button:hover { color: var(--ui-text); background: var(--ui-panel2); }
   .onglets button.actif { background: var(--ui-panel2); color: var(--ui-accent); box-shadow: inset 0 -2px 0 var(--ui-accent); }
   .onglet { padding: 16px; }
@@ -79,6 +79,22 @@
   .palette-item small { color: var(--ui-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; }
   .palette-item.choisi { background: var(--ui-panel2); box-shadow: inset 3px 0 0 var(--ui-accent); }
   .palette-pied { display: flex; gap: 18px; padding: 10px 16px; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 12px; }
+  .compte { border: 1px solid var(--ui-line); border-radius: 10px; margin-bottom: 8px; background: var(--ui-panel2); }
+  .compte.on { border-color: rgba(255,210,31,.5); }
+  .compte-tete { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; }
+  .compte-tete i { font-style: normal; font-size: 11px; font-weight: 800; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; border: 1px solid rgba(255,255,255,.15); }
+  .compte-tete b { flex: 1; }
+  .compte-etat { font-size: 12px; color: var(--ui-muted); }
+  .compte-etat.ok { color: var(--ui-green); } .compte-etat.ko { color: #ff8a8a; }
+  .compte-corps { display: none; padding: 0 12px 12px; gap: 8px; }
+  .compte.ouvert .compte-corps { display: grid; }
+  .ligne-format { display: flex; gap: 6px; }
+  .interrupteur { position: relative; width: 38px; height: 22px; flex: none; }
+  .interrupteur input { opacity: 0; width: 0; height: 0; }
+  .interrupteur span { position: absolute; inset: 0; background: #3a3f4b; border-radius: 11px; transition: .2s; cursor: pointer; }
+  .interrupteur span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
+  .interrupteur input:checked + span { background: var(--ui-accent); }
+  .interrupteur input:checked + span::after { transform: translateX(16px); background: #111; }
   #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
 </style>
 </head>
@@ -145,6 +161,7 @@
           <button data-tab="quiz">Quiz</button>
           <button data-tab="musique">Musique</button>
           <button data-tab="chat">Chat <span class="pastille-n" id="chat-non-lus" hidden></span></button>
+          <button data-tab="comptes">Comptes</button>
         </nav>
         <section class="onglet" data-onglet="habillage" hidden>
           <p class="intro-onglet">Le titre et le message du bandeau du bas, et le compte à rebours affiché sur l'écran d'intro.</p>
@@ -253,6 +270,12 @@
         </div>
       
         </section>
+        <section class="onglet" data-onglet="comptes" hidden>
+          <p class="intro-onglet">Les plateformes où ton live est diffusé en même temps. Clique sur une plateforme pour coller sa clé de stream : elle reste dans ce navigateur, jamais dans les liens.</p>
+          <div class="aide" id="comptes-resume" style="margin-bottom:10px;color:var(--ui-text)"></div>
+          <div id="comptes-liste"></div>
+          <p class="aide" style="margin-bottom:0">Le chat se connecte dans l'onglet Chat. Le direct démarrera depuis ici dès que le serveur OBSeb sera branché.</p>
+        </section>
       </div>
     </div>
   </main>
@@ -276,6 +299,7 @@
 <script src="js/regie-sources.js"></script>
 <script src="js/regie-quiz.js"></script>
 <script src="js/regie-chat.js"></script>
+<script src="js/regie-comptes.js"></script>
 <script src="js/regie-recherche.js"></script>
 </body>
 </html>

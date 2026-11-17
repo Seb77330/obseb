@@ -83,6 +83,9 @@ function actions() {
   add('Chat', 'Masquer le message affiché', cliquer('#chat-masquer'), 'chat ecran');
   add('Chat', 'Connecter Twitch', champ('chat', '#chat-twitch'), 'chat');
   add('Chat', 'Connecter YouTube', champ('chat', '#chat-youtube'), 'chat cle');
+  // Comptes
+  add('Comptes', 'Gérer les plateformes de diffusion', () => ouvrirOnglet('comptes'), 'multistream cle stream youtube twitch facebook x kick tiktok instagram');
+  PLATEFORMES_LIVE.forEach((p, i) => add('Comptes', `Connecter ${p.nom}`, () => { ouvrirOnglet('comptes'); const el = $$('#comptes-liste .compte')[i]; el.classList.add('ouvert'); el.querySelector('.c-cle').focus(); }, 'cle stream compte diffusion'));
   return A;
 }
 
