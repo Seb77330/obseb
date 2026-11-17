@@ -5,6 +5,9 @@ const Q = queryParams();
 const PREVIEW = Q.has('preview');           // aperçu léger : basse qualité, sans son
 const DEMO = parseInt(Q.get('demo') || '0', 10); // tuiles factices pour tester la mise en page
 const SCENE_FORCEE = Q.get('scene');
+const VERTICAL = Q.get('format') === 'vertical';
+const LARG = VERTICAL ? SCENE_VW : SCENE_W, HAUT = VERTICAL ? SCENE_VH : SCENE_H;
+if (VERTICAL) document.body.classList.add('vertical');
 const session = lireSession();
 
 const $ = s => document.querySelector(s);
@@ -14,9 +17,9 @@ let hote = null;
 
 /* ----- Mise à l'échelle 1920x1080 dans la fenêtre ----- */
 function echelle() {
-  const k = Math.min(innerWidth / SCENE_W, innerHeight / SCENE_H);
+  const k = Math.min(innerWidth / LARG, innerHeight / HAUT);
   const el = $('#scale');
-  el.style.transform = `translate(${(innerWidth - SCENE_W * k) / 2}px, ${(innerHeight - SCENE_H * k) / 2}px) scale(${k})`;
+  el.style.transform = `translate(${(innerWidth - LARG * k) / 2}px, ${(innerHeight - HAUT * k) / 2}px) scale(${k})`;
 }
 addEventListener('resize', echelle);
 echelle();
@@ -177,7 +180,9 @@ function appliquerEtat(st) {
   const clesActives = actives.map(cleSource);
 
   const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
-  const disp = scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus);
+  const disp = VERTICAL
+    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives) : calculerDispositionV(st.layout, ids, st.focus))
+    : (scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);

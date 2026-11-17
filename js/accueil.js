@@ -80,7 +80,7 @@ $$('[data-apercu]').forEach(b => b.onclick = () => {
 });
 
 function urlApercu(s, mode) {
-  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', fin: 'demo=3&scene=fin' }[mode];
+  const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', fin: 'demo=3&scene=fin', vertical: 'demo=3&format=vertical' }[mode];
   return `sortie.html?${p}#s=${b64e(Object.assign({}, s, { titre: s.titre || 'Titre de ton live' }))}`;
 }
 function apercu() {
@@ -133,6 +133,7 @@ function afficherSessions() {
           <a href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
           <button data-a="invite">Copier le lien invités</button>
           <button data-a="obs">Copier le lien OBS</button>
+          <button data-a="vertical" title="TikTok, Shorts, Reels">Lien vertical</button>
           <button class="petit" data-a="modifier">Modifier</button>
           <button class="petit" data-a="dupliquer" title="Nouveau live avec le même thème">Dupliquer</button>
           <button class="petit" data-a="suppr">Retirer</button>
@@ -140,6 +141,7 @@ function afficherSessions() {
       </div>`;
     el.querySelector('[data-a=invite]').onclick = () => copier(L.invite, 'Lien invités copié');
     el.querySelector('[data-a=obs]').onclick = () => copier(L.sortie, 'Lien OBS copié');
+    el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
     el.querySelector('[data-a=modifier]').onclick = () => {
       enEdition = session.room; brouillon = JSON.parse(JSON.stringify(session));
       $('#titre-form').textContent = 'Modifier la session';

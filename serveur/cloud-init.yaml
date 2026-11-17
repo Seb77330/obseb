@@ -13,7 +13,7 @@ write_files:
     content: |
       OBSEB_SECRET=__OBSEB_SECRET__
       OBSEB_DOSSIER=/var/lib/obseb/enregistrements
-      OBSEB_GARDE_JOURS=14
+      OBSEB_GARDE_JOURS=10
       PORT=8080
   - path: /etc/systemd/system/obseb.service
     content: |

@@ -100,7 +100,8 @@ function liens(session, cle) {
   return {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
     invite: `${baseUrl()}invite.html#s=${s}`,
-    sortie: `${baseUrl()}sortie.html#s=${s}`
+    sortie: `${baseUrl()}sortie.html#s=${s}`,
+    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}`
   };
 }
 const idHote = s => s.room + '_seb';
@@ -265,6 +266,70 @@ function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
   ids.slice(0, max).forEach((id, i) => {
     r[id] = { x: zone.x + zoneW + gap, y: y0 + i * (cellH + gap), w: colW, h: cellH };
   });
+  return r;
+}
+
+/* ---------- Format vertical (1080x1920, TikTok, Shorts) ---------- */
+const SCENE_VW = 1080, SCENE_VH = 1920;
+const ZONE_V = { x: 40, y: 150, w: 1000, h: 1330 };
+function grilleV(n) {
+  if (n <= 1) return [1, 1];
+  if (n <= 3) return [1, n];
+  if (n === 4) return [2, 2];
+  if (n <= 6) return [2, 3];
+  if (n <= 8) return [2, 4];
+  if (n === 9) return [3, 3];
+  return [3, 4];
+}
+/* Grille de cellules qui remplissent la zone (les vidéos sont recadrées) */
+function grilleCellules(ids, x, y, w, h, gap, [cols, rows]) {
+  const r = {};
+  const cw = (w - gap * (cols - 1)) / cols, ch = (h - gap * (rows - 1)) / rows;
+  ids.forEach((id, i) => {
+    const row = Math.floor(i / cols);
+    const dansRangee = row === rows - 1 ? ids.length - row * cols : cols;
+    const col = i - row * cols;
+    const x0 = x + (w - (dansRangee * cw + (dansRangee - 1) * gap)) / 2;
+    r[id] = { x: x0 + col * (cw + gap), y: y + row * (ch + gap), w: cw, h: ch };
+  });
+  return r;
+}
+function calculerDispositionV(layout, ids, focus, zone = ZONE_V, gap = 18) {
+  const n = ids.length;
+  if (!n) return {};
+  if (layout === 'solo') {
+    const id = ids.includes(focus) ? focus : ids[0];
+    return { [id]: { x: zone.x, y: zone.y, w: zone.w, h: zone.h } };
+  }
+  if (layout === 'interview' && n >= 2) {
+    const hautH = zone.h * 0.56;
+    const r = { [ids[0]]: { x: zone.x, y: zone.y, w: zone.w, h: hautH } };
+    const reste = ids.slice(1);
+    const g = reste.length <= 2 ? [reste.length, 1] : [2, Math.ceil(reste.length / 2)];
+    return Object.assign(r, grilleCellules(reste, zone.x, zone.y + hautH + gap, zone.w, zone.h - hautH - gap, gap, g));
+  }
+  return grilleCellules(ids, zone.x, zone.y, zone.w, zone.h, gap, grilleV(n));
+}
+function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
+  const r = {};
+  const n = sources.length;
+  let hautH = 0;
+  if (n === 1) { hautH = zone.w * 9 / 16; r[sources[0]] = { x: zone.x, y: zone.y, w: zone.w, h: hautH }; }
+  else if (n >= 2) {
+    const w = (zone.w - gap) / 2, h = w * 9 / 16;
+    const rows = Math.ceil(Math.min(n, 4) / 2);
+    hautH = rows * h + (rows - 1) * gap;
+    sources.slice(0, 4).forEach((k, i) => {
+      const row = Math.floor(i / 2), col = i % 2;
+      const dx = n === 3 && i === 2 ? (w + gap) / 2 : 0;
+      r[k] = { x: zone.x + col * (w + gap) + dx, y: zone.y + row * (h + gap), w, h };
+    });
+  }
+  if (ids.length) {
+    const y = zone.y + hautH + (hautH ? gap : 0), h = zone.h - (y - zone.y);
+    const g = ids.length <= 2 ? [ids.length, 1] : [2, Math.ceil(Math.min(ids.length, 6) / 2)];
+    Object.assign(r, grilleCellules(ids.slice(0, 6), zone.x, y, zone.w, h, gap, g));
+  }
   return r;
 }
 

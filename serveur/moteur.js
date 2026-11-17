@@ -23,7 +23,7 @@ const CHROME = process.env.CHROME || 'google-chrome';
 const ECRAN = ':99';
 const W = 1920, H = 1080, FPS = 30;
 const DEBIT_VIDEO = process.env.DEBIT_VIDEO || '6000k';   // recommandé par YouTube pour du 1080p30
-const GARDE_JOURS = +process.env.OBSEB_GARDE_JOURS || 14;   // archive gardée 14 jours puis supprimée
+const GARDE_JOURS = +process.env.OBSEB_GARDE_JOURS || 10;   // archive gardée 10 jours puis supprimée
 const ORIGINES = (process.env.OBSEB_ORIGINES || 'https://seb77330.github.io').split(',');
 
 fs.mkdirSync(DOSSIER, { recursive: true });

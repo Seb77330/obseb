@@ -51,6 +51,7 @@ async function copier(txt, msg) {
 }
 $('#btn-invite').onclick = () => copier(L.invite, 'Lien invités copié : envoie-le à tes invités');
 $('#btn-obs').onclick = () => copier(L.sortie, 'Lien OBS copié : colle-le dans une source navigateur 1920x1080');
+$('#btn-vertical').onclick = () => copier(L.vertical, 'Lien vertical copié : source navigateur 1080x1920');
 $('#btn-sortie').onclick = () => window.open(L.sortie, 'sortie', 'width=960,height=540');
 
 /* ----- Ma caméra (le seul endroit qui ouvre la Cam Link) ----- */
@@ -61,6 +62,16 @@ maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true });
 const apercu = $('#apercu');
 apercu.src = `sortie.html?preview=regie${location.hash.replace(/&k=[^&]*/, '')}`;
 apercu.addEventListener('load', () => envoyer());
+let apercuVertical = false;
+$('#btn-apercu-format').onclick = () => {
+  apercuVertical = !apercuVertical;
+  apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
+  apercu.parentElement.style.aspectRatio = apercuVertical ? '9/16' : '16/9';
+  apercu.parentElement.style.maxHeight = apercuVertical ? '640px' : '';
+  apercu.parentElement.style.margin = apercuVertical ? '0 auto' : '';
+  apercu.parentElement.style.width = apercuVertical ? '360px' : '';
+  $('#btn-apercu-format').textContent = apercuVertical ? 'Voir en horizontal' : 'Voir en vertical';
+};
 
 /* ----- Envoi de l'état vers la sortie OBS et les invités ----- */
 function envoyer() {

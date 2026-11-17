@@ -123,7 +123,7 @@ body.sortie { background: #000; }
   position: absolute; left: 0; right: 0; bottom: 0; height: 44px; z-index: 6; overflow: hidden;
   background: var(--accent); color: var(--bg); display: flex; align-items: center; transition: transform .5s ease;
 }
-#defilant.cachee { transform: translateY(44px); opacity: 1; }
+#defilant.cachee { transform: translateY(110%); opacity: 1; }
 #defilant .piste {
   white-space: nowrap; font: 800 22px var(--font-body); letter-spacing: .06em; text-transform: uppercase;
   padding-left: 100%; animation: defile 40s linear infinite;
@@ -133,3 +133,18 @@ body.sortie { background: #000; }
 #bandeau .titre.entree { animation: entree .55s cubic-bezier(.2,.8,.2,1); }
 @keyframes entree { from { transform: translateY(18px); opacity: 0; } }
 .tuile.source iframe { background: #fff; }
+
+/* ----- Format vertical 1080x1920 ----- */
+body.vertical #scale { width: 1080px; height: 1920px; }
+body.vertical #bandeau { left: 40px; right: 40px; bottom: 120px; height: auto; min-height: 150px; align-items: flex-start; }
+body.vertical #bandeau .logo { height: 120px; min-width: 120px; }
+body.vertical #bandeau .titre { white-space: normal; font-size: 50px; line-height: 1.05; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+body.vertical #bandeau .sous { flex-wrap: wrap; row-gap: 8px; font-size: 20px; }
+body.vertical #defilant { bottom: 40px; height: 52px; }
+body.vertical .plein { padding: 0 70px; }
+body.vertical .plein .grand-titre { font-size: 104px; }
+body.vertical .plein .sur-titre { font-size: 22px; letter-spacing: .35em; }
+body.vertical .plein .info { font-size: 26px; letter-spacing: .2em; }
+body.vertical .plein .compte { font-size: 170px; }
+body.vertical .tuile .nom { font-size: 26px; }
+body.vertical .tuile.petite .nom { font-size: 20px; }
