@@ -89,6 +89,19 @@
   .offre li.moins::before { top: 9px; width: 9px; height: 0; border-left: 0; border-color: var(--ui-muted); transform: none; }
   .offre button { margin-top: auto; width: 100%; padding: 12px 16px; font-size: 15px; border-radius: 10px; }
   .offre:not(.vedette) button[data-formule]:not([data-formule=gratuit]) { color: var(--ui-muted); }
+  /* Entreprises : un bandeau discret sous les quatre formules */
+  .entreprises { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.5fr) auto; gap: 18px 36px; align-items: center; padding: 24px 26px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 18px; }
+  .entreprises h3 { margin: 10px 0 0; font-size: 22px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; }
+  .entreprises ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 22px; font-size: 14px; }
+  .entreprises li { position: relative; padding-left: 22px; line-height: 1.4; }
+  .entreprises li::before { content: ''; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 1.5px solid var(--ui-accent); border-bottom: 1.5px solid var(--ui-accent); transform: rotate(-45deg); }
+  .ent-prix { display: flex; align-items: center; gap: 22px; }
+  .ent-prix p { margin: 0; display: grid; justify-items: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ent-prix b { font-size: 30px; line-height: 1.05; font-weight: 600; letter-spacing: -.03em; }
+  .ent-prix span { color: var(--ui-muted); font-size: 12px; }
+  .ent-prix button { padding: 11px 18px; font-size: 14px; border-radius: 10px; color: var(--ui-muted); white-space: nowrap; }
+  @media (max-width: 1080px) { .entreprises { grid-template-columns: 1fr; gap: 18px; } .ent-prix { justify-content: space-between; } .ent-prix p { justify-items: start; } }
+  @media (max-width: 620px) { .entreprises { max-width: 420px; margin-left: auto; margin-right: auto; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
   .formules-pied { margin: 30px auto 0; text-align: center; color: var(--ui-muted); font-size: 13px; }
   .formules-pied b { margin-right: 9px; padding: 2px 8px; border: 1px solid var(--ui-line2); border-radius: 99px; color: var(--ui-text); font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
   @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 14px; } }
@@ -329,6 +342,22 @@
         <button type="button" data-formule="regie">Bientôt disponible</button>
       </article>
     </div>
+    <aside class="entreprises" aria-labelledby="entreprises-titre">
+      <div class="ent-tete">
+        <span class="sur-titre">Entreprises</span>
+        <h3 id="entreprises-titre">Toute l'équipe en direct.</h3>
+      </div>
+      <ul>
+        <li>3 personnes sur le compte</li>
+        <li>Les couleurs de la marque</li>
+        <li>Webinaire sur inscription</li>
+        <li>Facture avec TVA</li>
+      </ul>
+      <div class="ent-prix">
+        <p><span>à partir de</span><b>29 €</b><span>HT par mois</span></p>
+        <button type="button" data-formule="entreprise">En préparation</button>
+      </div>
+    </aside>
     <p class="formules-pied"><b>Bêta</b>Tout est gratuit pour l'instant, avec OBS. Le direct depuis le site arrive avec les formules.</p>
   </section>
 
@@ -497,7 +526,7 @@
 </dialog>
 <script src="js/common.js?v=c33ad272"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=dfd10bd6"></script>
+<script src="js/accueil.js?v=648d6b8d"></script>
 <script src="js/accueil-style.js?v=91ce6e61"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>

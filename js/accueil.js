@@ -283,6 +283,7 @@ document.addEventListener('click', e => {
 $('#btn-formules').onclick = () => { if ($('#vue-liste').hidden) montrerVue('liste'); $('#formules').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   if (b.dataset.formule === 'gratuit') { $('#btn-nouveau').click(); return; }
+  if (b.dataset.formule === 'entreprise') { toast("L'offre Entreprises est en préparation. Elle n'est pas encore ouverte."); return; }
   // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
   toast("Cette formule n'est pas encore ouverte. Pendant la bêta, tout le studio est gratuit.");
 });
