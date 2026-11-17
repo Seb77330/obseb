@@ -1,0 +1,51 @@
+#cloud-config
+# OBSeb Cloud : installation automatique du serveur (Ubuntu 24.04, Hetzner CPX32 conseillé : 4 vCPU, 8 Go).
+# À la création du serveur, remplacer __OBSEB_SECRET__ par une clé secrète (la régie l'utilise pour piloter le serveur).
+package_update: true
+packages: [ffmpeg, xvfb, pulseaudio, pulseaudio-utils, fonts-noto-color-emoji, fonts-dejavu, curl, git, debian-keyring, debian-archive-keyring, apt-transport-https]
+users:
+  - name: obseb
+    shell: /bin/bash
+    lock_passwd: true
+write_files:
+  - path: /etc/obseb.env
+    permissions: '0600'
+    content: |
+      OBSEB_SECRET=__OBSEB_SECRET__
+      OBSEB_DOSSIER=/var/lib/obseb/enregistrements
+      OBSEB_GARDE_JOURS=14
+      PORT=8080
+  - path: /etc/systemd/system/obseb.service
+    content: |
+      [Unit]
+      Description=OBSeb Cloud (moteur du direct)
+      After=network-online.target
+      [Service]
+      User=obseb
+      EnvironmentFile=/etc/obseb.env
+      Environment=XDG_RUNTIME_DIR=/var/lib/obseb/run
+      ExecStart=/usr/bin/node /opt/obseb/serveur/moteur.js
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+runcmd:
+  # Chrome
+  - curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb
+  - apt-get install -y /tmp/chrome.deb
+  # Node.js 22
+  - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  - apt-get install -y nodejs
+  # Caddy (HTTPS automatique)
+  - curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  - curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -o /etc/apt/sources.list.d/caddy-stable.list
+  - apt-get update && apt-get install -y caddy
+  # Code OBSeb
+  - git clone --depth 1 https://github.com/Seb77330/obseb /opt/obseb
+  - mkdir -p /var/lib/obseb/enregistrements /var/lib/obseb/run && chmod 700 /var/lib/obseb/run && chown -R obseb:obseb /var/lib/obseb
+  - loginctl enable-linger obseb
+  # Adresse HTTPS : <ip-avec-tirets>.sslip.io
+  - |
+    IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
+    printf '%s.sslip.io {\n  reverse_proxy 127.0.0.1:8080\n}\n' "$(echo $IP | tr . -)" > /etc/caddy/Caddyfile
+  - systemctl restart caddy
+  - systemctl daemon-reload && systemctl enable --now obseb
