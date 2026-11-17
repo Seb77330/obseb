@@ -77,7 +77,9 @@ async function demarrer() {
       videoEncoding: { maxBitrate: ECRAN ? 6_000_000 : 6_000_000, maxFramerate: 30 },
       screenShareEncoding: { maxBitrate: 6_000_000, maxFramerate: 30 },
       audioPreset: has('proaudio') ? LK.AudioPresets.musicHighQualityStereo : { maxBitrate: 64_000 },
-      dtx: false, red: true,              // DTX coupe les souffles et les fins de mots : jamais
+      dtx: false, red: true,
+      // animateur : garder la 1080p quoi qu'il arrive (le navigateur baisse les images/s plutôt que la définition)
+      degradationPreference: has('proaudio') ? 'maintain-resolution' : 'balanced',              // DTX coupe les souffles et les fins de mots : jamais
     },
   });
 

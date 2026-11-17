@@ -13,29 +13,36 @@
   header .session { flex: 1; min-width: 200px; }
   header .session .t { font-weight: 600; font-size: 17px; }
   header .session .s { color: var(--ui-muted); font-size: 12px; }
-  main { display: grid; grid-template-columns: 340px minmax(0, 1fr) 430px; gap: 18px; padding: 18px 22px; align-items: start; max-width: 1920px; margin: 0 auto; }
-  @media (max-width: 1400px) { main { grid-template-columns: 320px minmax(0, 1fr); } #col-droite { grid-column: 1 / -1; } }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 18px; padding: 16px 20px; align-items: start; max-width: 1920px; margin: 0 auto; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
   .colonne { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  #ma-camera { width: 100%; height: 230px; border: 0; border-radius: 10px; background: #000; }
+  #ma-camera { width: 100%; aspect-ratio: 16/9; height: auto; border: 0; border-radius: 8px; background: #000; display: block; }
   #mon-ecran { width: 100%; height: 220px; border: 0; border-radius: 10px; background: #000; margin-top: 10px; }
-  .antenne-titre { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .scenes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
-  .scenes button { padding: 14px 8px; font-size: 15px; }
-  .scenes button small { display: block; font-weight: 500; opacity: .7; font-size: 11px; }
-  .dispos { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .antenne-titre { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .scenes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .scenes button { position: relative; padding: 10px 12px; text-align: left; display: grid; gap: 2px; background: var(--ui-panel); }
+  .scenes button b { font-weight: 600; font-size: 15px; }
+  .scenes button kbd { position: absolute; right: 8px; top: 8px; opacity: .55; }
+  .scenes button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
+  .scenes button.actif small { color: inherit; opacity: .75; }
+  .scenes button[data-scene=live].actif, .scenes button[data-scene=partage].actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+  .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 12px; }
+  .dispos { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .coche { display: flex; gap: 6px; align-items: center; margin: 0; }
   .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .participant { display: grid; grid-template-columns: 112px 1fr; gap: 10px; padding: 10px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-panel2); margin-bottom: 10px; }
+  .participant { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); width: 260px; box-sizing: border-box; flex: none; }
   .participant.antenne { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
   .participant.parti { opacity: .45; }
-  .participant .vignette { position: relative; width: 112px; aspect-ratio: 16/9; background: #000; border-radius: 7px; overflow: hidden; }
+  .participant .vignette { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; }
   .participant .vignette iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
   .participant .vignette .moi { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; color: var(--ui-muted); text-align: center; padding: 4px; }
-  .participant input[type=text] { padding: 5px 8px; font-weight: 700; }
-  .participant .reglages { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .participant input[type=text] { padding: 6px 8px; font-weight: 600; }
+  .participant .reglages { display: flex; align-items: center; gap: 8px; }
   .participant .reglages input[type=range] { flex: 1; }
   .participant .pct { width: 40px; text-align: right; font-size: 12px; color: var(--ui-muted); font-variant-numeric: tabular-nums; }
-  .participant .actions { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+  .participant .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .participant .actions .antenne-btn { flex: 1 0 100%; }
+  .participant .actions .muet-btn, .participant .actions .focus-btn { flex: 1; }
   .vu { height: 5px; border-radius: 3px; background: var(--ui-line); overflow: hidden; margin-top: 6px; }
   .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .12s; }
   .participant .qualite { font-size: 12px; margin-top: 4px; }
@@ -52,18 +59,19 @@
   .elt .txt small { color: var(--ui-muted); margin-left: 6px; }
   .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; }
   kbd { white-space: nowrap; color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
-  .centre { position: sticky; top: 76px; }
-  @media (max-width: 1400px) { .centre { position: static; } }
-  header .recherche { flex: 0 1 420px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 500; color: var(--ui-muted); background: var(--ui-input); text-align: left; }
-  header .recherche span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icone-btn { display: flex; align-items: center; gap: 8px; color: var(--ui-muted); background: var(--ui-input); font-weight: 400; }
+  .icone-btn kbd { margin-left: 6px; }
+  .ic { width: 18px; height: 18px; flex: none; }
+  #btn-invite { display: flex; align-items: center; gap: 8px; }
   .menu-liens { position: relative; }
   .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 320px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
   .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; }
   .menu button:hover { background: var(--ui-panel2); }
   .menu button small { display: block; font-weight: 500; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
   .outils { padding: 0; overflow: hidden; }
-  .onglets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 6px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
-  .onglets button { flex: 1 0 auto; border: 0; background: none; padding: 8px 7px; font-size: 13px; color: var(--ui-muted); border-radius: 8px; white-space: nowrap; }
+  .onglets { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 6px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
+  .onglets button { position: relative; border: 0; background: none; padding: 8px 2px 7px; font-size: 12px; font-weight: 500; color: var(--ui-muted); border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .onglets .pastille-n { position: absolute; top: 3px; right: 6px; }
   .onglets button:hover { color: var(--ui-text); background: var(--ui-panel2); }
   .onglets button.actif { background: var(--ui-panel2); color: var(--ui-accent); box-shadow: inset 0 -2px 0 var(--ui-accent); }
   .onglet { padding: 16px; }
@@ -96,84 +104,131 @@
   .interrupteur input:checked + span { background: var(--ui-accent); }
   .interrupteur input:checked + span::after { transform: translateX(16px); background: #111; }
   #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
+  header .marque { text-decoration: none; color: var(--ui-text); }
+  .scene-col { display: grid; grid-template-columns: minmax(0, 1fr) 532px; grid-template-areas: "guide guide" "scenes scenes" "antenne plateau"; gap: 0 16px; align-items: start; min-width: 0; }
+  .demarrage { grid-area: guide; } .scenes { grid-area: scenes; } .antenne { grid-area: antenne; } .plateau { grid-area: plateau; }
+  @media (max-width: 1750px) { .scene-col { grid-template-columns: minmax(0, 1fr); grid-template-areas: "guide" "scenes" "antenne" "plateau"; } }
+  .antenne { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; padding: 12px; }
+  @media (max-width: 1750px) { .cadre169 { max-width: calc((100vh - 330px) * 16 / 9); min-width: 320px; margin: 0 auto; } }
+  .plateau { min-width: 0; }
+  @media (max-width: 1750px) { .plateau { margin-top: 16px; } }
+  .plateau-titre { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .plateau-titre h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ui-text); }
+  .bande { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  #liste { display: contents; }
+  #liste .vide { width: 260px; box-sizing: border-box; flex: none; border: 1px dashed var(--ui-line2); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+  .carte-moi { width: 260px; flex: none; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); padding: 10px; }
+  .carte-moi #etat-camera { margin: 6px 0 0; color: var(--ui-text); }
+  .cam-ligne { align-items: center; margin-top: 4px; }
+  .cam-ligne #cam-appareils { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #hote-controles .participant { width: auto; border: 0; padding: 8px 0 0; background: none; }
+  #hote-controles .participant.antenne { border: 0; box-shadow: none; }
+  #hote-controles .vignette, #hote-controles .focus-btn + .haut-btn { display: none; }
+  .badge-direct { background: var(--ui-panel2); color: var(--ui-muted); }
+  .badge-direct.rouge-direct { background: var(--ui-red); color: #fff; }
+  .sous-titre { font-size: 13px; font-weight: 600; margin: 18px 0 8px; color: var(--ui-text); }
+  .demarrage { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 8px 10px; margin-bottom: 12px; font-size: 13px; }
+  .demarrage > b { font-weight: 600; margin-right: 6px; }
+  .demarrage button { border: 0; background: none; padding: 6px 10px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; border-radius: 8px; }
+  .demarrage button:hover { background: var(--ui-panel2); }
+  .demarrage button i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--ui-line2); flex: none; display: grid; place-items: center; font-style: normal; font-size: 10px; }
+  .demarrage button.fait { color: var(--ui-muted); }
+  .demarrage button.fait i { background: var(--ui-green); border-color: var(--ui-green); }
+  .demarrage button.fait i::after { content: '✓'; color: #fff; }
+  .demarrage .fermer { margin-left: auto; color: var(--ui-muted); }
 </style>
 </head>
 <body>
 <div id="app" hidden>
   <header>
-    <div class="marque">OBS<b>eb</b></div>
+    <a class="marque" href="index.html" title="Retour à l'accueil">OBS<b>eb</b></a>
     <div class="session"><div class="t" id="titre-session"></div><div class="s" id="sous-session"></div></div>
-    <button class="recherche" id="btn-recherche" title="Chercher une action, un invité, un bandeau…"><span>🔍 Rechercher une action, un invité, un bandeau…</span><kbd>Ctrl K</kbd></button>
-    <button class="primaire" id="btn-invite">Copier le lien invités</button>
+    <button class="icone-btn" id="btn-recherche" title="Rechercher une action (Ctrl K)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Rechercher</span><kbd>Ctrl K</kbd></button>
+    <span id="place-affichage"></span>
     <div class="menu-liens">
-      <button id="btn-liens">Autres liens ▾</button>
+      <button id="btn-liens">Liens OBS ▾</button>
       <div class="menu" id="menu-liens" hidden>
-        <button id="btn-obs">Copier le lien OBS<small>la sortie 1920x1080 à mettre dans OBS ou le serveur</small></button>
-        <button id="btn-vertical">Copier le lien vertical<small>1080x1920 pour TikTok, Shorts, Reels</small></button>
-        <button id="btn-sortie">Ouvrir la sortie<small>dans un nouvel onglet</small></button>
+        <button id="btn-obs">Copier le lien OBS (horizontal)<small>À coller dans une source navigateur 1920 × 1080</small></button>
+        <button id="btn-vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 pour TikTok, Shorts, Reels</small></button>
+        <button id="btn-sortie">Ouvrir la sortie<small>Dans un nouvel onglet, pour vérifier</small></button>
       </div>
     </div>
-    <span id="place-affichage"></span>
-    <a href="index.html" style="font-size:13px">Mes sessions</a>
+    <button class="primaire" id="btn-invite"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg> Inviter</button>
   </header>
 
   <main>
-    <div class="colonne">
-<div class="panneau">
-        <h2>Ma caméra</h2>
-        <div id="cam-reglage" hidden></div>
-        <div id="cam-direct" hidden>
-          <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
-          <p class="aide" id="etat-camera" style="color:var(--ui-text)"><span style="color:var(--ui-accent)">●</span> Démarrage de ta caméra…</p>
-          <div class="ligne-boutons" style="align-items:center"><span class="aide" id="cam-appareils" style="flex:1;min-width:0"></span><button class="petit" id="btn-cam-changer">Changer</button></div>
-        </div>
+    <div class="scene-col">
+      <div id="demarrage" class="demarrage" hidden>
+        <b>Pour bien démarrer</b>
+        <button data-etape="camera"><i></i>Démarrer ma caméra</button>
+        <button data-etape="invite"><i></i>Envoyer le lien aux invités</button>
+        <button data-etape="obs"><i></i>Mettre le lien dans OBS</button>
+        <button data-etape="live"><i></i>Passer en Live</button>
+        <button class="fermer" id="demarrage-fermer" title="Masquer">✕</button>
       </div>
-<div class="panneau">
-        <h2>Participants</h2><p class="aide" id="nb-part" style="margin:-6px 0 8px"></p>
-        <label class="aide" style="display:flex;gap:6px;align-items:center;margin:-4px 0 8px"><input type="checkbox" id="auto-antenne"> Mettre les invités à l'antenne dès leur arrivée</label>
-        <p class="aide" style="margin-top:0">Les invités arrivent en coulisses. Tu les mets à l'antenne quand tu veux. Le volume réglé ici est celui du live (et de ton casque).</p>
-        <div id="liste"></div>
-      </div>
-    </div>
 
-    <div class="colonne centre">
-<div class="panneau">
-        <div class="antenne-titre"><h2 style="margin:0">À l'antenne <span class="badge-direct" id="badge-scene">INTRO</span></h2><span id="limiteur" class="limiteur" hidden></span><span class="aide" style="display:flex;gap:10px;align-items:center">Ce que voient les spectateurs <button class="petit" id="btn-apercu-format">Voir en vertical</button></span></div>
+      <div class="scenes" role="group" aria-label="Scène à l'antenne">
+        <button data-scene="intro"><b>Intro</b><small>Compte à rebours</small><kbd>1</kbd></button>
+        <button data-scene="live"><b>Live</b><small>Les caméras</small><kbd>2</kbd></button>
+        <button data-scene="partage"><b>Écran partagé</b><small>Écran, image, vidéo</small><kbd>3</kbd></button>
+        <button data-scene="fin"><b>Fin</b><small>Écran de fin</small><kbd>4</kbd></button>
+      </div>
+
+      <div class="antenne">
+        <div class="antenne-titre">
+          <span class="badge-direct" id="badge-scene">INTRO</span>
+          <span id="limiteur" class="limiteur" hidden></span>
+          <span class="aide" style="margin-left:auto">Ce que voient les spectateurs</span>
+          <button class="petit" id="btn-apercu-format">Voir en vertical</button>
+        </div>
         <div class="cadre169"><iframe id="apercu"></iframe></div>
-        <div class="scenes">
-          <button data-scene="intro">Intro<small>touche 1</small></button>
-          <button data-scene="live">Live<small>touche 2</small></button>
-          <button data-scene="partage">Partage<small>touche 3</small></button>
-          <button data-scene="fin">Fin<small>touche 4</small></button>
-        </div>
         <div class="dispos">
-          <span class="aide">Mise en page :</span>
-          <button class="petit" data-layout="grille">Grille <kbd>G</kbd></button>
-          <button class="petit" data-layout="interview">Interview <kbd>I</kbd></button>
-          <button class="petit" data-layout="solo">Une personne <kbd>S</kbd></button>
-          <label class="aide" style="margin-left:auto;display:flex;gap:6px;align-items:center"><input type="checkbox" id="surbrillance" checked> Cadre sur qui parle</label>
+          <span class="aide">Mise en page</span>
+          <div class="segment">
+            <button data-layout="grille">Grille</button>
+            <button data-layout="interview">Interview</button>
+            <button data-layout="solo">Seul à l'écran</button>
+          </div>
+          <label class="aide coche" style="margin-left:auto"><input type="checkbox" id="surbrillance" checked> Cadre sur qui parle</label>
         </div>
       </div>
+
+      <section class="plateau">
+        <div class="plateau-titre">
+          <h2>Participants</h2><span class="aide" id="nb-part"></span>
+          <label class="aide coche" style="margin-left:auto"><input type="checkbox" id="auto-antenne"> Mettre à l'antenne dès l'arrivée</label>
+        </div>
+        <div class="bande">
+          <div class="carte-moi">
+            <div id="cam-reglage" hidden></div>
+            <div id="cam-direct" hidden>
+              <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+              <p class="aide" id="etat-camera"><span style="color:var(--ui-accent)">●</span> Démarrage de ta caméra…</p>
+              <div class="ligne-boutons cam-ligne"><span class="aide" id="cam-appareils"></span><button class="petit" id="btn-cam-changer">Changer</button></div>
+            </div>
+            <div id="hote-controles"></div>
+          </div>
+          <div id="liste"></div>
+        </div>
+      </section>
     </div>
 
-    <div class="colonne" id="col-droite">
-      <div class="panneau outils">
-        <nav class="onglets" role="tablist">
-          <button data-tab="habillage">Habillage</button>
-          <button data-tab="bandeaux">Bandeaux</button>
-          <button data-tab="sources">Sources</button>
-          <button data-tab="quiz">Quiz</button>
-          <button data-tab="musique">Musique</button>
-          <button data-tab="chat">Chat <span class="pastille-n" id="chat-non-lus" hidden></span></button>
-          <button data-tab="comptes">Comptes</button>
-        </nav>
-        <section class="onglet" data-onglet="habillage" hidden>
-          <p class="intro-onglet">Le titre et le message du bandeau du bas, et le compte à rebours affiché sur l'écran d'intro.</p>
+    <aside class="panneau outils" id="col-droite">
+      <nav class="onglets" role="tablist">
+        <button data-tab="habillage"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg><span>Titres</span></button>
+        <button data-tab="sources"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Partage</span></button>
+        <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Quiz</span></button>
+        <button data-tab="chat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span>Chat</span><span class="pastille-n" id="chat-non-lus" hidden></span></button>
+        <button data-tab="musique"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Musique</span></button>
+        <button data-tab="comptes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg><span>Diffusion</span></button>
+      </nav>
+      <section class="onglet" data-onglet="habillage" hidden>
+        <h3 class="sous-titre" style="margin-top:0">Bandeau du bas</h3>
         <div class="grille2">
           <div><label class="champ" for="bandeau">Titre du bandeau</label><input type="text" id="bandeau"></div>
           <div><label class="champ" for="message">Message sous le titre</label><input type="text" id="message" placeholder="Ex. Pose tes questions dans le chat"></div>
         </div>
-        <label class="champ">Compte à rebours de l'intro</label>
+        <h3 class="sous-titre">Compte à rebours de l'intro</h3>
         <div class="ligne-boutons" style="align-items:center">
           <button class="petit" data-minutes="2">2 min</button>
           <button class="petit" data-minutes="5">5 min</button>
@@ -184,32 +239,33 @@
         </div>
 
       
-        </section>
-        <section class="onglet" data-onglet="bandeaux" hidden>
-          <p class="intro-onglet">Prépare des bandeaux (noms des invités, questions, annonces) et affiche-les d'un clic. Le texte défilant passe en bas de l'écran.</p>
+        
+        <h3 class="sous-titre">Bandeaux prêts à afficher</h3>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
-          <input type="text" id="bd-titre" placeholder="Titre (ex. Antho, spécialiste Marvel)">
-          <input type="text" id="bd-sous" placeholder="Sous-titre (optionnel)">
+          <input type="text" id="bd-titre" placeholder="Nom ou titre">
+          <input type="text" id="bd-sous" placeholder="Ex. fan de Marvel">
           <button class="primaire" id="bd-ajouter">Ajouter</button>
         </div>
         <div id="bd-liste" style="margin-top:10px"></div>
-        <label class="champ" for="defilant-txt">Texte défilant (en bas de l'écran)</label>
+        <h3 class="sous-titre">Texte défilant</h3>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
           <input type="text" id="defilant-txt" placeholder="Ex. Abonne-toi et pose tes questions dans le chat">
           <button id="defilant-btn">Afficher</button>
         </div>
       
-        </section>
-        <section class="onglet" data-onglet="sources" hidden>
-          <p class="intro-onglet">Jusqu'à 4 sources à la fois, affichées dans la scène Partage (touche 3) : ton écran, celui d'un invité, une image, une vidéo ou une page web.</p>
+        
+      </section>
+      <section class="onglet" data-onglet="sources" hidden>
+        <p class="intro-onglet">Ce qui s'affiche dans la scène Écran partagé (touche 3) : ton écran, celui d'un invité, une image, une vidéo ou une page web.</p>
         
         <div id="sources"></div>
       
-        </section>
-        <section class="onglet" data-onglet="quiz" hidden>
-          <p class="intro-onglet">Prépare tes questions avant le live. Pendant le live, « Lancer » l'affiche à l'écran et chez les invités, qui répondent en direct. <span class="aide" id="qz-statut"></span></p>
+        
+      </section>
+      <section class="onglet" data-onglet="quiz" hidden>
+          <p class="intro-onglet">Prépare tes questions avant le live, puis « Lancer » pendant le live. <span class="aide" id="qz-statut"></span></p>
         <div class="grille2">
-          <div style="grid-column:1/-1"><input type="text" id="qz-q" placeholder="Question (ex. Dans quel film Daniel Craig débute-t-il en 007 ?)"></div>
+          <div style="grid-column:1/-1"><input type="text" id="qz-q" placeholder="Ta question"></div>
           <div><label class="aide"><input type="radio" name="qz-bonne" value="0" checked> A</label><input type="text" class="qz-r" placeholder="Réponse A"></div>
           <div><label class="aide"><input type="radio" name="qz-bonne" value="1"> B</label><input type="text" class="qz-r" placeholder="Réponse B"></div>
           <div><label class="aide"><input type="radio" name="qz-bonne" value="2"> C</label><input type="text" class="qz-r" placeholder="Réponse C (optionnelle)"></div>
@@ -230,8 +286,7 @@
         </div>
       
         </section>
-        <section class="onglet" data-onglet="musique" hidden>
-          <p class="intro-onglet">Une playlist de MP3 pour l'intro, les pauses ou la fin. Le volume règle aussi les musiques d'intro et de fin du thème.</p>
+      <section class="onglet" data-onglet="musique" hidden>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
           <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
           <input type="url" id="mu-url" placeholder="Lien du MP3">
@@ -247,8 +302,7 @@
         <input type="range" id="vol-musique" min="0" max="100" step="1">
       
         </section>
-        <section class="onglet" data-onglet="chat" hidden>
-          <p class="intro-onglet">Twitch et YouTube réunis. Clique sur un message pour l'afficher à l'écran.</p>
+      <section class="onglet" data-onglet="chat" hidden>
         <div class="chat-src">
           <i style="background:#9146FF">TW</i>
           <input type="text" id="chat-twitch" placeholder="Ta chaîne Twitch (ex. sebastian_cineserie)">
@@ -274,14 +328,13 @@
         </div>
       
         </section>
-        <section class="onglet" data-onglet="comptes" hidden>
-          <p class="intro-onglet">Les plateformes où ton live est diffusé en même temps. Clique sur une plateforme pour coller sa clé de stream : elle reste dans ce navigateur, jamais dans les liens.</p>
+      <section class="onglet" data-onglet="comptes" hidden>
+          <p class="intro-onglet">Où ton live sera diffusé en même temps. Clique sur une plateforme pour coller sa clé de stream (elle reste dans ce navigateur).</p>
           <div class="aide" id="comptes-resume" style="margin-bottom:10px;color:var(--ui-text)"></div>
           <div id="comptes-liste"></div>
-          <p class="aide" style="margin-bottom:0">Le chat se connecte dans l'onglet Chat. Le direct démarrera depuis ici dès que le serveur OBSeb sera branché.</p>
+          
         </section>
-      </div>
-    </div>
+    </aside>
   </main>
 </div>
 
@@ -306,5 +359,6 @@
 <script src="js/regie-chat.js"></script>
 <script src="js/regie-comptes.js"></script>
 <script src="js/regie-recherche.js"></script>
+<script src="js/regie-guide.js"></script>
 </body>
 </html>

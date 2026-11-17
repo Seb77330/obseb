@@ -62,44 +62,69 @@
   .guide ol { padding-left: 20px; margin: 8px 0 0; }
   .guide li { margin: 6px 0; }
   code { background: var(--ui-input); border: 1px solid var(--ui-line); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  header .marque { text-decoration: none; color: var(--ui-text); }
+  .vide-accueil { display: grid; gap: 8px; justify-items: start; padding: 22px; border: 1px dashed var(--ui-line2); border-radius: 12px; }
+  .vide-accueil span { color: var(--ui-muted); font-size: 14px; }
+  .plus { position: relative; }
+  .plus summary { list-style: none; cursor: pointer; padding: 8px 12px; border: 1px solid var(--ui-line); border-radius: 9px; color: var(--ui-muted); font-size: 12px; letter-spacing: .1em; user-select: none; }
+  .plus summary::-webkit-details-marker { display: none; }
+  .plus[open] summary { background: var(--ui-panel2); color: var(--ui-text); }
+  .plus .menu { position: absolute; left: 0; top: calc(100% + 6px); z-index: 20; width: 300px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .plus .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 12px; font-weight: 500; }
+  .plus .menu button:hover { background: var(--ui-panel2); }
+  .plus .menu small { display: block; color: var(--ui-muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
+  .plus .menu .danger { color: var(--ui-ko, #e5484d); }
+  .etapes3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 700px) { .etapes3 { grid-template-columns: 1fr; } }
+  .etapes3 > div { background: var(--ui-panel2); border-radius: 12px; padding: 14px; }
+  .etapes3 span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+  .etapes3 b { display: block; font-weight: 600; margin-bottom: 4px; }
+  .etapes3 p { margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="marque">OBS<b>eb</b></div>
-    <span class="aide" style="flex:1">Ta régie live perso : un lien pour tes invités, un lien pour OBS, un thème par live.</span>
+    <a class="marque" href="index.html" title="Accueil">OBS<b>eb</b></a>
+    <span style="flex:1;color:var(--ui-muted);font-size:14px">Ta régie live : un lien pour tes invités, un lien pour OBS, un style par live.</span>
     <span id="place-affichage"></span>
   </header>
 
   <div class="grille">
     <div style="display:grid;gap:18px">
       <div class="panneau">
-        <h2>Mes sessions</h2>
+        <h2>Mes lives</h2>
         <div class="sessions" id="sessions"></div>
       </div>
 
       <div class="panneau">
-        <h2>Mes lives</h2>
-        <p class="aide" style="margin-top:-6px">Un live arrive ici quand tu passes sur la scène Fin. OBS l'enregistre en pleine qualité sur ton PC ; l'archive en ligne (10 jours, lien envoyé par mail) viendra avec le serveur.</p>
+        <h2>Lives terminés</h2>
+        <p class="aide" style="margin-top:-6px">Un live arrive ici quand tu passes sur l'écran de fin.</p>
         <div class="sessions" id="lives"></div>
       </div>
 
       <div class="panneau guide">
-        <h2>Mode d'emploi (5 minutes avant le live)</h2>
-        <ol>
-          <li><b>OBS</b> : ferme ta caméra (Cam Link) dans OBS. Ajoute une <b>source Navigateur</b>, colle le <b>lien OBS</b>, largeur <code>1920</code>, hauteur <code>1080</code>, et coche <b>Contrôler l'audio via OBS</b>. C'est la seule source dont tu as besoin pour le plateau.</li>
-          <li><b>Régie</b> : ouvre la régie dans Chrome, choisis ta Cam Link et ton micro dans « Ma caméra » (avec aperçu et indicateur de son), puis « Démarrer ma caméra ». La régie s’en souvient pour les fois suivantes. Mets un casque.</li>
-          <li><b>Invités</b> : clique sur « Copier le lien invités » et envoie-le. Ils arrivent en coulisses, tu les mets à l'antenne d'un clic.</li>
-          <li><b>Pendant le live</b> : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Live, <kbd>3</kbd> Partage, <kbd>4</kbd> Fin. Le volume de chaque invité se règle dans la régie, même si OBS est fermé tu continues de les entendre.</li>
-          <li><b>Vertical (TikTok, Shorts)</b> : même principe avec le <b>lien vertical</b>, source navigateur <code>1080</code> x <code>1920</code>. La régie pilote les deux en même temps.</li>
-          <li>OBS envoie le direct sur YouTube comme d'habitude. N'ouvre pas la webcam dans YouTube Studio.</li>
-        </ol>
+        <h2>Comment ça marche</h2>
+        <div class="etapes3">
+          <div><span>1</span><b>Ouvre la régie</b><p>Choisis ta caméra et ton micro, puis « Démarrer ma caméra ». Mets un casque.</p></div>
+          <div><span>2</span><b>Invite</b><p>Bouton « Inviter » : envoie le lien. Tes invités arrivent en coulisses, tu les mets à l'antenne d'un clic.</p></div>
+          <div><span>3</span><b>Branche OBS</b><p>Dans OBS, une source Navigateur avec le lien OBS (1920 × 1080). C'est la seule source à ajouter.</p></div>
+        </div>
+        <details class="aide" style="margin-top:12px">
+          <summary>Plus de détails</summary>
+          <ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">
+            <li>Ferme ta Cam Link dans OBS : c'est la régie qui l'utilise.</li>
+            <li>Dans la source Navigateur, coche « Contrôler l'audio via OBS ».</li>
+            <li>Pendant le live : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Live, <kbd>3</kbd> Écran partagé, <kbd>4</kbd> Fin.</li>
+            <li>Vertical (TikTok, Shorts) : même chose avec le lien vertical, en 1080 × 1920. La régie pilote les deux en même temps.</li>
+            <li>N'ouvre pas la webcam dans YouTube Studio : OBS envoie le live comme d'habitude.</li>
+          </ul>
+        </details>
       </div>
     </div>
 
     <div class="panneau">
-      <h2 id="titre-form">Nouvelle session</h2>
+      <h2 id="titre-form">Nouveau live</h2>
       <div class="cadre169"><iframe id="apercu-theme" title="Aperçu du thème"></iframe></div>
       <div class="ligne-boutons" style="margin-top:8px">
         <button class="petit" data-apercu="intro">Intro</button>
@@ -187,7 +212,7 @@
       <p class="aide">Le compte commence quand tu passes en Live. Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le live passe sur l'écran de fin tout seul. Tu peux toujours finir avant.</p>
 
       <div class="ligne-boutons" style="margin-top:18px">
-        <button class="primaire" id="btn-creer">Créer la session</button>
+        <button class="primaire" id="btn-creer">Créer le live</button>
         <button id="btn-annuler" hidden>Annuler</button>
       </div>
       <p class="aide" id="note-modif" hidden>Après une modification, renvoie le lien invités et remets le lien OBS à jour : ils contiennent le thème.</p>

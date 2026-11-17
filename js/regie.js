@@ -35,7 +35,7 @@ const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité
 
 /* ----- En-tête ----- */
 $('#titre-session').textContent = session.titre;
-$('#sous-session').textContent = `Thème : ${theme.nom || 'perso'} · salle ${session.room}`;
+$('#sous-session').textContent = `Thème : ${theme.nom || 'perso'}`;
 document.title = `${session.titre} · Régie`;
 $('#bandeau').value = etat.bandeau || session.titre;
 $('#message').value = etat.message || '';
@@ -62,7 +62,7 @@ function demarrerCamera(app) {
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
-  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true });   // son pro : stéréo, sans anti-écho (casque)
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, width: 1920, height: 1080, maxframerate: 30, contenthint: 'detail' });   // 1080p tenu : le navigateur baisse les images/s plutôt que la définition   // son pro : stéréo, sans anti-écho (casque)
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.scene !== 'intro' && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
@@ -191,7 +191,7 @@ function creerCarte(id) {
   const el = document.createElement('div');
   el.className = 'participant';
   el.innerHTML = `
-    <div class="vignette">${estHote ? '<div class="moi">Toi<br>(ta caméra est au-dessus)</div>' : ''}</div>
+    <div class="vignette"></div>
     <div>
       <input type="text" class="nom" title="Nom affiché à l'écran">
       <div class="reglages"><span title="Volume dans le live">🔊</span><input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
@@ -200,8 +200,8 @@ function creerCarte(id) {
     </div>
     <div class="actions">
       <button class="petit antenne-btn"></button>
-      <button class="petit muet-btn">Couper le son</button>
-      <button class="petit focus-btn" title="Afficher cette personne seule">En grand</button>
+      <button class="petit muet-btn">Muet</button>
+      <button class="petit focus-btn" title="Afficher cette personne seule à l'écran">Seul</button>
       ${estHote ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
     </div>`;
   let iframe = null;
@@ -218,7 +218,11 @@ function creerCarte(id) {
   const vol = el.querySelector('.vol');
   vol.value = Math.round((etat.vol[id] ?? 1) * 100);
   vol.oninput = () => { etat.vol[id] = vol.value / 100; volumeCasque(id); majCarte(id); envoyerBientot(); };
-  el.querySelector('.antenne-btn').onclick = () => basculerAntenne(id);
+  el.querySelector('.antenne-btn').onclick = () => {
+    if (estHote && etat.onair.includes(id) && etat.scene !== 'intro' && !confirm('Te retirer de l\'antenne ? Les spectateurs ne te verront plus.')) return;
+    basculerAntenne(id);
+  };
+  if (estHote) el.classList.add('hote');
   el.querySelector('.muet-btn').onclick = () => { etat.muet[id] = !etat.muet[id]; volumeCasque(id); envoyer(); };
   el.querySelector('.focus-btn').onclick = () => {
     if (!etat.onair.includes(id)) etat.onair.push(id);
@@ -244,9 +248,10 @@ function majCarte(id) {
   c.el.classList.toggle('antenne', enDirect);
   c.el.classList.toggle('parti', id !== ID_HOTE && !presents.has(id));
   const b = c.el.querySelector('.antenne-btn');
-  b.textContent = enDirect ? "Retirer de l'antenne" : "Mettre à l'antenne";
-  b.className = 'petit antenne-btn' + (enDirect ? ' rouge' : ' primaire');
-  c.el.querySelector('.muet-btn').textContent = etat.muet[id] ? 'Rétablir le son' : 'Couper le son';
+  b.textContent = enDirect ? "✓ À l'antenne" : "Mettre à l'antenne";
+  b.title = enDirect ? "Cliquer pour retirer de l'antenne" : '';
+  b.className = 'petit antenne-btn' + (enDirect ? '' : ' primaire');
+  c.el.querySelector('.muet-btn').textContent = etat.muet[id] ? 'Son coupé' : 'Muet';
   c.el.querySelector('.muet-btn').classList.toggle('actif', !!etat.muet[id]);
   const qe = c.el.querySelector('.qualite'), q = qualites.get(id);
   if (qe) {
@@ -262,22 +267,26 @@ function majCarte(id) {
 function majInterface() {
   const liste = $('#liste');
   const ids = [ID_HOTE, ...[...presents.keys()].filter(id => id !== ID_HOTE && !estEcran(id))];
-  for (const id of ids) if (!cartes.has(id)) liste.appendChild(creerCarte(id).el);
+  for (const id of ids) if (!cartes.has(id)) (id === ID_HOTE ? $('#hote-controles') : liste).appendChild(creerCarte(id).el);
   for (const [id, c] of cartes) if (!ids.includes(id)) { c.el.remove(); cartes.delete(id); }
   // ordre : à l'antenne d'abord (dans l'ordre d'affichage), puis coulisses
   const tri = [...ids].sort((a, b) => {
     const ia = etat.onair.indexOf(a), ib = etat.onair.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
-  tri.forEach(id => liste.appendChild(cartes.get(id).el));
+  tri.forEach(id => { if (id !== ID_HOTE) liste.appendChild(cartes.get(id).el); });
   ids.forEach(majCarte);
   const nbInvites = ids.length - 1;
   $('#nb-part').textContent = `${nbInvites} invité${nbInvites > 1 ? 's' : ''} · ${etat.onair.filter(id => ids.includes(id)).length} à l'antenne`;
-  if (!$('#liste .vide') && nbInvites === 0) liste.insertAdjacentHTML('beforeend', '<div class="vide">Personne en coulisses pour le moment. Envoie le lien invités.</div>');
+  if (!$('#liste .vide') && nbInvites === 0) {
+    liste.insertAdjacentHTML('beforeend', '<div class="vide">Tes invités arriveront ici. Tu les mets à l\'antenne d\'un clic.<button class="primaire petit" id="vide-inviter">Copier le lien invités</button></div>');
+    $('#vide-inviter').onclick = () => $('#btn-invite').click();
+  }
   if (nbInvites > 0) $('#liste .vide')?.remove();
   $$('[data-scene]').forEach(b => b.classList.toggle('actif', b.dataset.scene === etat.scene));
   $$('[data-layout]').forEach(b => b.classList.toggle('actif', b.dataset.layout === etat.layout));
-  $('#badge-scene').textContent = { intro: 'INTRO', live: 'LIVE', partage: 'PARTAGE', fin: 'FIN' }[etat.scene];
+  $('#badge-scene').textContent = { intro: 'Intro', live: 'En direct', partage: 'Écran partagé', fin: 'Fin' }[etat.scene];
+  $('#badge-scene').classList.toggle('rouge-direct', etat.scene === 'live' || etat.scene === 'partage');
 }
 
 /* ----- Qui est connecté ? (liste fournie par vdo.ninja) ----- */

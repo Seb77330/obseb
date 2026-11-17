@@ -4,6 +4,7 @@
 /* ----- Onglets ----- */
 const CLE_ONGLET = 'studioSeb:onglet';
 function ouvrirOnglet(nom) {
+  if (nom === 'bandeaux') nom = 'habillage';   // les bandeaux sont rangés dans l'onglet Titres
   $$('.onglets button').forEach(b => b.classList.toggle('actif', b.dataset.tab === nom));
   $$('.onglet').forEach(o => { o.hidden = o.dataset.onglet !== nom; });
   try { localStorage.setItem(CLE_ONGLET, nom); } catch (e) { /* rien */ }

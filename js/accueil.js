@@ -24,11 +24,6 @@ async function copier(txt, msg) {
   history.replaceState(null, '', location.pathname);
 })();
 
-/* Première visite : une session James Bond prête, comme le live du 16/11 */
-if (!lire().length) {
-  const s = nouvelleSession('Spécial James Bond : qui pour succéder à Daniel Craig ?', 'bond');
-  ecrire([{ session: s, cle: rnd(12) }]);
-}
 
 /* ----- Formulaire ----- */
 let enEdition = null;            // room de la session modifiée, sinon null
@@ -96,10 +91,10 @@ $('#btn-creer').onclick = () => {
   if (enEdition) {
     const i = l.findIndex(x => x.session.room === enEdition);
     if (i >= 0) l[i].session = brouillon;
-    toast('Session modifiée');
+    toast('Live modifié');
   } else {
     l.unshift({ session: brouillon, cle: rnd(12) });
-    toast('Session créée');
+    toast('Live créé : clique sur « Ouvrir la régie »');
   }
   ecrire(l);
   annuler();
@@ -108,8 +103,8 @@ $('#btn-creer').onclick = () => {
 function annuler() {
   enEdition = null;
   brouillon = nouvelleSession('', 'minimal');
-  $('#titre-form').textContent = 'Nouvelle session';
-  $('#btn-creer').textContent = 'Créer la session';
+  $('#titre-form').textContent = 'Nouveau live';
+  $('#btn-creer').textContent = 'Créer le live';
   $('#btn-annuler').hidden = true; $('#note-modif').hidden = true;
   remplirForm(); apercu();
 }
@@ -120,7 +115,10 @@ function afficherSessions() {
   const box = $('#sessions');
   box.innerHTML = '';
   const l = lire();
-  if (!l.length) box.innerHTML = '<p class="aide">Aucune session. Crée ton premier live à droite.</p>';
+  if (!l.length) {
+    box.innerHTML = '<div class="vide-accueil"><b>Aucun live pour le moment</b><span>Donne un titre, choisis un style, et ta régie est prête.</span><button class="primaire" id="vide-creer">Créer mon premier live</button></div>';
+    $('#vide-creer').onclick = () => { $('#titre-form').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#f-titre').focus(); };
+  }
   l.forEach(({ session, cle }) => {
     const L = liens(session, cle);
     const t = themeComplet(session);
@@ -131,14 +129,19 @@ function afficherSessions() {
       <div>
         <h3>${esc(session.titre)}</h3>
         <div class="meta">Thème ${esc(t.nom || 'perso')} · créée le ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR')}</div>
-        <div class="ligne-boutons">
+        <div class="ligne-boutons" style="align-items:center">
           <a href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
           <button data-a="invite">Copier le lien invités</button>
-          <button data-a="obs">Copier le lien OBS</button>
-          <button data-a="vertical" title="TikTok, Shorts, Reels">Lien vertical</button>
-          <button class="petit" data-a="modifier">Modifier</button>
-          <button class="petit" data-a="dupliquer" title="Nouveau live avec le même thème">Dupliquer</button>
-          <button class="petit" data-a="suppr">Retirer</button>
+          <details class="plus">
+            <summary title="Plus d'options">•••</summary>
+            <div class="menu">
+              <button data-a="obs">Copier le lien OBS<small>Source navigateur 1920 × 1080</small></button>
+              <button data-a="vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)</small></button>
+              <button data-a="modifier">Modifier<small>Titre, style, durée maximale</small></button>
+              <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même style</small></button>
+              <button data-a="suppr" class="danger">Supprimer</button>
+            </div>
+          </details>
         </div>
       </div>`;
     el.querySelector('[data-a=invite]').onclick = () => copier(L.invite, 'Lien invités copié');
@@ -146,7 +149,7 @@ function afficherSessions() {
     el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
     el.querySelector('[data-a=modifier]').onclick = () => {
       enEdition = session.room; brouillon = JSON.parse(JSON.stringify(session));
-      $('#titre-form').textContent = 'Modifier la session';
+      $('#titre-form').textContent = 'Modifier le live';
       $('#btn-creer').textContent = 'Enregistrer';
       $('#btn-annuler').hidden = false; $('#note-modif').hidden = false;
       remplirForm(); apercu(); scrollTo({ top: 0, behavior: 'smooth' });
@@ -154,13 +157,13 @@ function afficherSessions() {
     el.querySelector('[data-a=dupliquer]').onclick = () => {
       enEdition = null;
       brouillon = Object.assign(nouvelleSession('', session.theme.preset), { theme: JSON.parse(JSON.stringify(session.theme)), hote: session.hote, handle: session.handle, limite: session.limite || 0 });
-      $('#titre-form').textContent = 'Nouvelle session (même thème)';
-      $('#btn-creer').textContent = 'Créer la session';
+      $('#titre-form').textContent = 'Nouveau live (même style)';
+      $('#btn-creer').textContent = 'Créer le live';
       $('#btn-annuler').hidden = false; $('#note-modif').hidden = true;
       remplirForm(); apercu(); $('#f-titre').focus();
     };
     el.querySelector('[data-a=suppr]').onclick = () => {
-      if (!confirm(`Retirer « ${session.titre} » de la liste ?`)) return;
+      if (!confirm(`Supprimer « ${session.titre} » de ta liste ?`)) return;
       ecrire(lire().filter(x => x.session.room !== session.room)); afficherSessions();
     };
     box.appendChild(el);
@@ -206,3 +209,8 @@ remplirForm();
 apercu();
 afficherSessions();
 afficherLives();
+
+/* Menus « ••• » : se ferment au clic ailleurs ou après un choix */
+document.addEventListener('click', e => {
+  $$('details.plus[open]').forEach(d => { if (!d.contains(e.target) || e.target.closest('.menu button')) d.open = false; });
+});
