@@ -42,9 +42,13 @@ let room = null, volume = 1, envoiNiveau = null;
 async function jeton(identite) {
   const r = await fetch(SERVEUR + '/jeton', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ room: ROOM, identite, nom: LABEL, publier: !!PUSH, cle: P.get('cle') || undefined })
+    body: JSON.stringify({ room: ROOM, identite, nom: LABEL, publier: !!PUSH, cle: P.get('cle') || undefined, pour: P.get('pour') || undefined })
   });
-  if (!r.ok) { const e = new Error('jeton ' + r.status); e.refus = true; throw e; }
+  if (!r.ok) {
+    const e = new Error('jeton ' + r.status); e.refus = r.status === 403;
+    try { const j = await r.json(); e.message = j.erreur || e.message; e.attente = !!j.attente; } catch (err) { /* rien */ }
+    throw e;
+  }
   return r.json();
 }
 
@@ -62,7 +66,9 @@ async function demarrer() {
   let acces;
   try { acces = await jeton(identite); }
   catch (e) {
-    if (e.refus) { etat('Accès refusé par le serveur OBSeb (lien incomplet ?)'); return; }
+    // aperçu d'un invité pas encore admis : on réessaie tout seul jusqu'à ce que l'animateur le fasse entrer
+    if (e.attente) { etat('En salle d\'attente…'); setTimeout(demarrer, 4000); return; }
+    if (e.refus) { etat(e.message && !/^jeton/.test(e.message) ? e.message : 'Accès refusé par le serveur OBSeb (lien incomplet ?)'); dire({ obsebRefus: e.message }); return; }
     return secours(e.message);
   }
 
@@ -125,6 +131,22 @@ async function demarrer() {
   }
   for (const p of room.remoteParticipants.values()) for (const pub of p.trackPublications.values()) pub.setSubscribed(veutRecevoir(pub, p));
 
+  /* Salle d'attente : un invité entre sans caméra ni micro, et ne voit ni n'entend rien, jusqu'à ce que l'animateur le fasse entrer */
+  if (PUSH && acces.attente) {
+    etat('Salle d\'attente : l\'animateur va te faire entrer');
+    dire({ obsebAttente: true });
+    room.on(LK.RoomEvent.ParticipantPermissionsChanged, async (avant, participant) => {
+      const pm = room.localParticipant.permissions;
+      if (participant && participant !== room.localParticipant) return;
+      if (pm && pm.canPublish && !(avant && avant.canPublish)) {
+        dire({ obsebAttente: false });
+        for (const p of room.remoteParticipants.values()) for (const pub of p.trackPublications.values()) pub.setSubscribed(veutRecevoir(pub, p));
+        await publier();
+        etat('');
+      }
+    });
+    return;
+  }
   if (PUSH) await publier();
   etat('');
 }

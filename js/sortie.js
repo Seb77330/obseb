@@ -1,5 +1,7 @@
 /* OBSeb : page Sortie (source navigateur OBS, aperçus régie et invités) */
 'use strict';
+/* Sécurité : seules les adresses https (ou un fichier choisi dans la régie) s'affichent ; jamais javascript: ni autre chose */
+const lienSur = u => (typeof u === 'string' && /^(https:\/\/|blob:|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(u.trim())) ? u.trim() : '';
 
 const Q = queryParams();
 const PREVIEW = Q.has('preview');           // aperçu léger : basse qualité, sans son
@@ -126,7 +128,7 @@ function creerSource(src) {
   let video = null;
   if (src.type === 'image') {
     // image donnée par un lien, ou fichier choisi dans la régie (il arrive par le canal de la régie)
-    const adresse = idFichierSource(src) ? adresseFichier(idFichierSource(src)) : src.ref;
+    const adresse = idFichierSource(src) ? adresseFichier(idFichierSource(src)) : lienSur(src.ref);
     // l'image entière, et la même en flou derrière pour remplir la case (pas de bandes noires)
     const attr = adresse ? `src="${esc(adresse)}"` : '';
     el.innerHTML = `<img class="flou" ${attr} alt="" aria-hidden="true"><img class="nette" ${attr} alt="">`;
@@ -134,14 +136,18 @@ function creerSource(src) {
   }
   else if (src.type === 'video') {
     video = document.createElement('video');
-    Object.assign(video, { src: src.ref, loop: true, playsInline: true, muted: PREVIEW, autoplay: true });
+    Object.assign(video, { src: lienSur(src.ref), loop: true, playsInline: true, muted: PREVIEW, autoplay: true });
     video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000';
     el.appendChild(video);
   } else if (src.type === 'web') {
     const lecteur = /^https:\/\/(www\.youtube\.com\/embed|player\.vimeo\.com|www\.dailymotion\.com\/embed|player\.twitch\.tv)\//.test(src.ref);
     const f = document.createElement('iframe'); f.allow = 'autoplay *; fullscreen *; encrypted-media *';
+    // sécurité : la page affichée ne peut ni changer l'adresse du live, ni ouvrir de fenêtres, ni lire d'où elle est affichée
+    f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms');
+    f.referrerPolicy = 'no-referrer';
+    const refWeb = /^https:\/\//i.test(String(src.ref || '')) ? src.ref : 'about:blank';
     // un lecteur vidéo reste muet dans les aperçus : son son ne part que dans la sortie du live
-    f.src = lecteur && PREVIEW ? src.ref + (src.ref.includes('?') ? '&' : '?') + (src.ref.includes('twitch') ? 'muted=true' : src.ref.includes('vimeo') ? 'muted=1' : 'mute=1') : src.ref;
+    f.src = lecteur && PREVIEW ? refWeb + (refWeb.includes('?') ? '&' : '?') + (refWeb.includes('twitch') ? 'muted=true' : refWeb.includes('vimeo') ? 'muted=1' : 'mute=1') : refWeb;
     el.appendChild(f);
     if (!lecteur) {
       // une page web est dessinée comme sur un écran d'ordinateur (1280 px de large), puis réduite à la taille de la case :

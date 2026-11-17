@@ -1,0 +1,17 @@
+/* OBSeb : salle d'attente de la régie (avec le serveur OBSeb) */
+#salle-attente { position: fixed; right: 16px; bottom: 44px; z-index: 900; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#salle-attente[hidden] { display: none; }
+#salle-attente .sa-pastille { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+#salle-attente .sa-pastille b { background: var(--ui-accent); color: var(--ui-sur-accent); border-radius: 999px; min-width: 20px; padding: 0 6px; font-size: 12px; line-height: 20px; text-align: center; }
+#salle-attente.quelquun .sa-pastille { border-color: var(--ui-accent); }
+#salle-attente .sa-volet { order: -1; width: min(340px, calc(100vw - 32px)); background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.35); display: grid; gap: 10px; }
+#salle-attente .sa-volet[hidden] { display: none; }
+#salle-attente .sa-tete { display: flex; justify-content: space-between; align-items: center; }
+#salle-attente .sa-tete button { background: none; border: 0; padding: 2px 6px; color: var(--ui-muted); }
+#salle-attente .sa-ligne { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+#salle-attente .sa-ligne span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#salle-attente .sa-liste .aide, #salle-attente .sa-liste-admis .aide { margin: 0; }
+#salle-attente summary { cursor: pointer; color: var(--ui-muted); font-size: 13px; }
+#salle-attente .sa-verrou { font-size: 13px; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+#salle-attente .sa-verrou small { color: var(--ui-muted); }
+@media (max-width: 1000px) { #salle-attente { bottom: 76px; } }

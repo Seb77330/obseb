@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<!-- Sécurité : le navigateur refuse tout script qui ne vient pas du site lui-même (protège tes clés et tes invités) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Invitation au live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,9 +127,9 @@
     </div>
   </section>
 </div>
-<script src="js/common.js?v=d2ef47b1"></script>
+<script src="js/common.js?v=9b58cc66"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=99c4fbe9"></script>
+<script src="js/invite.js?v=369a86f0"></script>
 </body>
 </html>
