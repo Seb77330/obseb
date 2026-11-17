@@ -8,7 +8,7 @@ const btnDirect = $('#btn-direct');
 const serveurBranche = () => !!session.serveur;
 
 function plateformesPretes() {
-  return PLATEFORMES_LIVE.map(p => ({ p, c: compte(p) })).filter(({ c }) => c.actif && c.serveur && c.cle);
+  return PLATEFORMES_LIVE.map(p => ({ p, c: compte(p) })).filter(({ c }) => comptePret(c));
 }
 
 function demarrerDirect(ids) {
@@ -81,7 +81,7 @@ function dessinerPop() {
     pop.innerHTML = `<h4>Démarrer le direct ?</h4>
       ${dessinPorte()}
       <p class="aide" style="margin:0 0 8px">Les spectateurs te verront dès que tu cliques. Rien ne part avant.</p>
-      ${pretes.length ? pretes.map(({ p, c }) => ligne(p, `<small>${c.format === 'vertical' ? 'vertical' : 'horizontal'}</small><input type="checkbox" data-pf="${p.id}" checked>`)).join('')
+      ${pretes.length ? pretes.map(({ p, c }) => ligne(p, `<small>${nomFormat(c.format)}</small><input type="checkbox" data-pf="${p.id}" checked>`)).join('')
         : '<p class="aide" style="margin:0">Aucune plateforme configurée dans l\'onglet Diffusion.</p>'}
       ${noteObs}
       <div class="menu-bas">

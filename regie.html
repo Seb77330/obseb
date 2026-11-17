@@ -262,6 +262,12 @@
   .mu-ecoute button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 6px; }
   .mu-ecoute svg { width: 16px; height: 16px; flex: none; }
   #chat-liste { height: clamp(180px, 34vh, 360px); }
+  .puce-beta { font: 600 10px var(--mono); letter-spacing: .14em; padding: 3px 7px; border-radius: 6px; color: var(--ui-accent); border: 1px solid color-mix(in srgb, var(--ui-accent) 50%, transparent); margin-left: -4px; cursor: default; }
+  .compte-liens { display: flex; gap: 6px; flex-wrap: wrap; }
+  .compte-liens a, .compte-liens button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 8px; font-size: 13px; border-radius: 8px; border: 1px solid var(--ui-line2); background: var(--ui-input); color: var(--ui-text); text-decoration: none; white-space: nowrap; }
+  .compte-liens a:hover, .compte-liens button:hover { border-color: var(--ui-accent); }
+  .c-cle2, .aide-deux { display: none; }
+  .compte.deux .c-cle2, .compte.deux .aide-deux { display: block; }
   .compte { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; background: var(--ui-panel2); }
   .compte.on { border-color: color-mix(in srgb, var(--ui-accent) 55%, transparent); }
   .comptes-plus { margin-top: 12px; }
@@ -463,6 +469,7 @@
 <div id="app" hidden>
   <header>
     <a class="marque" href="index.html" title="Retour à l'accueil">OBS<b>eb</b></a>
+    <span class="puce-beta" title="Formule Bêta : tout est ouvert, au maximum, pour toi et tes testeurs">BÊTA</span>
     <div class="session"><div class="t" id="titre-session"></div><div class="s" id="sous-session"></div></div>
     <span id="limiteur" class="limiteur" hidden></span>
     <div class="horloge" title="Heure de ton ordinateur"><span class="tc" id="horloge">00:00:00</span></div>
@@ -791,7 +798,7 @@
   </div>
 </div>
 
-<script src="js/common.js?v=bd35556c"></script>
+<script src="js/common.js?v=2c37dfc1"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/regie.js?v=f344e773"></script>
@@ -799,9 +806,9 @@
 <script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=3e613d8e"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
-<script src="js/regie-comptes.js?v=03347cc5"></script>
+<script src="js/regie-comptes.js?v=06661441"></script>
 <script src="js/regie-recherche.js?v=8986a628"></script>
-<script src="js/regie-direct.js?v=f7bae645"></script>
+<script src="js/regie-direct.js?v=6a52613d"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
 <script src="js/regie-watch.js?v=d4ce3fab"></script>

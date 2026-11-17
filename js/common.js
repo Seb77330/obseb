@@ -774,10 +774,12 @@ const fichiers = (() => {
   };
 })();
 
-/* ----- Ce que chaque formule permet. Les comptes n'existent pas encore : tout le monde est en Gratuit. ----- */
-const LIMITES = { gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 25 }, regie: { musiques: 50 } };
+/* ----- Ce que chaque formule permet.
+   « beta » : la formule de Sebastian et des bêta-testeurs, tout au maximum. Tant que les comptes n'existent pas,
+   c'est celle de tout le monde (demande de Sebastian, 17/11). ----- */
+const LIMITES = { beta: { musiques: 50 }, gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 25 }, regie: { musiques: 50 } };
 function formuleActuelle() {
-  try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'gratuit'; } catch (e) { return 'gratuit'; }
+  try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'beta'; } catch (e) { return 'beta'; }
 }
 
 /* ---------- Téléphone et tablette : l'écran ne se met pas en veille pendant le live ---------- */

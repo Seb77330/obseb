@@ -72,7 +72,7 @@ function majVisuels() {
 /* ----- Musiques d'intro et de fin : des fichiers choisis sur l'ordinateur (plusieurs = une playlist, jouée à la suite).
    Ils restent dans ce navigateur ; la régie les retrouve dans son onglet Musique, déjà liés à la scène Intro ou Fin. ----- */
 const sonsDe = (t, champ) => [].concat(t[champ] || []).filter(x => x && x.id);
-const MAX_SONS = (typeof LIMITES !== 'undefined' && LIMITES.gratuit && LIMITES.gratuit.musiques) || 3;
+const MAX_SONS = LIMITES[formuleActuelle()].musiques;
 const LIEN_SON = { musIntro: 'musiqueIntro', musFin: 'musiqueFin' };   // anciens liens MP3, encore lus s'il y en a
 const TAILLE_MAX_SON = 15 * 1024 * 1024;
 let ecoute = null;
