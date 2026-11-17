@@ -262,27 +262,48 @@
   .bloc { padding: 14px 0; border-top: 1px solid var(--ui-line); }
   .bloc:first-child { border-top: 0; padding-top: 2px; }
   .bloc-titre { font-size: 12px; font-weight: 600; color: var(--ui-muted); margin-bottom: 10px; }
-  .nuancier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .nuance { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--ui-muted); cursor: pointer; }
-  .nuance input[type=color] { width: 100%; height: 44px; border-radius: 10px; padding: 3px; cursor: pointer; }
-  .polices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 260px; overflow-x: hidden; overflow-y: auto; padding: 2px 6px 2px 2px; }
-  .police { min-width: 0; text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--ui-panel2); font-weight: 400; }
-  .police span { display: block; font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .police small { display: block; font-family: Inter, sans-serif; font-size: 11px; color: var(--ui-muted); margin-top: 4px; }
-  .police.actif { outline: 2px solid var(--ui-accent); }
-  .police.actif small { color: inherit; opacity: .7; }
+  /* Couleurs : quatre pastilles rondes */
+  .nuancier { display: flex; gap: 18px; }
+  .nuance { display: grid; justify-items: center; gap: 7px; font-size: 12px; color: var(--ui-muted); cursor: pointer; }
+  .nuance input[type=color] { width: 46px; height: 46px; padding: 0; border: 2px solid var(--ui-line2); border-radius: 50%; overflow: hidden; background: none; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .nuance input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+  .nuance input[type=color]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+  .nuance input[type=color]::-moz-color-swatch { border: 0; border-radius: 50%; }
+  .nuance:hover input[type=color] { border-color: var(--ui-accent); transform: scale(1.06); }
+  .nuance:hover { color: var(--ui-text); }
+  /* Polices : « Aa » dans chaque police, les neuf premières puis toutes sur demande */
+  .polices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .polices:not(.tout) .police:nth-child(n+10):not(.actif) { display: none; }
+  .police { min-width: 0; display: grid; justify-items: center; gap: 6px; padding: 13px 6px 9px; border-radius: 12px; background: var(--ui-panel2); font-weight: 400; text-align: center; }
+  .police span { display: block; font-size: 27px; line-height: 1; white-space: nowrap; }
+  .police small { display: block; max-width: 100%; font-family: Inter, sans-serif; font-size: 11px; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .police.actif { background: color-mix(in srgb, var(--ui-accent) 13%, var(--ui-panel2)); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: inset 0 0 0 1px var(--ui-accent); }
+  #polices-tout { margin-top: 8px; }
   .depots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .depot { position: relative; border: 1.5px dashed var(--ui-line2); border-radius: 12px; padding: 12px; display: grid; justify-items: center; text-align: center; gap: 2px; cursor: pointer; transition: border-color .15s, background .15s; }
   .depot:hover, .depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
   .depot b { font-size: 13px; font-weight: 600; } .depot small { font-size: 12px; color: var(--ui-muted); }
   .depot-vue { width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: var(--ui-input) center/cover no-repeat; margin-bottom: 6px; position: relative; }
+  .depot-vue:empty::after { content: '+'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 26px; font-weight: 300; color: var(--ui-muted); }
+  .depot:hover .depot-vue:empty::after { color: var(--ui-accent); }
   .depot[data-cible="f-logo"] .depot-vue { background-size: contain; background-origin: content-box; padding: 10px; }
   .depot-vue .retirer { position: absolute; top: 4px; right: 4px; padding: 2px 7px; font-size: 12px; }
   .depot.grand { padding: 28px 16px; margin-top: 10px; }
   .depot.grand b { font-size: 15px; }
   .sous-option { margin-top: 10px; }
   .sous-option summary { cursor: pointer; font-weight: 500; color: var(--ui-muted); font-size: 13px; margin-bottom: 8px; }
-  .pas-obs { padding-left: 20px; margin: 0; font-size: 14px; } .pas-obs li { margin: 6px 0; }
+  /* Import OBS : trois étapes numérotées, la troisième est la zone où l'on dépose */
+  .obs-pas { display: grid; gap: 8px; }
+  .obs-etape { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel2); color: var(--ui-text); text-decoration: none; text-align: left; }
+  .obs-etape .num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--mono); color: var(--ui-accent); border: 1px solid color-mix(in srgb, var(--ui-accent) 55%, transparent); }
+  .obs-etape .txt { flex: 1; min-width: 0; }
+  .obs-etape .txt b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .obs-etape .txt small { display: block; font-size: 12.5px; color: var(--ui-muted); line-height: 1.35; }
+  .obs-etape > svg { flex: none; width: 18px; height: 18px; color: var(--ui-muted); }
+  a.obs-etape:hover { border-color: var(--ui-accent); } a.obs-etape:hover > svg { color: var(--ui-accent); }
+  .obs-etape.depot { display: flex; justify-items: start; border: 1.5px dashed var(--ui-line2); background: none; padding: 16px 12px; cursor: pointer; }
+  .obs-etape.depot:hover, .obs-etape.depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
+  .obs-choix { flex: none; display: flex; gap: 6px; }
   #obs-rapport { margin-top: 10px; font-size: 13px; }
   #obs-rapport .ok { color: var(--ui-green); } #obs-rapport .ko { color: var(--ui-ko); }
   #obs-rapport ul { margin: 6px 0 0; padding-left: 18px; color: var(--ui-muted); }
@@ -458,48 +479,53 @@
             <div class="bloc-titre">Police des titres</div>
             <select id="f-font" hidden></select>
             <div class="polices" id="polices"></div>
+            <button type="button" class="voir-tout" id="polices-tout"></button>
           </div>
           <div class="bloc">
             <div class="bloc-titre">Images</div>
             <div class="depots">
-              <div class="depot" data-cible="f-image"><div class="depot-vue"></div><b>Image de fond</b><small>Glisse une image ou clique</small><input type="file" accept="image/*" hidden></div>
-              <div class="depot" data-cible="f-logo"><div class="depot-vue"></div><b>Logo</b><small>PNG transparent idéal</small><input type="file" accept="image/*" hidden></div>
+              <div class="depot" data-cible="f-image" title="Glisse une image ici, ou clique pour en choisir une"><div class="depot-vue"></div><b>Image de fond</b><input type="file" accept="image/*" hidden></div>
+              <div class="depot" data-cible="f-logo" title="Glisse ton logo ici, ou clique pour le choisir. Un PNG transparent est idéal."><div class="depot-vue"></div><b>Logo</b><input type="file" accept="image/*" hidden></div>
             </div>
-            <details class="sous-option"><summary>Ou coller un lien d'image</summary>
+            <input type="text" id="f-logotexte" maxlength="10" placeholder="Pas de logo ? Écris un texte court, ex. SEB" aria-label="Texte du logo s'il n'y a pas d'image" style="margin-top:8px">
+            <p class="aide" style="margin:8px 0 0" title="Les plateformes sanctionnent le compte qui diffuse.">Rien de choquant ni de volé : ces images passent en direct.</p>
+            <details class="sous-option"><summary>Coller un lien d'image</summary>
               <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
               <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
             </details>
-            <p class="aide" style="margin:8px 0 0">Ces images passent en direct : rien de choquant ni de volé, les plateformes sanctionnent le compte qui diffuse.</p>
-            <label class="champ" for="f-logotexte">Texte du logo s'il n'y a pas d'image</label>
-            <input type="text" id="f-logotexte" maxlength="10" placeholder="SEB">
           </div>
           <details class="bloc sous-option"><summary>Musiques d'intro et de fin</summary>
             <input type="url" id="f-mintro" placeholder="Lien du MP3 d'intro (https://…)">
             <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
-            <p class="aide" style="margin:6px 0 0">Elles passent dans le son du live, pas dans les aperçus.</p>
+
           </details>
           <div class="bloc enregistrer-style">
-            <div class="bloc-titre">Garder ce style pour mes prochains lives</div>
+            <div class="bloc-titre">Garder ce style</div>
             <div class="ligne-style">
-              <input type="text" id="style-nom" maxlength="30" placeholder="Nom du style, ex. Mon habillage">
-              <button type="button" class="primaire" id="style-enregistrer">Enregistrer ce style</button>
+              <input type="text" id="style-nom" maxlength="30" placeholder="Nom du style">
+              <button type="button" class="primaire" id="style-enregistrer" title="Tu le retrouveras en haut des thèmes, dans « Mes styles »">Enregistrer</button>
             </div>
-            <label class="case-style"><input type="checkbox" id="style-defaut" checked> L'utiliser d'office pour chaque nouveau live</label>
-            <p class="aide" style="margin:6px 0 0">Tu le retrouveras en haut des thèmes, dans « Mes styles ».</p>
+            <label class="case-style"><input type="checkbox" id="style-defaut" checked> Par défaut pour mes prochains lives</label>
           </div>
         </div>
       </details>
       <details class="option" id="opt-obs">
         <summary><span class="opt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></span><span class="opt-txt"><b>Reprendre mon habillage OBS</b><small>Ton fond, ton logo et tes couleurs en un geste</small></span></summary>
         <div class="option-corps">
-          <ol class="pas-obs">
-            <li>Dans OBS : <b>Outils &gt; Scripts</b>, ajoute <a href="obs/exporter-vers-obseb.lua" download>exporter-vers-obseb.lua</a> (une seule fois), puis clique sur <b>Exporter vers OBSeb</b>.</li>
-            <li>Glisse ici le dossier créé (dans <code>Vidéos\SEBASTIAN\SEBASTIAN Ciné Série\OBSeb\Exports</code>), ou directement le fichier <code>.json</code> de ta collection et ses images.</li>
-          </ol>
-          <div class="depot grand" id="depot-obs">
-            <b>Glisse ton export OBS ici</b><small>ou <u>choisis le dossier</u> · <u>choisis des fichiers</u></small>
-            <input type="file" id="obs-dossier" webkitdirectory hidden>
-            <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
+          <div class="obs-pas">
+            <a class="obs-etape" href="obs/exporter-vers-obseb.lua" download title="À faire une seule fois">
+              <span class="num">1</span><span class="txt"><b>Télécharge le script</b><small>Une seule fois</small></span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>
+            </a>
+            <div class="obs-etape" title="Dans la fenêtre Scripts, ajoute le fichier téléchargé avec le bouton +, puis clique sur « Exporter vers OBSeb ». OBS crée un dossier avec ta scène et tes images.">
+              <span class="num">2</span><span class="txt"><b>Dans OBS, exporte</b><small>Outils › Scripts › Exporter vers OBSeb</small></span>
+            </div>
+            <div class="obs-etape depot" id="depot-obs" title="Le dossier créé par OBS, ou directement le fichier .json de ta collection avec ses images">
+              <span class="num">3</span><span class="txt"><b>Glisse le dossier ici</b><small>ou choisis-le</small></span>
+              <span class="obs-choix"><button type="button" class="petit" data-obs="dossier">Dossier</button><button type="button" class="petit" data-obs="fichiers">Fichiers</button></span>
+              <input type="file" id="obs-dossier" webkitdirectory hidden>
+              <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
+            </div>
           </div>
           <div id="obs-rapport"></div>
         </div>
@@ -519,7 +545,7 @@
         <option value="90">1 h 30</option>
         <option value="135">2 h 15</option>
       </select>
-      <p class="aide">Le compte démarre avec le bouton « Démarrer le direct ». Dans les 20 dernières minutes, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l'heure dite, le direct s'arrête sur l'écran de fin.</p>
+      <p class="aide" title="Le compte démarre avec le bouton « Démarrer le direct ». Toi seul vois le minuteur.">20 minutes avant la fin, un minuteur rouge apparaît dans ta régie. À l'heure dite, le live passe sur l'écran de fin.</p>
 
         </div>
       </details>
@@ -554,7 +580,7 @@
 <script src="js/common.js?v=36014d33"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/accueil.js?v=2bef9961"></script>
-<script src="js/accueil-style.js?v=91ce6e61"></script>
+<script src="js/accueil-style.js?v=46330d81"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>
 </html>

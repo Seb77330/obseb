@@ -9,10 +9,16 @@ const boitePolices = $('#polices');
 FONTS.forEach(f => {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'police'; b.dataset.font = f;
-  b.innerHTML = `<span style="font-family:'${f}'">Spécial Bond</span><small>${esc(f)}</small>`;
+  b.title = f;
+  b.innerHTML = `<span style="font-family:'${f}'">Aa</span><small>${esc(f)}</small>`;
   b.onclick = () => { $('#f-font').value = f; $('#f-font').dispatchEvent(new Event('change')); majVisuels(); };
   boitePolices.appendChild(b);
 });
+/* Neuf polices d'abord (plus celle qui est choisie), toutes sur demande */
+const majPolicesTout = () => { $('#polices-tout').textContent = boitePolices.classList.contains('tout') ? 'Voir moins de polices' : `Voir les ${FONTS.length} polices`; };
+$('#polices-tout').onclick = () => { boitePolices.classList.toggle('tout'); majPolicesTout(); };
+$('#polices-tout').hidden = FONTS.length <= 9;
+majPolicesTout();
 
 /* ----- Images glissées depuis le PC : réduites et rangées dans le thème ----- */
 async function imageVersDataUrl(fichier, maxW, maxH, qualite = 0.74) {
@@ -60,8 +66,9 @@ majVisuels();
 /* ----- Import depuis OBS ----- */
 const depotObs = $('#depot-obs');
 depotObs.onclick = e => {
-  const u = e.target.closest('u');
-  if (u && u.textContent.includes('fichiers')) $('#obs-fichiers').click(); else $('#obs-dossier').click();
+  if (e.target.closest('input')) return;
+  const b = e.target.closest('[data-obs]');
+  if (b && b.dataset.obs === 'fichiers') $('#obs-fichiers').click(); else $('#obs-dossier').click();
 };
 $('#obs-dossier').onchange = e => importerObs([...e.target.files]);
 $('#obs-fichiers').onchange = e => importerObs([...e.target.files]);
