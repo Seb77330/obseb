@@ -146,6 +146,7 @@ function construireSlots() {
         <label class="src-ecran" title="Affiché ou non sur la scène Écran partagé"><span>À l'écran</span><span class="interrupteur"><input type="checkbox" class="actif"><span></span></span></label>
         <button type="button" class="petit src-oter" title="Retirer ce partage">✕</button>
       </div>
+      <div class="ecran-cadre" hidden></div>
       <div class="corps"></div>`;
     el.querySelector('.actif').onchange = e => {
       if (e.target.checked && !src.ref) { e.target.checked = false; return toast(src.ui === 'monecran' ? 'Choisis d\'abord l\'écran à partager' : 'Il n\'y a encore rien à montrer ici'); }
@@ -233,9 +234,8 @@ function remplirCorps(i) {
     const b = document.createElement('button');
     b.className = 'petit choisir-ecran ' + (iframesEcran.has(i) ? '' : 'primaire'); b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
     b.onclick = () => { if (iframesEcran.has(i)) { viderSource(i); envoyer(); majSlots(); } else demarrerMonEcran(i); };
-    if (iframesEcran.has(i)) corps.appendChild(iframesEcran.get(i));
     corps.appendChild(b);
-    corps.insertAdjacentHTML('beforeend', '<span class="aide">Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
+    corps.insertAdjacentHTML('beforeend', '<span class="aide">La fenêtre de choix s\'ouvre toute seule. Si rien ne s\'ouvre, clique sur le bouton du cadre. Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
   } else if (src.ui === 'ecraninvite') {
     const sel = document.createElement('select');
     sel.className = 'ecran-invite';
@@ -282,12 +282,42 @@ function remplirEcransInvites(i) {
   if (!src.ref && ids.length === 1 && document.activeElement !== sel) { Object.assign(src, { ref: ids[0], nom: nomsEcrans.get(ids[0]) || 'Écran invité', actif: true }); envoyer(); majSlots(); majSonSource(i); }
   sel.value = ids.includes(src.ref) ? src.ref : '';
 }
-function lancerMonEcran(i) {
-  const id = idEcran(session, i + 1);
+/* Le partage d'écran passe par une page de la salle, logée dans un cadre de la source.
+   Pour qu'un seul clic suffise, ce cadre est chargé d'avance (dans la première source libre, encore cachée) dès que
+   l'onglet Partage est ouvert ; au clic sur « Mon écran », on lui demande d'ouvrir le choix de l'écran en lui passant
+   le droit de le faire (le navigateur n'accepte cette fenêtre qu'après un clic). Si le navigateur ne sait pas passer
+   ce droit, le cadre reste là avec son propre bouton. Un cadre ne se déplace jamais : le déplacer le recharge. */
+let ecranPret = null;        // { i, f, charge } : le cadre chargé d'avance
+const ongletPartageOuvert = () => { const o = document.querySelector('[data-onglet="sources"]'); return !!(o && !o.hidden); };
+function cadreEcran(i) {
   const f = document.createElement('iframe');
   f.allow = IFRAME_ALLOW;
-  f.src = vdo({ room: session.room, push: id, label: `Mon écran ${i + 1}`, screenshare: true, quality: 0,
-    novideo: true, noaudio: true, ln: 'fr', cleanish: true });
+  f.src = vdo({ room: session.room, push: idEcran(session, i + 1), label: `Mon écran ${i + 1}`, screenshare: true, quality: 0,
+    novideo: true, noaudio: true, ln: 'fr', cleanish: true, css: baseUrl() + 'css/vdo-ecran.css' });
+  const o = { i, f, charge: false };
+  f.addEventListener('load', () => { o.charge = true; }, { once: true });
+  slotsEl[i].querySelector('.ecran-cadre').appendChild(f);
+  return o;
+}
+function preparerEcran() {
+  const i = premierVide();
+  if (ecranPret && ecranPret.i !== i) { ecranPret.f.src = 'about:blank'; ecranPret.f.remove(); ecranPret = null; }
+  if (i >= 0 && !ecranPret && ongletPartageOuvert()) ecranPret = cadreEcran(i);
+}
+setInterval(preparerEcran, 700);
+function lancerMonEcran(i) {
+  const id = idEcran(session, i + 1);
+  const o = ecranPret && ecranPret.i === i ? ecranPret : cadreEcran(i);
+  ecranPret = null;
+  const f = o.f, clic = performance.now();
+  const ouvrirChoix = () => {
+    if (performance.now() - clic > 4500) return;      // le clic est trop loin : le navigateur refuserait, le bouton du cadre prend le relais
+    let origine = '*';
+    try { origine = new URL(f.src).origin; } catch (e) { /* rien */ }
+    try { f.contentWindow.postMessage({ function: 'publishScreen' }, { targetOrigin: origine, delegate: 'display-capture' }); }
+    catch (e) { ordre(f, { function: 'publishScreen' }); }
+  };
+  if (o.charge) ouvrirChoix(); else f.addEventListener('load', () => setTimeout(ouvrirChoix, 300), { once: true });
   iframesEcran.set(i, f);
   ecransActifs.add(id);
   presents.set(id, { vu: Date.now() });
@@ -309,6 +339,7 @@ function majSlots() {
     const el = slotsEl[i];
     if (!el) return;
     el.hidden = !src.ui;
+    el.querySelector('.ecran-cadre').hidden = src.ui !== 'monecran';
     if (src.ui) pleins++;
     el.classList.toggle('on', !!(src.actif && src.ref));
     el.querySelector('.actif').checked = !!(src.actif && src.ref);
