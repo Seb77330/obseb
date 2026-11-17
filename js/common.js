@@ -60,15 +60,95 @@ const THEMES = {
     nom: 'Animation (orange vif)',
     bg: '#120a1f', bg2: '#2b1650', accent: '#FF8A00', text: '#ffffff', muted: '#c6b5e8',
     fontTitle: 'Luckiest Guy', fontBody: 'Inter', deco: 'bulles'
+  },
+  /* Chaque thème ci-dessous change aussi la forme des cadres (forme), l'étiquette des noms (etiquette),
+     le bandeau du bas (bandeau), le fond (fond, deco) et la casse des titres (casse). */
+  jt: {
+    nom: 'Journal télé', desc: 'Façon JT : bleu nuit, grand bandeau en bas, rouge direct.',
+    bg: '#071226', bg2: '#12305f', accent: '#E11D2E', accent2: '#3B82F6', text: '#ffffff', muted: '#a9b8d4',
+    fontTitle: 'Barlow Condensed', fontBody: 'Barlow', deco: 'monde', forme: 'net', etiquette: 'bas', bandeau: 'barre'
+  },
+  retro: {
+    nom: 'Rétro 80', desc: 'Synthwave : soleil couchant et grille néon.',
+    bg: '#12021f', bg2: '#3b0a57', accent: '#FF2E97', accent2: '#21E6F0', text: '#ffffff', muted: '#c9a7e8',
+    fontTitle: 'Audiowide', fontBody: 'Inter', deco: 'grille', forme: 'neon', etiquette: 'plein', bandeau: 'ligne', fond: 'horizon'
+  },
+  vaisseau: {
+    nom: 'Vaisseau', desc: 'Passerelle de vaisseau : affichage tête haute, angles coupés.',
+    bg: '#03121a', bg2: '#0a2c3a', accent: '#22D3EE', accent2: '#F59E0B', text: '#e6fbff', muted: '#7fb4c2',
+    fontTitle: 'Orbitron', fontBody: 'Rajdhani', deco: 'hud', forme: 'biseau', etiquette: 'plein', bandeau: 'boite'
+  },
+  cosmos: {
+    nom: 'Cosmos', desc: 'Ciel étoilé, titres larges et fins.',
+    bg: '#04040c', bg2: '#141433', accent: '#B9A6FF', accent2: '#4f46e5', text: '#f3f1ff', muted: '#9c98c4',
+    fontTitle: 'Michroma', fontBody: 'Inter', deco: 'etoiles', forme: 'doux', etiquette: 'ligne', bandeau: 'centre', fond: 'uni'
+  },
+  terminal: {
+    nom: 'Terminal', desc: 'Écran de hacker : vert sur noir, police machine.',
+    bg: '#020603', bg2: '#06170b', accent: '#39FF7A', text: '#d6ffe3', muted: '#5fae79',
+    fontTitle: 'VT323', fontBody: 'IBM Plex Mono', deco: 'scan', forme: 'ecran', etiquette: 'console', bandeau: 'ligne'
+  },
+  arcade: {
+    nom: 'Arcade', desc: 'Borne de jeu rétro : pixels et gros scores.',
+    bg: '#0d0221', bg2: '#261447', accent: '#FFE600', accent2: '#00E5FF', text: '#ffffff', muted: '#a99bd6',
+    fontTitle: 'Press Start 2P', fontBody: 'Inter', deco: 'pixels', forme: 'pixel', etiquette: 'pixel', bandeau: 'classique', fond: 'uni'
+  },
+  manga: {
+    nom: 'Manga', desc: 'Lignes de vitesse, noir, blanc et rouge.',
+    bg: '#0a0a0a', bg2: '#1c1c1c', accent: '#ff1f3d', text: '#ffffff', muted: '#b5b5b5',
+    fontTitle: 'Dela Gothic One', fontBody: 'Inter', deco: 'vitesse', forme: 'incline', etiquette: 'plein', bandeau: 'etiquette', fond: 'uni'
+  },
+  pop: {
+    nom: 'Pop art', desc: 'Jaune vif et traits noirs épais, comme une case de BD.',
+    bg: '#ffd93b', bg2: '#ffb703', accent: '#e4002b', text: '#111111', muted: '#5a4a00',
+    fontTitle: 'Bungee', fontBody: 'Inter', deco: 'rayons', forme: 'dur', etiquette: 'plein', bandeau: 'etiquette', fond: 'uni'
+  },
+  western: {
+    nom: 'Western', desc: 'Affiche de saloon : bois, cuir et lettres à empattements.',
+    bg: '#1c0f07', bg2: '#4a2710', accent: '#E2A64B', text: '#f3e2c4', muted: '#b89a72',
+    fontTitle: 'Rye', fontBody: 'Inter', deco: 'papier', forme: 'photo', etiquette: 'plein', bandeau: 'classique', fond: 'lineaire'
+  },
+  fantasy: {
+    nom: 'Fantasy', desc: 'Parchemin et enluminures, pour les grandes sagas.',
+    bg: '#e8d9b8', bg2: '#d2bd90', accent: '#7a1f1f', text: '#2a1a0e', muted: '#6f5a3d',
+    fontTitle: 'Almendra', fontBody: 'Inter', deco: 'parchemin', forme: 'photo', etiquette: 'ligne', bandeau: 'centre', casse: 'normal', fond: 'lineaire'
+  },
+  artdeco: {
+    nom: 'Gala', desc: 'Art déco, émeraude et or : soirée de remise de prix.',
+    bg: '#04160f', bg2: '#0d3a2a', accent: '#E3C16F', text: '#f6efd9', muted: '#9fb3a5',
+    fontTitle: 'Poiret One', fontBody: 'Inter', deco: 'artdeco', forme: 'cadre', etiquette: 'ligne', bandeau: 'centre'
+  },
+  gazette: {
+    nom: 'Gazette', desc: 'La une d\'un journal : papier, encre noire et filets.',
+    bg: '#efeae0', bg2: '#e2dccd', accent: '#111111', accent2: '#b3261e', text: '#141414', muted: '#5d574c',
+    fontTitle: 'Abril Fatface', fontBody: 'Inter', deco: 'colonnes', forme: 'net', etiquette: 'plein', bandeau: 'ligne', casse: 'normal', fond: 'uni'
+  },
+  pastel: {
+    nom: 'Douceur', desc: 'Pastel et tout en rondeurs.',
+    bg: '#fdeff4', bg2: '#e6e0ff', accent: '#ff6fa3', accent2: '#7c9cff', text: '#3a2a4a', muted: '#8a7a9a',
+    fontTitle: 'Fredoka', fontBody: 'Nunito', deco: 'confettis', forme: 'doux', etiquette: 'capsule', bandeau: 'boite', casse: 'normal', fond: 'lineaire'
+  },
+  stade: {
+    nom: 'Stade', desc: 'Soir de match : pelouse et tableau d\'affichage.',
+    bg: '#062414', bg2: '#0f4a26', accent: '#C6FF3D', text: '#ffffff', muted: '#9cc4a7',
+    fontTitle: 'Teko', fontBody: 'Barlow', deco: 'pelouse', etiquette: 'bas', bandeau: 'barre'
   }
 };
 // Polices fines en premier ; les plus grasses restent disponibles pour certains thèmes
 /* Thèmes mis en avant dans la galerie ; les autres restent dans « Plus de thèmes » */
-const GALERIE = ['minimal', 'studio', 'cinema', 'bond', 'neon', 'clair'];
+const GALERIE = ['minimal', 'studio', 'cinema', 'bond', 'neon', 'clair', 'jt', 'retro', 'vaisseau'];
+/* L'ordre de toute la galerie (les thèmes mis en avant, puis les autres) */
+const ORDRE_THEMES = [...GALERIE, 'cosmos', 'terminal', 'arcade', 'manga', 'pop', 'heros', 'anime', 'horreur', 'polar', 'western', 'fantasy', 'artdeco', 'arene', 'gazette', 'pastel', 'stade'];
 const FONTS = ['Outfit', 'Inter', 'Cormorant Garamond', 'Marcellus', 'Italiana', 'Cinzel', 'Josefin Sans', 'DM Serif Display',
   'Fraunces', 'Space Grotesk', 'Playfair Display', 'Cinzel Decorative', 'Bebas Neue', 'Oswald', 'Montserrat',
-  'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous'];
-const POIDS_POLICES = { Inter: '400;500;600;700', Outfit: '300;400;500;600', Montserrat: '500;700;800', 'Josefin Sans': '300;400;600',
+  'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous',
+  'Barlow Condensed', 'Teko', 'Poiret One', 'Almendra', 'Rye', 'Fredoka', 'Audiowide', 'Orbitron', 'Michroma', 'VT323', 'Bungee', 'Dela Gothic One', 'Press Start 2P'];
+/* Certaines polices sont très larges ou très étroites : on ajuste la taille des titres, et leur graisse */
+const ECHELLE_POLICES = { 'Press Start 2P': .44, Michroma: .64, Orbitron: .76, Audiowide: .78, Bungee: .76, 'Dela Gothic One': .78, Rye: .84, Fredoka: .92,
+  'Abril Fatface': .92, 'Barlow Condensed': 1.14, Teko: 1.22, VT323: 1.2 };
+const POIDS_TITRE = { 'Barlow Condensed': 700, Orbitron: 700, Teko: 600, Fredoka: 600 };
+const POIDS_POLICES = { 'Barlow Condensed': '500;600;700', Barlow: '400;500;600;700', 'IBM Plex Mono': '400;500;600', Orbitron: '500;700', Rajdhani: '500;600;700', Fredoka: '400;500;600', Nunito: '400;600;700', Teko: '400;500;600',
+  Inter: '400;500;600;700', Outfit: '300;400;500;600', Montserrat: '500;700;800', 'Josefin Sans': '300;400;600',
   'Cormorant Garamond': '400;500;600', 'Space Grotesk': '400;500;600', Fraunces: '300;400;500' };
 
 /* ---------- Affichage de l'interface : auto / sombre / clair, daltonien, contraste, taille ---------- */
@@ -206,6 +286,15 @@ function appliquerTheme(theme, el = document.documentElement) {
   const m = /^#?([0-9a-f]{6})$/i.exec(theme.bg || '');
   const lum = m ? (parseInt(m[1].slice(0, 2), 16) * 299 + parseInt(m[1].slice(2, 4), 16) * 587 + parseInt(m[1].slice(4, 6), 16) * 114) / 255000 : 0;
   if (lum > 0.6) el.dataset.clair = ''; else delete el.dataset.clair;
+  // forme des cadres, étiquette des noms, bandeau, casse des titres, style de fond
+  el.dataset.forme = theme.forme || 'arrondi'; el.dataset.etiquette = theme.etiquette || 'barre'; el.dataset.bandeau = theme.bandeau || 'classique';
+  el.dataset.casse = theme.casse || 'maj'; el.dataset.fond = theme.fond || 'radial';
+  const ma = /^#?([0-9a-f]{6})$/i.exec(theme.accent || '');
+  const lumA = ma ? (parseInt(ma[1].slice(0, 2), 16) * 299 + parseInt(ma[1].slice(2, 4), 16) * 587 + parseInt(ma[1].slice(4, 6), 16) * 114) / 255000 : 0;
+  el.style.setProperty('--sur-accent', lumA > 0.6 ? '#111111' : '#ffffff');
+  el.style.setProperty('--accent2', theme.accent2 || theme.accent);
+  el.style.setProperty('--kt', ECHELLE_POLICES[theme.fontTitle] || 1);
+  el.style.setProperty('--pt', POIDS_TITRE[theme.fontTitle] || 400);
   el.dataset.pack = theme.pack || '';
   chargerPolices([theme.fontTitle, theme.fontBody]);
   if (theme.pack) chargerPack(theme.pack, false);

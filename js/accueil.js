@@ -42,7 +42,16 @@ function carteTheme(id) {
   b.onclick = () => { brouillon.theme = { preset: id }; remplirForm(); apercu(); };
   return b;
 }
-[...GALERIE, ...Object.keys(THEMES).filter(id => !GALERIE.includes(id))].forEach(id => $('#galerie').appendChild(carteTheme(id)));
+[...ORDRE_THEMES, ...Object.keys(THEMES).filter(id => !ORDRE_THEMES.includes(id))].filter(id => THEMES[id]).forEach(id => {
+  const c = carteTheme(id); if (!GALERIE.includes(id)) c.classList.add('suite'); $('#galerie').appendChild(c);
+});
+/* On montre d'abord 9 thèmes ; le bouton déplie toute la galerie */
+function deplierGalerie(tout) {
+  $('#galerie').classList.toggle('tout', tout);
+  $('#galerie-tout').textContent = tout ? 'Réduire' : `Voir les ${Object.keys(THEMES).length} thèmes`;
+}
+$('#galerie-tout').onclick = () => deplierGalerie(!$('#galerie').classList.contains('tout'));
+deplierGalerie(false);
 FONTS.forEach(f => $('#f-font').insertAdjacentHTML('beforeend', `<option>${esc(f)}</option>`));
 
 function remplirForm() {
@@ -55,6 +64,7 @@ function remplirForm() {
   $('#f-hote').value = brouillon.hote; $('#f-handle').value = brouillon.handle;
   $('#f-limite').value = String(brouillon.limite || 0);
   const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
+  if (!GALERIE.includes(brouillon.theme.preset)) deplierGalerie(true);
   const styleActif = typeof styleCorrespondant === 'function' ? styleCorrespondant(brouillon.theme) : null;
   $$('.theme-carte').forEach(b => b.classList.toggle('actif', styleActif ? b.dataset.style === styleActif.id : (!b.dataset.style && b.dataset.preset === brouillon.theme.preset)));
   if (perso) $('#opt-perso').open = true;
@@ -98,7 +108,7 @@ function majFormatApercu() {
 /* Les écrans prennent toute la place disponible, sans jamais déborder */
 function taillerApercu() {
   const sc = $('#apercu-scene');
-  const W = sc.clientWidth, H = sc.clientHeight - 26;      // 26 px pour la légende sous l'écran
+  const W = sc.clientWidth, H = sc.clientHeight - 58;      // la légende sous l'écran : le format et les plateformes
   if (W <= 0 || H <= 0) return;
   const gap = parseFloat(getComputedStyle(sc).columnGap) || 20;
   const h = formatApercu === 'deux' ? (W - gap) / (16 / 9 + 9 / 16) : formatApercu === 'h' ? W / (16 / 9) : W / (9 / 16);

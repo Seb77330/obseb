@@ -33,9 +33,12 @@
   .vide-accueil h1 { font-size: 34px; margin-bottom: 10px; }
   .vide-accueil p { color: var(--ui-muted); font-size: 16px; margin: 0 0 24px; }
   .vide-accueil button { padding: 12px 22px; font-size: 16px; }
-  .vitrine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin: 10px auto 0; }
-  .vitrine img { width: 100%; aspect-ratio: 16/9; display: block; border-radius: 10px; border: 1px solid var(--ui-line); }
-  @media (max-width: 700px) { .vitrine { grid-template-columns: 1fr; } }
+  .trois-pas { list-style: none; margin: 56px auto 0; padding: 0; max-width: 860px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
+  .trois-pas span { display: grid; place-items: center; width: 34px; height: 34px; margin: 0 auto 12px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ui-accent) 55%, transparent); color: var(--ui-accent); font: 500 13px var(--mono); }
+  .trois-pas b { display: block; font-size: 16px; font-weight: 600; }
+  .trois-pas p { margin: 6px 0 0; color: var(--ui-muted); font-size: 14px; line-height: 1.5; }
+  @media (max-width: 700px) { .trois-pas { grid-template-columns: 1fr; gap: 26px; margin-top: 36px; } }
+  .astuces { margin: 0; padding-left: 18px; color: var(--ui-muted); font-size: 14px; line-height: 1.75; }
 
   /* Blocs repliés : lives terminés, aide */
   .repli { margin-top: 28px; border-top: 1px solid var(--ui-line); padding-top: 16px; }
@@ -51,12 +54,6 @@
   .termine h3 { margin: 0; font-size: 16px; font-weight: 600; }
   .termine .meta { color: var(--ui-muted); font-size: 13px; }
   @media (max-width: 640px) { .termine { grid-template-columns: 1fr; } }
-  .etapes3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 700px) { .etapes3 { grid-template-columns: 1fr; } }
-  .etapes3 > div { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 14px; }
-  .etapes3 span { font-family: var(--mono); font-size: 12px; color: var(--ui-accent); }
-  .etapes3 b { display: block; font-weight: 600; margin: 4px 0; }
-  .etapes3 p { margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
 
   /* Menu « ••• » */
   .plus { position: relative; }
@@ -82,8 +79,10 @@
   .ecran .cadre { position: relative; height: var(--h, 300px); aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--ui-line); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
   .ecran.v .cadre { aspect-ratio: 9/16; }
   .ecran iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  .ecran figcaption { font-size: 12px; color: var(--ui-muted); white-space: nowrap; height: 18px; width: 0; min-width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; }
-  .ecran figcaption b { color: var(--ui-text); font-weight: 600; margin-right: 6px; }
+  .ecran figcaption { width: 0; min-width: 100%; height: 48px; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 7px; font-size: 12px; color: var(--ui-muted); }
+  .ecran figcaption b { color: var(--ui-text); font-weight: 600; font-size: 13px; line-height: 18px; }
+  .plateformes { display: flex; gap: 11px; align-items: center; }
+  .plateformes svg { width: 16px; height: 16px; display: block; opacity: .7; }
   .apercu-scene[data-format="h"] .ecran.v, .apercu-scene[data-format="v"] .ecran.h { display: none; }
   .creation-choix { display: flex; flex-direction: column; min-height: 0; background: var(--ui-panel); border-left: 1px solid var(--ui-line); }
   .choix-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 24px; }
@@ -93,10 +92,10 @@
   .etape .tag { margin-left: auto; font: 500 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); border: 1px solid var(--ui-line); border-radius: 999px; padding: 3px 8px; }
   @media (max-width: 900px) {
     body.en-creation { height: auto; display: block; overflow: visible; }
-    .ecran figcaption span { display: none; }
+    .plateformes { gap: 7px; } .plateformes svg { width: 13px; height: 13px; }
     .creation { display: block; height: auto; }
     .scene-apercu { padding: 12px 14px; position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--ui-line); }
-    .apercu-scene { height: calc(43vw + 26px); flex: none; gap: 10px; }
+    .apercu-scene { height: calc(43vw + 54px); flex: none; gap: 10px; }
     .apercu-barre { margin-bottom: 10px; gap: 8px; }
     .apercu-barre .segment button { padding: 6px 9px; font-size: 12px; }
     .creation-choix { border-left: 0; }
@@ -125,6 +124,9 @@
   .theme-carte.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
   .theme-carte.actif::after { content: '✓'; position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; display: grid; place-items: center; background: var(--ui-accent); color: #111; font-size: 12px; font-weight: 700; border-radius: 50%; }
   /* Les finitions : une liste de lignes, une icône, un titre, une explication dessous */
+  .galerie:not(.tout) .theme-carte.suite { display: none; }
+  .voir-tout { display: block; width: 100%; margin-top: 8px; background: none; border: 1px dashed var(--ui-line2); color: var(--ui-muted); font-size: 13px; font-weight: 500; padding: 9px; border-radius: 9px; }
+  .voir-tout:hover { color: var(--ui-text); border-color: var(--ui-accent); background: none; }
   .sous-etape { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); margin: 14px 0 8px; }
   #mes-styles .sous-etape:first-child { margin-top: 0; }
   .style-vue { position: absolute; inset: 0; display: grid; place-items: center; background-size: cover; background-position: center; }
@@ -203,14 +205,14 @@
   <div id="bloc-vide" hidden>
     <div class="vide-accueil">
       <h1>Ton studio est prêt</h1>
-      <p>Donne un titre, choisis un thème : ta régie, le lien de tes invités et le lien pour OBS sont créés d'un coup.</p>
+      <p>Crée ton live, invite tes amis, passe en direct.</p>
       <button class="primaire" id="vide-creer">Créer mon premier live</button>
     </div>
-    <div class="vitrine">
-      <img src="img/themes/minimal-live.webp" alt="Thème Sebastian" loading="lazy">
-      <img src="img/themes/cinema-intro.webp" alt="Thème Cinéma" loading="lazy">
-      <img src="img/themes/studio-live.webp" alt="Thème Studio" loading="lazy">
-    </div>
+    <ol class="trois-pas">
+      <li><span>1</span><b>Crée ton live</b><p>Un titre, un thème, c'est tout.</p></li>
+      <li><span>2</span><b>Invite</b><p>Tu envoies un lien. Tes invités arrivent en coulisses.</p></li>
+      <li><span>3</span><b>Passe en direct</b><p>Tu choisis qui est à l'écran, puis tu démarres.</p></li>
+    </ol>
   </div>
 
   <details class="repli" id="bloc-termines" hidden>
@@ -218,18 +220,12 @@
     <div id="lives"></div>
   </details>
 
-  <details class="repli">
-    <summary>Comment ça marche</summary>
-    <div class="etapes3">
-      <div><span>01</span><b>Ouvre la régie</b><p>Choisis ta caméra et ton micro, puis « Démarrer ma caméra ». Mets un casque.</p></div>
-      <div><span>02</span><b>Invite</b><p>Bouton « Inviter » : envoie le lien. Tes invités arrivent en coulisses, tu les mets à l'antenne d'un clic.</p></div>
-      <div><span>03</span><b>Branche OBS</b><p>Dans OBS, une source Navigateur avec le lien OBS (1920 × 1080). C'est la seule source à ajouter.</p></div>
-    </div>
-    <ul class="aide" style="padding-left:18px;line-height:1.7">
-      <li>Ferme ta Cam Link dans OBS : c'est la régie qui l'utilise.</li>
-      <li>Dans la source Navigateur, coche « Contrôler l'audio via OBS ».</li>
-      <li>Pendant le live : touches <kbd>1</kbd> Intro, <kbd>2</kbd> Plateau, <kbd>3</kbd> Écran partagé, <kbd>4</kbd> Watch Party, <kbd>5</kbd> Fin.</li>
-      <li>Vertical (TikTok, Shorts) : même chose avec le lien vertical, en 1080 × 1920. La régie pilote les deux en même temps.</li>
+  <details class="repli" id="astuces">
+    <summary>Astuces pour OBS</summary>
+    <ul class="astuces">
+      <li>Dans OBS, une seule source à ajouter : « Navigateur », avec le lien OBS de ton live, en 1920 × 1080 (1080 × 1920 pour le vertical).</li>
+      <li>Si OBS utilise déjà ta caméra, ferme-la dans OBS : c'est le studio qui la prend.</li>
+      <li>Pendant le live, les touches <kbd>1</kbd> à <kbd>5</kbd> changent de scène : Intro, Plateau, Écran partagé, Watch Party, Fin.</li>
     </ul>
   </details>
 </main>
@@ -254,8 +250,8 @@
         </div>
       </div>
       <div class="apercu-scene" id="apercu-scene" data-format="deux">
-        <figure class="ecran h"><div class="cadre"><iframe id="apercu-h" title="Aperçu horizontal"></iframe></div><figcaption><b>Horizontal</b><span>YouTube, Twitch</span></figcaption></figure>
-        <figure class="ecran v"><div class="cadre"><iframe id="apercu-v" title="Aperçu vertical"></iframe></div><figcaption><b>Vertical</b><span>TikTok, Instagram</span></figcaption></figure>
+        <figure class="ecran h"><div class="cadre"><iframe id="apercu-h" title="Aperçu horizontal"></iframe></div><figcaption><b>Horizontal</b><span class="plateformes" title="Plateformes qui acceptent ce format"><svg viewBox="0 0 24 24" role="img" aria-label="YouTube"><title>YouTube</title><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="Twitch"><title>Twitch</title><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="Kick"><title>Kick</title><path fill="currentColor" d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="X"><title>X</title><path fill="currentColor" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="Facebook"><title>Facebook</title><path fill="currentColor" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></span></figcaption></figure>
+        <figure class="ecran v"><div class="cadre"><iframe id="apercu-v" title="Aperçu vertical"></iframe></div><figcaption><b>Vertical</b><span class="plateformes" title="Plateformes qui acceptent ce format"><svg viewBox="0 0 24 24" role="img" aria-label="TikTok"><title>TikTok</title><path fill="currentColor" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="Instagram"><title>Instagram</title><path fill="currentColor" d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="YouTube (Shorts)"><title>YouTube (Shorts)</title><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><svg viewBox="0 0 24 24" role="img" aria-label="Twitch"><title>Twitch</title><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg></span></figcaption></figure>
       </div>
     </section>
 
@@ -274,6 +270,7 @@
           <div class="sous-etape">Thèmes du site</div>
         </div>
         <div class="galerie" id="galerie"></div>
+        <button type="button" class="voir-tout" id="galerie-tout"></button>
 
         <div class="etape"><span class="num">3</span>Les finitions<span class="tag">facultatif</span></div>
         <div class="options">
@@ -369,8 +366,8 @@
   </div>
 </main>
 <div class="toast" id="toast"></div>
-<script src="js/common.js?v=5b21c1bf"></script>
-<script src="js/accueil.js?v=0c6a698c"></script>
+<script src="js/common.js?v=cfb253ce"></script>
+<script src="js/accueil.js?v=9ba5f7e9"></script>
 <script src="js/accueil-style.js?v=91ce6e61"></script>
 </body>
 </html>

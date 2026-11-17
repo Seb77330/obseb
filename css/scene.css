@@ -319,3 +319,204 @@ body.vertical #watch.pastille .wp-temps { font-size: 32px; }
 #watch-top.go .wt-sur { visibility: hidden; }
 #watch-top .wt-sous { font: 500 40px var(--font-body); color: var(--muted); font-variant-numeric: tabular-nums; min-height: 48px; }
 body.vertical #watch-top .wt-n { font-size: 360px; } body.vertical #watch-top.go .wt-n { font-size: 150px; }
+
+/* =====================================================================
+   Variantes de thème : fond, décor, forme des cadres, étiquettes, bandeau
+   ===================================================================== */
+/* Taille et graisse des titres selon la police (certaines sont très larges) */
+.plein .grand-titre { font-size: calc(128px * var(--kt, 1)); }
+.plein .grand-titre.long { font-size: calc(96px * var(--kt, 1)); }
+.plein .grand-titre.tres-long { font-size: calc(76px * var(--kt, 1)); }
+body.vertical .plein .grand-titre { font-size: calc(104px * var(--kt, 1)); }
+body.vertical .plein .grand-titre.long { font-size: calc(84px * var(--kt, 1)); }
+body.vertical .plein .grand-titre.tres-long { font-size: calc(68px * var(--kt, 1)); }
+#bandeau .titre { font-size: calc(52px * var(--kt, 1)); }
+body.vertical #bandeau .titre { font-size: calc(46px * var(--kt, 1)); }
+.plein .compte { font-size: calc(150px * var(--kt, 1)); }
+body.vertical .plein .compte { font-size: calc(170px * var(--kt, 1)); }
+#watch .wp-temps { font-size: calc(96px * var(--kt, 1)); } #watch .wp-titre { font-size: calc(50px * var(--kt, 1)); }
+#watch.pastille .wp-temps { font-size: calc(34px * var(--kt, 1)); } #watch.pastille .wp-titre { font-size: calc(24px * var(--kt, 1)); }
+[data-deco] .plein .grand-titre, [data-deco] #bandeau .titre { font-weight: var(--pt, 400); }
+[data-casse="normal"] .plein .grand-titre, [data-casse="normal"] #bandeau .titre { text-transform: none; letter-spacing: 0; }
+
+/* ----- Fonds ----- */
+[data-fond="lineaire"] #stage { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg) 70%); }
+[data-fond="uni"] #stage { background: var(--bg); }
+[data-fond="horizon"] #stage { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, color-mix(in srgb, var(--accent) 50%, var(--bg2)) 100%); }
+
+/* ----- Décors ----- */
+.deco::before, .deco::after { pointer-events: none; }
+[data-deco="monde"] .deco {
+  background:
+    linear-gradient(115deg, transparent 0 62%, color-mix(in srgb, var(--accent2) 16%, transparent) 62% 74%, transparent 74% 78%, color-mix(in srgb, var(--accent2) 9%, transparent) 78% 100%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 60px);
+}
+[data-deco="monde"] .deco::after {
+  content: ''; position: absolute; right: -280px; top: -300px; width: 980px; height: 980px; border-radius: 50%;
+  background: repeating-radial-gradient(circle, transparent 0 78px, rgba(255,255,255,.08) 78px 80px);
+  -webkit-mask-image: radial-gradient(circle, #000 25%, transparent 70%); mask-image: radial-gradient(circle, #000 25%, transparent 70%);
+}
+[data-deco="grille"] .deco::before {   /* le soleil rayé */
+  content: ''; position: absolute; left: 50%; top: 12%; width: 640px; height: 640px; margin-left: -320px; border-radius: 50%; opacity: .5;
+  background: linear-gradient(180deg, #ffd166 0%, var(--accent) 72%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 48%, transparent 48%), repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 38px);
+          mask-image: linear-gradient(180deg, #000 0 48%, transparent 48%), repeating-linear-gradient(180deg, #000 0 22px, transparent 22px 38px);
+}
+[data-deco="grille"] .deco::after {    /* la grille qui fuit vers l'horizon */
+  content: ''; position: absolute; left: -45%; right: -45%; bottom: 0; height: 42%; opacity: .55;
+  background: repeating-linear-gradient(90deg, var(--accent2) 0 3px, transparent 3px 130px), repeating-linear-gradient(0deg, var(--accent2) 0 3px, transparent 3px 90px);
+  transform: perspective(540px) rotateX(63deg); transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 55%); mask-image: linear-gradient(180deg, transparent 0, #000 55%);
+}
+[data-deco="scan"] .deco {
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--accent) 9%, transparent) 0 2px, transparent 2px 6px),
+              radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%);
+}
+[data-deco="scan"] .deco::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 16%; top: -16%;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 11%, transparent), transparent);
+  animation: balayage 7s linear infinite;
+}
+@keyframes balayage { to { top: 105%; } }
+[data-deco="hud"] .deco {
+  background:
+    linear-gradient(color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px) 0 0 / 96px 96px,
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px) 0 0 / 96px 96px;
+}
+[data-deco="hud"] .deco::before {      /* les quatre équerres dans les coins */
+  content: ''; position: absolute; inset: 24px; border: 3px solid color-mix(in srgb, var(--accent) 75%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) top left / 130px 130px no-repeat, linear-gradient(#000 0 0) top right / 130px 130px no-repeat, linear-gradient(#000 0 0) bottom left / 130px 130px no-repeat, linear-gradient(#000 0 0) bottom right / 130px 130px no-repeat;
+          mask: linear-gradient(#000 0 0) top left / 130px 130px no-repeat, linear-gradient(#000 0 0) top right / 130px 130px no-repeat, linear-gradient(#000 0 0) bottom left / 130px 130px no-repeat, linear-gradient(#000 0 0) bottom right / 130px 130px no-repeat;
+}
+[data-deco="hud"] .deco::after {
+  content: ''; position: absolute; left: 50%; top: 22px; width: 460px; margin-left: -230px; height: 9px;
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--accent2) 80%, transparent) 0 2px, transparent 2px 14px);
+}
+[data-deco="etoiles"] .deco {
+  background-image: radial-gradient(1.7px 1.7px at 20px 30px, #fff, transparent), radial-gradient(1.2px 1.2px at 140px 90px, rgba(255,255,255,.8), transparent),
+    radial-gradient(2.1px 2.1px at 90px 170px, rgba(255,255,255,.9), transparent), radial-gradient(1px 1px at 190px 20px, rgba(255,255,255,.7), transparent),
+    radial-gradient(1.4px 1.4px at 60px 110px, rgba(255,255,255,.6), transparent);
+  background-size: 230px 210px;
+}
+[data-deco="etoiles"] .deco::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 50% 42% at 76% 28%, color-mix(in srgb, var(--accent2) 42%, transparent), transparent 70%),
+              radial-gradient(ellipse 40% 36% at 14% 82%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%);
+}
+[data-deco="etoiles"] .deco::after {
+  content: ''; position: absolute; inset: 0; opacity: .7;
+  background-image: radial-gradient(2.6px 2.6px at 80px 60px, #fff, transparent), radial-gradient(1.5px 1.5px at 300px 210px, rgba(255,255,255,.85), transparent), radial-gradient(1.2px 1.2px at 210px 330px, rgba(255,255,255,.7), transparent);
+  background-size: 410px 370px;
+}
+[data-deco="papier"] .deco { background: repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 3px, transparent 3px 250px); box-shadow: inset 0 0 280px 70px rgba(0,0,0,.6); }
+[data-deco="papier"] .deco::before, [data-deco="parchemin"] .deco::before, [data-deco="colonnes"] .deco::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+[data-deco="papier"] .deco::before { opacity: .45; mix-blend-mode: overlay; }
+[data-deco="parchemin"] .deco { box-shadow: inset 0 0 260px 40px rgba(120,78,24,.5); }
+[data-deco="parchemin"] .deco::before { opacity: .5; mix-blend-mode: multiply; }
+[data-deco="parchemin"] .deco::after {   /* double filet d'enluminure */
+  content: ''; position: absolute; inset: 26px; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: -9px;
+}
+[data-deco="colonnes"] .deco {
+  background:
+    linear-gradient(var(--text) 0 0) 50% 22px / calc(100% - 96px) 6px no-repeat,
+    linear-gradient(var(--text) 0 0) 50% 34px / calc(100% - 96px) 1.5px no-repeat,
+    linear-gradient(var(--text) 0 0) 50% calc(100% - 22px) / calc(100% - 96px) 6px no-repeat,
+    linear-gradient(var(--text) 0 0) 50% calc(100% - 34px) / calc(100% - 96px) 1.5px no-repeat;
+}
+[data-deco="colonnes"] .deco::before { opacity: .35; mix-blend-mode: multiply; }
+[data-deco="confettis"] .deco {
+  background:
+    radial-gradient(circle at 7% 13%, color-mix(in srgb, var(--accent) 34%, transparent) 0 120px, transparent 121px),
+    radial-gradient(circle at 93% 18%, color-mix(in srgb, var(--accent2) 30%, transparent) 0 160px, transparent 161px),
+    radial-gradient(circle at 86% 90%, color-mix(in srgb, var(--accent) 26%, transparent) 0 130px, transparent 131px),
+    radial-gradient(circle at 11% 86%, rgba(255,210,125,.5) 0 180px, transparent 181px),
+    radial-gradient(circle at 52% 3%, rgba(255,255,255,.75) 0 80px, transparent 81px),
+    radial-gradient(circle at 36% 97%, color-mix(in srgb, var(--accent2) 22%, transparent) 0 70px, transparent 71px);
+}
+[data-deco="pixels"] .deco {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.04) 2px, transparent 2px) 0 0 / 32px 32px,
+    linear-gradient(rgba(255,255,255,.04) 2px, transparent 2px) 0 0 / 32px 32px;
+}
+[data-deco="pixels"] .deco::before, [data-deco="pixels"] .deco::after {   /* escaliers de pixels dans deux coins */
+  content: ''; position: absolute; width: 256px; height: 128px; opacity: .55;
+  background: linear-gradient(var(--c) 0 0) 0 100% / 256px 32px no-repeat, linear-gradient(var(--c) 0 0) 0 calc(100% - 32px) / 192px 32px no-repeat,
+              linear-gradient(var(--c) 0 0) 0 calc(100% - 64px) / 128px 32px no-repeat, linear-gradient(var(--c) 0 0) 0 calc(100% - 96px) / 64px 32px no-repeat;
+}
+[data-deco="pixels"] .deco::before { --c: var(--accent2); left: 0; bottom: 0; }
+[data-deco="pixels"] .deco::after { --c: var(--accent); right: 0; top: 0; transform: rotate(180deg); }
+[data-deco="artdeco"] .deco { inset: 22px; border: 1.5px solid color-mix(in srgb, var(--accent) 60%, transparent); outline: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); outline-offset: 8px; }
+[data-deco="artdeco"] .deco::before, [data-deco="artdeco"] .deco::after {   /* éventails dans les coins du bas */
+  content: ''; position: absolute; bottom: 0; width: 420px; height: 420px;
+  background: repeating-radial-gradient(circle at var(--x) 100%, transparent 0 36px, color-mix(in srgb, var(--accent) 30%, transparent) 36px 38px);
+  -webkit-mask-image: radial-gradient(circle at var(--x) 100%, #000 0 400px, transparent 401px); mask-image: radial-gradient(circle at var(--x) 100%, #000 0 400px, transparent 401px);
+}
+[data-deco="artdeco"] .deco::before { --x: 0%; left: 0; }
+[data-deco="artdeco"] .deco::after { --x: 100%; right: 0; }
+[data-deco="rayons"] .deco { background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.3) 0 7.5deg, transparent 7.5deg 15deg); }
+[data-deco="rayons"] .deco::after {     /* trame de points, comme une impression */
+  content: ''; position: absolute; inset: 0; background: radial-gradient(rgba(0,0,0,.24) 3px, transparent 3.6px) 0 0 / 22px 22px;
+  -webkit-mask-image: linear-gradient(120deg, #000 0, transparent 34%, transparent 66%, #000 100%); mask-image: linear-gradient(120deg, #000 0, transparent 34%, transparent 66%, #000 100%);
+}
+[data-deco="vitesse"] .deco {
+  background: repeating-conic-gradient(from 0deg at 50% 46%, rgba(255,255,255,.17) 0 .5deg, transparent .5deg 2.6deg, rgba(255,255,255,.1) 2.6deg 2.9deg, transparent 2.9deg 6deg);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 46%, transparent 0 32%, #000 80%); mask-image: radial-gradient(ellipse at 50% 46%, transparent 0 32%, #000 80%);
+}
+[data-deco="pelouse"] .deco {
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 236px, rgba(255,255,255,.14) 236px 241px, transparent 242px),
+    linear-gradient(90deg, transparent calc(50% - 2.5px), rgba(255,255,255,.14) calc(50% - 2.5px) calc(50% + 2.5px), transparent calc(50% + 2.5px)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 160px, transparent 160px 320px);
+}
+
+/* ----- Forme des cadres vidéo ----- */
+[data-forme="net"] .tuile { border-radius: 0; }
+[data-forme="doux"] .tuile { border-radius: 44px; } [data-forme="doux"] .tuile.petite { border-radius: 28px; }
+[data-forme="cadre"] .tuile { border-radius: 4px; box-shadow: 0 0 0 3px var(--accent), 0 0 0 9px var(--bg), 0 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent), 0 24px 60px rgba(0,0,0,.5); }
+[data-forme="neon"] .tuile { border-radius: 10px; box-shadow: 0 0 0 3px var(--accent), 0 0 34px 2px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 90px color-mix(in srgb, var(--accent2) 35%, transparent); }
+[data-forme="ecran"] .tuile { border-radius: 0; box-shadow: 0 0 0 2px var(--accent), 0 0 26px color-mix(in srgb, var(--accent) 40%, transparent); }
+[data-forme="dur"] .tuile { border-radius: 0; box-shadow: 0 0 0 6px #111, 16px 16px 0 6px var(--accent); }
+[data-forme="pixel"] .tuile { border-radius: 0; box-shadow: -8px 0 0 0 var(--accent), 8px 0 0 0 var(--accent), 0 -8px 0 0 var(--accent), 0 8px 0 0 var(--accent), 0 18px 0 0 rgba(0,0,0,.45); }
+[data-forme="photo"] .tuile { border-radius: 3px; box-shadow: 0 0 0 10px var(--text), 0 0 0 12px color-mix(in srgb, var(--accent) 80%, transparent), 0 26px 50px rgba(0,0,0,.45); }
+[data-forme="biseau"] .tuile { border-radius: 0; box-shadow: none; clip-path: polygon(34px 0, 100% 0, 100% calc(100% - 34px), calc(100% - 34px) 100%, 0 100%, 0 34px); }
+[data-forme="incline"] .tuile { border-radius: 0; box-shadow: none; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+[data-forme="biseau"] .tuile .nom, [data-forme="incline"] .tuile .nom { left: 44px; }
+[data-forme="biseau"] .tuile.parle, [data-forme="incline"] .tuile.parle { filter: drop-shadow(0 0 10px var(--accent)); }
+[data-forme="dur"] .tuile.parle, [data-forme="pixel"] .tuile.parle, [data-forme="photo"] .tuile.parle, [data-forme="cadre"] .tuile.parle, [data-forme="neon"] .tuile.parle, [data-forme="ecran"] .tuile.parle { outline-color: transparent; }
+/* un écran partagé garde un cadre simple, pour rester lisible */
+#ecran .tuile { clip-path: none; }
+
+/* ----- Étiquette du nom sous chaque personne ----- */
+[data-etiquette="plein"] .tuile .nom { background: var(--accent); color: var(--sur-accent); border-left: 0; border-radius: 4px; padding: 6px 14px; }
+[data-etiquette="capsule"] .tuile .nom { background: rgba(255,255,255,.94); color: #1b1b1f; border-left: 0; border-radius: 999px; padding: 7px 18px; text-transform: none; letter-spacing: 0; }
+[data-etiquette="ligne"] .tuile .nom { background: none; border-left: 0; border-bottom: 2px solid var(--accent); border-radius: 0; padding: 0 2px 5px; text-shadow: 0 2px 10px rgba(0,0,0,.95), 0 0 3px rgba(0,0,0,.95); }
+[data-etiquette="bas"] .tuile .nom { left: 0; right: 0; bottom: 0; max-width: none; border-left: 0; border-radius: 0; padding: 9px 16px 8px 24px; font-family: var(--font-title); font-weight: 600; font-size: 28px; letter-spacing: .03em;
+  background: linear-gradient(90deg, var(--accent) 0 10px, color-mix(in srgb, var(--bg) 90%, transparent) 10px); }
+[data-etiquette="bas"] .tuile.petite .nom { left: 0; bottom: 0; font-size: 21px; padding: 6px 10px 5px 20px; }
+[data-etiquette="console"] .tuile .nom { background: rgba(0,0,0,.88); border: 1px solid var(--accent); border-radius: 0; color: var(--accent); font-family: var(--font-body); font-weight: 500; letter-spacing: 0; text-transform: none; }
+[data-etiquette="console"] .tuile .nom::before { content: '> '; }
+[data-etiquette="pixel"] .tuile .nom { background: #000; border: 3px solid #fff; border-radius: 0; font-family: var(--font-title); font-weight: 400; font-size: 14px; letter-spacing: 0; padding: 9px 10px 7px; }
+[data-etiquette="pixel"] .tuile.petite .nom { font-size: 11px; padding: 7px 8px 5px; }
+
+/* ----- Bandeau du bas ----- */
+[data-bandeau="barre"] body:not(.vertical) #bandeau { left: 0; right: 0; bottom: 44px; height: 134px; padding: 0 70px; box-sizing: border-box; border-top: 6px solid var(--accent);
+  background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 84%, transparent) 100%); }
+[data-bandeau="barre"] #bandeau .logo { border-radius: 0; }
+[data-bandeau="boite"] body:not(.vertical) #bandeau { right: auto; max-width: calc(100% - 140px); padding: 0 36px 0 16px; box-sizing: border-box; border-radius: 22px;
+  background: color-mix(in srgb, var(--bg) 80%, transparent); border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+[data-bandeau="boite"] #bandeau .txt { flex: 0 1 auto; }
+[data-bandeau="boite"][data-forme="doux"] body:not(.vertical) #bandeau { border-radius: 64px; padding-left: 20px; }
+[data-bandeau="boite"][data-forme="doux"] #bandeau .logo { border-radius: 50%; }
+[data-bandeau="boite"][data-forme="biseau"] body:not(.vertical) #bandeau { border-radius: 0; clip-path: polygon(26px 0, 100% 0, 100% calc(100% - 26px), calc(100% - 26px) 100%, 0 100%, 0 26px); }
+[data-bandeau="boite"][data-forme="biseau"] #bandeau .logo { border-radius: 0; }
+[data-bandeau="centre"] #bandeau { justify-content: center; }
+[data-bandeau="centre"] #bandeau .txt { flex: 0 1 auto; text-align: center; }
+[data-bandeau="centre"] #bandeau .sous { justify-content: center; }
+[data-bandeau="centre"] #bandeau .logo { background: none; color: var(--accent); border: 2px solid var(--accent); border-radius: 50%; box-sizing: border-box; }
+[data-bandeau="ligne"] #bandeau .logo { background: none; color: var(--accent); border: 2px solid var(--accent); border-radius: 4px; box-sizing: border-box; }
+[data-bandeau="ligne"] #bandeau .txt { border-left: 3px solid var(--accent); padding-left: 26px; }
+[data-bandeau="etiquette"] body:not(.vertical) #bandeau .titre { display: inline-block; max-width: 100%; box-sizing: border-box; background: var(--accent); color: var(--sur-accent); padding: 8px 28px 6px; transform: skewX(-8deg); transform-origin: left bottom; text-shadow: none; }
+[data-bandeau="etiquette"] #bandeau .logo { background: var(--text); color: var(--bg); border-radius: 0; transform: skewX(-8deg); }
+[data-bandeau="etiquette"] #bandeau .sous { margin-top: 10px; color: var(--text); }
