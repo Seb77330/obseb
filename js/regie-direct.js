@@ -19,6 +19,7 @@ function demarrerDirect(ids) {
 function arreterDirect() {
   if (!etat.direct) return;
   etat.direct = null;
+  noterLiveTermine();       // seul un vrai direct arrêté arrive dans « Lives terminés »
   if (etat.scene !== 'fin') changerScene('fin'); else envoyer();
   majDirect(); pop.hidden = true;
 }

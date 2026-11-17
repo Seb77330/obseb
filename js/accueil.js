@@ -162,9 +162,9 @@ function afficherSessions() {
       $('#btn-annuler').hidden = false; $('#note-modif').hidden = true;
       remplirForm(); apercu(); $('#f-titre').focus();
     };
-    el.querySelector('[data-a=suppr]').onclick = () => {
-      if (!confirm(`Supprimer « ${session.titre} » de ta liste ?`)) return;
-      ecrire(lire().filter(x => x.session.room !== session.room)); afficherSessions();
+    el.querySelector('[data-a=suppr]').onclick = async () => {
+      if (!await confirmer(`Supprimer « ${session.titre} » ? Sa régie et ses liens ne seront plus dans ta liste.`, { oui: 'Oui, supprimer', non: 'Non' })) return;
+      ecrire(lire().filter(x => x.session.room !== session.room)); afficherSessions(); afficherLives();
     };
     box.appendChild(el);
   });
@@ -184,7 +184,7 @@ function afficherLives() {
     el.innerHTML = `
       <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'fin'))}"></iframe></div>
       <div>
-        <h3>${esc(session.titre)}</h3>
+        <div style="display:flex;gap:10px;align-items:flex-start"><h3 style="flex:1">${esc(session.titre)}</h3><button class="petit btn-corbeille" data-a="suppr-live" title="Supprimer ce live terminé"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>Supprimer</button></div>
         <div class="meta">Diffusé le ${new Date(live.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${new Date(live.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} · ${jours === 0 ? "aujourd'hui" : 'il y a ' + jours + ' jour' + (jours > 1 ? 's' : '')}</div>
         <label class="champ" style="margin-top:4px">Replay YouTube</label>
         <div class="ligne-boutons" style="flex-wrap:nowrap"><input type="url" class="replay" placeholder="Colle le lien du replay"><a class="ouvrir" target="_blank" rel="noopener"><button class="petit">Ouvrir</button></a></div>
@@ -201,6 +201,12 @@ function afficherLives() {
       majLien();
     };
     replay.onchange = sauver; fichier.onchange = sauver;
+    el.querySelector('[data-a=suppr-live]').onclick = async () => {
+      if (!await confirmer(`Supprimer « ${session.titre} » des lives terminés ? Le live reste dans « Mes lives » si tu veux le refaire.`, { oui: 'Oui, supprimer', non: 'Non' })) return;
+      const tout = lire(); const e = tout.find(x => x.session.room === session.room);
+      if (e) { delete e.live; ecrire(tout); }
+      afficherLives(); toast('Live terminé supprimé');
+    };
     box.appendChild(el);
   });
 }

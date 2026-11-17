@@ -119,7 +119,6 @@ function noterLiveTermine() {
   } catch (err) { /* stockage indisponible */ }
 }
 function changerScene(s) {
-  if (s === 'fin' && etat.scene !== 'fin') noterLiveTermine();
   if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) toast('Aucune source affichée : active au moins une source (colonne de gauche)');
   etat.scene = s; envoyer();
 }
@@ -336,7 +335,8 @@ addEventListener('message', e => {
     }
     if (d.action === 'guest-connected' && d.streamID) arrivee(d.streamID, d.value && d.value.label);
     const salut = d.dataReceived && d.dataReceived.studioSebSalut;
-    if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')) {
+    if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')
+        && !(typeof d.streamID === 'string' && d.streamID !== salut.id)) {   // pas d'usurpation du nom d'un autre
       listeRecue = true;
       const nomInvite = String(salut.nom || '').trim().slice(0, 28);
       arrivee(salut.id, nomInvite);

@@ -199,6 +199,8 @@ addEventListener('message', e => {
   const r = e.data && e.data.dataReceived && e.data.dataReceived.studioSebQuiz;
   const a = etat.quiz.active;
   if (!r || !a || a.revele || r.qid !== a.qid || typeof r.id !== 'string' || !r.id.startsWith(session.room + '_')) return;
+  // un invité ne peut répondre qu'en son nom (pas de réponse envoyée au nom d'un autre)
+  if (typeof e.data.streamID === 'string' && e.data.streamID !== r.id) return;
   const m = reponsesQuiz.get(a.qid) || new Map();
   if (m.has(r.id)) return;                       // seule la première réponse compte
   m.set(r.id, { choix: +r.choix, ms: Math.max(0, Math.min(+r.ms || 0, a.duree * 1000)) });

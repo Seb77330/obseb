@@ -462,3 +462,22 @@ function resumeStats(stats) {
   })(racine, 0);
   return r;
 }
+
+/* ---------- Fenêtre de confirmation « Oui / Non » (remplace confirm()) ---------- */
+function confirmer(texte, { oui = 'Oui', non = 'Non', danger = true } = {}) {
+  return new Promise(ok => {
+    const f = document.createElement('div');
+    f.className = 'confirmation';
+    f.innerHTML = `<div class="confirmation-boite" role="alertdialog" aria-modal="true"><p></p><div class="confirmation-boutons"><button class="non"></button><button class="oui ${danger ? 'rouge' : 'primaire'}"></button></div></div>`;
+    f.querySelector('p').textContent = texte;
+    f.querySelector('.oui').textContent = oui; f.querySelector('.non').textContent = non;
+    const fin = v => { f.remove(); document.removeEventListener('keydown', touche); ok(v); };
+    const touche = e => { if (e.key === 'Escape') fin(false); };
+    f.querySelector('.oui').onclick = () => fin(true);
+    f.querySelector('.non').onclick = () => fin(false);
+    f.addEventListener('click', e => { if (e.target === f) fin(false); });
+    document.addEventListener('keydown', touche);
+    document.body.appendChild(f);
+    f.querySelector('.non').focus();
+  });
+}

@@ -92,6 +92,8 @@ addEventListener('message', e => {
   }
   const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
   if (!st) return;
+  // seul l'animateur pilote les coulisses : un autre invité ne peut pas envoyer de faux ordres
+  if (typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session)) return;
   ordre(apercu, { [CANAL]: st });
   gererQuiz(st.quiz);
   const enDirect = (st.onair || []).includes(moi.id) && (st.scene === 'live' || st.scene === 'partage');

@@ -193,10 +193,26 @@ function corps(req) {
     req.on('end', () => { try { ok(d ? JSON.parse(d) : {}); } catch (e) { ko(new Error('JSON invalide')); } });
   });
 }
+/* Sécurité : sans vraie clé secrète, le moteur refuse toute commande (jamais ouvert par défaut). */
+const SECRET_VALIDE = typeof SECRET === 'string' && SECRET.length >= 16 && !SECRET.includes('__');
+if (!SECRET_VALIDE) console.warn('OBSEB_SECRET absent ou trop court (16 caractères minimum) : les commandes sont refusées');
+function egal(a, b) {
+  const x = Buffer.from(String(a)), y = Buffer.from(String(b));
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
 function autorise(req, url) {
-  if (!SECRET) return true;
+  if (!SECRET_VALIDE) return false;
   const h = req.headers.authorization || '';
-  return h === `Bearer ${SECRET}` || url.searchParams.get('cle') === SECRET;   // ?cle= pour les liens de téléchargement
+  return egal(h, `Bearer ${SECRET}`) || egal(url.searchParams.get('cle') || '', SECRET);   // ?cle= pour les liens de téléchargement
+}
+/* Limite de débit pour les jetons (anti-abus) : 30 demandes par minute et par adresse */
+const demandes = new Map();
+function tropDeDemandes(req) {
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const t = Date.now(), l = (demandes.get(ip) || []).filter(x => t - x < 60000);
+  l.push(t); demandes.set(ip, l);
+  if (demandes.size > 5000) demandes.clear();
+  return l.length > 30;
 }
 
 http.createServer(async (req, res) => {
@@ -205,6 +221,7 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname === '/sante') return json(res, 200, { ok: true });
   if (req.method === 'POST' && url.pathname === '/jeton') {
+    if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
     try { return json(res, 200, jeton(await corps(req))); } catch (e) { return json(res, 403, { erreur: e.message }); }
   }
   if (!autorise(req, url)) return json(res, 401, { erreur: 'Clé incorrecte' });

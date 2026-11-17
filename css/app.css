@@ -105,3 +105,12 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .limiteur.alerte { color: #fff; background: #d62c2c; font-size: 16px; font-weight: 700; padding: 8px 16px; animation: limite-pouls 1s ease-in-out infinite; }
 @keyframes limite-pouls { 50% { box-shadow: 0 0 0 6px rgba(214,44,44,.25); } }
 @media (prefers-reduced-motion: reduce) { .limiteur.alerte { animation: none; } }
+
+/* Fenêtre de confirmation */
+.confirmation { position: fixed; inset: 0; z-index: 200; background: rgba(5,6,8,.6); display: grid; place-items: center; padding: 16px; }
+.confirmation-boite { width: min(420px, 100%); background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; padding: 20px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+.confirmation-boite p { margin: 0 0 18px; font-size: 15px; line-height: 1.5; }
+.confirmation-boutons { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-corbeille { display: inline-flex; align-items: center; gap: 6px; color: var(--ui-muted); }
+.btn-corbeille:hover { color: var(--ui-ko, #e5484d); border-color: var(--ui-ko, #e5484d); }
+.btn-corbeille svg { width: 16px; height: 16px; }
