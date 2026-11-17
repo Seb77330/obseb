@@ -25,6 +25,7 @@ try {
   if (sauve) etat = Object.assign(etat, sauve);
 } catch (e) { /* stockage indisponible */ }
 etat.muet = etat.muet || {};
+delete etat.debutLive;          // ancien minuteur lié aux scènes
 etat.noms[ID_HOTE] = etat.noms[ID_HOTE] || session.hote;
 
 const presents = new Map();   // id -> { vu: timestamp } (connectés en ce moment)
@@ -119,9 +120,6 @@ function noterLiveTermine() {
 }
 function changerScene(s) {
   if (s === 'fin' && etat.scene !== 'fin') noterLiveTermine();
-  // limiteur : le compte part au premier passage en Live, et repart de zéro si on revient à l'intro après la fin
-  if ((s === 'live' || s === 'partage') && !etat.debutLive) etat.debutLive = Date.now();
-  if (s === 'intro' && etat.scene === 'fin') { etat.debutLive = 0; limiteAtteinte = false; }
   if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) toast('Aucune source affichée : active au moins une source (colonne de gauche)');
   etat.scene = s; envoyer();
 }
@@ -138,12 +136,12 @@ function majLimiteur() {
   const el = $('#limiteur');
   if (!LIMITE_MS) { el.hidden = true; return; }
   el.hidden = false;
-  if (!etat.debutLive) { el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()} · démarre au passage en Live`; return; }
-  const reste = etat.debutLive + LIMITE_MS - Date.now();
-  if (etat.scene === 'fin') { el.className = 'limiteur'; el.textContent = 'Live terminé'; return; }
+  // le compte suit le direct (bouton « Démarrer le direct »), pas les scènes
+  if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()} · démarre avec le direct`; return; }
+  const reste = etat.direct.debut + LIMITE_MS - Date.now();
   if (reste <= 0) {
     el.className = 'limiteur alerte'; el.textContent = 'Temps écoulé';
-    if (!limiteAtteinte) { limiteAtteinte = true; changerScene('fin'); toast('Durée maximale atteinte : le live passe sur l\'écran de fin'); }
+    if (!limiteAtteinte) { limiteAtteinte = true; arreterDirect(); toast('Durée maximale atteinte : direct arrêté, écran de fin affiché'); }
     return;
   }
   const alerte = reste <= 20 * 60000;
@@ -285,8 +283,7 @@ function majInterface() {
   if (nbInvites > 0) $('#liste .vide')?.remove();
   $$('[data-scene]').forEach(b => b.classList.toggle('actif', b.dataset.scene === etat.scene));
   $$('[data-layout]').forEach(b => b.classList.toggle('actif', b.dataset.layout === etat.layout));
-  $('#badge-scene').textContent = { intro: 'Intro', live: 'En direct', partage: 'Écran partagé', fin: 'Fin' }[etat.scene];
-  $('#badge-scene').classList.toggle('rouge-direct', etat.scene === 'live' || etat.scene === 'partage');
+  if (typeof majDirect === 'function') majDirect();
 }
 
 /* ----- Qui est connecté ? (liste fournie par vdo.ninja) ----- */

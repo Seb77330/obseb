@@ -27,7 +27,6 @@
   .scenes button kbd { position: absolute; right: 8px; top: 8px; opacity: .55; }
   .scenes button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
   .scenes button.actif small { color: inherit; opacity: .75; }
-  .scenes button[data-scene=live].actif, .scenes button[data-scene=partage].actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
   .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 12px; }
   .dispos { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
   .coche { display: flex; gap: 6px; align-items: center; margin: 0; }
@@ -167,6 +166,24 @@
   .qz-styles button { display: flex; align-items: center; gap: 8px; font-size: 13px; text-align: left; }
   .qz-styles button i { width: 16px; height: 16px; border-radius: 4px; flex: none; }
   .qz-styles button.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  .direct-zone { position: relative; }
+  .btn-direct { display: flex; align-items: center; gap: 8px; border-color: var(--ui-red); color: var(--ui-text); }
+  .btn-direct i { width: 9px; height: 9px; border-radius: 50%; background: var(--ui-red); }
+  .btn-direct.on { background: var(--ui-red); color: #fff; }
+  .btn-direct.on i { background: #fff; border-radius: 2px; }
+  .btn-direct span { font-variant-numeric: tabular-nums; }
+  .direct-pop { width: 360px; padding: 12px; right: 0; }
+  .direct-pop h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .direct-pop .ligne-pf { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--ui-line); }
+  .direct-pop .ligne-pf i { font-style: normal; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; }
+  .direct-pop .ligne-pf b { flex: 1; font-weight: 500; }
+  .direct-pop .ligne-pf small { color: var(--ui-muted); font-size: 12px; }
+  .direct-pop .ligne-pf small.on { color: var(--ui-red); font-weight: 600; }
+  .direct-pop .menu-bas { display: grid; gap: 8px; margin-top: 12px; }
+  .direct-pop .menu-bas button, .direct-pop .ligne-pf button { display: block; width: 100%; text-align: center; background: var(--ui-panel2); border: 1px solid var(--ui-line); padding: 9px 12px; }
+  .direct-pop .ligne-pf button { width: auto; padding: 5px 12px; }
+  .direct-pop .menu-bas button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+  .direct-pop .ligne-pf small { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -184,6 +201,10 @@
         <button id="btn-sortie">Ouvrir la sortie<small>Dans un nouvel onglet, pour vérifier</small></button>
       </div>
     </div>
+    <div class="direct-zone">
+      <button id="btn-direct" class="btn-direct"><i></i><span>Démarrer le direct</span></button>
+      <div class="menu direct-pop" id="direct-pop" hidden></div>
+    </div>
     <button class="primaire" id="btn-invite"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg> Inviter</button>
   </header>
 
@@ -194,13 +215,13 @@
         <button data-etape="camera"><i></i>Démarrer ma caméra</button>
         <button data-etape="invite"><i></i>Envoyer le lien aux invités</button>
         <button data-etape="obs"><i></i>Mettre le lien dans OBS</button>
-        <button data-etape="live"><i></i>Passer en Live</button>
+        <button data-etape="live"><i></i>Démarrer le direct</button>
         <button class="fermer" id="demarrage-fermer" title="Masquer">✕</button>
       </div>
 
       <div class="scenes" role="group" aria-label="Scène à l'antenne">
         <button data-scene="intro"><b>Intro</b><small>Compte à rebours</small><kbd>1</kbd></button>
-        <button data-scene="live"><b>Live</b><small>Les caméras</small><kbd>2</kbd></button>
+        <button data-scene="live"><b>Plateau</b><small>Les caméras</small><kbd>2</kbd></button>
         <button data-scene="partage"><b>Écran partagé</b><small>Écran, image, vidéo</small><kbd>3</kbd></button>
         <button data-scene="fin"><b>Fin</b><small>Écran de fin</small><kbd>4</kbd></button>
       </div>
@@ -415,6 +436,7 @@
 <script src="js/regie-chat.js"></script>
 <script src="js/regie-comptes.js"></script>
 <script src="js/regie-recherche.js"></script>
+<script src="js/regie-direct.js"></script>
 <script src="js/regie-guide.js"></script>
 </body>
 </html>

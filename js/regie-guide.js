@@ -12,13 +12,13 @@
     camera: () => !$('#cam-direct').hidden,
     invite: () => !!g.invite,
     obs: () => !!g.obs,
-    live: () => !!etat.debutLive || etat.scene === 'live',
+    live: () => !!etat.direct,
   };
   const agir = {
     camera: () => { $('.carte-moi').scrollIntoView({ block: 'center', behavior: 'smooth' }); },
     invite: () => $('#btn-invite').click(),
     obs: () => $('#btn-obs').click(),
-    live: () => changerScene('live'),
+    live: () => $('#btn-direct').click(),
   };
   $('#btn-invite').addEventListener('click', () => { g.invite = true; sauver(); maj(); });
   ['#btn-obs', '#btn-vertical', '#btn-sortie'].forEach(s => $(s).addEventListener('click', () => { g.obs = true; sauver(); maj(); }));
