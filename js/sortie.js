@@ -39,7 +39,22 @@ if (!session) {
 const theme = themeComplet(session);
 appliquerTheme(theme);
 if (theme.pack && theme.packJs) chargerPack(theme.pack, true);
-document.querySelectorAll('[data-champ="titre"]').forEach(e => e.textContent = session.titre);
+document.querySelectorAll('[data-champ="titre"]').forEach(e => {
+  e.textContent = session.titre;
+  const n = (session.titre || '').length;
+  e.classList.toggle('long', n > 26 && n <= 44);
+  e.classList.toggle('tres-long', n > 44);
+});
+/* Titre toujours entier à l'écran : on réduit la taille s'il déborde (titres longs) */
+function ajusterTitres() {
+  document.querySelectorAll('.plein .grand-titre').forEach(e => {
+    e.style.fontSize = '';
+    let taille = parseFloat(getComputedStyle(e).fontSize), max = e.parentElement.clientWidth - 40;
+    for (let i = 0; i < 30 && (e.scrollWidth > max || e.offsetHeight > taille * 3.3) && taille > 40; i++) { taille -= 4; e.style.fontSize = taille + 'px'; }
+  });
+}
+addEventListener('load', ajusterTitres);
+if (document.fonts) document.fonts.ready.then(ajusterTitres);
 document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = session.hote);
 document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
 $('#logo').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="">` : esc(theme.logoTexte || 'SEB');
@@ -314,7 +329,8 @@ function compteARebours() {
   const ms = etat.fin - Date.now();
   if (ms <= 0) { el.textContent = "C'est parti"; info.textContent = ''; return; }
   const s = Math.ceil(ms / 1000);
-  el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60, d2 = n => String(n).padStart(2, '0');
+  el.textContent = h ? `${h}:${d2(m)}:${d2(sec)}` : `${m}:${d2(sec)}`;   // 3:59:08 au-delà d'une heure
   info.textContent = 'Début du live dans';
 }
 setInterval(compteARebours, 250);
