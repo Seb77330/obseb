@@ -51,7 +51,7 @@ function entrer() {
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
     $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
-    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, quality: qualiteCamera(app.h) });   // l'invité entend tout le monde ici
+    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true });   // l'invité entend tout le monde ici
   }
   $('#btn-cam-changer').onclick = () => {
     $('#ma-camera').src = 'about:blank'; maCamera = null;

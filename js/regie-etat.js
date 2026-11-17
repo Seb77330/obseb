@@ -73,8 +73,8 @@ function majEtatStudio() {
   // Caméra
   if (!cameraDemarree()) poser(elsVoyant.camera, 'off', 'Caméra : pas démarrée', 'Démarre ta caméra dans la colonne de gauche');
   else if (!statsCamera || !frais(statsCamera.vu, 10000)) poser(elsVoyant.camera, 'att', 'Caméra : démarrage…', 'En attente des premières mesures');
-  else poser(elsVoyant.camera, 'ok', `<b>Caméra</b>${statsCamera.h ? ' ' + statsCamera.h + 'p' : ''}${statsCamera.kbps ? ' · ' + (statsCamera.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`,
-    statsCamera.h && statsCamera.h < 1000 ? 'Les aperçus reçoivent une image réduite : la 1080p part dès que la sortie OBS est branchée.' : 'Ta caméra part bien');
+  else poser(elsVoyant.camera, 'ok', `<b>Caméra</b>${hauteurCamera || statsCamera.h ? ' ' + (hauteurCamera || statsCamera.h) + 'p' : ''}${statsCamera.kbps ? ' · ' + (statsCamera.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`,
+    infoEnvoiCamera());
 
   // Micro
   if (!cameraDemarree()) poser(elsVoyant.micro, 'off', 'Micro : pas démarré');

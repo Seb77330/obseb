@@ -7,7 +7,7 @@
 <title>OBSeb · Régie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/app.css?v=1244273f">
+<link rel="stylesheet" href="css/app.css?v=6e5b97aa">
 <style>
   html, body { height: 100%; }
   body { display: flex; flex-direction: column; overflow: hidden; }
@@ -87,7 +87,7 @@
   .participant .vignette { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; }
   .participant .vignette iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
   .temoin { position: absolute; left: 6px; top: 6px; z-index: 2; font-size: 10px; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px; background: rgba(0,0,0,.7); color: #cfd3da; pointer-events: none; }
-  .participant.antenne .temoin { background: var(--ui-accent); color: #111; }
+  .participant.antenne .temoin { background: var(--ui-accent); color: var(--ui-sur-accent); }
   body.en-direct .participant.antenne .temoin { background: var(--ui-red); color: #fff; }
   .participant input[type=text] { padding: 5px 8px; font-weight: 600; font-size: 14px; background: transparent; border-color: transparent; }
   .participant input[type=text]:hover { border-color: var(--ui-line); } .participant input[type=text]:focus { background: var(--ui-input); border-color: var(--ui-accent); }
@@ -121,7 +121,7 @@
   #cams { display: contents; }
   .commutation { display: flex; gap: 5px; flex-wrap: wrap; }
   .commutation button { flex: 1; min-width: 60px; padding: 8px 4px; font-size: 12px; font-weight: 600; }
-  .commutation button.actif { background: var(--ui-accent); color: #111; }
+  .commutation button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); }
   body.en-direct .commutation button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
   .cam-ajout { border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; background: var(--ui-panel2); }
   .cam-ajout .ligne-boutons { flex-wrap: nowrap; } .cam-ajout .ligne-boutons button { flex: 1; font-size: 13px; padding: 7px 8px; }
@@ -143,7 +143,7 @@
   .scenes button b { font-weight: 600; font-size: 14px; }
   .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .scenes button kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); opacity: .5; }
-  .scenes button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
+  .scenes button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
   body.en-direct .scenes button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
   .scenes button.actif small { color: inherit; opacity: .8; }
   .scenes button.actif kbd { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.25); color: inherit; }
@@ -257,7 +257,7 @@
   .interrupteur span { position: absolute; inset: 0; background: var(--ui-line2); border-radius: 11px; transition: .2s; cursor: pointer; }
   .interrupteur span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
   .interrupteur input:checked + span { background: var(--ui-accent); }
-  .interrupteur input:checked + span::after { transform: translateX(16px); background: #111; }
+  .interrupteur input:checked + span::after { transform: translateX(16px); background: var(--ui-sur-accent); }
   .qz-direct { background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
   .qz-direct.actif { border-color: var(--ui-red); }
   .qz-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -762,10 +762,10 @@
   </div>
 </div>
 
-<script src="js/common.js?v=0b780580"></script>
-<script src="js/reglages-media.js?v=978ee531"></script>
+<script src="js/common.js?v=bd35556c"></script>
+<script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=65957034"></script>
+<script src="js/regie.js?v=f344e773"></script>
 <script src="js/regie-sources.js?v=98df5e91"></script>
 <script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=80082167"></script>
@@ -774,9 +774,9 @@
 <script src="js/regie-recherche.js?v=8986a628"></script>
 <script src="js/regie-direct.js?v=f7bae645"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
-<script src="js/regie-cams.js?v=a21b9b1b"></script>
+<script src="js/regie-cams.js?v=55166cf2"></script>
 <script src="js/regie-watch.js?v=d4ce3fab"></script>
-<script src="js/regie-etat.js?v=af2213d7"></script>
+<script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 </body>
 </html>

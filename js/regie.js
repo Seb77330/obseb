@@ -33,6 +33,15 @@ const camsLocales = new Map(); // id -> { iframe, nom, appareil } : tes autres c
 const cartes = new Map();     // id -> { el, iframe, vu }
 let listeRecue = false;
 const nomsEcrans = new Map();  // id d'écran -> nom affiché
+/* Ce que ta caméra filme (mesuré au réglage). À ne pas confondre avec les mesures de la salle (statsCamera.h) : celles-ci
+   donnent la plus grande image ENVOYÉE, et un aperçu ne demande que la taille de sa case (1780 px de large = « 1001p »
+   tant que la sortie du live n'est pas ouverte, ce qui a fait croire à une caméra bridée le 17/11). */
+let hauteurCamera = 0;
+function infoEnvoiCamera() {
+  const h = statsCamera && statsCamera.h;
+  if (!h || !hauteurCamera || h >= hauteurCamera - 8) return 'Ta caméra part bien, en pleine définition.';
+  return `Ta caméra filme en ${hauteurCamera}p. Pour l'instant seuls des aperçus la regardent, et ils en reçoivent une version allégée (${h}p). La sortie du live, elle, reçoit la pleine définition.`;
+}
 let statsCamera = null;        // dernière mesure de ta caméra { h, kbps, n, vu }
 const sortieVue = {};          // dernière fois que la sortie OBS a dit « je suis là » : { horizontal, vertical }
 const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
@@ -65,11 +74,12 @@ const maCamera = $('#ma-camera');
 const CLE_CAM = 'studioSeb:appareils:hote';
 const reglageCam = ReglagesMedia({ boite: $('#cam-reglage'), cle: CLE_CAM, texteBouton: 'Démarrer ma caméra', surDemarrer: demarrerCamera });
 function demarrerCamera(app) {
+  hauteurCamera = app.h || 0;
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
   // la meilleure image que la caméra sait donner (1080p avec une Cam Link, 720p avec une webcam) ; « detail » : le navigateur baisse les images/s plutôt que la définition
-  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, quality: qualiteCamera(app.h), aspectratio: FORMAT_CAMERA, maxframerate: 30, contenthint: 'detail' });
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, maxframerate: 30, contenthint: 'detail' });
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
@@ -78,7 +88,7 @@ $('#btn-cam-changer').onclick = () => {
   reglageCam.ouvrir();
 };
 const retenus = appareilsRetenus(CLE_CAM);
-if (retenus && retenus.h) demarrerCamera(retenus);   // sans mesure de la caméra (choix retenu avant le 17/11), on repasse une fois par le réglage
+if (retenus && retenus.h) demarrerCamera(retenus);   // sans mesure de la caméra (choix retenu avant le 17/11), on repasse une fois par le réglage : il sert à afficher ce qu'elle filme vraiment
 else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
 
 /* ----- Aperçu de l'antenne ----- */
@@ -365,9 +375,8 @@ addEventListener('message', e => {
       const el = $('#etat-camera');
       statsCamera = { h: q.h, kbps: q.kbps, n: typeof n === 'number' ? n : null, vu: Date.now() };
       if (typeof n === 'number' && n === 0) el.innerHTML = '<span class="voyant att"></span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${q.h ? ' · ' + q.h + 'p' : ''}`;
-      // les aperçus reçoivent volontairement une image réduite ; seule la sortie OBS demande la 1080p
-      el.title = q.h && q.h < 1000 ? 'Aperçus en qualité réduite : la 1080p part dès que la sortie OBS est ouverte.' : '';
+      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${hauteurCamera || q.h ? ' · ' + (hauteurCamera || q.h) + 'p' : ''}`;
+      el.title = infoEnvoiCamera();
     }
     if (d.streamIDs) {
       listeRecue = true;

@@ -154,13 +154,14 @@ const POIDS_POLICES = { 'Barlow Condensed': '500;600;700', Barlow: '400;500;600;
 /* ---------- Affichage de l'interface : auto / sombre / clair, daltonien, contraste, taille ---------- */
 const CLE_AFFICHAGE = 'studioSeb:affichage';
 function lireAffichage() {
-  try { return Object.assign({ mode: 'sombre', daltonien: false, contraste: false, taille: 'normal' }, JSON.parse(localStorage.getItem(CLE_AFFICHAGE) || '{}')); }
-  catch (e) { return { mode: 'sombre', daltonien: false, contraste: false, taille: 'normal' }; }
+  try { return Object.assign({ mode: 'sombre', couleur: 'jaune', daltonien: false, contraste: false, taille: 'normal' }, JSON.parse(localStorage.getItem(CLE_AFFICHAGE) || '{}')); }
+  catch (e) { return { mode: 'sombre', couleur: 'jaune', daltonien: false, contraste: false, taille: 'normal' }; }
 }
 function appliquerAffichage(a = lireAffichage()) {
   const r = document.documentElement;
   const clair = a.mode === 'clair' || (a.mode === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
   if (clair) r.dataset.mode = 'clair'; else delete r.dataset.mode;
+  if (/^(bleu|gris|blanc)$/.test(a.couleur)) r.dataset.couleur = a.couleur; else delete r.dataset.couleur;     // jaune : la couleur d'origine
   if (a.daltonien) r.dataset.daltonien = ''; else delete r.dataset.daltonien;
   if (a.contraste) r.dataset.contraste = ''; else delete r.dataset.contraste;
   r.dataset.taille = a.taille;
@@ -172,6 +173,8 @@ function boutonAffichage(conteneur) {
     <div class="affichage-pop" hidden>
       <div class="titre-pop">Thème de l'interface</div>
       <div class="segment" data-r="mode"><button data-v="auto">Auto</button><button data-v="sombre">Sombre</button><button data-v="clair">Clair</button></div>
+      <div class="titre-pop">Couleur des boutons</div>
+      <div class="couleurs" data-r="couleur"><button type="button" data-v="jaune" style="--c:#FFD21F"><i></i>Jaune</button><button type="button" data-v="bleu" style="--c:#4DA3FF"><i></i>Bleu</button><button type="button" data-v="gris" style="--c:#AEB6C2"><i></i>Gris</button><button type="button" data-v="blanc" style="--c:#ffffff"><i></i><span>Blanc</span></button></div>
       <label><span>Mode daltonien<small>Bleu et orange au lieu de vert et rouge</small></span><input type="checkbox" data-r="daltonien"></label>
       <label><span>Contraste élevé<small>Textes et contours plus marqués</small></span><input type="checkbox" data-r="contraste"></label>
       <div class="titre-pop">Taille du texte</div>
@@ -180,11 +183,12 @@ function boutonAffichage(conteneur) {
   const pop = box.querySelector('.affichage-pop');
   const maj = () => {
     const a = lireAffichage();
-    pop.querySelectorAll('.segment').forEach(sg => sg.querySelectorAll('button').forEach(b => b.classList.toggle('actif', a[sg.dataset.r] === b.dataset.v)));
+    pop.querySelectorAll('.segment, .couleurs').forEach(sg => sg.querySelectorAll('button').forEach(b => b.classList.toggle('actif', a[sg.dataset.r] === b.dataset.v)));
     pop.querySelectorAll('input[data-r]').forEach(i => { i.checked = !!a[i.dataset.r]; });
+    pop.querySelector('.couleurs [data-v=blanc] span').textContent = document.documentElement.dataset.mode === 'clair' ? 'Noir' : 'Blanc';     // sur fond clair, le blanc devient noir
   };
   const changer = (k, v) => { const a = lireAffichage(); a[k] = v; try { localStorage.setItem(CLE_AFFICHAGE, JSON.stringify(a)); } catch (e) { /* rien */ } appliquerAffichage(a); maj(); };
-  pop.querySelectorAll('.segment button').forEach(b => b.onclick = () => changer(b.parentElement.dataset.r, b.dataset.v));
+  pop.querySelectorAll('.segment button, .couleurs button').forEach(b => b.onclick = () => changer(b.parentElement.dataset.r, b.dataset.v));
   pop.querySelectorAll('input[data-r]').forEach(i => i.onchange = () => changer(i.dataset.r, i.checked));
   box.firstElementChild.onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; maj(); };
   document.addEventListener('click', e => { if (!box.contains(e.target)) pop.hidden = true; });
@@ -353,6 +357,12 @@ function vdo(params) {
   return (t ? baseUrl() + 'lk.html' : VDO) + '?' + parts.join('&');
 }
 /* Publier sa caméra dans la salle (invité ou hôte). */
+/* La même demande pour TOUTES les caméras, sans rien supposer de l'appareil : quality=0, « du 1080p si tu peux ».
+   La salle essaie le 1080p et, si la caméra refuse, redescend toute seule (720p, puis 360p…). Vérifié le 17/11 avec
+   six fausses caméras (4K, 1080p, capteur large, webcam 720p, vieille 640 x 480, 4/3) : chacune démarre, au mieux
+   de ce qu'elle sait faire.
+   JAMAIS de width / height ni de qualité choisie d'après une mesure : imposés, ils bloquent la caméra qui ne sait
+   pas les faire (panne du 17/11 au matin) ; devinés, ils brident celle qui sait faire mieux. */
 function urlPublier(session, streamId, label, opts = {}) {
   return vdo(Object.assign({
     room: session.room, push: streamId, label, webcam: true, quality: 0, ln: 'fr',

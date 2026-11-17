@@ -16,7 +16,7 @@ function brancherCam(n, appareil, nom) {
   const f = document.createElement('iframe');
   f.allow = IFRAME_ALLOW;
   // image seule (ad=0), en 1080p si la caméra le peut (jamais de taille imposée : une caméra plus modeste refuserait de démarrer) ; la fenêtre sert aussi d'aperçu dans la carte
-  f.src = urlPublier(session, id, nom || 'Caméra ' + n, { noaudio: true, vd: paramAppareil(appareil), ad: 0, autostart: true, aspectratio: FORMAT_CAMERA, maxframerate: 30, contenthint: 'detail' });
+  f.src = urlPublier(session, id, nom || 'Caméra ' + n, { noaudio: true, vd: paramAppareil(appareil), ad: 0, autostart: true, maxframerate: 30, contenthint: 'detail' });
   camsLocales.set(id, { iframe: f, nom: nom || '', appareil });
   presents.set(id, { vu: Date.now() });
   etat.noms[id] = nom || '';

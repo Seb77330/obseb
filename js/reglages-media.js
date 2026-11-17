@@ -42,7 +42,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     aide.textContent = '';
     try {
       flux = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: choix.cam ? { exact: choix.cam } : undefined, width: { ideal: 1920 }, height: { ideal: 1080 }, aspectRatio: { ideal: 16 / 9 }, frameRate: { ideal: 30 } },
+        video: { deviceId: choix.cam ? { exact: choix.cam } : undefined, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
         audio: { deviceId: choix.mic ? { exact: choix.mic } : undefined }
       });
     } catch (e) {
@@ -63,7 +63,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       if (s.height && s.height < 1080) aide.textContent = `Cette caméra donne ${s.height}p. Pour du 1080p, choisis ta Cam Link.`;
     }
     choix.cam = s && s.deviceId; choix.mic = at && at.getSettings().deviceId;
-    choix.h = (s && s.height) || 0;   // ce que la caméra sait vraiment donner : la salle lui demandera ça, pas plus
+    choix.h = (s && s.height) || 0;   // ce que la caméra donne ici (pour l'affichage seulement : la salle demande toujours le mieux, voir urlPublier)
     // liste des appareils (les noms n'apparaissent qu'une fois l'accès autorisé)
     const app = await navigator.mediaDevices.enumerateDevices();
     const remplir = (sel, type, actuel) => {
@@ -105,14 +105,6 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
   };
   return { ouvrir, arreter, choix: () => choix };
 }
-
-/* Qualité demandée à la salle selon ce que la caméra donne vraiment (0 : 1080p, 1 : 720p, 2 : 360p).
-   On n'impose jamais une taille exacte : une caméra qui ne sait pas la faire refuse alors de démarrer
-   (c'est arrivé le 17/11 avec une webcam 720p à qui on demandait 1920 x 1080). */
-function qualiteCamera(h) { return !h || h >= 900 ? 0 : h >= 600 ? 1 : 2; }
-/* 16/9 demandé (souhaité, jamais imposé) : une caméra 4K dont le capteur est un peu plus large que le 16/9 donnait
-   1920 x 1001 au lieu de 1920 x 1080, et passait alors pour une caméra 720p (image un peu pixelisée, le 17/11). */
-const FORMAT_CAMERA = 1.7778;
 
 /* Appareils retenus la dernière fois (pour redémarrer sans repasser par le réglage) */
 function appareilsRetenus(cle) {

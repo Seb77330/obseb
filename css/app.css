@@ -14,6 +14,13 @@
   --ui-header: #ffffff; --ui-input: #ffffff; --ui-hover: #e8eaef; --ui-line2: #c3c8d1;
   --ui-red: #d92b31; --ui-green: #14934f; --ui-ambre: #b97700;
 }
+/* Couleur des boutons (bouton « Affichage ») : jaune d'origine, bleu, gris, blanc */
+:root[data-couleur="bleu"] { --ui-accent: #4DA3FF; --ui-sur-accent: #06131f; }
+:root[data-couleur="bleu"][data-mode="clair"] { --ui-accent: #2672DE; --ui-sur-accent: #fff; }
+:root[data-couleur="gris"] { --ui-accent: #AEB6C2; --ui-sur-accent: #111; }
+:root[data-couleur="gris"][data-mode="clair"] { --ui-accent: #59616D; --ui-sur-accent: #fff; }
+:root[data-couleur="blanc"] { --ui-accent: #ffffff; --ui-sur-accent: #111; }
+:root[data-couleur="blanc"][data-mode="clair"] { --ui-accent: #15171c; --ui-sur-accent: #fff; }   /* sur fond clair, le blanc devient noir */
 :root[data-daltonien] { --ui-red: #E66100; --ui-green: #1A85FF; --ui-ko: #E66100; }
 :root[data-contraste] { --ui-muted: #c9ced8; --ui-line: #565d6b; --ui-line2: #7a8291; }
 :root[data-contraste][data-mode="clair"] { --ui-muted: #2f343d; --ui-line: #8a909b; --ui-line2: #5f6570; }
@@ -30,7 +37,7 @@ button:hover { border-color: var(--ui-line2); background: var(--ui-hover); }
 button:active { transform: translateY(1px); }
 button.primaire { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
 button.primaire:hover { filter: brightness(1.05); }
-button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
+button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
 button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
 button.petit { padding: 5px 10px; font-size: 13px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
@@ -49,7 +56,7 @@ label.champ { display: block; font-size: 13px; font-weight: 500; letter-spacing:
 .badge-direct::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
-  background: var(--ui-accent); color: #111; font-weight: 600; padding: 10px 18px; border-radius: 10px; transition: .25s; z-index: 99; pointer-events: none;
+  background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 600; padding: 10px 18px; border-radius: 10px; transition: .25s; z-index: 99; pointer-events: none;
 }
 .toast.vu { opacity: 1; transform: translateX(-50%); }
 .marque { font-family: Inter, system-ui, sans-serif; font-weight: 700; letter-spacing: -.02em; font-size: 21px; }
@@ -97,6 +104,12 @@ button.actif kbd { background: rgba(0,0,0,.15); border-color: rgba(0,0,0,.3); co
 .segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 9px; padding: 3px; gap: 3px; }
 .segment button { border: 0; background: none; padding: 6px 4px; font-size: 13px; font-weight: 500; }
 .segment button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); }
+.couleurs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.couleurs button { display: grid; justify-items: center; gap: 5px; padding: 8px 2px 6px; font-size: 12.5px; font-weight: 500; background: var(--ui-input); border: 1px solid var(--ui-line); border-radius: 9px; color: var(--ui-muted); }
+.couleurs button i { width: 22px; height: 22px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(128,128,128,.45); }
+:root[data-mode="clair"] .couleurs [data-v="blanc"] i { background: #15171c; }
+.couleurs button:hover { color: var(--ui-text); }
+.couleurs button.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
 .affichage-pop label { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
 .affichage-pop label small { display: block; color: var(--ui-muted); font-size: 12px; }
 .bouton-affichage { position: relative; }
