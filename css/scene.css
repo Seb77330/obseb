@@ -154,6 +154,11 @@ body.sans-decor #logo-coin { display: none !important; }
 #bandeau .titre.entree { animation: entree .55s cubic-bezier(.2,.8,.2,1); }
 @keyframes entree { from { transform: translateY(18px); opacity: 0; } }
 .tuile.source iframe { background: #fff; }
+.tuile.source.image { background: #000; }
+.tuile.source.image img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tuile.source.image img.nette { object-fit: contain; }
+.tuile.source.image img.flou { object-fit: cover; filter: blur(34px) brightness(.55) saturate(1.1); transform: scale(1.15); }
+.tuile.source.image img:not([src]) { visibility: hidden; }
 
 /* ----- Format vertical 1080x1920 ----- */
 body.vertical #scale { width: 1080px; height: 1920px; }

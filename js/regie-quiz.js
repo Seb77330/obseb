@@ -77,7 +77,7 @@ function afficherQuiz() {
       <button class="petit ${enCours ? '' : 'primaire'}">${enCours ? 'À l\'écran' : 'Lancer'}</button>
       <button class="petit" title="Supprimer la question">✕</button>`;
     el.querySelector('b').textContent = q.q;
-    el.querySelector('small').textContent = `${q.cat || 'Général'} · réponse ${'ABCD'[q.bonne]} · ${q.duree} s`;
+    el.querySelector('small').textContent = `${q.cat || 'Général'} · réponse ${'ABCD'[q.bonne]} · ${q.duree === 60 ? '1 min' : q.duree + ' s'}`;
     const img = el.querySelector('img');
     if (img) {
       if (q.imgUrl) img.src = q.imgUrl;

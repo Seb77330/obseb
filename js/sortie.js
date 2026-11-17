@@ -127,7 +127,10 @@ function creerSource(src) {
   if (src.type === 'image') {
     // image donnée par un lien, ou fichier choisi dans la régie (il arrive par le canal de la régie)
     const adresse = idFichierSource(src) ? adresseFichier(idFichierSource(src)) : src.ref;
-    el.innerHTML = `<img ${adresse ? `src="${esc(adresse)}"` : ''} alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000">`;
+    // l'image entière, et la même en flou derrière pour remplir la case (pas de bandes noires)
+    const attr = adresse ? `src="${esc(adresse)}"` : '';
+    el.innerHTML = `<img class="flou" ${attr} alt="" aria-hidden="true"><img class="nette" ${attr} alt="">`;
+    el.classList.add('image');
   }
   else if (src.type === 'video') {
     video = document.createElement('video');
@@ -135,8 +138,23 @@ function creerSource(src) {
     video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000';
     el.appendChild(video);
   } else if (src.type === 'web') {
-    const f = document.createElement('iframe'); f.src = src.ref; f.allow = 'autoplay *; fullscreen *';
+    const lecteur = /^https:\/\/(www\.youtube\.com\/embed|player\.vimeo\.com|www\.dailymotion\.com\/embed|player\.twitch\.tv)\//.test(src.ref);
+    const f = document.createElement('iframe'); f.allow = 'autoplay *; fullscreen *; encrypted-media *';
+    // un lecteur vidéo reste muet dans les aperçus : son son ne part que dans la sortie du live
+    f.src = lecteur && PREVIEW ? src.ref + (src.ref.includes('?') ? '&' : '?') + (src.ref.includes('twitch') ? 'muted=true' : src.ref.includes('vimeo') ? 'muted=1' : 'mute=1') : src.ref;
     el.appendChild(f);
+    if (!lecteur) {
+      // une page web est dessinée comme sur un écran d'ordinateur (1280 px de large), puis réduite à la taille de la case :
+      // sinon, dans une petite case, le site passe en affichage « téléphone »
+      const LARGEUR_PAGE = 1280;
+      const ajuster = () => {
+        const w = el.clientWidth, h = el.clientHeight;
+        if (!w || !h) return;
+        const k = Math.min(1, w / LARGEUR_PAGE);
+        Object.assign(f.style, { width: w / k + 'px', height: h / k + 'px', transform: k < 1 ? `scale(${k})` : '', transformOrigin: '0 0' });
+      };
+      new ResizeObserver(ajuster).observe(el); ajuster();
+    }
   }
   $('#ecran').appendChild(el);
   const o = { el, type: src.type, ref: src.ref, video };
@@ -474,7 +492,7 @@ function adresseFichier(id) {
   return '';
 }
 function fichierPret(id) {
-  for (const o of sourcesEl.values()) if (o.ref === 'fichier:' + id) { const img = o.el.querySelector('img'); if (img) img.src = adressesMusique.get(id); }
+  for (const o of sourcesEl.values()) if (o.ref === 'fichier:' + id) o.el.querySelectorAll('img').forEach(img => { img.src = adressesMusique.get(id); });
   gererPlaylist();
 }
 function adressePiste(p) { return !p ? '' : p.url ? p.url : adresseFichier(p.id); }

@@ -1,18 +1,35 @@
 /* OBSeb : régie, partie Sources (4 max) et Bandeaux (la musique est dans regie-musique.js) */
 'use strict';
 
-const TYPES_SOURCE = [
-  ['', '— vide —'], ['monecran', 'Mon écran'], ['ecraninvite', "Écran d'un invité"],
-  ['image', 'Image'], ['video', 'Vidéo (lien MP4)'], ['web', 'Page web (lien)']
+/* Ce qu'on peut montrer sur la scène Écran partagé (4 choses au plus à la fois). Un clic et c'est parti :
+   « Mon écran » ouvre le choix de la fenêtre, « Image » ouvre le choix du fichier, « Lien » accepte ce qu'on colle. */
+const ICONE_SRC = {
+  monecran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/></svg>',
+  ecraninvite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.400 1.900 7 5.500"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.500" y="4.500" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l4.500-4 3.500 3 3-2.500 5 4"/></svg>',
+  lien: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/></svg>'
+};
+const CHOIX_SOURCE = [
+  ['monecran', 'Mon écran', 'Fenêtre, onglet ou écran entier'],
+  ['ecraninvite', "Écran d'un invité", 'Quand il partage le sien'],
+  ['image', 'Image', 'Depuis ton ordinateur'],
+  ['lien', 'Lien', 'Vidéo MP4, YouTube, page web']
 ];
+const NOM_SOURCE = { monecran: 'Mon écran', ecraninvite: "Écran d'un invité", image: 'Image', lien: 'Lien' };
 const ecransActifs = new Set();      // tes partages d'écran en cours (ids vdo.ninja)
 const iframesEcran = new Map();      // n° de source -> iframe de partage
 
 etat.sources = Array.from({ length: 4 }, (_, i) => Object.assign({ ui: '', type: '', ref: '', nom: '', actif: false }, (etat.sources || [])[i] || {}));
+// anciens choix (avant le 17/11) : « Vidéo (lien MP4) », « Page web (lien) » et image par lien sont devenus « Lien »
+etat.sources.forEach(s => {
+  if (s.ui === 'video' || s.ui === 'web' || (s.ui === 'image' && !s.fichier && s.ref)) { s.ui = 'lien'; s.saisie = s.saisie || s.ref; }
+  if (s.ui && !NOM_SOURCE[s.ui]) Object.assign(s, { ui: '', type: '', ref: '', nom: '', actif: false });
+  if ((s.ui === 'image' && !s.fichier) || (s.ui === 'lien' && !s.ref) || (s.ui === 'ecraninvite' && !s.ref)) Object.assign(s, { ui: '', type: '', ref: '', nom: '', actif: false, saisie: '' });
+});
 // une image choisie sur l'ordinateur reste dans ce navigateur : si elle n'y est plus, la source redevient vide
-etat.sources.forEach((s, i) => { if (s.fichier) fichiers.lire(s.fichier.id).then(b => { if (!b) { Object.assign(s, { ref: '', nom: '', actif: false, fichier: null }); remplirCorps(i); majSlots(); } }).catch(() => {}); });
-// au rechargement de la page, tes partages d'écran sont coupés : on les désactive
-etat.sources.forEach(s => { if (s.ui === 'monecran') { s.actif = false; s.ref = ''; } });
+etat.sources.forEach((s, i) => { if (s.fichier) fichiers.lire(s.fichier.id).then(b => { if (!b) { viderSource(i); majSlots(); } }).catch(() => {}); });
+// au rechargement de la page, tes partages d'écran sont coupés : la source se vide
+etat.sources.forEach(s => { if (s.ui === 'monecran') Object.assign(s, { ui: '', type: '', ref: '', nom: '', actif: false }); });
 etat.bandeaux = etat.bandeaux || [];
 etat.defilant = etat.defilant || { texte: '', actif: false };
 etat.playlist = etat.playlist || [];
@@ -20,29 +37,153 @@ etat.musique = etat.musique || { idx: 0, lecture: false, n: 0 };
 
 const cleSrc = s => s.type === 'ecran' ? s.ref : s.type + ':' + s.ref;
 
+/* ---------- Un lien collé : on reconnaît tout seul ce que c'est ---------- */
+// sites qui refusent d'être affichés dans un autre site : inutile d'essayer, on propose de partager l'onglet
+const SITES_FERMES = /(^|\.)(github\.com|google\.[a-z.]+|x\.com|twitter\.com|facebook\.com|instagram\.com|tiktok\.com|netflix\.com|linkedin\.com|reddit\.com|amazon\.[a-z.]+|primevideo\.com|disneyplus\.com|youtube\.com|twitch\.tv)$/;
+function lireLien(brut) {
+  let v = String(brut || '').trim().replace(/^<|>$/g, '');
+  if (!v) return null;
+  if (/^http:\/\//i.test(v)) v = 'https://' + v.slice(7);                 // une page sécurisée ne peut afficher que du https
+  else if (!/^https:\/\//i.test(v)) {
+    if (/^[\w-]+(\.[\w-]+)+([/?#:]|$)/.test(v)) v = 'https://' + v;       // « monsite.fr/video.mp4 » : on ajoute le début
+    else return { erreur: 'Colle un lien complet, par exemple monsite.fr/video.mp4' };
+  }
+  let u;
+  try { u = new URL(v); } catch (e) { return { erreur: 'Ce lien est incomplet' }; }
+  const chemin = u.pathname.toLowerCase(), hote = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+  if (/\.(mp4|webm|mov|m4v|ogv)$/.test(chemin)) return { type: 'video', ref: u.href, nom: 'Vidéo' };
+  if (/\.(png|jpe?g|gif|webp|avif|svg)$/.test(chemin)) return { type: 'image', ref: u.href, nom: 'Image' };
+  // les vidéos des grands sites : on prend leur lecteur, qui lui accepte d'être affiché ailleurs
+  const secondes = t => { const m = String(t || '').match(/^(?:(\d+)h)?(?:(\d+)m)?(\d+)?s?$/); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0; };
+  let m;
+  if (hote === 'youtu.be' || hote === 'youtube.com' || hote === 'youtube-nocookie.com') {
+    const id = hote === 'youtu.be' ? u.pathname.slice(1).split('/')[0] : (u.searchParams.get('v') || ((m = u.pathname.match(/^\/(?:shorts|live|embed)\/([\w-]{6,})/)) ? m[1] : ''));
+    if (/^[\w-]{6,}$/.test(id)) {
+      const debut = secondes(u.searchParams.get('t') || u.searchParams.get('start'));
+      return { type: 'web', ref: `https://www.youtube.com/embed/${id}?autoplay=1&rel=0${debut ? '&start=' + debut : ''}`, nom: 'YouTube', lecteur: true };
+    }
+  }
+  if (hote === 'vimeo.com' && (m = u.pathname.match(/^\/(\d+)/))) return { type: 'web', ref: `https://player.vimeo.com/video/${m[1]}?autoplay=1`, nom: 'Vimeo', lecteur: true };
+  if (hote === 'dailymotion.com' && (m = u.pathname.match(/^\/video\/([a-z0-9]+)/i))) return { type: 'web', ref: `https://www.dailymotion.com/embed/video/${m[1]}?autoplay=1`, nom: 'Dailymotion', lecteur: true };
+  if (hote === 'twitch.tv' && (m = u.pathname.match(/^\/(\w{3,})\/?$/))) return { type: 'web', ref: `https://player.twitch.tv/?channel=${m[1]}&parent=${location.hostname}`, nom: 'Twitch', lecteur: true };
+  return { type: 'web', ref: u.href, nom: hote, ferme: SITES_FERMES.test(hote) };
+}
+/* Vérifie qu'une vidéo ou une image donnée par un lien se charge vraiment, pour le dire tout de suite */
+function verifierLien(i, lu) {
+  const src = etat.sources[i], ref = lu.ref;
+  const dire = (classe, texte) => { if (src.ref !== ref) return; src.etatLien = { classe, texte }; majEtatLien(i); };
+  if (lu.type === 'video') {
+    const v = document.createElement('video'); v.preload = 'metadata'; v.muted = true;
+    const fin = () => { v.removeAttribute('src'); v.load(); };
+    v.onloadedmetadata = () => { const d = v.duration; dire('ok', 'Vidéo prête' + (isFinite(d) && d > 0 ? ` · ${Math.floor(d / 60)} min ${String(Math.round(d % 60)).padStart(2, '0')}` : '')); fin(); };
+    v.onerror = () => { dire('ko', 'Ce lien ne se lit pas comme une vidéo. Il faut le lien direct du fichier (il finit par .mp4).'); fin(); };
+    v.src = ref;
+  } else if (lu.type === 'image') {
+    const im = new Image();
+    im.onload = () => dire('ok', 'Image prête');
+    im.onerror = () => dire('ko', 'Cette image ne se charge pas : vérifie le lien.');
+    im.src = ref;
+  }
+}
+function poserLien(i, brut) {
+  const src = etat.sources[i];
+  src.saisie = String(brut || '').slice(0, 600);
+  const lu = lireLien(brut);
+  if (!lu || lu.erreur) {
+    Object.assign(src, { type: '', ref: '', nom: '', actif: false, etatLien: lu ? { classe: 'ko', texte: lu.erreur } : null });
+  } else if (lu.ref !== src.ref) {
+    Object.assign(src, { type: lu.type, ref: lu.ref, nom: lu.nom, actif: !lu.ferme });       // ce que tu colles passe à l'écran tout de suite
+    src.etatLien = lu.ferme ? { classe: 'ko', texte: `${lu.nom} refuse de s'afficher dans un autre site.`, onglet: true }
+      : lu.lecteur ? { classe: 'ok', texte: `Vidéo ${lu.nom} reconnue` }
+      : lu.type === 'web' ? { classe: '', texte: 'Page web, affichée telle quelle. Si la case reste grise, le site refuse :', onglet: true }
+      : { classe: '', texte: 'Chargement…' };
+    verifierLien(i, lu);
+  } else return;
+  envoyer(); majSlots(); majEtatLien(i); majSonSource(i);
+}
+function majEtatLien(i) {
+  const src = etat.sources[i], el = slotsEl[i] && slotsEl[i].querySelector('.src-etat');
+  if (!el) return;
+  const e = src.etatLien;
+  el.hidden = !e;
+  el.className = 'src-etat ' + ((e && e.classe) || '');
+  el.textContent = e ? e.texte : '';
+  if (e && e.onglet) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'lien-bouton'; b.textContent = 'Partager mon onglet à la place';
+    b.onclick = () => { viderSource(i); demarrerMonEcran(i); };
+    el.append(' ', b);
+  }
+}
+
 /* ---------- Sources ---------- */
+const slotsEl = [];
+const premierVide = () => etat.sources.findIndex(s => !s.ui);
+function viderSource(i) {
+  const src = etat.sources[i];
+  arreterMonEcran(i);
+  oublierImage(src);
+  Object.assign(src, { ui: '', type: '', ref: '', nom: '', actif: false, saisie: '', etatLien: null });
+  remplirCorps(i);
+}
 function construireSlots() {
   const box = $('#sources');
-  box.innerHTML = '';
+  box.innerHTML = `
+    <div class="src-scene" id="src-scene" hidden><span>C'est prêt, mais la scène affichée est une autre.</span><button type="button" class="petit primaire">Montrer à l'écran</button></div>
+    <div id="src-slots"></div>
+    <div class="src-choix" id="src-choix">
+      <div class="src-choix-titre"></div>
+      <div class="src-choix-grille">${CHOIX_SOURCE.map(([ui, nom, aide]) => `<button type="button" data-ui="${ui}">${ICONE_SRC[ui]}<b>${nom}</b><small>${aide}</small></button>`).join('')}</div>
+      <input type="file" accept="image/*" hidden>
+      <p class="aide src-astuce">Tu peux aussi coller un lien ou une image ici (Ctrl+V).</p>
+    </div>`;
+  box.querySelector('#src-scene button').onclick = () => changerScene('partage');
   etat.sources.forEach((src, i) => {
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
-      <div class="tete"><b>${i + 1}</b>
-        <select class="type">${TYPES_SOURCE.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select>
-        <label class="aide" style="display:flex;gap:5px;align-items:center;white-space:nowrap"><input type="checkbox" class="actif"> À l'écran</label>
+      <div class="tete"><span class="src-ic"></span><b class="src-nom"></b>
+        <label class="src-ecran" title="Affiché ou non sur la scène Écran partagé"><span>À l'écran</span><span class="interrupteur"><input type="checkbox" class="actif"><span></span></span></label>
+        <button type="button" class="petit src-oter" title="Retirer ce partage">✕</button>
       </div>
       <div class="corps"></div>`;
-    el.querySelector('.type').value = src.ui || '';
-    el.querySelector('.type').onchange = e => changerType(i, e.target.value);
     el.querySelector('.actif').onchange = e => {
-      if (e.target.checked && !src.ref) { e.target.checked = false; return toast('Choisis d\'abord le contenu de cette source'); }
+      if (e.target.checked && !src.ref) { e.target.checked = false; return toast(src.ui === 'monecran' ? 'Choisis d\'abord l\'écran à partager' : 'Il n\'y a encore rien à montrer ici'); }
       src.actif = e.target.checked; envoyer(); majSlots();
     };
-    box.appendChild(el);
+    el.querySelector('.src-oter').onclick = () => { viderSource(i); envoyer(); majSlots(); };
+    slotsEl[i] = el;
+    box.querySelector('#src-slots').appendChild(el);
     remplirCorps(i);
   });
+  const champImage = box.querySelector('#src-choix input[type=file]');
+  champImage.onchange = () => { ajouterImage(champImage.files[0]); champImage.value = ''; };
+  box.querySelectorAll('#src-choix [data-ui]').forEach(b => b.onclick = () => {
+    const i = premierVide();
+    if (i < 0) return toast('4 partages à la fois au maximum : retires-en un');
+    const ui = b.dataset.ui;
+    if (ui === 'monecran') return demarrerMonEcran(i);
+    if (ui === 'image') return champImage.click();
+    etat.sources[i].ui = ui;
+    if (ui === 'ecraninvite') {
+      etat.sources[i].type = 'ecran';
+      const ids = ecransInvites();
+      if (ids.length === 1) Object.assign(etat.sources[i], { ref: ids[0], nom: nomsEcrans.get(ids[0]) || 'Écran invité', actif: true });
+    }
+    remplirCorps(i); envoyer(); majSlots();
+    const champ = slotsEl[i].querySelector('.src-lien'); if (champ) champ.focus();
+  });
   majSlots();
+}
+function demarrerMonEcran(i) {
+  Object.assign(etat.sources[i], { ui: 'monecran', type: 'ecran', nom: 'Mon écran' });
+  lancerMonEcran(i); remplirCorps(i); envoyer(); majSlots();
+}
+function ajouterImage(f) {
+  if (!f) return;
+  const i = premierVide();
+  if (i < 0) return toast('4 partages à la fois au maximum : retires-en un');
+  return choisirImage(i, f);
 }
 /* Une image choisie sur l'ordinateur : réduite si elle est très grande, gardée dans ce navigateur, envoyée à la sortie à sa demande */
 function oublierImage(src) { if (src.fichier) { fichiers.oter(src.fichier.id).catch(() => {}); src.fichier = null; } }
@@ -66,82 +207,79 @@ async function choisirImage(i, f) {
   const id = 'i' + rnd(8);
   try { await fichiers.mettre(id, blob); } catch (e) { return toast('Ce navigateur refuse de garder le fichier'); }
   oublierImage(src);
-  Object.assign(src, { ref: 'fichier:' + id, nom: f.name.replace(/\.\w+$/, '').slice(0, 40) || 'Image', fichier: { id, type: blob.type || f.type }, actif: true });
+  Object.assign(src, { ui: 'image', type: 'image', ref: 'fichier:' + id, nom: (f.name || 'Image').replace(/\.\w+$/, '').slice(0, 40) || 'Image', fichier: { id, type: blob.type || f.type }, actif: true });
   remplirCorps(i); envoyer(); majSlots();
 }
-function changerType(i, ui) {
-  const src = etat.sources[i];
-  arreterMonEcran(i);
-  oublierImage(src);
-  Object.assign(src, { ui, type: '', ref: '', nom: '', actif: false });
-  if (ui === 'monecran') Object.assign(src, { type: 'ecran', nom: `Mon écran ${i + 1}` });
-  if (ui === 'ecraninvite') src.type = 'ecran';
-  if (['image', 'video', 'web'].includes(ui)) src.type = ui;
-  remplirCorps(i); envoyer(); majSlots();
+function majSonSource(i) {
+  const src = etat.sources[i], corps = slotsEl[i].querySelector('.corps');
+  const ancien = corps.querySelector('.son-src'); if (ancien) ancien.remove();
+  if (!(src.ui === 'monecran' || src.ui === 'ecraninvite' || src.type === 'video') || !src.ref) return;
+  const v = document.createElement('div');
+  v.className = 'reglages son-src'; v.style.cssText = 'display:flex;gap:8px;align-items:center';
+  v.innerHTML = '<span class="aide">🔊 Son</span><input type="range" min="0" max="100" class="vol-src" style="flex:1"><span class="aide pct-src"></span>';
+  const r = v.querySelector('input'), pct = v.querySelector('.pct-src');
+  const k = () => cleSrc(src);
+  r.value = Math.round((etat.vol[k()] ?? 1) * 100); pct.textContent = r.value + '%';
+  r.oninput = () => { etat.vol[k()] = r.value / 100; pct.textContent = r.value + '%'; envoyerBientot(); };
+  corps.appendChild(v);
 }
 function remplirCorps(i) {
-  const src = etat.sources[i];
-  const corps = $('#sources').children[i].querySelector('.corps');
+  const src = etat.sources[i], el = slotsEl[i];
+  if (!el) return;
+  const corps = el.querySelector('.corps');
   corps.innerHTML = '';
+  el.querySelector('.src-ic').innerHTML = ICONE_SRC[src.ui] || '';
   if (src.ui === 'monecran') {
     const b = document.createElement('button');
-    b.className = 'petit primaire'; b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
-    b.onclick = () => { iframesEcran.has(i) ? arreterMonEcran(i) : lancerMonEcran(i); remplirCorps(i); envoyer(); majSlots(); };
-    b.classList.add('choisir-ecran');
-    corps.appendChild(b);
+    b.className = 'petit choisir-ecran ' + (iframesEcran.has(i) ? '' : 'primaire'); b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
+    b.onclick = () => { if (iframesEcran.has(i)) { viderSource(i); envoyer(); majSlots(); } else demarrerMonEcran(i); };
     if (iframesEcran.has(i)) corps.appendChild(iframesEcran.get(i));
+    corps.appendChild(b);
     corps.insertAdjacentHTML('beforeend', '<span class="aide">Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
   } else if (src.ui === 'ecraninvite') {
     const sel = document.createElement('select');
     sel.className = 'ecran-invite';
     corps.appendChild(sel);
     remplirEcransInvites(i);
-    sel.onchange = () => { src.ref = sel.value; src.nom = nomsEcrans.get(sel.value) || 'Écran invité'; src.actif = !!src.ref; envoyer(); majSlots(); };
-  } else if (['image', 'video', 'web'].includes(src.ui)) {
-    if (src.ui === 'image') {
-      // une image : on la choisit sur l'ordinateur (ou on colle un lien juste en dessous)
-      const ligne = document.createElement('div');
-      ligne.className = 'src-image';
-      ligne.innerHTML = '<img alt="" hidden><span class="txt"></span><button class="petit primaire" type="button"></button><input type="file" accept="image/*" hidden>';
-      const [vignette, nom, bouton, champ] = ligne.children;
-      bouton.textContent = src.fichier ? 'Changer' : 'Choisir une image';
-      nom.textContent = src.fichier ? src.nom : '';
-      if (src.fichier) fichiers.lire(src.fichier.id).then(b => { if (b) { vignette.src = URL.createObjectURL(b); vignette.hidden = false; } }).catch(() => {});
-      bouton.onclick = () => champ.click();
-      champ.onchange = () => choisirImage(i, champ.files[0]);
-      corps.appendChild(ligne);
-    }
+    sel.onchange = () => { src.ref = sel.value; src.nom = nomsEcrans.get(sel.value) || 'Écran invité'; src.actif = !!src.ref; envoyer(); majSlots(); majSonSource(i); };
+  } else if (src.ui === 'image') {
+    // une image choisie sur l'ordinateur
+    const ligne = document.createElement('div');
+    ligne.className = 'src-image';
+    ligne.innerHTML = '<img alt="" hidden><span class="txt"></span><button class="petit" type="button">Changer</button><input type="file" accept="image/*" hidden>';
+    const [vignette, nom, bouton, champ] = ligne.children;
+    nom.textContent = src.fichier ? src.nom : '';
+    if (src.fichier) fichiers.lire(src.fichier.id).then(b => { if (b) { vignette.src = URL.createObjectURL(b); vignette.hidden = false; } }).catch(() => {});
+    bouton.onclick = () => champ.click();
+    champ.onchange = () => choisirImage(i, champ.files[0]);
+    corps.appendChild(ligne);
+  } else if (src.ui === 'lien') {
     const inp = document.createElement('input');
-    inp.type = 'url'; inp.placeholder = src.ui === 'image' ? 'ou colle un lien https://…' : 'https://…'; inp.value = src.fichier ? '' : (src.ref || '');
-    inp.onchange = () => {
-      const v = inp.value.trim();
-      if (v && !/^https:\/\//.test(v)) { toast('Le lien doit commencer par https://'); return; }
-      if (!v && src.fichier) return;
-      oublierImage(src);
-      src.ref = v; src.nom = src.ui; src.actif = !!v; envoyer(); majSlots();
-      if (src.ui === 'image') remplirCorps(i);
-    };
+    inp.type = 'text'; inp.className = 'src-lien'; inp.inputMode = 'url'; inp.autocomplete = 'off'; inp.spellcheck = false;
+    inp.placeholder = 'Colle ton lien ici'; inp.value = src.saisie || src.ref || '';
+    // dès qu'on colle ou qu'on arrête de taper, sans attendre Entrée
+    let attente = 0;
+    inp.oninput = () => { clearTimeout(attente); attente = setTimeout(() => poserLien(i, inp.value), 600); };
+    inp.onpaste = () => { clearTimeout(attente); setTimeout(() => poserLien(i, inp.value), 0); };
+    inp.onchange = () => { clearTimeout(attente); poserLien(i, inp.value); };
+    inp.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(attente); poserLien(i, inp.value); inp.blur(); } };
     corps.appendChild(inp);
+    corps.insertAdjacentHTML('beforeend', '<p class="src-etat" hidden></p>');
+    majEtatLien(i);
   }
-  if (src.ui === 'monecran' || src.ui === 'ecraninvite' || src.ui === 'video') {
-    const v = document.createElement('div');
-    v.className = 'reglages'; v.style.cssText = 'display:flex;gap:8px;align-items:center';
-    v.innerHTML = '<span class="aide">🔊 Son</span><input type="range" min="0" max="100" class="vol-src" style="flex:1"><span class="aide pct-src"></span>';
-    const r = v.querySelector('input'), pct = v.querySelector('.pct-src');
-    const k = () => cleSrc(src);
-    r.value = Math.round((etat.vol[k()] ?? 1) * 100); pct.textContent = r.value + '%';
-    r.oninput = () => { etat.vol[k()] = r.value / 100; pct.textContent = r.value + '%'; envoyerBientot(); };
-    corps.appendChild(v);
-  }
+  majSonSource(i);
 }
+const ecransInvites = () => [...presents.keys()].filter(id => estEcran(id) && !/_ecran\d$/.test(id));
 function remplirEcransInvites(i) {
-  const slot = $('#sources').children[i];
+  const slot = slotsEl[i];
   const sel = slot && slot.querySelector('.ecran-invite');
   if (!sel) return;
   const src = etat.sources[i];
-  const ids = [...presents.keys()].filter(id => estEcran(id) && !/_ecran\d$/.test(id));
-  sel.innerHTML = '<option value="">' + (ids.length ? 'Choisis un écran' : 'Aucun invité ne partage son écran') + '</option>' +
+  const ids = ecransInvites();
+  sel.innerHTML = '<option value="">' + (ids.length ? 'Choisis un écran' : 'Aucun invité ne partage son écran pour l\'instant') + '</option>' +
     ids.map(id => `<option value="${esc(id)}">${esc(nomsEcrans.get(id) || id)}</option>`).join('');
+  // un seul invité partage : pas besoin de choisir
+  if (!src.ref && ids.length === 1 && document.activeElement !== sel) { Object.assign(src, { ref: ids[0], nom: nomsEcrans.get(ids[0]) || 'Écran invité', actif: true }); envoyer(); majSlots(); majSonSource(i); }
   sel.value = ids.includes(src.ref) ? src.ref : '';
 }
 function lancerMonEcran(i) {
@@ -154,7 +292,7 @@ function lancerMonEcran(i) {
   ecransActifs.add(id);
   presents.set(id, { vu: Date.now() });
   etat.sources[i].ref = id;
-  etat.sources[i].actif = true;      // ce que tu choisis passe à l'écran tout de suite ; la case « À l'écran » sert à le retirer
+  etat.sources[i].actif = true;      // ce que tu choisis passe à l'écran tout de suite ; l'interrupteur « À l'écran » sert à le retirer
 }
 function arreterMonEcran(i) {
   const f = iframesEcran.get(i);
@@ -166,18 +304,49 @@ function arreterMonEcran(i) {
   etat.sources[i].ref = ''; etat.sources[i].actif = false;
 }
 function majSlots() {
-  [...$('#sources').children].forEach((el, i) => {
-    const src = etat.sources[i];
+  let pleins = 0;
+  etat.sources.forEach((src, i) => {
+    const el = slotsEl[i];
+    if (!el) return;
+    el.hidden = !src.ui;
+    if (src.ui) pleins++;
     el.classList.toggle('on', !!(src.actif && src.ref));
     el.querySelector('.actif').checked = !!(src.actif && src.ref);
+    el.querySelector('.src-nom').textContent = src.ui === 'lien' ? (src.ref ? ({ video: 'Vidéo', image: 'Image' }[src.type] || src.nom || 'Page web') : 'Lien') : src.ui === 'image' ? 'Image' : src.ui === 'ecraninvite' ? (src.ref ? src.nom : NOM_SOURCE.ecraninvite) : (NOM_SOURCE[src.ui] || '');
   });
+  const choix = $('#src-choix');
+  if (!choix) return;
+  choix.hidden = pleins >= etat.sources.length;
+  choix.classList.toggle('seul', !pleins);
+  choix.querySelector('.src-choix-titre').textContent = pleins ? 'Montrer autre chose en plus' : 'Que veux-tu montrer ?';
+  majSceneSources();
 }
-/* On passe sur la scène Écran partagé sans rien à montrer : la première source propose « Mon écran », bouton en évidence */
+/* Quelque chose est prêt mais la scène affichée n'est pas « Écran partagé » : un bouton pour y passer */
+function majSceneSources() {
+  const b = $('#src-scene');
+  if (b) b.hidden = !(etat.scene !== 'partage' && etat.sources.some(s => s.actif && s.ref));
+}
+setInterval(majSceneSources, 500);
+/* On passe sur la scène Écran partagé sans rien à montrer : les choix se mettent en évidence */
 function proposerPartage() {
-  if (!etat.sources.some(x => x.ui)) { $('#sources').children[0].querySelector('.type').value = 'monecran'; changerType(0, 'monecran'); }
-  const b = $('#sources .choisir-ecran');
-  if (b) { b.classList.remove('appel'); void b.offsetWidth; b.classList.add('appel'); }
+  const c = $('#src-choix');
+  if (c && !c.hidden) { c.classList.remove('appel'); void c.offsetWidth; c.classList.add('appel'); }
 }
+/* Coller dans l'onglet Partage : un lien devient une source « Lien », une image copiée devient une source « Image » */
+document.addEventListener('paste', e => {
+  const onglet = document.querySelector('[data-onglet="sources"]');
+  if (!onglet || onglet.hidden || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '')) return;
+  const image = [...(e.clipboardData && e.clipboardData.files || [])].find(f => /^image\//.test(f.type));
+  if (image) { e.preventDefault(); ajouterImage(image); return; }
+  const texte = e.clipboardData && e.clipboardData.getData('text');
+  const lu = texte && lireLien(texte);
+  if (!lu || lu.erreur) return;
+  const i = premierVide();
+  if (i < 0) return toast('4 partages à la fois au maximum : retires-en un');
+  e.preventDefault();
+  etat.sources[i].ui = 'lien';
+  remplirCorps(i); poserLien(i, texte.trim()); remplirCorps(i);
+});
 /* appelée quand un écran d'invité arrive ou part */
 function majSources() { etat.sources.forEach((s, i) => { if (s.ui === 'ecraninvite') remplirEcransInvites(i); }); }
 setInterval(majSources, 4000);
