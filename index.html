@@ -62,15 +62,15 @@
   .formules-tete h2 { margin: 0 0 8px; font-size: 26px; font-weight: 600; }
   .formules-tete p, .formules-pied { margin: 0; color: var(--ui-muted); font-size: 15px; }
   .formules-pied { text-align: center; margin-top: 22px; font-size: 14px; }
-  .offres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
-  .offre { position: relative; display: flex; flex-direction: column; padding: 28px 26px 26px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; }
+  .offres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+  .offre { position: relative; display: flex; flex-direction: column; padding: 26px 22px 22px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; }
   .offre.vedette { border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 5%, var(--ui-panel)); }
-  .offre-badge { position: absolute; top: -11px; left: 26px; padding: 2px 10px; border-radius: 99px; background: var(--ui-accent); color: var(--ui-sur-accent); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+  .offre-badge { position: absolute; top: -11px; left: 22px; padding: 2px 10px; border-radius: 99px; background: var(--ui-accent); color: var(--ui-sur-accent); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
   .offre h3 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
   .offre .prix { margin: 14px 0 0; display: flex; align-items: baseline; gap: 8px; }
-  .offre .prix b { font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .offre .prix b { font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .offre .prix span { color: var(--ui-muted); font-size: 14px; }
-  .offre .pour { margin: 12px 0 0; color: var(--ui-muted); font-size: 14px; min-height: 42px; }
+  .offre .pour { margin: 12px 0 0; color: var(--ui-muted); font-size: 14px; min-height: 63px; }
   .offre ul { list-style: none; margin: 14px 0 26px; padding: 18px 0 0; border-top: 1px solid var(--ui-line); display: grid; gap: 10px; font-size: 14px; }
   .offre li { position: relative; padding-left: 24px; line-height: 1.4; }
   .offre li::before { content: ''; position: absolute; left: 2px; top: 4px; width: 10px; height: 5px; border-left: 1.5px solid var(--ui-accent); border-bottom: 1.5px solid var(--ui-accent); transform: rotate(-45deg); }
@@ -79,7 +79,8 @@
   .offre li.moins::before { top: 9px; width: 9px; height: 0; border-left: 0; border-color: var(--ui-muted); transform: none; }
   .offre li.plus::before { content: '+'; border: 0; transform: none; top: -1px; left: 1px; width: auto; height: auto; color: var(--ui-accent); font-weight: 600; }
   .offre button { margin-top: auto; width: 100%; padding: 12px 16px; font-size: 15px; }
-  @media (max-width: 860px) { .offres { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; } .offre .pour { min-height: 0; } .formules { margin-top: 56px; } }
+  @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px; } .offre .pour { min-height: 42px; } }
+  @media (max-width: 620px) { .offres { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; } .offre .pour { min-height: 0; } .formules { margin-top: 56px; } }
   .lien-barre { background: none; border: 0; color: var(--ui-muted); padding: 9px 10px; font-weight: 500; }
   .lien-barre:hover { background: none; color: var(--ui-text); }
   @media (max-width: 600px) { .barre .etiquette { display: none; } .barre { gap: 6px; } .barre button { padding-left: 10px; padding-right: 10px; } }
@@ -280,14 +281,16 @@
       <article class="offre">
         <h3>Gratuit</h3>
         <p class="prix"><b>0 €</b></p>
-        <p class="pour">Pour essayer, sans carte bancaire.</p>
+        <p class="pour">Un vrai studio, sans carte bancaire et sans limite de durée.</p>
         <ul>
-          <li>1 plateforme à la fois</li>
+          <li>1 plateforme à la fois, <b>sans limite de durée</b></li>
+          <li>Jusqu'à <b>6 personnes</b> à l'écran</li>
+          <li>Horizontal ou vertical (TikTok, Shorts)</li>
+          <li>9 thèmes, avec <b>ton logo et tes couleurs</b></li>
+          <li>Sous-titres en direct</li>
+          <li>Quiz en direct</li>
           <li>Image en 720p</li>
-          <li>Jusqu'à 3 personnes à l'écran</li>
-          <li>5 thèmes</li>
-          <li>Horizontal ou vertical</li>
-          <li class="moins">Logo du studio affiché à l'écran</li>
+          <li class="moins">Petit logo du studio à l'écran</li>
         </ul>
         <button type="button" data-formule="gratuit">Commencer gratuitement</button>
       </article>
@@ -295,33 +298,45 @@
         <span class="offre-badge">Recommandée</span>
         <h3>Essentiel</h3>
         <p class="prix"><b>5,99 €</b><span>par mois</span></p>
-        <p class="pour">Tout ce qu'il faut pour un live propre.</p>
+        <p class="pour">Un live propre, en pleine qualité, sur plusieurs réseaux.</p>
         <ul>
-          <li><b>15 h</b> de direct par mois</li>
-          <li><b>3 plateformes</b> en même temps</li>
+          <li class="plus">Tout ce qu'il y a dans Gratuit</li>
           <li>Image en <b>1080p</b></li>
-          <li>Jusqu'à 6 personnes à l'écran</li>
+          <li><b>Aucun logo</b> du studio à l'écran</li>
+          <li><b>3 plateformes</b> en même temps, 15 h par mois</li>
+          <li>Jusqu'à 9 personnes à l'écran</li>
           <li>Les 25 thèmes</li>
-          <li>Aucun logo du studio à l'écran</li>
-          <li>Sous-titres en direct</li>
+          <li>Tes styles enregistrés</li>
         </ul>
         <button type="button" class="primaire" data-formule="essentiel">Choisir Essentiel</button>
       </article>
       <article class="offre">
         <h3>Pro</h3>
         <p class="prix"><b>11,99 €</b><span>par mois</span></p>
-        <p class="pour">Pour les lives à plusieurs, sur tous les réseaux.</p>
+        <p class="pour">Pour les grosses émissions, partout à la fois.</p>
         <ul>
           <li class="plus">Tout ce qu'il y a dans Essentiel</li>
-          <li><b>30 h</b> de direct par mois</li>
-          <li><b>Toutes les plateformes</b> en même temps</li>
-          <li>Horizontal et vertical en même temps</li>
-          <li>Jusqu'à 9 personnes à l'écran</li>
-          <li>Quiz, Watch Party, plusieurs caméras</li>
-          <li>Tes styles enregistrés</li>
-          <li>Replay gardé 10 jours, sous-titres à corriger</li>
+          <li><b>Toutes les plateformes</b> en même temps, 30 h par mois</li>
+          <li>Horizontal et vertical <b>en même temps</b></li>
+          <li>Watch Party</li>
+          <li>Replay gardé 10 jours</li>
+          <li>Sous-titres à corriger et à télécharger</li>
         </ul>
         <button type="button" data-formule="pro">Choisir Pro</button>
+      </article>
+      <article class="offre">
+        <h3>Régie</h3>
+        <p class="prix"><b>19,99 €</b><span>par mois</span></p>
+        <p class="pour">Pour ceux qui ont déjà leur OBS et veulent tout garder.</p>
+        <ul>
+          <li class="plus">Tout ce qu'il y a dans Pro</li>
+          <li><b>Tu gardes ton OBS</b> : les caméras arrivent sur fond transparent</li>
+          <li>Ta scène OBS reprise dans le studio</li>
+          <li><b>Plusieurs caméras</b>, avec changement de plan</li>
+          <li>60 h par mois sur toutes les plateformes</li>
+          <li>Replay gardé 30 jours</li>
+        </ul>
+        <button type="button" data-formule="regie">Choisir Régie</button>
       </article>
     </div>
     <p class="formules-pied">Un mois chargé ? Tu peux ajouter des heures à la demande, sans changer de formule.</p>

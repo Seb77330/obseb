@@ -4,7 +4,14 @@
    pour que tu puisses les corriger et les télécharger depuis « Lives terminés ». */
 'use strict';
 
-etat.st = Object.assign({ actif: false, ecran: true }, etat.st || {});
+etat.st = Object.assign({ actif: false, ecran: true, parCouleur: true, couleurs: {} }, etat.st || {});
+/* Couleurs lisibles sur fond sombre, bien distinctes entre elles. La première personne (toi) est en blanc. */
+const PALETTE_ST = ['#FFFFFF', '#FFD84D', '#5FD4FF', '#7BE08A', '#FF9ECF', '#FFA95C', '#B9A5FF', '#6FE3C8', '#FF8A80'];
+function couleurST(id) {
+  const c = etat.st.couleurs;
+  if (!c[id]) { const prises = Object.values(c); c[id] = PALETTE_ST.find(x => !prises.includes(x)) || PALETTE_ST[Object.keys(c).length % PALETTE_ST.length]; }
+  return c[id];
+}
 const CLE_ST = 'studioSeb:st:' + session.room;
 const stLignes = new Map();     // id -> { t, f, vu } : ce que chacun est en train de dire
 const stDebuts = new Map();     // id -> heure du début de la phrase en cours
@@ -46,7 +53,7 @@ function diffuserST() {
     diffuserST.t = null;
     const maintenant = Date.now();
     for (const [id, l] of stLignes) if (maintenant - l.vu > (l.f ? 4500 : 7000)) { stLignes.delete(id); stDebuts.delete(id); }
-    const l = [...stLignes].sort((a, b) => a[1].vu - b[1].vu).slice(-2).map(([id, x]) => ({ nom: etat.noms[id] || '', t: x.t }));
+    const l = [...stLignes].sort((a, b) => a[1].vu - b[1].vu).slice(-2).map(([id, x]) => ({ nom: etat.noms[id] || '', t: x.t, c: etat.st.parCouleur ? couleurST(id) : '' }));
     const msg = { ecran: !!(etat.st.actif && etat.st.ecran), l };
     ordre(maCamera, { sendData: { studioSebST: msg }, type: 'pcs' });
     ordre(apercu, { studioSebST: msg });
@@ -75,7 +82,31 @@ $('#st-actif').onchange = e => {
   toast(etat.st.actif ? 'Sous-titres activés : chacun est transcrit sur son ordinateur' : 'Sous-titres arrêtés');
 };
 $('#st-ecran').onchange = e => { etat.st.ecran = e.target.checked; envoyer(); diffuserST(); majST(); };
+$('#st-couleurs').checked = !!etat.st.parCouleur;
+$('#st-couleurs').onchange = e => { etat.st.parCouleur = e.target.checked; envoyer(); diffuserST(); majST(); };
+/* Les pastilles : toi, puis chaque invité présent */
+let stPaletteCle = '';
+function majPaletteST() {
+  const box = $('#st-palette');
+  const ids = etat.st.actif && etat.st.parCouleur ? [ID_HOTE, ...[...presents.keys()].filter(id => !estCamDistante(id) && !estCamLocale(id) && id !== ID_HOTE)] : [];
+  const cle = ids.map(id => id + ':' + (etat.noms[id] || '')).join('|');
+  if (cle === stPaletteCle) return;      // rien n'a changé : on ne redessine pas (un choix de couleur peut être ouvert)
+  stPaletteCle = cle; box.innerHTML = '';
+  for (const id of ids) {
+    const el = document.createElement('label');
+    el.className = 'st-pers';
+    el.innerHTML = '<input type="color"><span></span>';
+    el.querySelector('span').textContent = etat.noms[id] || 'Invité';
+    const champ = el.querySelector('input');
+    champ.value = couleurST(id); champ.title = 'Couleur des sous-titres de ' + (etat.noms[id] || 'cet invité');
+    champ.oninput = () => { etat.st.couleurs[id] = champ.value; diffuserST(); };
+    champ.onchange = () => envoyer();
+    box.appendChild(el);
+  }
+}
 function majST() {
+  majPaletteST();
+  $('#st-couleurs').disabled = !etat.st.actif;
   const el = $('#st-etat'), v = $('#st-voyant');
   $('#st-ecran').disabled = !etat.st.actif;
   const n = stArchive && etat.direct && stArchive.debut === etat.direct.debut ? stArchive.segs.length : 0;

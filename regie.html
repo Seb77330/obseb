@@ -34,6 +34,14 @@
   .ligne-case { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; cursor: pointer; font-size: 14px; }
   .ligne-case input { margin-top: 3px; flex: none; }
   .ligne-case b { display: block; font-weight: 500; } .ligne-case small { display: block; color: var(--ui-muted); font-size: 12px; margin-top: 1px; }
+  .st-palette { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px 26px; }
+  .st-palette:empty { display: none; }
+  .st-pers { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 5px; border: 1px solid var(--ui-line); border-radius: 99px; font-size: 13px; cursor: pointer; }
+  .st-pers:hover { border-color: var(--ui-line2); }
+  .st-pers input[type=color] { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+  .st-pers input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+  .st-pers input[type=color]::-webkit-color-swatch { border: 1px solid var(--ui-line2); border-radius: 50%; }
+  .st-pers input[type=color]::-moz-color-swatch { border: 1px solid var(--ui-line2); border-radius: 50%; }
   .menu-titre { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); padding: 10px 12px 4px; border-top: 1px solid var(--ui-line); margin-top: 4px; }
   .menu button small { display: block; font-weight: 400; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
   /* Le bouton du direct : le seul qui met à l'antenne */
@@ -422,6 +430,8 @@
         <h3 class="sous-titre">Sous-titres en direct</h3>
         <label class="ligne-case"><input type="checkbox" id="st-actif"> <span><b>Activer les sous-titres</b><small>Chacun est transcrit sur son ordinateur : on sait toujours qui parle.</small></span></label>
         <label class="ligne-case"><input type="checkbox" id="st-ecran"> <span><b>Les afficher à l'écran</b><small>Décoche pour les garder seulement pour le replay.</small></span></label>
+        <label class="ligne-case"><input type="checkbox" id="st-couleurs"> <span><b>Une couleur par personne</b><small>On reconnaît qui parle d'un coup d'œil. Clique sur une pastille pour changer la couleur.</small></span></label>
+        <div class="st-palette" id="st-palette"></div>
         <div class="wp-source" style="margin-top:8px"><span class="voyant" id="st-voyant"></span><span id="st-etat"></span></div>
         <p class="aide" style="margin:8px 0 0">Gratuit. Après le direct, tu peux corriger les mots et les noms propres, puis télécharger les sous-titres depuis « Lives terminés », pendant 10 jours.</p>
       </section>
@@ -608,6 +618,6 @@
 <script src="js/regie-cams.js?v=a329af3e"></script>
 <script src="js/regie-watch.js?v=15a93a62"></script>
 <script src="js/regie-etat.js?v=20a00c2b"></script>
-<script src="js/regie-st.js?v=aabd2755"></script>
+<script src="js/regie-st.js?v=918d355c"></script>
 </body>
 </html>

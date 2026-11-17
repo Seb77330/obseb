@@ -212,10 +212,15 @@ function appliquerEtat(st) {
   const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
   const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && (scene === 'live' || scene === 'partage');
   document.body.classList.toggle('quiz-on', !!quizEnCours);
+  // sous-titres à l'écran : les caméras laissent une bande libre en dessous, les sous-titres ne passent jamais sur une image
+  const bandeST = !!(st.st && st.st.actif && st.st.ecran) && !quizEnCours && sceneCameras(scene);
+  document.body.classList.toggle('st-on', bandeST);
+  const retrait = (z, bas) => bandeST ? Object.assign({}, z, { h: Math.min(z.h, bas - z.y) }) : z;
+  const zone = VERTICAL ? retrait(ZONE_V, 1180) : retrait(ZONE, 720);
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
-    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives) : calculerDispositionV(st.layout, ids, st.focus))
-    : (scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus));
-  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, ZONE_WATCH_V) : calculerDisposition(st.layout, ids, st.focus, ZONE_WATCH));
+    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : calculerDispositionV(st.layout, ids, st.focus, zone))
+    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : calculerDisposition(st.layout, ids, st.focus, zone));
+  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, retrait(ZONE_WATCH_V, 1180)) : calculerDisposition(st.layout, ids, st.focus, retrait(ZONE_WATCH, 690)));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);
@@ -282,11 +287,16 @@ function finDeTexte(t, max) {      // on garde la fin de la phrase, coupée à u
 function afficherST(m) {
   const box = $('#sous-titres');
   const scene = SCENE_FORCEE || (etat && etat.scene);
-  const l = m && m.ecran && Array.isArray(m.l) && sceneCameras(scene) ? m.l.slice(-2) : [];
+  const l = m && m.ecran && Array.isArray(m.l) && document.body.classList.contains('st-on') ? m.l.slice(-2) : [];
   box.classList.toggle('cachee', !l.length);
   if (l.length) {
     stVus = Date.now();
-    box.innerHTML = l.map(x => `<div>${x.nom ? `<b>${esc(String(x.nom).slice(0, 28))}</b>` : ''}<span>${esc(finDeTexte(x.t, VERTICAL ? 70 : 120))}</span></div>`).join('');
+    // une ligne par personne, dans sa couleur ; on garde la fin de la phrase pour tenir sur une ligne
+    box.innerHTML = l.map(x => {
+      const c = /^#[0-9a-f]{6}$/i.test(x.c || '') ? x.c : '';
+      const nom = String(x.nom || '').slice(0, 16);
+      return `<div${c ? ` style="color:${c}"` : ''}>${nom ? `<b${c ? '' : ' class="accent"'}>${esc(nom)}</b>` : ''}<span>${esc(finDeTexte(x.t, (VERTICAL ? 60 : 96) - nom.length))}</span></div>`;
+    }).join('');
   }
 }
 setInterval(() => { if (stVus && Date.now() - stVus > 8000) { stVus = 0; $('#sous-titres').classList.add('cachee'); } }, 1000);
@@ -485,7 +495,8 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
-  if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
+  if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
+  if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
