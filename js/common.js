@@ -165,7 +165,7 @@ function urlPublier(session, streamId, label, opts = {}) {
 /* Regarder un seul flux (programme, vignettes de régie, aperçu invité). */
 function urlVoir(session, streamId, opts = {}) {
   return vdo(Object.assign({
-    room: session.room, view: streamId, solo: true, cleanoutput: true, cover: true,
+    room: session.room, view: streamId, scene: true, cleanoutput: true, cover: true,
     ln: 'fr', transparent: true
   }, opts));
 }

@@ -48,10 +48,12 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     iframe.allow = IFRAME_ALLOW;
     const nb = etat ? etat.onair.length : 1;
     // Aperçu : l'hôte reste net (flux local), les invités en qualité réduite pour ne pas saturer leur connexion
-    const debitApercu = id === idHote(session) ? 2500 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
+    const estHote = id === idHote(session);
+    const debitApercu = estHote ? 6000 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
     const opts = PREVIEW
       ? { bitrate: ecran ? 1500 : debitApercu, noaudio: true }
-      : { bitrate: ecran ? 8000 : 6000, audiobitrate: 128 };
+      // Sortie OBS : ta caméra passe par ton propre PC, donc on peut monter très haut sans coût internet
+      : { bitrate: ecran ? 10000 : (estHote ? 20000 : 8000), audiobitrate: 128, codec: 'vp9,h264' };
     iframe.src = urlVoir(session, id, opts);
     iframe.addEventListener('load', () => {
       if (!PREVIEW) ordre(iframe, { getLoudness: true });
