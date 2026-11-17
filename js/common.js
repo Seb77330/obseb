@@ -195,7 +195,8 @@ function grilleCols(n) {
   if (n <= 4) return [2, 2];
   if (n <= 6) return [3, 2];
   if (n <= 9) return [3, 3];
-  return [4, 3];
+  if (n <= 12) return [4, 3];
+  return [5, 3];   // jusqu'à 13 : toi + 12 invités
 }
 /* Rectangle 16:9 le plus grand qui tient dans (w,h), centré */
 function fit169(x, y, w, h) {
@@ -217,8 +218,9 @@ function calculerDisposition(layout, ids, focus, zone = ZONE, gap = 22) {
     r[ids[0]] = fit169(zone.x, zone.y, grandW, zone.h);
     const reste = ids.slice(1);
     const colX = zone.x + grandW + gap, colW = zone.w - grandW - gap;
-    const cellH = (zone.h - gap * (reste.length - 1)) / reste.length;
-    reste.forEach((id, i) => { r[id] = fit169(colX, zone.y + i * (cellH + gap), colW, cellH); });
+    const nc = reste.length > 4 ? 2 : 1, nr = Math.ceil(reste.length / nc);
+    const cw = (colW - gap * (nc - 1)) / nc, cellH = (zone.h - gap * (nr - 1)) / nr;
+    reste.forEach((id, i) => { r[id] = fit169(colX + (i % nc) * (cw + gap), zone.y + Math.floor(i / nc) * (cellH + gap), cw, cellH); });
     return r;
   }
   // grille (par défaut) : rangées centrées, dernière rangée centrée
@@ -241,7 +243,8 @@ function calculerDisposition(layout, ids, focus, zone = ZONE, gap = 22) {
 /* Scène Partage : jusqu'à 4 sources (écrans, images, vidéos, pages web) + colonne de caméras */
 function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
   const r = {};
-  const colW = ids.length ? 360 : 0;
+  const nc = Math.min(3, Math.ceil(ids.length / 4));
+  const colW = ids.length ? [360, 480, 540][nc - 1] : 0;
   const zoneW = zone.w - (colW ? colW + gap : 0);
   const n = sources.length;
   if (n === 1) r[sources[0]] = fit169(zone.x, zone.y, zoneW, zone.h);
@@ -259,19 +262,24 @@ function dispositionPartage(ids, sources = ['__ecran'], zone = ZONE, gap = 22) {
       r[k] = { x: x0 + col * (t.w + gap) + dx, y: y0 + row * (t.h + gap), w: t.w, h: t.h };
     });
   }
-  const max = Math.min(ids.length, 4);
-  const cellH = colW * 9 / 16;
-  const totalH = max * cellH + (max - 1) * gap;
+  const max = Math.min(ids.length, 13);
+  const g2 = 12, cw = (colW - g2 * (nc - 1)) / (nc || 1), cellH = cw * 9 / 16;
+  const nr = Math.ceil(max / (nc || 1));
+  const totalH = nr * cellH + (nr - 1) * g2;
   const y0 = zone.y + (zone.h - totalH) / 2;
   ids.slice(0, max).forEach((id, i) => {
-    r[id] = { x: zone.x + zoneW + gap, y: y0 + i * (cellH + gap), w: colW, h: cellH };
+    r[id] = { x: zone.x + zoneW + gap + (i % nc) * (cw + g2), y: y0 + Math.floor(i / nc) * (cellH + g2), w: cw, h: cellH };
   });
   return r;
 }
 
 /* ---------- Format vertical (1080x1920, TikTok, Shorts) ---------- */
 const SCENE_VW = 1080, SCENE_VH = 1920;
-const ZONE_V = { x: 40, y: 150, w: 1000, h: 1330 };
+/* Zones sûres du vertical : en haut, TikTok/Instagram affichent ton profil et les spectateurs (0-230 px) ;
+   en bas, les commentaires et le champ de saisie (à partir de ~1360 px) ; à droite, les boutons (cadeaux, partage).
+   Les visages restent entre 400 et 1320 px, le bandeau juste en dessous de l'en-tête. */
+const SURES_V = { haut: 230, bas: 1360, droite: 120 };
+const ZONE_V = { x: 40, y: 400, w: 1080 - 40 - SURES_V.droite, h: 920 };   // marge à droite pour les boutons
 function grilleV(n) {
   if (n <= 1) return [1, 1];
   if (n <= 3) return [1, n];
@@ -279,7 +287,8 @@ function grilleV(n) {
   if (n <= 6) return [2, 3];
   if (n <= 8) return [2, 4];
   if (n === 9) return [3, 3];
-  return [3, 4];
+  if (n <= 12) return [3, 4];
+  return [4, 4];
 }
 /* Grille de cellules qui remplissent la zone (les vidéos sont recadrées) */
 function grilleCellules(ids, x, y, w, h, gap, [cols, rows]) {
@@ -327,9 +336,29 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
   }
   if (ids.length) {
     const y = zone.y + hautH + (hautH ? gap : 0), h = zone.h - (y - zone.y);
-    const g = ids.length <= 2 ? [ids.length, 1] : [2, Math.ceil(Math.min(ids.length, 6) / 2)];
-    Object.assign(r, grilleCellules(ids.slice(0, 6), zone.x, y, zone.w, h, gap, g));
+    const m = Math.min(ids.length, 13);
+    const nc = m <= 2 ? m : m <= 6 ? 2 : m <= 9 ? 3 : 4;
+    Object.assign(r, grilleCellules(ids.slice(0, m), zone.x, y, zone.w, h, gap, [nc, Math.ceil(m / nc)]));
   }
+  return r;
+}
+
+/* Pendant un quiz : tout le monde en rangée(s) en haut, le panneau du quiz dessous (jamais sur un visage) */
+const ZONE_QUIZ = { x: 70, y: 36, w: 1780, h: 250 };
+const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 330 };
+function dispositionQuiz(ids, vertical) {
+  const n = ids.length; if (!n) return {};
+  const z = vertical ? ZONE_QUIZ_V : ZONE_QUIZ, gap = 12;
+  const rows = vertical ? (n <= 4 ? 1 : n <= 8 ? 2 : 3) : (n <= 7 ? 1 : 2);
+  const cols = Math.ceil(n / rows);
+  if (vertical) return grilleCellules(ids, z.x, z.y, z.w, z.h, gap, [cols, rows]);
+  const cw = (z.w - gap * (cols - 1)) / cols, ch = (z.h - gap * (rows - 1)) / rows;
+  const t = fit169(0, 0, cw, ch), r = {};
+  ids.forEach((id, i) => {
+    const row = Math.floor(i / cols), dans = row === rows - 1 ? n - row * cols : cols, col = i - row * cols;
+    const x0 = z.x + (z.w - (dans * t.w + (dans - 1) * gap)) / 2;
+    r[id] = { x: x0 + col * (t.w + gap), y: z.y + row * (t.h + gap), w: t.w, h: t.h };
+  });
   return r;
 }
 

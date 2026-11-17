@@ -8,6 +8,13 @@ const SCENE_FORCEE = Q.get('scene');
 const VERTICAL = Q.get('format') === 'vertical';
 const LARG = VERTICAL ? SCENE_VW : SCENE_W, HAUT = VERTICAL ? SCENE_VH : SCENE_H;
 if (VERTICAL) document.body.classList.add('vertical');
+if (VERTICAL && Q.get('zones')) addEventListener('DOMContentLoaded', () => {
+  const z = document.createElement('div'); z.id = 'zones-sures';
+  z.innerHTML = `<div style="left:0;right:0;top:0;height:${SURES_V.haut}px">Profil et spectateurs<br>(TikTok, Instagram)</div>
+    <div style="left:0;right:0;top:${SURES_V.bas}px;bottom:0">Commentaires et cadeaux</div>
+    <div style="right:0;width:${SURES_V.droite}px;top:${SURES_V.bas - 420}px;height:420px;font-size:16px">Boutons</div>`;
+  ($('#scale') || document.body).appendChild(z);
+});
 const session = lireSession();
 
 const $ = s => document.querySelector(s);
@@ -180,7 +187,9 @@ function appliquerEtat(st) {
   const clesActives = actives.map(cleSource);
 
   const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
-  const disp = VERTICAL
+  const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && scene !== 'intro' && scene !== 'fin';
+  document.body.classList.toggle('quiz-on', !!quizEnCours);
+  const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL) : VERTICAL
     ? (scene === 'partage' ? dispositionPartageV(ids, clesActives) : calculerDispositionV(st.layout, ids, st.focus))
     : (scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus));
   for (const t of tuiles.values()) {
@@ -225,7 +234,9 @@ const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'You
 let chatAfficheTs = 0;
 function gererChat() {
   const c = etat && etat.chatAffiche;
-  $('#chat-bulle').classList.toggle('cachee', !c || etat.scene === 'intro' || etat.scene === 'fin');
+  const visible = !!c && etat.scene !== 'intro' && etat.scene !== 'fin';
+  $('#chat-bulle').classList.toggle('cachee', !visible);
+  document.body.classList.toggle('chat-on', visible);
   if (!c || c.ts === chatAfficheTs) return;
   chatAfficheTs = c.ts;
   const [coul, nom] = COULEURS_CHAT[c.p] || ['#555', ''];
@@ -343,11 +354,11 @@ addEventListener('message', e => {
 
 /* ----- Démarrage ----- */
 if (DEMO) {
-  const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah'];
+  const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade'];
   const st = etatParDefaut(session);
   st.scene = SCENE_FORCEE || 'live';
   st.noms = {}; st.onair = [];
-  for (let i = 0; i < Math.min(DEMO, 10); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
+  for (let i = 0; i < Math.min(DEMO, 13); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
   const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };

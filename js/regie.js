@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const session = lireSession();
 const cle = hashParams().get('k');
-const MAX_ANTENNE = 10;          // toi + 9 invités
+const MAX_ANTENNE = 13;          // toi + 12 invités
 
 if (!session || !cle) {
   $('#bloque').hidden = false;
@@ -65,7 +65,7 @@ apercu.addEventListener('load', () => envoyer());
 let apercuVertical = false;
 $('#btn-apercu-format').onclick = () => {
   apercuVertical = !apercuVertical;
-  apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
+  apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical&zones=1' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
   apercu.parentElement.style.aspectRatio = apercuVertical ? '9/16' : '16/9';
   apercu.parentElement.style.maxHeight = apercuVertical ? '640px' : '';
   apercu.parentElement.style.margin = apercuVertical ? '0 auto' : '';
