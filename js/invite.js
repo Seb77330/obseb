@@ -16,7 +16,17 @@ $('#hote2').textContent = session.hote;
 $('#chaine').textContent = session.handle || HANDLE_DEFAUT;
 $('#pastille').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="" style="height:28px;display:block">` : esc(theme.logoTexte || 'SEB');
 
-const CLE = 'studioSeb:invite:' + session.room;
+/* Lien « caméra à distance » (invite.html?cam=1) : ce téléphone ou ce PC devient une caméra de l'animateur */
+const CAM_DISTANTE = new URLSearchParams(location.search).get('cam') === '1';
+if (CAM_DISTANTE) {
+  document.body.classList.add('camera-distante');
+  document.title = `Caméra · ${session.titre}`;
+  $('#accueil .sur').textContent = 'Caméra à distance';
+  $('#accueil p').textContent = `Cet appareil devient une caméra du live de ${session.hote}. Donne-lui un nom pour la reconnaître en régie.`;
+  $('#prenom').placeholder = 'Ex. Caméra salon, Plan large';
+  $('#form button').textContent = 'Brancher cette caméra';
+}
+const CLE = 'studioSeb:' + (CAM_DISTANTE ? 'camdist:' : 'invite:') + session.room;
 let moi = null;
 try { moi = JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { /* rien */ }
 if (moi && moi.nom) $('#prenom').value = moi.nom;
@@ -25,7 +35,7 @@ $('#form').onsubmit = e => {
   e.preventDefault();
   const nom = $('#prenom').value.trim();
   if (!nom) return;
-  if (!moi || moi.nom !== nom) moi = { nom, id: `${session.room}_${slug(nom, 8)}${rnd(4)}` };
+  if (!moi || moi.nom !== nom) moi = { nom, id: CAM_DISTANTE ? `${session.room}_rc_${rnd(6)}` : `${session.room}_${slug(nom, 8)}${rnd(4)}` };
   try { localStorage.setItem(CLE, JSON.stringify(moi)); } catch (err) { /* rien */ }
   entrer();
 };
@@ -95,12 +105,39 @@ addEventListener('message', e => {
   // seul l'animateur pilote les coulisses : un autre invité ne peut pas envoyer de faux ordres
   if (typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session)) return;
   ordre(apercu, { [CANAL]: st });
+  calerHorloge(st.ts);
   gererQuiz(st.quiz);
-  const enDirect = (st.onair || []).includes(moi.id) && (st.scene === 'live' || st.scene === 'partage');
+  filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || st.watch.pastille || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
+  majWatchInvite();
+  const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
   const statut = $('#statut');
   statut.textContent = enDirect ? '● À L\'ANTENNE' : ((st.onair || []).includes(moi.id) ? 'PRÊT(E), À L\'ANTENNE AU PROCHAIN PLAN' : 'EN COULISSES');
   statut.classList.toggle('direct', enDirect);
 });
+
+/* ----- Watch Party : le minuteur du film de l'animateur, pour se caler dessus ----- */
+let filmHote = null, extInvite = 0;
+function majWatchInvite() {
+  const box = $('#watch-invite'), w = filmHote;
+  box.hidden = !w;
+  if (!w) return;
+  const t = maintenantHote(), pos = positionFilm(w, t), enCompte = w.top && t < w.top;
+  $('#wi-temps').textContent = enCompte ? Math.ceil((w.top - t) / 1000) : texteFilm(pos);
+  $('#wi-titre').textContent = enCompte ? `Lance ton film à ${texteFilm(w.pos)} quand ça arrive à zéro` : (w.titre || '');
+  const e = $('#wi-etat');
+  e.textContent = enCompte ? 'TOP DÉPART' : w.lecture ? '● LECTURE' : 'EN PAUSE';
+  e.classList.toggle('lecture', !!w.lecture && !enCompte); e.classList.toggle('top', !!enCompte);
+  $('#wi-aide').textContent = Date.now() - extInvite < 5000
+    ? 'L\'extension cale ton film toute seule sur celui de l\'animateur.'
+    : 'Mets ton film au même endroit que ce minuteur. Le film n\'est pas diffusé : chacun le regarde chez soi.';
+}
+/* Avec l'extension, le film de l'invité suit tout seul : on lui donne la position voulue deux fois par seconde */
+setInterval(() => {
+  majWatchInvite();
+  const w = filmHote, t = maintenantHote();
+  window.postMessage({ source: 'obseb-watch-page', role: 'invite', cible: w && !(w.top && t < w.top) ? { pos: positionFilm(w, t), lecture: !!w.lecture } : null }, location.origin);
+}, 500);
+addEventListener('message', e => { if (e.source === window && e.data && e.data.source === 'obseb-watch-ext') extInvite = Date.now(); });
 
 /* ----- Mode quiz : répondre le plus vite possible ----- */
 let quizVu = null;      // { qid, vuA (heure locale d'affichage), choix, envoye }

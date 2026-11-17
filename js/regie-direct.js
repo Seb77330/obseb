@@ -37,13 +37,49 @@ function basculerPlateforme(id) {
 function ligne(p, droite) {
   return `<div class="ligne-pf"><i style="background:${p.couleur};color:${p.texte || '#fff'}">${p.court}</i><b>${esc(p.nom)}</b>${droite}</div>`;
 }
+/* La porte : sept chevrons autour d'un anneau, qui s'enclenchent un par un quand on s'apprête à démarrer */
+function dessinPorte() {
+  const R = 50, c = 62;
+  let ch = '';
+  for (let i = 0; i < 7; i++) {
+    const a = i * 360 / 7;
+    ch += `<path class="chev" data-i="${i}" transform="rotate(${a} ${c} ${c})" d="M${c - 8} ${c - R - 9}h16l-4.5 13h-7z"/>`;
+  }
+  return `<div class="porte" id="porte"><svg viewBox="0 0 124 124" aria-hidden="true">
+      <circle class="horizon" cx="${c}" cy="${c}" r="${R - 5}"/><circle class="anneau" cx="${c}" cy="${c}" r="${R}"/><circle class="anneau2" cx="${c}" cy="${c}" r="${R - 6}"/>${ch}
+      <text class="compte" id="porte-compte" x="${c}" y="${c}">0/7</text></svg>
+    <div class="porte-txt" id="porte-txt"><b>Vérification…</b></div></div>`;
+}
+let porteMinuteurs = [];
+function animerPorte() {
+  porteMinuteurs.forEach(clearTimeout); porteMinuteurs = [];
+  if (typeof chevrons !== 'function' || !$('#porte')) return;
+  const liste = chevrons(), porte = $('#porte');
+  let n = 0;
+  liste.forEach((c, i) => porteMinuteurs.push(setTimeout(() => {
+    const el = porte.querySelector(`.chev[data-i="${i}"]`); if (!el) return;
+    el.classList.add(c.ok ? 'on' : 'non');
+    if (c.ok) n++;
+    $('#porte-compte').textContent = `${n}/7`;
+    $('#porte-txt').innerHTML = `<b>Chevron ${i + 1} ${c.ok ? 'enclenché' : 'en attente'}</b>${esc(c.nom)}`;
+  }, 160 + i * 190)));
+  porteMinuteurs.push(setTimeout(() => {
+    if (!$('#porte')) return;
+    const rates = liste.filter(c => !c.ok);
+    porte.classList.toggle('ouverte', !rates.length);
+    $('#porte-txt').innerHTML = rates.length
+      ? `<b>${7 - rates.length} chevrons sur 7</b>À vérifier avant de partir :<ul>${rates.map(c => `<li><i>${esc(c.nom)}</i> · ${esc(c.aide || c.texte)}</li>`).join('')}</ul>`
+      : '<b>Chevron 7 verrouillé</b>Tout est prêt, tu peux y aller.';
+  }, 160 + 7 * 190 + 150));
+}
 function dessinerPop() {
   const d = etat.direct;
   const noteObs = serveurBranche() ? '' : '<p class="aide" style="margin:10px 0 0">Pour l\'instant, c\'est OBS qui envoie l\'image aux plateformes : démarre et arrête aussi le direct dans OBS. Avec le serveur OBSeb, ce bouton le fera tout seul.</p>';
   if (!d) {
     const pretes = plateformesPretes();
     pop.innerHTML = `<h4>Démarrer le direct ?</h4>
-      <p class="aide" style="margin:0 0 8px">Les spectateurs te verront dès maintenant. Tu peux régler les scènes et le quiz avant : rien ne part tant que tu n'as pas cliqué ici.</p>
+      ${dessinPorte()}
+      <p class="aide" style="margin:0 0 8px">Les spectateurs te verront dès que tu cliques. Rien ne part avant.</p>
       ${pretes.length ? pretes.map(({ p, c }) => ligne(p, `<small>${c.format === 'vertical' ? 'vertical' : 'horizontal'}</small><input type="checkbox" data-pf="${p.id}" checked>`)).join('')
         : '<p class="aide" style="margin:0">Aucune plateforme configurée dans l\'onglet Diffusion.</p>'}
       ${noteObs}
@@ -52,6 +88,7 @@ function dessinerPop() {
         <button id="pop-annuler">Annuler</button>
       </div>`;
     $('#pop-go').onclick = () => demarrerDirect([...pop.querySelectorAll('[data-pf]:checked')].map(x => x.dataset.pf));
+    animerPorte();
   } else {
     const liste = d.plateformes.map(id => PLATEFORMES_LIVE.find(p => p.id === id)).filter(Boolean);
     pop.innerHTML = `<h4>En direct depuis ${hms(Date.now() - d.debut)}</h4>
@@ -70,14 +107,19 @@ function dessinerPop() {
   $('#pop-annuler').onclick = () => { pop.hidden = true; };
 }
 
+let directAffiche = null;
 function majDirect() {
   const d = etat.direct;
+  if (!!d !== directAffiche) { directAffiche = !!d; for (const id of cartes.keys()) majCarte(id); }
   btnDirect.classList.toggle('on', !!d);
-  btnDirect.querySelector('span').textContent = d ? `Direct · ${hms(Date.now() - d.debut)}` : 'Démarrer le direct';
+  document.body.classList.toggle('en-direct', !!d);
+  const sp = btnDirect.querySelector('span');
+  sp.textContent = d ? `EN DIRECT ${hms(Date.now() - d.debut)}` : 'Démarrer le direct';
+  sp.style.fontFamily = d ? '' : 'inherit';
   btnDirect.title = d ? 'Couper une plateforme ou arrêter le direct' : 'Rien ne part tant que tu ne cliques pas ici';
   const badge = $('#badge-scene');
   badge.classList.toggle('rouge-direct', !!d);
-  badge.textContent = (d ? 'En direct · ' : 'Hors direct · ') + ({ intro: 'Intro', live: 'Plateau', partage: 'Écran partagé', fin: 'Fin' }[etat.scene] || '');
+  badge.textContent = (d ? 'En direct · ' : 'Hors direct · ') + ({ intro: 'Intro', live: 'Plateau', partage: 'Écran partagé', watch: 'Watch Party', fin: 'Fin' }[etat.scene] || '');
 }
 btnDirect.onclick = e => { e.stopPropagation(); if (pop.hidden) { dessinerPop(); pop.hidden = false; } else pop.hidden = true; };
 pop.addEventListener('click', e => e.stopPropagation());   // les boutons du menu se redessinent : le clic ne doit pas le fermer

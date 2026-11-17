@@ -29,9 +29,12 @@ delete etat.debutLive;          // ancien minuteur lié aux scènes
 etat.noms[ID_HOTE] = etat.noms[ID_HOTE] || session.hote;
 
 const presents = new Map();   // id -> { vu: timestamp } (connectés en ce moment)
+const camsLocales = new Map(); // id -> { iframe, nom, appareil } : tes autres caméras branchées sur ce PC (voir regie-cams.js)
 const cartes = new Map();     // id -> { el, iframe, vu }
 let listeRecue = false;
 const nomsEcrans = new Map();  // id d'écran -> nom affiché
+let statsCamera = null;        // dernière mesure de ta caméra { h, kbps, n, vu }
+const sortieVue = {};          // dernière fois que la sortie OBS a dit « je suis là » : { horizontal, vertical }
 const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
 
 /* ----- En-tête ----- */
@@ -66,7 +69,7 @@ function demarrerCamera(app) {
   maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, width: 1920, height: 1080, maxframerate: 30, contenthint: 'detail' });   // 1080p tenu : le navigateur baisse les images/s plutôt que la définition   // son pro : stéréo, sans anti-écho (casque)
 }
 $('#btn-cam-changer').onclick = () => {
-  if (etat.scene !== 'intro' && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
+  if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
   maCamera.src = 'about:blank';
   $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false;
   reglageCam.ouvrir();
@@ -83,10 +86,7 @@ let apercuVertical = false;
 $('#btn-apercu-format').onclick = () => {
   apercuVertical = !apercuVertical;
   apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical&zones=1' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
-  apercu.parentElement.style.aspectRatio = apercuVertical ? '9/16' : '16/9';
-  apercu.parentElement.style.maxHeight = apercuVertical ? '640px' : '';
-  apercu.parentElement.style.margin = apercuVertical ? '0 auto' : '';
-  apercu.parentElement.style.width = apercuVertical ? '360px' : '';
+  $('#moniteur').classList.toggle('vertical', apercuVertical);
   $('#btn-apercu-format').textContent = apercuVertical ? 'Voir en horizontal' : 'Voir en vertical';
 };
 
@@ -167,7 +167,7 @@ $('#btn-sans-compte').onclick = () => { etat.fin = null; envoyer(); };
 
 addEventListener('keydown', e => {
   if (e.target.matches('input:not([type=checkbox]):not([type=range]):not([type=radio]), textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
-  const scenes = { '1': 'intro', '2': 'live', '3': 'partage', '4': 'fin', '&': 'intro', 'é': 'live', '"': 'partage', "'": 'fin' };
+  const scenes = { '1': 'intro', '2': 'live', '3': 'partage', '4': 'watch', '5': 'fin', '&': 'intro', 'é': 'live', '"': 'partage', "'": 'watch', '(': 'fin' };
   const layouts = { g: 'grille', i: 'interview', s: 'solo' };
   if (scenes[e.key]) changerScene(scenes[e.key]);
   else if (layouts[e.key.toLowerCase()]) changerLayout(layouts[e.key.toLowerCase()]);
@@ -183,26 +183,27 @@ function basculerAntenne(id) {
   }
   envoyer();
 }
+const IC_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>';
 function creerCarte(id) {
-  const estHote = id === ID_HOTE;
+  const estHote = id === ID_HOTE, cam = camsLocales.get(id);
   const el = document.createElement('div');
-  el.className = 'participant';
+  el.className = 'participant' + (cam ? ' camera' : '');
   el.innerHTML = `
-    <div class="vignette"></div>
-    <div>
-      <input type="text" class="nom" title="Nom affiché à l'écran">
-      <div class="reglages"><span title="Volume dans le live">🔊</span><input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
-      <div class="vu"><i></i></div>
-      ${estHote ? '' : '<div class="qualite aide"></div>'}
-    </div>
+    <div class="vignette"><span class="temoin"></span></div>
+    <input type="text" class="nom" title="Nom affiché à l'écran" ${cam ? 'placeholder="Sans nom à l\'écran"' : ''}>
+    ${cam ? '' : `<div class="reglages" title="Volume dans le live">${IC_SON}<input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
+    <div class="vu"><i></i></div>`}
+    ${estHote || cam ? '' : '<div class="qualite aide"></div>'}
     <div class="actions">
       <button class="petit antenne-btn"></button>
-      <button class="petit muet-btn">Muet</button>
-      <button class="petit focus-btn" title="Afficher cette personne seule à l'écran">Seul</button>
-      ${estHote ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
+      ${cam ? '' : '<button class="petit muet-btn">Muet</button>'}
+      <button class="petit focus-btn" title="Afficher cette source seule à l'écran">Seul</button>
+      ${estHote || cam ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
+      ${cam ? '<button class="petit retirer-btn" title="Débrancher cette caméra">✕</button>' : ''}
     </div>`;
   let iframe = null;
-  if (!estHote) {
+  if (cam) el.querySelector('.vignette').appendChild(cam.iframe);      // la fenêtre qui publie la caméra sert aussi d'aperçu
+  else if (!estHote) {
     iframe = document.createElement('iframe');
     iframe.allow = IFRAME_ALLOW;
     iframe.src = urlVoir(session, id, { bitrate: 250, transparent: false });
@@ -211,16 +212,19 @@ function creerCarte(id) {
   }
   const nom = el.querySelector('.nom');
   nom.value = etat.noms[id] || '';
-  nom.oninput = () => { etat.noms[id] = nom.value; renommesParMoi.add(id); envoyerBientot(); };
+  nom.oninput = () => { etat.noms[id] = nom.value; renommesParMoi.add(id); if (cam && typeof sauverCams === 'function') { cam.nom = nom.value; sauverCams(); } envoyerBientot(); };
   const vol = el.querySelector('.vol');
-  vol.value = Math.round((etat.vol[id] ?? 1) * 100);
-  vol.oninput = () => { etat.vol[id] = vol.value / 100; volumeCasque(id); majCarte(id); envoyerBientot(); };
-  el.querySelector('.antenne-btn').onclick = () => {
-    if (estHote && etat.onair.includes(id) && etat.scene !== 'intro' && !confirm('Te retirer de l\'antenne ? Les spectateurs ne te verront plus.')) return;
+  if (vol) {
+    vol.value = Math.round((etat.vol[id] ?? 1) * 100);
+    vol.oninput = () => { etat.vol[id] = vol.value / 100; volumeCasque(id); majCarte(id); envoyerBientot(); };
+  }
+  el.querySelector('.antenne-btn').onclick = async () => {
+    if (estHote && etat.onair.includes(id) && etat.direct && !await confirmer('Te retirer de l\'antenne ? Les spectateurs ne te verront plus.', { oui: 'Oui, me retirer', non: 'Non' })) return;
     basculerAntenne(id);
   };
   if (estHote) el.classList.add('hote');
-  el.querySelector('.muet-btn').onclick = () => { etat.muet[id] = !etat.muet[id]; volumeCasque(id); envoyer(); };
+  const muet = el.querySelector('.muet-btn');
+  if (muet) muet.onclick = () => { etat.muet[id] = !etat.muet[id]; volumeCasque(id); envoyer(); };
   el.querySelector('.focus-btn').onclick = () => {
     if (!etat.onair.includes(id)) etat.onair.push(id);
     etat.focus = id; etat.layout = 'solo'; envoyer();
@@ -230,6 +234,8 @@ function creerCarte(id) {
     const i = etat.onair.indexOf(id);
     if (i > 0) { [etat.onair[i - 1], etat.onair[i]] = [etat.onair[i], etat.onair[i - 1]]; envoyer(); }
   };
+  const retirer = el.querySelector('.retirer-btn');
+  if (retirer) retirer.onclick = () => { if (typeof retirerCam === 'function') retirerCam(id); };
   const c = { el, iframe, niveau: 0 };
   cartes.set(id, c);
   return c;
@@ -244,52 +250,56 @@ function majCarte(id) {
   const enDirect = etat.onair.includes(id);
   c.el.classList.toggle('antenne', enDirect);
   c.el.classList.toggle('parti', id !== ID_HOTE && !presents.has(id));
+  c.el.querySelector('.temoin').textContent = enDirect ? (etat.direct ? 'À L\'ANTENNE' : 'SÉLECTIONNÉ') : (id === ID_HOTE || camsLocales.has(id) ? 'HORS ANTENNE' : 'EN COULISSES');
   const b = c.el.querySelector('.antenne-btn');
-  b.textContent = enDirect ? "✓ À l'antenne" : "Mettre à l'antenne";
-  b.title = enDirect ? "Cliquer pour retirer de l'antenne" : '';
+  b.textContent = enDirect ? 'Retirer' : 'Mettre à l\'antenne';
+  b.title = enDirect ? 'Retirer de l\'antenne' : 'Afficher cette source à l\'écran';
   b.className = 'petit antenne-btn' + (enDirect ? '' : ' primaire');
-  c.el.querySelector('.muet-btn').textContent = etat.muet[id] ? 'Son coupé' : 'Muet';
-  c.el.querySelector('.muet-btn').classList.toggle('actif', !!etat.muet[id]);
+  const muet = c.el.querySelector('.muet-btn');
+  if (muet) { muet.textContent = etat.muet[id] ? 'Son coupé' : 'Muet'; muet.classList.toggle('rouge', !!etat.muet[id]); }
   const qe = c.el.querySelector('.qualite'), q = qualites.get(id);
   if (qe) {
-    if (!q) qe.textContent = 'Qualité : en attente…';
+    if (!q) qe.innerHTML = '<span class="voyant"></span>Qualité : en attente…';
     else {
       const res = q.h ? `${q.h}p` : '?', debit = q.kbps ? `${(q.kbps / 1000).toFixed(1).replace('.', ',')} Mb/s` : '';
       const bon = q.h >= 720 && q.kbps >= 1500, moyen = q.h >= 480 && q.kbps >= 600;
-      qe.innerHTML = `<span style="color:${bon ? 'var(--ui-green)' : moyen ? 'var(--ui-accent)' : 'var(--ui-red)'}">●</span> ${res} ${debit} · ${bon ? 'bonne image' : moyen ? 'image moyenne' : 'connexion faible'}`;
+      qe.innerHTML = `<span class="voyant ${bon ? 'ok' : moyen ? 'att' : 'ko'}"></span>${res} ${debit} · ${bon ? 'bonne image' : moyen ? 'image moyenne' : 'connexion faible'}`;
     }
   }
-  c.el.querySelector('.pct').textContent = (etat.muet[id] ? 0 : Math.round((etat.vol[id] ?? 1) * 100)) + '%';
+  const pct = c.el.querySelector('.pct');
+  if (pct) pct.textContent = (etat.muet[id] ? 0 : Math.round((etat.vol[id] ?? 1) * 100)) + '%';
 }
 function majInterface() {
-  const liste = $('#liste');
+  const liste = $('#liste'), zoneCams = $('#cams');
   const ids = [ID_HOTE, ...[...presents.keys()].filter(id => id !== ID_HOTE && !estEcran(id))];
-  for (const id of ids) if (!cartes.has(id)) (id === ID_HOTE ? $('#hote-controles') : liste).appendChild(creerCarte(id).el);
+  for (const id of ids) if (!cartes.has(id)) (id === ID_HOTE ? $('#hote-controles') : camsLocales.has(id) ? zoneCams : liste).appendChild(creerCarte(id).el);
   for (const [id, c] of cartes) if (!ids.includes(id)) { c.el.remove(); cartes.delete(id); }
-  // ordre : à l'antenne d'abord (dans l'ordre d'affichage), puis coulisses
+  // ordre des invités : à l'antenne d'abord (dans l'ordre d'affichage), puis coulisses
   const tri = [...ids].sort((a, b) => {
     const ia = etat.onair.indexOf(a), ib = etat.onair.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
-  tri.forEach(id => { if (id !== ID_HOTE) liste.appendChild(cartes.get(id).el); });
+  tri.forEach(id => { if (id !== ID_HOTE && !camsLocales.has(id)) liste.appendChild(cartes.get(id).el); });
   ids.forEach(majCarte);
-  const nbInvites = ids.length - 1;
-  $('#nb-part').textContent = `${nbInvites} invité${nbInvites > 1 ? 's' : ''} · ${etat.onair.filter(id => ids.includes(id)).length} à l'antenne`;
+  const invites = ids.filter(id => id !== ID_HOTE && !camsLocales.has(id));
+  const nbInvites = invites.length;
+  $('#nb-part').textContent = `${etat.onair.filter(id => ids.includes(id)).length} à l'antenne · ${nbInvites} invité${nbInvites > 1 ? 's' : ''}`;
   if (!$('#liste .vide') && nbInvites === 0) {
-    liste.insertAdjacentHTML('beforeend', '<div class="vide">Tes invités arriveront ici. Tu les mets à l\'antenne d\'un clic.<button class="primaire petit" id="vide-inviter">Copier le lien invités</button></div>');
+    liste.insertAdjacentHTML('beforeend', '<div class="vide">Tes invités arriveront ici, en coulisses. Tu les mets à l\'antenne d\'un clic.<button class="primaire petit" id="vide-inviter">Copier le lien invités</button></div>');
     $('#vide-inviter').onclick = () => $('#btn-invite').click();
   }
   if (nbInvites > 0) $('#liste .vide')?.remove();
   $$('[data-scene]').forEach(b => b.classList.toggle('actif', b.dataset.scene === etat.scene));
   $$('[data-layout]').forEach(b => b.classList.toggle('actif', b.dataset.layout === etat.layout));
   if (typeof majDirect === 'function') majDirect();
+  if (typeof majCommutation === 'function') majCommutation();
 }
 
 /* ----- Qui est connecté ? (liste fournie par vdo.ninja) ----- */
 const nomsInvites = new Map();      // dernier nom choisi par chaque invité
 const renommesParMoi = new Set();   // invités que tu as renommés : leur propre nom ne t'écrase plus
 function arrivee(id, label) {
-  if (!id || id === ID_HOTE) return;
+  if (!id || id === ID_HOTE || camsLocales.has(id)) return;     // tes propres caméras sont déjà connues
   const nouveau = !presents.has(id);
   presents.set(id, { vu: Date.now() });
   if (estEcran(id)) { if (label) nomsEcrans.set(id, label); if (nouveau && typeof majSources === 'function') majSources(); }
@@ -308,6 +318,7 @@ setInterval(() => {
   ordre(maCamera, { getStreamIDs: true });
   ordre(maCamera, { getStats: true });
   if (typeof ecransActifs !== 'undefined') for (const id of ecransActifs) presents.set(id, { vu: Date.now() });
+  for (const id of camsLocales.keys()) presents.set(id, { vu: Date.now() });
   // retire ceux qui ne répondent plus depuis 12 s (seulement si vdo.ninja fournit bien la liste)
   if (!listeRecue) return;
   let change = false;
@@ -323,8 +334,9 @@ addEventListener('message', e => {
       const q = resumeStats(d.stats);
       const n = d.stats.total_outbound_connections;
       const el = $('#etat-camera');
-      if (typeof n === 'number' && n === 0) el.innerHTML = '<span style="color:var(--ui-red)">●</span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span style="color:var(--ui-green)">●</span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`
+      statsCamera = { h: q.h, kbps: q.kbps, n: typeof n === 'number' ? n : null, vu: Date.now() };
+      if (typeof n === 'number' && n === 0) el.innerHTML = '<span class="voyant att"></span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
+      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Ta caméra part${q.h ? ' en ' + q.h + 'p' : ''}${q.kbps ? ' · ' + (q.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}${typeof n === 'number' ? ' · reçue par ' + n + ' écran' + (n > 1 ? 's' : '') : ''}`
         // les aperçus reçoivent volontairement une image réduite ; seule la sortie OBS demande la 1080p
         + (q.h && q.h < 1000 ? '<br><span class="aide">Aperçus en qualité réduite : la 1080p part dès que la sortie OBS est ouverte.</span>' : '');
     }
@@ -334,6 +346,8 @@ addEventListener('message', e => {
       for (const [id, label] of Object.entries(liste)) if (presents.has(id) || id) arrivee(id, typeof label === 'string' ? label : label?.label);
     }
     if (d.action === 'guest-connected' && d.streamID) arrivee(d.streamID, d.value && d.value.label);
+    const so = d.dataReceived && d.dataReceived.studioSebSortie;
+    if (so) sortieVue[so.v ? 'vertical' : 'horizontal'] = Date.now();
     const salut = d.dataReceived && d.dataReceived.studioSebSalut;
     if (salut && typeof salut.id === 'string' && salut.id.startsWith(session.room + '_')
         && !(typeof d.streamID === 'string' && d.streamID !== salut.id)) {   // pas d'usurpation du nom d'un autre
@@ -348,6 +362,7 @@ addEventListener('message', e => {
       }
       if (nomInvite) nomsInvites.set(salut.id, nomInvite);
       if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
+      if (salut.st && typeof sousTitreRecu === 'function') sousTitreRecu(salut.id, salut.st);
       if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');
     }
     if (d.action === 'push-connection' && d.streamID && d.value === false) {
@@ -366,6 +381,7 @@ setInterval(() => {
     c.niveau *= 0.7;
     const bar = c.el.querySelector('.vu i');
     if (bar) bar.style.width = Math.min(100, c.niveau * 2) + '%';
+    if (bar) bar.style.backgroundSize = (bar.parentElement.clientWidth || 200) + 'px 100%';
   }
 }, 120);
 

@@ -143,7 +143,7 @@ setInterval(menage, 3600000); menage();
 
 /* ----- Jetons LiveKit -----
    Invités et spectateurs : il suffit de connaître la salle (nom aléatoire, présent dans leur lien).
-   Animateur (…_seb) et ses écrans (…_ecran1-4) : la clé de la régie est exigée ; la première clé vue
+   Animateur (…_seb), ses écrans (…_ecran1-4) et ses autres caméras (…_cam2-4) : la clé de la régie est exigée ; la première clé vue
    pour une salle devient la bonne (personne d'autre ne peut ensuite se faire passer pour l'animateur). */
 let salles = {};
 try { salles = JSON.parse(fs.readFileSync(FICHIER_SALLES, 'utf8')); } catch (e) { /* rien */ }
@@ -158,7 +158,7 @@ function jeton({ room, identite, nom, publier, cle }) {
   if (!LK_CLE || !LK_SECRET || !LK_URL) throw new Error('LiveKit non configuré');
   if (!/^[a-z0-9]{6,40}$/.test(room || '')) throw new Error('Salle invalide');
   if (typeof identite !== 'string' || !identite.startsWith(room + '_') || identite.length > 80) throw new Error('Identité invalide');
-  const animateur = /_(seb|ecran\d)$/.test(identite);
+  const animateur = /_(seb|ecran\d|cam\d)$/.test(identite);
   if (animateur) {
     if (!cle || typeof cle !== 'string') throw new Error('Clé de régie manquante');
     const emp = crypto.createHash('sha256').update(room + ':' + cle).digest('hex');

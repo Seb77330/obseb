@@ -3,96 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>OBSeb · Régie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css?v=fcb6b0bd">
 <style>
-  body { min-height: 100vh; }
-  header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
-  header .session { flex: 1; min-width: 200px; }
-  header .session .t { font-weight: 600; font-size: 17px; }
-  header .session .s { color: var(--ui-muted); font-size: 12px; }
-  /* Disposition façon OBS : l'image au centre en haut, les personnes à gauche, les outils à droite */
-  main { display: grid; grid-template-columns: 290px minmax(0, 1fr) 390px; grid-template-areas: "plateau guide outils" "plateau antenne outils" "plateau scenes outils"; grid-template-rows: auto auto 1fr; gap: 0 16px; padding: 16px 20px; align-items: start; max-width: 2200px; margin: 0 auto; }
-  @media (max-width: 1400px) { main { grid-template-columns: 280px minmax(0, 1fr); grid-template-areas: "plateau guide" "plateau antenne" "plateau scenes" "outils outils"; } }
-  @media (max-width: 900px) { main { grid-template-columns: 1fr; grid-template-areas: "guide" "antenne" "scenes" "plateau" "outils"; } }
-  .colonne { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  #ma-camera { width: 100%; aspect-ratio: 16/9; height: auto; border: 0; border-radius: 8px; background: #000; display: block; }
-  #mon-ecran { width: 100%; height: 220px; border: 0; border-radius: 10px; background: #000; margin-top: 10px; }
-  .antenne-titre { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .scenes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-  .scenes button { position: relative; padding: 10px 12px; text-align: left; display: grid; gap: 2px; background: var(--ui-panel); }
-  .scenes button b { font-weight: 600; font-size: 15px; }
-  .scenes button kbd { position: absolute; right: 8px; top: 8px; opacity: .55; }
-  .scenes button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
-  .scenes button.actif small { color: inherit; opacity: .75; }
-  .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 12px; }
-  .dispos { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
-  .coche { display: flex; gap: 6px; align-items: center; margin: 0; }
-  .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .participant { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); width: 100%; box-sizing: border-box; flex: none; }
-  .participant.antenne { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  #app { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  #app[hidden] { display: none; }
+
+  /* ----- Barre de régie ----- */
+  header { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 54px; flex: none; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); }
+  header .marque { text-decoration: none; color: var(--ui-text); font-size: 19px; }
+  header .session { min-width: 0; padding-left: 12px; border-left: 1px solid var(--ui-line); margin-right: auto; }
+  header .session .t { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30vw; }
+  header .session .s { color: var(--ui-muted); font-size: 12px; line-height: 1.2; }
+  header button { padding: 7px 12px; font-size: 13px; }
+  .horloge { display: grid; justify-items: end; line-height: 1.15; padding: 0 12px; border-left: 1px solid var(--ui-line); border-right: 1px solid var(--ui-line); }
+  .horloge .etiquette { font-size: 9px; }
+  .horloge .tc { font-size: 17px; font-weight: 500; color: var(--ui-text); }
+  .icone-btn { display: flex; align-items: center; gap: 8px; color: var(--ui-muted); background: var(--ui-input); font-weight: 400; }
+  .ic { width: 17px; height: 17px; flex: none; }
+  #btn-invite { display: flex; align-items: center; gap: 8px; }
+  .menu-liens, .direct-zone { position: relative; }
+  .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: 320px; background: var(--ui-panel); border: 1px solid var(--ui-line2); border-radius: 10px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.55); }
+  .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; font-size: 14px; }
+  .menu button:hover { background: var(--ui-panel2); }
+  .menu button small { display: block; font-weight: 400; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
+  /* Le bouton du direct : le seul qui met à l'antenne */
+  .btn-direct { display: flex; align-items: center; gap: 9px; border: 1px solid var(--ui-red); color: var(--ui-text); background: color-mix(in srgb, var(--ui-red) 12%, transparent); font-weight: 600; padding: 8px 14px; }
+  .btn-direct:hover { background: color-mix(in srgb, var(--ui-red) 22%, transparent); border-color: var(--ui-red); }
+  .btn-direct i { width: 9px; height: 9px; border-radius: 50%; background: var(--ui-red); }
+  .btn-direct.on { background: var(--ui-red); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-red) 30%, transparent); }
+  .btn-direct.on i { background: #fff; animation: pouls 1.6s ease-in-out infinite; }
+  @keyframes pouls { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .btn-direct.on i { animation: none; } }
+  .btn-direct span { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .direct-pop { width: 360px; padding: 12px; }
+  .direct-pop h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .direct-pop .ligne-pf { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--ui-line); }
+  .direct-pop .ligne-pf i { font-style: normal; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; }
+  .direct-pop .ligne-pf b { flex: 1; font-weight: 500; }
+  .direct-pop .ligne-pf small { color: var(--ui-muted); font-size: 12px; white-space: nowrap; }
+  .direct-pop .ligne-pf small.on { color: var(--ui-red); font-weight: 600; }
+  .direct-pop .menu-bas { display: grid; gap: 8px; margin-top: 12px; }
+  .direct-pop .menu-bas button, .direct-pop .ligne-pf button { display: block; width: 100%; text-align: center; background: var(--ui-panel2); border: 1px solid var(--ui-line); padding: 9px 12px; }
+  .direct-pop .ligne-pf button { width: auto; padding: 5px 12px; font-size: 13px; }
+  .direct-pop .menu-bas button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+
+  /* ----- Trois colonnes : sources, programme, outils ----- */
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) 410px; gap: 10px; padding: 10px; }
+  .colonne { min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 10px; overflow: hidden; }
+  .colonne-tete { flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 36px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); }
+  .colonne-tete .aide { margin-left: auto; font-size: 12px; }
+  .colonne-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .coche { display: flex; gap: 6px; align-items: center; margin: 0; cursor: pointer; }
+  @media (max-width: 1280px) { main { grid-template-columns: 270px minmax(0, 1fr) 360px; } }
+  @media (max-width: 1000px) {
+    body { overflow: auto; } html, body { height: auto; } #app { display: block; }
+    header { flex-wrap: wrap; height: auto; padding: 8px 12px; } .horloge { display: none; }
+    main { display: flex; flex-direction: column; } .colonne { overflow: visible; } .colonne-corps { overflow: visible; }
+    #col-programme { order: -1; }
+  }
+
+  /* Sources : toi, tes caméras, tes invités */
+  #ma-camera { width: 100%; aspect-ratio: 16/9; height: auto; border: 0; border-radius: 6px; background: #000; display: block; }
+  .carte-moi, .participant { border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-panel2); padding: 8px; flex: none; }
+  .carte-moi #etat-camera { margin: 6px 0 0; color: var(--ui-text); font-size: 12px; line-height: 1.4; }
+  .cam-ligne { align-items: center; margin-top: 4px; }
+  .cam-ligne #cam-appareils { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .participant { display: flex; flex-direction: column; gap: 7px; position: relative; }
+  .participant.antenne { border-color: var(--ui-accent); }
+  body.en-direct .participant.antenne { border-color: var(--ui-red); }
   .participant.parti { opacity: .45; }
-  .participant .vignette { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; }
+  .participant .vignette { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; }
   .participant .vignette iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
-  .participant .vignette .moi { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; color: var(--ui-muted); text-align: center; padding: 4px; }
-  .participant input[type=text] { padding: 6px 8px; font-weight: 600; }
-  .participant .reglages { display: flex; align-items: center; gap: 8px; }
+  .temoin { position: absolute; left: 6px; top: 6px; z-index: 2; font-size: 10px; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px; background: rgba(0,0,0,.7); color: #cfd3da; pointer-events: none; }
+  .participant.antenne .temoin { background: var(--ui-accent); color: #111; }
+  body.en-direct .participant.antenne .temoin { background: var(--ui-red); color: #fff; }
+  .participant input[type=text] { padding: 5px 8px; font-weight: 600; font-size: 14px; background: transparent; border-color: transparent; }
+  .participant input[type=text]:hover { border-color: var(--ui-line); } .participant input[type=text]:focus { background: var(--ui-input); border-color: var(--ui-accent); }
+  .participant .reglages { display: flex; align-items: center; gap: 8px; color: var(--ui-muted); }
   .participant .reglages input[type=range] { flex: 1; }
-  .participant .pct { width: 40px; text-align: right; font-size: 12px; color: var(--ui-muted); font-variant-numeric: tabular-nums; }
-  .participant .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .participant .actions .antenne-btn { flex: 1 0 100%; }
-  .participant .actions .muet-btn, .participant .actions .focus-btn { flex: 1; }
-  .vu { height: 5px; border-radius: 3px; background: var(--ui-line); overflow: hidden; margin-top: 6px; }
-  .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green), var(--ui-accent) 70%, var(--ui-red)); transition: width .12s; }
-  .participant .qualite { font-size: 12px; margin-top: 4px; }
-  .slot { border: 1px solid var(--ui-line); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--ui-panel2); }
+  .participant .reglages svg { width: 15px; height: 15px; flex: none; }
+  .participant .pct { width: 38px; text-align: right; font: 11px var(--mono); color: var(--ui-muted); }
+  .participant .actions { display: flex; gap: 5px; }
+  .participant .actions button { flex: 1; padding: 6px 4px; font-size: 12px; white-space: nowrap; }
+  .participant .actions .antenne-btn { flex: 2.2; }
+  .participant .actions .haut-btn, .participant .actions .retirer-btn { flex: none; width: 30px; }
+  .participant .qualite { font-size: 12px; }
+  .participant .qualite .voyant { margin-right: 5px; vertical-align: 1px; }
+  /* Indicateur de niveau façon régie : segments verts, jaunes, rouges */
+  .vu { height: 6px; border-radius: 2px; background: var(--ui-input); overflow: hidden; position: relative; }
+  .vu i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ui-green) 0 62%, var(--ui-ambre) 62% 84%, var(--ui-red) 84%); background-size: 100vw 100%; transition: width .1s linear; }
+  .vu::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 5px, var(--ui-panel2) 5px 7px); }
+  #hote-controles .participant { border: 0; padding: 8px 0 0; background: none; }
+  #hote-controles .vignette, #hote-controles .haut-btn { display: none; }
+  #liste { display: contents; }
+  #liste .vide { border: 1px dashed var(--ui-line2); border-radius: 8px; padding: 14px; display: grid; gap: 10px; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
+  .sous-tete { display: flex; align-items: center; gap: 8px; margin: 4px 2px 0; }
+  .sous-tete button { margin-left: auto; padding: 4px 9px; font-size: 12px; }
+  /* Multicam */
+  #cams { display: contents; }
+  .commutation { display: flex; gap: 5px; flex-wrap: wrap; }
+  .commutation button { flex: 1; min-width: 60px; padding: 8px 4px; font-size: 12px; font-weight: 600; }
+  .commutation button.actif { background: var(--ui-accent); color: #111; }
+  body.en-direct .commutation button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+  .cam-ajout { border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; background: var(--ui-panel2); }
+  .cam-ajout .ligne-boutons { flex-wrap: nowrap; } .cam-ajout .ligne-boutons button { flex: 1; font-size: 13px; padding: 7px 8px; }
+
+  /* Programme : ce que voient les spectateurs */
+  #col-programme .colonne-corps { gap: 10px; }
+  .badge-direct { background: var(--ui-panel2); color: var(--ui-muted); border-radius: 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; }
+  .badge-direct::before { background: var(--ui-line2); }
+  .badge-direct.rouge-direct { background: var(--ui-red); color: #fff; }
+  .badge-direct.rouge-direct::before { background: #fff; }
+  .moniteur { flex: 1 1 auto; min-height: 180px; display: grid; place-items: center; padding: 0; overflow: hidden; container-type: size; }
+  .moniteur .cadre169 { width: min(100cqw, 100cqh * 16 / 9); border-radius: 8px; box-sizing: border-box; border: 2px solid var(--ui-line); }
+  body.en-direct .moniteur .cadre169 { border-color: var(--ui-red); box-shadow: 0 0 0 1px var(--ui-red); }
+  .moniteur.vertical .cadre169 { width: min(100cqw, 100cqh * 9 / 16); aspect-ratio: 9/16; }
+  .rangee { flex: none; display: flex; align-items: center; gap: 10px; }
+  .rangee > .etiquette { width: 62px; flex: none; }
+  .scenes { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .scenes button { position: relative; padding: 9px 10px 8px; text-align: left; display: grid; gap: 1px; background: var(--ui-panel2); border-radius: 7px; }
+  .scenes button b { font-weight: 600; font-size: 14px; }
+  .scenes button small { font-weight: 400; color: var(--ui-muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scenes button kbd { position: absolute; right: 7px; top: 7px; opacity: .6; }
+  .scenes button.actif { background: var(--ui-accent); color: #111; border-color: var(--ui-accent); }
+  body.en-direct .scenes button.actif { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+  .scenes button.actif small { color: inherit; opacity: .8; }
+  .scenes button.actif kbd { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.25); color: inherit; }
+  @media (max-width: 1280px) { .scenes button small { display: none; } }
+  .demarrage { flex: none; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 8px; padding: 5px 8px; font-size: 13px; }
+  .demarrage > b { font-weight: 600; margin-right: 6px; }
+  .demarrage button { border: 0; background: none; padding: 5px 9px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; }
+  .demarrage button:hover { background: var(--ui-hover); }
+  .demarrage button i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--ui-line2); flex: none; display: grid; place-items: center; font-style: normal; font-size: 9px; }
+  .demarrage button.fait { color: var(--ui-muted); }
+  .demarrage button.fait i { background: var(--ui-green); border-color: var(--ui-green); }
+  .demarrage button.fait i::after { content: '✓'; color: #fff; }
+  .demarrage .fermer { margin-left: auto; color: var(--ui-muted); }
+  kbd { white-space: nowrap; color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font: 11px var(--mono); }
+
+  /* Outils : onglets à droite */
+  .onglets { flex: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; padding: 4px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
+  .onglets button { position: relative; border: 0; background: none; padding: 7px 0 6px; font-size: 11px; font-weight: 500; color: var(--ui-muted); border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .onglets button:hover { color: var(--ui-text); background: var(--ui-panel2); }
+  .onglets button.actif { background: var(--ui-panel2); color: var(--ui-accent); box-shadow: inset 0 -2px 0 var(--ui-accent); }
+  .onglets .pastille-n { position: absolute; top: 2px; right: 4px; }
+  .onglets .point { position: absolute; top: 5px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--ui-red); }
+  .onglet { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; }
+  .intro-onglet { margin: 0 0 12px; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
+  .pastille-n { background: var(--ui-red); color: #fff; border-radius: 9px; font-size: 10px; padding: 1px 6px; margin-left: 4px; }
+  .sous-titre { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin: 20px 0 8px; color: var(--ui-muted); }
+  .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .slot { border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 10px; background: var(--ui-panel2); }
   .slot.on { border-color: var(--ui-accent); }
   .slot .tete { display: flex; gap: 8px; align-items: center; }
-  .slot .tete b { min-width: 18px; }
+  .slot .tete b { min-width: 18px; font-family: var(--mono); color: var(--ui-muted); }
   .slot select, .slot input[type=url] { padding: 6px 8px; }
-  .slot iframe { width: 100%; height: 150px; border: 0; border-radius: 8px; background: #000; margin-top: 8px; }
+  .slot iframe { width: 100%; height: 150px; border: 0; border-radius: 6px; background: #000; margin-top: 8px; }
   .slot .corps { margin-top: 8px; display: grid; gap: 8px; }
-  .elt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 9px; margin-bottom: 6px; background: var(--ui-panel2); }
+  .elt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--ui-line); border-radius: 7px; margin-bottom: 6px; background: var(--ui-panel2); }
   .elt.on { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
   .elt .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .elt .txt small { color: var(--ui-muted); margin-left: 6px; }
-  .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; }
-  kbd { white-space: nowrap; color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 11px; }
-  .icone-btn { display: flex; align-items: center; gap: 8px; color: var(--ui-muted); background: var(--ui-input); font-weight: 400; }
-  .icone-btn kbd { margin-left: 6px; }
-  .ic { width: 18px; height: 18px; flex: none; }
-  #btn-invite { display: flex; align-items: center; gap: 8px; }
-  .menu-liens { position: relative; }
-  .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 320px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
-  .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; }
-  .menu button:hover { background: var(--ui-panel2); }
-  .menu button small { display: block; font-weight: 500; color: var(--ui-muted); font-size: 12px; margin-top: 2px; }
-  .outils { padding: 0; overflow: hidden; }
-  .onglets { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 6px; background: var(--ui-header); border-bottom: 1px solid var(--ui-line); }
-  .onglets button { position: relative; border: 0; background: none; padding: 8px 2px 7px; font-size: 12px; font-weight: 500; color: var(--ui-muted); border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .onglets .pastille-n { position: absolute; top: 3px; right: 6px; }
-  .onglets button:hover { color: var(--ui-text); background: var(--ui-panel2); }
-  .onglets button.actif { background: var(--ui-panel2); color: var(--ui-accent); box-shadow: inset 0 -2px 0 var(--ui-accent); }
-  .onglet { padding: 16px; }
-  .intro-onglet { margin: 0 0 12px; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
-  .pastille-n { background: var(--ui-red); color: #fff; border-radius: 9px; font-size: 10px; padding: 1px 6px; margin-left: 4px; }
-  #col-droite #chat-liste { height: 360px; }
-  #palette { position: fixed; inset: 0; z-index: 100; background: rgba(5,6,8,.6); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: flex-start; padding-top: 12vh; }
-  #palette[hidden] { display: none; }
-  .palette-boite { width: min(640px, calc(100vw - 32px)); background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden; }
-  #palette-champ { border: 0; border-bottom: 1px solid var(--ui-line); border-radius: 0; padding: 16px 18px; font-size: 16px; background: transparent; }
-  #palette-liste { max-height: 50vh; overflow-y: auto; padding: 6px; }
-  .palette-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
-  .palette-item small { color: var(--ui-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; }
-  .palette-item.choisi { background: var(--ui-panel2); box-shadow: inset 3px 0 0 var(--ui-accent); }
-  .palette-pied { display: flex; gap: 18px; padding: 10px 16px; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 12px; }
-  .compte { border: 1px solid var(--ui-line); border-radius: 10px; margin-bottom: 8px; background: var(--ui-panel2); }
-  .compte.on { border-color: rgba(255,210,31,.5); }
+  .vide { color: var(--ui-muted); font-size: 13px; padding: 10px 0; line-height: 1.5; }
+  #chat-liste { height: 360px; }
+  .compte { border: 1px solid var(--ui-line); border-radius: 8px; margin-bottom: 8px; background: var(--ui-panel2); }
+  .compte.on { border-color: color-mix(in srgb, var(--ui-accent) 55%, transparent); }
   .compte-tete { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; }
   .compte-tete i { font-style: normal; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; border: 1px solid rgba(255,255,255,.15); }
-  .compte-tete b { flex: 1; }
+  .compte-tete b { flex: 1; font-weight: 500; }
   .compte-etat { font-size: 12px; color: var(--ui-muted); }
   .compte-etat.ok { color: var(--ui-green); } .compte-etat.ko { color: var(--ui-ko); }
   .compte-corps { display: none; padding: 0 12px 12px; gap: 8px; }
@@ -104,54 +188,15 @@
   .interrupteur span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
   .interrupteur input:checked + span { background: var(--ui-accent); }
   .interrupteur input:checked + span::after { transform: translateX(16px); background: #111; }
-  #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
-  header .marque { text-decoration: none; color: var(--ui-text); }
-  .scene-col { display: contents; }
-  .demarrage { grid-area: guide; } .scenes { grid-area: scenes; margin: 12px 0 0 !important; } .antenne { grid-area: antenne; min-width: 0; } .plateau { grid-area: plateau; }
-  #col-droite { grid-area: outils; }
-  @media (min-width: 901px) {
-    .plateau, #col-droite { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; }
-    .plateau { padding-right: 4px; }
-  }
-  @media (max-width: 1400px) { #col-droite { position: static; max-height: none; margin-top: 16px; } }
-  .antenne { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; padding: 12px; }
-  .cadre169 { max-width: calc((100vh - 400px) * 16 / 9); min-width: 320px; margin: 0 auto; }
-  .plateau { min-width: 0; }
-  @media (max-width: 900px) { .plateau { margin-top: 16px; } }
-  .plateau-titre { display: flex; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; flex-wrap: wrap; }
-  .plateau-titre h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ui-text); }
-  .bande { display: flex; flex-direction: column; gap: 10px; }
-  @media (max-width: 900px) { .bande { flex-direction: row; flex-wrap: wrap; } .bande > *, #liste > * { width: 260px !important; } }
-  #liste { display: contents; }
-  #liste .vide { width: 100%; box-sizing: border-box; flex: none; border: 1px dashed var(--ui-line2); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
-  .carte-moi { width: 100%; flex: none; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); padding: 10px; }
-  .carte-moi #etat-camera { margin: 6px 0 0; color: var(--ui-text); }
-  .cam-ligne { align-items: center; margin-top: 4px; }
-  .cam-ligne #cam-appareils { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #hote-controles .participant { width: auto; border: 0; padding: 8px 0 0; background: none; }
-  #hote-controles .participant.antenne { border: 0; box-shadow: none; }
-  #hote-controles .vignette, #hote-controles .focus-btn + .haut-btn { display: none; }
-  .badge-direct { background: var(--ui-panel2); color: var(--ui-muted); }
-  .badge-direct.rouge-direct { background: var(--ui-red); color: #fff; }
-  .sous-titre { font-size: 13px; font-weight: 600; margin: 18px 0 8px; color: var(--ui-text); }
-  .demarrage { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 8px 10px; margin-bottom: 12px; font-size: 13px; }
-  .demarrage > b { font-weight: 600; margin-right: 6px; }
-  .demarrage button { border: 0; background: none; padding: 6px 10px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; border-radius: 8px; }
-  .demarrage button:hover { background: var(--ui-panel2); }
-  .demarrage button i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--ui-line2); flex: none; display: grid; place-items: center; font-style: normal; font-size: 10px; }
-  .demarrage button.fait { color: var(--ui-muted); }
-  .demarrage button.fait i { background: var(--ui-green); border-color: var(--ui-green); }
-  .demarrage button.fait i::after { content: '✓'; color: #fff; }
-  .demarrage .fermer { margin-left: auto; color: var(--ui-muted); }
-  .qz-direct { background: var(--ui-panel2); border-radius: 10px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
-  .qz-direct.actif { box-shadow: inset 3px 0 0 var(--ui-red); }
+  .qz-direct { background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
+  .qz-direct.actif { border-color: var(--ui-red); }
   .qz-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .qz-cats button { padding: 5px 11px; font-size: 13px; border-radius: 999px; }
   .qz-cats button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
   .qz-cats button small { opacity: .65; margin-left: 4px; }
   #qz-liste { max-height: 330px; overflow-y: auto; }
   #qz-liste .elt img { width: 44px; height: 26px; object-fit: cover; border-radius: 4px; flex: none; }
-  .qz-form { border: 1px solid var(--ui-line); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+  .qz-form { border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
   .qz-form summary { cursor: pointer; font-weight: 600; font-size: 14px; }
   .qz-form[open] summary { margin-bottom: 10px; }
   .qz-reps { display: grid; gap: 6px; margin-top: 8px; }
@@ -170,25 +215,66 @@
   .qz-styles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .qz-styles button { display: flex; align-items: center; gap: 8px; font-size: 13px; text-align: left; }
   .qz-styles button i { width: 16px; height: 16px; border-radius: 4px; flex: none; }
-  .qz-styles button.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
-  .direct-zone { position: relative; }
-  .btn-direct { display: flex; align-items: center; gap: 8px; border-color: var(--ui-red); color: var(--ui-text); }
-  .btn-direct i { width: 9px; height: 9px; border-radius: 50%; background: var(--ui-red); }
-  .btn-direct.on { background: var(--ui-red); color: #fff; }
-  .btn-direct.on i { background: #fff; border-radius: 2px; }
-  .btn-direct span { font-variant-numeric: tabular-nums; }
-  .direct-pop { width: 360px; padding: 12px; right: 0; }
-  .direct-pop h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
-  .direct-pop .ligne-pf { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--ui-line); }
-  .direct-pop .ligne-pf i { font-style: normal; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 6px; min-width: 28px; text-align: center; }
-  .direct-pop .ligne-pf b { flex: 1; font-weight: 500; }
-  .direct-pop .ligne-pf small { color: var(--ui-muted); font-size: 12px; }
-  .direct-pop .ligne-pf small.on { color: var(--ui-red); font-weight: 600; }
-  .direct-pop .menu-bas { display: grid; gap: 8px; margin-top: 12px; }
-  .direct-pop .menu-bas button, .direct-pop .ligne-pf button { display: block; width: 100%; text-align: center; background: var(--ui-panel2); border: 1px solid var(--ui-line); padding: 9px 12px; }
-  .direct-pop .ligne-pf button { width: auto; padding: 5px 12px; }
-  .direct-pop .menu-bas button.rouge { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
-  .direct-pop .ligne-pf small { white-space: nowrap; }
+  .qz-styles button.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+
+  /* Watch Party */
+  .wp-ecran { background: #000; border: 1px solid var(--ui-line); border-radius: 8px; padding: 14px; text-align: center; }
+  .wp-ecran .tc { font-size: 40px; font-weight: 500; line-height: 1.1; color: var(--ui-text); }
+  .wp-ecran .wp-etat { font-size: 12px; margin-top: 4px; color: var(--ui-muted); }
+  .wp-ecran.lecture .tc { color: var(--ui-green); }
+  .wp-barre { height: 4px; border-radius: 2px; background: var(--ui-line); margin-top: 10px; overflow: hidden; }
+  .wp-barre i { display: block; height: 100%; width: 0; background: var(--ui-accent); }
+  .wp-transport { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+  .wp-transport button { padding: 9px 2px; font-size: 13px; }
+  .wp-transport .wp-jouer { grid-column: span 5; font-weight: 600; padding: 11px; }
+  .wp-ligne { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+  .wp-ligne input { flex: 1; min-width: 0; }
+  .wp-source { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 9px 10px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-panel2); }
+  .wp-source b { font-weight: 600; }
+  .wp-pas { padding-left: 18px; margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--ui-muted); }
+  .wp-pas b { color: var(--ui-text); font-weight: 500; }
+
+  /* ----- Barre d'état : ce qui marche, ce qui ne marche pas ----- */
+  #etat-studio { flex: none; display: flex; align-items: stretch; gap: 0; height: 30px; border-top: 1px solid var(--ui-line); background: var(--ui-header); font-size: 12px; overflow-x: auto; }
+  #etat-studio button { display: flex; align-items: center; gap: 7px; border: 0; border-right: 1px solid var(--ui-line); border-radius: 0; background: none; padding: 0 14px; font-size: 12px; font-weight: 400; color: var(--ui-muted); white-space: nowrap; }
+  #etat-studio button:hover { background: var(--ui-panel2); color: var(--ui-text); }
+  #etat-studio button b { font-weight: 500; color: var(--ui-text); }
+  /* Invités et caméras : la vignette à gauche, le nom et le volume à droite (on en voit plus d'un coup) */
+  #liste .participant, #cams .participant { display: grid; grid-template-columns: 116px minmax(0, 1fr); column-gap: 8px; row-gap: 0; align-items: center; }
+  #liste .participant .vignette, #cams .participant .vignette { grid-row: 1 / span 2; align-self: start; }
+  #liste .participant .temoin, #cams .participant .temoin { left: 4px; top: 4px; font-size: 9px; padding: 1px 5px; }
+  #liste .participant > .nom, #liste .participant > .reglages, #cams .participant > .nom { grid-column: 2; }
+  #liste .participant > .vu, #liste .participant > .qualite, #liste .participant > .actions, #cams .participant > .actions { grid-column: 1 / -1; }
+  #cams .participant .vignette iframe { pointer-events: auto; }
+  /* Les sept voyants sont sept chevrons : ils s'enclenchent quand tout est bon */
+  #etat-studio .voyant { width: 12px; height: 9px; border-radius: 0; clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%); box-shadow: none; }
+  .porte { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; align-items: center; margin: 4px 0 10px; }
+  .porte svg { width: 124px; height: 124px; display: block; }
+  .porte .anneau { fill: none; stroke: var(--ui-line2); stroke-width: 7; }
+  .porte .anneau2 { fill: none; stroke: var(--ui-line); stroke-width: 1; }
+  .porte .chev { fill: var(--ui-panel2); stroke: var(--ui-line2); stroke-width: 1; transition: fill .2s, stroke .2s, filter .2s; }
+  .porte .chev.on { fill: #ff7a1a; stroke: #ffb37a; filter: drop-shadow(0 0 4px #ff7a1a); }
+  .porte .chev.non { fill: var(--ui-panel2); stroke: var(--ui-ambre); }
+  .porte .horizon { fill: #1d6fd6; opacity: 0; transition: opacity .6s; }
+  .porte.ouverte .horizon { opacity: .28; }
+  .porte .compte { font: 600 22px var(--mono); fill: var(--ui-text); text-anchor: middle; dominant-baseline: central; }
+  .porte-txt { font-size: 13px; line-height: 1.45; min-width: 0; }
+  .porte-txt b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .porte-txt ul { margin: 4px 0 0; padding: 0; list-style: none; color: var(--ui-muted); font-size: 12px; }
+  .porte-txt li { margin-top: 3px; } .porte-txt li i { font-style: normal; color: var(--ui-ambre); font-weight: 600; }
+  #etat-studio .pousse { margin-left: auto; border-right: 0; border-left: 1px solid var(--ui-line); }
+
+  /* Recherche */
+  #palette { position: fixed; inset: 0; z-index: 100; background: rgba(5,6,8,.6); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: flex-start; padding-top: 12vh; }
+  #palette[hidden] { display: none; }
+  .palette-boite { width: min(640px, calc(100vw - 32px)); background: var(--ui-panel); border: 1px solid var(--ui-line2); border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden; }
+  #palette-champ { border: 0; border-bottom: 1px solid var(--ui-line); border-radius: 0; padding: 16px 18px; font-size: 16px; background: transparent; }
+  #palette-liste { max-height: 50vh; overflow-y: auto; padding: 6px; }
+  .palette-item { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+  .palette-item small { color: var(--ui-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; white-space: nowrap; }
+  .palette-item.choisi { background: var(--ui-panel2); box-shadow: inset 3px 0 0 var(--ui-accent); }
+  .palette-pied { display: flex; gap: 18px; padding: 10px 16px; border-top: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 12px; }
+  #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
 </style>
 </head>
 <body>
@@ -196,85 +282,102 @@
   <header>
     <a class="marque" href="index.html" title="Retour à l'accueil">OBS<b>eb</b></a>
     <div class="session"><div class="t" id="titre-session"></div><div class="s" id="sous-session"></div></div>
-    <button class="icone-btn" id="btn-recherche" title="Rechercher une action (Ctrl K)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Rechercher</span><kbd>Ctrl K</kbd></button>
+    <span id="limiteur" class="limiteur" hidden></span>
+    <div class="horloge" title="Heure de ton ordinateur"><span class="etiquette">Heure</span><span class="tc" id="horloge">00:00:00</span></div>
+    <button class="icone-btn" id="btn-recherche" title="Rechercher une action (Ctrl K)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><kbd>Ctrl K</kbd></button>
     <span id="place-affichage"></span>
     <div class="menu-liens">
       <button id="btn-liens">Liens OBS ▾</button>
       <div class="menu" id="menu-liens" hidden>
         <button id="btn-obs">Copier le lien OBS (horizontal)<small>À coller dans une source navigateur 1920 × 1080</small></button>
         <button id="btn-vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 pour TikTok, Shorts, Reels</small></button>
-        <button id="btn-sortie">Ouvrir la sortie<small>Dans un nouvel onglet, pour vérifier</small></button>
+        <button id="btn-sortie">Ouvrir la sortie<small>Dans une nouvelle fenêtre, pour vérifier</small></button>
       </div>
     </div>
+    <button id="btn-invite" title="Copier le lien à envoyer à tes invités"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg> Inviter</button>
     <div class="direct-zone">
       <button id="btn-direct" class="btn-direct"><i></i><span>Démarrer le direct</span></button>
       <div class="menu direct-pop" id="direct-pop" hidden></div>
     </div>
-    <button class="primaire" id="btn-invite"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg> Inviter</button>
   </header>
 
   <main>
-    <div class="scene-col">
-      <div id="demarrage" class="demarrage" hidden>
-        <b>Pour bien démarrer</b>
-        <button data-etape="camera"><i></i>Démarrer ma caméra</button>
-        <button data-etape="invite"><i></i>Envoyer le lien aux invités</button>
-        <button data-etape="obs"><i></i>Mettre le lien dans OBS</button>
-        <button data-etape="live"><i></i>Démarrer le direct</button>
-        <button class="fermer" id="demarrage-fermer" title="Masquer">✕</button>
-      </div>
-
-      <div class="scenes" role="group" aria-label="Scène à l'antenne">
-        <button data-scene="intro"><b>Intro</b><small>Compte à rebours</small><kbd>1</kbd></button>
-        <button data-scene="live"><b>Plateau</b><small>Les caméras</small><kbd>2</kbd></button>
-        <button data-scene="partage"><b>Écran partagé</b><small>Écran, image, vidéo</small><kbd>3</kbd></button>
-        <button data-scene="fin"><b>Fin</b><small>Écran de fin</small><kbd>4</kbd></button>
-      </div>
-
-      <div class="antenne">
-        <div class="antenne-titre">
-          <span class="badge-direct" id="badge-scene">INTRO</span>
-          <span id="limiteur" class="limiteur" hidden></span>
-          <span class="aide" style="margin-left:auto">Ce que voient les spectateurs</span>
-          <button class="petit" id="btn-apercu-format">Voir en vertical</button>
+    <!-- Colonne 1 : les sources (toi, tes caméras, tes invités) -->
+    <section class="colonne plateau" id="col-sources">
+      <div class="colonne-tete"><span class="etiquette">Sources</span><span class="aide" id="nb-part"></span></div>
+      <div class="colonne-corps">
+        <div class="carte-moi">
+          <div id="cam-reglage" hidden></div>
+          <div id="cam-direct" hidden>
+            <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
+            <p class="aide" id="etat-camera"><span class="voyant att"></span> Démarrage de ta caméra…</p>
+            <div class="ligne-boutons cam-ligne"><span class="aide" id="cam-appareils"></span><button class="petit" id="btn-cam-changer">Changer</button></div>
+          </div>
+          <div id="hote-controles"></div>
         </div>
-        <div class="cadre169"><iframe id="apercu"></iframe></div>
-        <div class="dispos">
-          <span class="aide">Mise en page</span>
+
+        <div class="sous-tete"><span class="etiquette">Mes autres caméras</span><button id="cam-ajouter" title="Brancher une 2e, 3e ou 4e caméra">+ Caméra</button></div>
+        <div class="cam-ajout" id="cam-ajout" hidden>
+          <select id="cam-choix" aria-label="Caméra à ajouter"></select>
+          <input type="text" id="cam-nom" maxlength="28" placeholder="Nom à l'écran (facultatif)">
+          <div class="ligne-boutons"><button class="primaire" id="cam-valider">Brancher</button><button id="cam-annuler">Annuler</button></div>
+          <button id="cam-distance" title="Un téléphone ou un autre PC, ailleurs : il devient une caméra de ton live">Caméra à distance : copier le lien</button>
+        </div>
+        <div class="commutation" id="commutation" hidden></div>
+        <div id="cams"></div>
+
+        <div class="sous-tete"><span class="etiquette">Invités</span><label class="aide coche" style="margin-left:auto;font-size:12px"><input type="checkbox" id="auto-antenne"> À l'antenne dès l'arrivée</label></div>
+        <div id="liste"></div>
+      </div>
+    </section>
+
+    <!-- Colonne 2 : le programme -->
+    <section class="colonne" id="col-programme">
+      <div class="colonne-tete">
+        <span class="etiquette">Programme</span>
+        <span class="badge-direct" id="badge-scene">Hors direct</span>
+        <span class="aide">Ce que voient les spectateurs</span>
+        <button class="petit" id="btn-apercu-format">Voir en vertical</button>
+      </div>
+      <div class="colonne-corps">
+        <div id="demarrage" class="demarrage" hidden>
+          <b>Pour bien démarrer</b>
+          <button data-etape="camera"><i></i>Démarrer ma caméra</button>
+          <button data-etape="invite"><i></i>Envoyer le lien aux invités</button>
+          <button data-etape="obs"><i></i>Mettre le lien dans OBS</button>
+          <button data-etape="live"><i></i>Démarrer le direct</button>
+          <button class="fermer" id="demarrage-fermer" title="Masquer">✕</button>
+        </div>
+        <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe></div></div>
+        <div class="rangee">
+          <span class="etiquette">Scènes</span>
+          <div class="scenes" role="group" aria-label="Scène à l'antenne">
+            <button data-scene="intro"><b>Intro</b><small>Compte à rebours</small><kbd>1</kbd></button>
+            <button data-scene="live"><b>Plateau</b><small>Les caméras</small><kbd>2</kbd></button>
+            <button data-scene="partage"><b>Écran partagé</b><small>Écran, image, vidéo</small><kbd>3</kbd></button>
+            <button data-scene="watch"><b>Watch Party</b><small>Minuteur du film</small><kbd>4</kbd></button>
+            <button data-scene="fin"><b>Fin</b><small>Écran de fin</small><kbd>5</kbd></button>
+          </div>
+        </div>
+        <div class="rangee">
+          <span class="etiquette">Cadrage</span>
           <div class="segment">
-            <button data-layout="grille">Grille</button>
-            <button data-layout="interview">Interview</button>
-            <button data-layout="solo">Seul à l'écran</button>
+            <button data-layout="grille" title="Touche G">Grille</button>
+            <button data-layout="interview" title="Touche I">Interview</button>
+            <button data-layout="solo" title="Touche S">Seul à l'écran</button>
           </div>
           <label class="aide coche" style="margin-left:auto"><input type="checkbox" id="surbrillance" checked> Cadre sur qui parle</label>
         </div>
       </div>
+    </section>
 
-      <section class="plateau">
-        <div class="plateau-titre">
-          <h2>Participants</h2><span class="aide" id="nb-part"></span>
-          <label class="aide coche" style="flex-basis:100%"><input type="checkbox" id="auto-antenne"> Mettre à l'antenne dès l'arrivée</label>
-        </div>
-        <div class="bande">
-          <div class="carte-moi">
-            <div id="cam-reglage" hidden></div>
-            <div id="cam-direct" hidden>
-              <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
-              <p class="aide" id="etat-camera"><span style="color:var(--ui-accent)">●</span> Démarrage de ta caméra…</p>
-              <div class="ligne-boutons cam-ligne"><span class="aide" id="cam-appareils"></span><button class="petit" id="btn-cam-changer">Changer</button></div>
-            </div>
-            <div id="hote-controles"></div>
-          </div>
-          <div id="liste"></div>
-        </div>
-      </section>
-    </div>
-
-    <aside class="panneau outils" id="col-droite">
+    <!-- Colonne 3 : les outils -->
+    <aside class="colonne outils" id="col-droite">
       <nav class="onglets" role="tablist">
         <button data-tab="habillage"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg><span>Titres</span></button>
         <button data-tab="sources"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Partage</span></button>
-        <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Quiz</span></button>
+        <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Quiz</span><span class="point" id="quiz-point" hidden></span></button>
+        <button data-tab="watch"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Watch</span><span class="point" id="watch-point" hidden></span></button>
         <button data-tab="chat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span>Chat</span><span class="pastille-n" id="chat-non-lus" hidden></span></button>
         <button data-tab="musique"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Musique</span></button>
         <button data-tab="comptes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg><span>Diffusion</span></button>
@@ -309,15 +412,11 @@
           <input type="text" id="defilant-txt" placeholder="Ex. Abonne-toi et pose tes questions dans le chat">
           <button id="defilant-btn">Afficher</button>
         </div>
-      
-        
       </section>
       <section class="onglet" data-onglet="sources" hidden>
         <p class="intro-onglet">Ce qui s'affiche dans la scène Écran partagé (touche 3) : ton écran, celui d'un invité, une image, une vidéo ou une page web.</p>
         
         <div id="sources"></div>
-      
-        
       </section>
       <section class="onglet" data-onglet="quiz" hidden>
         <div class="qz-direct">
@@ -377,22 +476,47 @@
         </div>
         <button class="petit" id="qz-zero" style="margin-top:14px">Remettre les scores à zéro</button>
       </section>
-      <section class="onglet" data-onglet="musique" hidden>
-        <div class="ligne-boutons" style="flex-wrap:nowrap">
-          <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
-          <input type="url" id="mu-url" placeholder="Lien du MP3">
-          <button class="primaire" id="mu-ajouter">Ajouter</button>
+      <section class="onglet" data-onglet="watch" hidden>
+        <p class="intro-onglet">Vous regardez le même film chacun chez soi. Le film n'est pas diffusé : c'est son minuteur qui passe à l'écran, pour que tout le monde se cale dessus.</p>
+        <div class="wp-ecran" id="wp-ecran">
+          <div class="tc" id="wp-temps">0:00:00</div>
+          <div class="wp-etat" id="wp-etat">En pause</div>
+          <div class="wp-barre"><i id="wp-barre"></i></div>
         </div>
-        <div id="mu-liste" style="margin-top:10px"></div>
-        <div class="ligne-boutons" style="margin-top:10px;align-items:center">
-          <button id="mu-lecture">▶ Lecture</button>
-          <button id="mu-suivante">⏭ Suivante</button>
-          <span class="aide" id="mu-etat"></span>
+        <div class="wp-ligne"><input type="text" id="wp-titre" placeholder="Titre du film ou de l'épisode" maxlength="60"></div>
+        <div class="wp-transport">
+          <button class="wp-jouer primaire" id="wp-jouer">Lecture</button>
+          <button data-wp-saut="-10" title="Reculer le minuteur de 10 secondes">−10 s</button>
+          <button data-wp-saut="-1" title="Reculer d'une seconde">−1 s</button>
+          <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps">Top départ</button>
+          <button data-wp-saut="1" title="Avancer d'une seconde">+1 s</button>
+          <button data-wp-saut="10" title="Avancer de 10 secondes">+10 s</button>
         </div>
-        <label class="champ" for="vol-musique">Volume de la musique (playlist, intro et fin)</label>
-        <input type="range" id="vol-musique" min="0" max="100" step="1">
-      
-        </section>
+        <div class="wp-ligne">
+          <input type="text" id="wp-caler" class="tc" placeholder="0:42:17" inputmode="numeric" aria-label="Position du film">
+          <button id="wp-caler-btn">Caler le minuteur ici</button>
+        </div>
+
+        <h3 class="sous-titre">À l'écran</h3>
+        <div class="ligne-boutons">
+          <button id="wp-scene" class="primaire">Passer sur la scène Watch Party</button>
+        </div>
+        <label class="aide coche" style="margin-top:10px"><input type="checkbox" id="wp-pastille"> Garder le minuteur en petit sur les autres scènes (Plateau, Écran partagé)</label>
+
+        <h3 class="sous-titre">Minuteur automatique</h3>
+        <div class="wp-source" id="wp-source"><span class="voyant"></span><span id="wp-source-txt">Minuteur manuel : c'est toi qui lances et qui cales.</span></div>
+        <details class="aide" style="margin-top:8px">
+          <summary style="cursor:pointer">Suivre le vrai minuteur de Netflix, Prime Video, Disney+, YouTube ou VLC</summary>
+          <ol class="wp-pas">
+            <li>Télécharge <a href="extension/obseb-watch.zip" download>l'extension OBSeb Watch</a> et décompresse le dossier.</li>
+            <li>Dans Chrome ou Edge, ouvre <b>chrome://extensions</b>, active <b>Mode développeur</b>, puis <b>Charger l'extension non empaquetée</b> et choisis le dossier.</li>
+            <li>Ouvre ton film dans un onglet, clique sur l'icône de l'extension puis sur <b>Suivre le film de cet onglet</b>. Le minuteur d'ici suit alors le film à la seconde, pauses comprises.</li>
+            <li>Pour VLC : <b>Outils &gt; Préférences &gt; Tous &gt; Interface &gt; Interfaces principales</b>, coche <b>Web</b>, puis mets un mot de passe dans <b>Lua &gt; Lua HTTP</b>. Dans l'extension, choisis <b>Suivre VLC</b>.</li>
+          </ol>
+          <p style="margin:8px 0 0">Tes invités peuvent l'installer aussi : leur film se cale alors tout seul sur le tien. Sans extension, ils voient ton minuteur et le top départ dans leurs coulisses.</p>
+        </details>
+
+      </section>
       <section class="onglet" data-onglet="chat" hidden>
         <div class="chat-src">
           <i style="background:#9146FF">TW</i>
@@ -417,21 +541,37 @@
           <select id="chat-duree" style="width:auto"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option><option value="0">jusqu'à ce que je masque</option></select>
           <button class="petit" id="chat-masquer" style="margin-left:auto">Masquer le message</button>
         </div>
-      
-        </section>
+      </section>
+      <section class="onglet" data-onglet="musique" hidden>
+        <div class="ligne-boutons" style="flex-wrap:nowrap">
+          <input type="text" id="mu-nom" placeholder="Nom du morceau" style="max-width:220px">
+          <input type="url" id="mu-url" placeholder="Lien du MP3">
+          <button class="primaire" id="mu-ajouter">Ajouter</button>
+        </div>
+        <div id="mu-liste" style="margin-top:10px"></div>
+        <div class="ligne-boutons" style="margin-top:10px;align-items:center">
+          <button id="mu-lecture">▶ Lecture</button>
+          <button id="mu-suivante">⏭ Suivante</button>
+          <span class="aide" id="mu-etat"></span>
+        </div>
+        <label class="champ" for="vol-musique">Volume de la musique (playlist, intro et fin)</label>
+        <input type="range" id="vol-musique" min="0" max="100" step="1">
+      </section>
       <section class="onglet" data-onglet="comptes" hidden>
           <p class="intro-onglet">Où ton live sera diffusé en même temps. Clique sur une plateforme pour coller sa clé de stream (elle reste dans ce navigateur).</p>
           <div class="aide" id="comptes-resume" style="margin-bottom:10px;color:var(--ui-text)"></div>
           <div id="comptes-liste"></div>
-          
-        </section>
+      </section>
     </aside>
   </main>
+
+  <!-- Barre d'état : chaque voyant dit si ça marche ; un clic ouvre le bon réglage -->
+  <footer id="etat-studio" aria-label="État du studio"></footer>
 </div>
 
 <div id="bloque" hidden>
   <div class="marque" style="font-size:34px">OBS<b>eb</b></div>
-  <p>Ce lien n'est pas un lien de régie. Ouvre la régie depuis <a href="index.html">tes sessions</a>.</p>
+  <p>Ce lien n'est pas un lien de régie. Ouvre la régie depuis <a href="index.html">tes lives</a>.</p>
 </div>
 <div class="toast" id="toast"></div>
 <div id="palette" hidden>
@@ -442,15 +582,18 @@
   </div>
 </div>
 
-<script src="js/common.js"></script>
-<script src="js/reglages-media.js"></script>
-<script src="js/regie.js"></script>
-<script src="js/regie-sources.js"></script>
-<script src="js/regie-quiz.js"></script>
-<script src="js/regie-chat.js"></script>
-<script src="js/regie-comptes.js"></script>
-<script src="js/regie-recherche.js"></script>
-<script src="js/regie-direct.js"></script>
-<script src="js/regie-guide.js"></script>
+<script src="js/common.js?v=5b21c1bf"></script>
+<script src="js/reglages-media.js?v=2b1fab4a"></script>
+<script src="js/regie.js?v=ac0e73d7"></script>
+<script src="js/regie-sources.js?v=8d47ddb4"></script>
+<script src="js/regie-quiz.js?v=378bbe17"></script>
+<script src="js/regie-chat.js?v=0f5d0210"></script>
+<script src="js/regie-comptes.js?v=96b9b2c1"></script>
+<script src="js/regie-recherche.js?v=cafca40d"></script>
+<script src="js/regie-direct.js?v=38fcf347"></script>
+<script src="js/regie-guide.js?v=f11bbb1f"></script>
+<script src="js/regie-cams.js?v=a329af3e"></script>
+<script src="js/regie-watch.js?v=15a93a62"></script>
+<script src="js/regie-etat.js?v=20a00c2b"></script>
 </body>
 </html>

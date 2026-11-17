@@ -183,6 +183,12 @@ function liens(session, cle) {
   };
 }
 const idHote = s => s.room + '_seb';
+const idCam = (s, n) => s.room + '_cam' + n;             // tes autres caméras, branchées sur ce PC : 2 à 4
+const estCamLocale = id => /_cam\d$/.test(id);
+const estCamDistante = id => /_rc_[a-z0-9]{6}$/.test(id);   // caméra à distance (téléphone, autre PC)
+const estMaCamera = id => /_seb$/.test(id) || estCamLocale(id) || estCamDistante(id);
+/* Scènes où l'on voit les caméras */
+const sceneCameras = sc => sc === 'live' || sc === 'partage' || sc === 'watch';
 const idEcran = (s, n = 1) => s.room + '_ecran' + n;   // tes partages d'écran : 1 à 4
 const estEcran = id => /_ecran\d$|ecr$/.test(id);
 
@@ -243,7 +249,7 @@ function vdo(params) {
     p.lk = t.serveur;
     // l'animateur et ses partages d'écran prouvent qu'ils sont bien l'animateur avec la clé de la régie
     const k = hashParams().get('k');
-    if (k && p.push && /_(seb|ecran\d)$/.test(p.push)) p.cle = k;
+    if (k && p.push && /_(seb|ecran\d|cam\d)$/.test(p.push)) p.cle = k;
   }
   const parts = [];
   for (const [k, val] of Object.entries(p)) {
@@ -496,6 +502,25 @@ function dispositionQuiz(ids, vertical, dispo = 'centre') {
   r.__panneau = { x: (SCENE_W - pw) / 2, y: y0 + h + esp, w: pw, h: ph };
   return r;
 }
+
+/* ---------- Watch Party ----------
+   etat.watch = { titre, pos, ref, lecture, duree, top, pastille } : le film en est à `pos` secondes à l'instant `ref`
+   (heure de l'animateur) ; s'il est en lecture, il avance depuis. `top` : instant du top départ, s'il y en a un.
+   Les horloges des ordinateurs ne sont pas à la même heure : on mesure le décalage avec celle de l'animateur. */
+let decalageHote = Infinity;
+function calerHorloge(ts) { if (typeof ts === 'number' && isFinite(ts)) decalageHote = Math.min(decalageHote, Date.now() - ts); }
+const maintenantHote = () => Date.now() - (isFinite(decalageHote) ? decalageHote : 0);
+function positionFilm(w, t = maintenantHote()) {
+  if (!w) return 0;
+  return Math.max(0, (+w.pos || 0) + (w.lecture ? Math.max(0, (t - w.ref) / 1000) : 0));
+}
+function texteFilm(s) {
+  s = Math.max(0, Math.floor(s));
+  return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+/* Scène Watch Party : les caméras en haut, le minuteur du film en grand en bas */
+const ZONE_WATCH = { x: 70, y: 50, w: 1780, h: 770 };
+const ZONE_WATCH_V = { x: 40, y: 420, w: 1080 - 40 - SURES_V.droite, h: 900 };
 
 /* ---------- État envoyé par la régie ---------- */
 function etatParDefaut(session) {

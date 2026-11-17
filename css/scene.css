@@ -72,6 +72,7 @@ body.sortie { background: #000; }
   font: 600 20px/1.1 var(--font-body); letter-spacing: .04em; text-transform: uppercase; color: #fff;
   max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.tuile .nom:empty { display: none; }
 .tuile.petite .nom { font-size: 17px; padding: 5px 10px 5px 8px; left: 10px; bottom: 9px; }
 .tuile .attente {
   position: absolute; inset: 0; display: grid; place-items: center; z-index: 0;
@@ -275,3 +276,46 @@ body.vertical #quiz.avec-image { padding-top: 560px; }
 [data-quiz-dispo="libre"] #classement-liste { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, 1fr); column-gap: 60px; align-content: center; margin-top: calc(var(--ph) * .03); }
 [data-quiz-dispo="libre"] #classement-liste li { font-size: max(24px, calc(var(--ph) * .06)); }
 [data-quiz-dispo="libre"] #classement-liste li::before { width: 1.5em; height: 1.5em; font-size: .7em; }
+
+/* ----- Watch Party : le minuteur du film ----- */
+#watch {
+  position: absolute; left: 70px; right: 70px; bottom: 48px; height: 176px; z-index: 5; box-sizing: border-box;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 30px;
+  padding: 0 40px 10px; border-radius: 20px; overflow: hidden;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 24px 70px rgba(0,0,0,.55); transition: opacity .4s ease, transform .4s ease;
+}
+#watch.cachee { transform: translateY(30px); }
+#watch .wp-icone { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--bg); }
+#watch .wp-icone svg { width: 44px; height: 44px; margin-left: 5px; }
+#watch .wp-sur { font: 600 18px var(--font-body); letter-spacing: .28em; text-transform: uppercase; color: var(--accent); }
+#watch .wp-titre { font: 400 50px/1.08 var(--font-title); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px; }
+#watch .wp-compteur { text-align: right; }
+#watch .wp-temps { font: 400 96px/1 var(--font-title); color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+#watch .wp-etat { display: inline-flex; align-items: center; gap: 10px; margin-top: 6px; font: 600 18px var(--font-body); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+#watch .wp-etat b { width: 12px; height: 12px; border-radius: 50%; background: var(--muted); }
+#watch.lecture .wp-etat { color: #2fd27a; } #watch.lecture .wp-etat b { background: #2fd27a; }
+#watch .wp-barre { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(255,255,255,.1); }
+#watch .wp-barre i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s linear; }
+[data-clair] #watch .wp-barre { background: rgba(0,0,0,.1); }
+/* En petit, sur les autres scènes */
+#watch.pastille { left: auto; right: 70px; top: 40px; bottom: auto; height: 64px; padding: 0 22px 0 14px; column-gap: 14px; border-radius: 999px; border-width: 1.5px; grid-template-columns: auto auto auto; z-index: 8; }
+#watch.pastille .wp-icone { width: 38px; height: 38px; } #watch.pastille .wp-icone svg { width: 20px; height: 20px; margin-left: 2px; }
+#watch.pastille .wp-sur, #watch.pastille .wp-etat, #watch.pastille .wp-barre { display: none; }
+#watch.pastille .wp-titre { font-size: 24px; margin: 0; max-width: 420px; }
+#watch.pastille .wp-temps { font-size: 34px; }
+body.vertical #watch { left: 40px; right: 120px; top: 240px; bottom: auto; height: 160px; padding: 0 26px 8px; column-gap: 20px; grid-template-columns: minmax(0, 1fr) auto; }
+body.vertical #watch .wp-icone { display: none; }
+body.vertical #watch .wp-titre { font-size: 38px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+body.vertical #watch .wp-temps { font-size: 76px; }
+body.vertical #watch.pastille { left: 40px; right: auto; top: 1262px; height: 60px; grid-template-columns: auto auto; }
+body.vertical #watch.pastille .wp-titre { font-size: 22px; max-width: 480px; -webkit-line-clamp: 1; }
+body.vertical #watch.pastille .wp-temps { font-size: 32px; }
+/* Top départ */
+#watch-top { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: color-mix(in srgb, var(--bg) 78%, transparent); transition: opacity .3s ease; }
+#watch-top .wt-sur { font: 600 30px var(--font-body); letter-spacing: .4em; text-transform: uppercase; color: var(--accent); }
+#watch-top .wt-n { font: 400 420px/1 var(--font-title); color: var(--text); font-variant-numeric: tabular-nums; }
+#watch-top.go .wt-n { font-size: 220px; color: #2fd27a; }
+#watch-top.go .wt-sur { visibility: hidden; }
+#watch-top .wt-sous { font: 500 40px var(--font-body); color: var(--muted); font-variant-numeric: tabular-nums; min-height: 48px; }
+body.vertical #watch-top .wt-n { font-size: 360px; } body.vertical #watch-top.go .wt-n { font-size: 150px; }

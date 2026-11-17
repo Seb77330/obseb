@@ -146,6 +146,7 @@ async function publier() {
     const pub = lp.getTrackPublication(LK.Track.Source.Camera);
     if (pub && pub.track) { pub.track.attach(video); video.classList.add('miroir'); }
   }
+  if (P.get('ad') === '0') return;        // caméra supplémentaire : image seule, pas de micro
   const pro = has('proaudio');
   const deviceId = await appareil('audioinput', P.get('ad'));
   await lp.setMicrophoneEnabled(true, {

@@ -73,7 +73,7 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     iframe.allow = IFRAME_ALLOW;
     const nb = etat ? etat.onair.length : 1;
     // Aperçu : l'hôte reste net (flux local), les invités en qualité réduite pour ne pas saturer leur connexion
-    const estHote = id === idHote(session);
+    const estHote = id === idHote(session) || estCamLocale(id);     // tes caméras passent par ton propre PC
     // aperçus : basse qualité pour tout le monde, toi compris (chaque fenêtre qui te regarde coûte un encodage à ton PC)
     const debitApercu = estHote ? 1500 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
     const opts = PREVIEW
@@ -142,8 +142,10 @@ function appliquerVolumes() {
     if (!t.iframe) continue;
     let v = 0;
     if (!PREVIEW) {
-      const visible = etat.scene === 'live' || etat.scene === 'partage';
-      const enDirect = t.ecran ? (etat.scene === 'partage' && sourcesActives().some(x => x.ref === t.id)) : etat.onair.includes(t.id);
+      const visible = sceneCameras(etat.scene);
+      // ton micro reste ouvert quand c'est une autre de tes caméras qui est à l'écran
+      const enDirect = t.ecran ? (etat.scene === 'partage' && sourcesActives().some(x => x.ref === t.id))
+        : (etat.onair.includes(t.id) || (t.id === idHote(session) && etat.onair.some(estCamLocale)));
       v = visible && enDirect ? (etat.vol[t.id] ?? 1) : 0;
       if (etat.muet && etat.muet[t.id]) v = 0;
     }
@@ -162,6 +164,7 @@ function sourcesActives() { return ((etat && etat.sources) || []).filter(x => x 
 function appliquerEtat(st) {
   if (!st || (etat && st.ts && etat.ts && st.ts < etat.ts)) return;
   etat = st;
+  calerHorloge(st.ts);
   const scene = SCENE_FORCEE || st.scene;
 
   // créer les tuiles des personnes connues, retirer les absents
@@ -179,9 +182,10 @@ function appliquerEtat(st) {
 
   $('#intro').classList.toggle('cachee', scene !== 'intro');
   $('#fin').classList.toggle('cachee', scene !== 'fin');
-  $('#tuiles').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
+  $('#tuiles').classList.toggle('cachee', !sceneCameras(scene));
   $('#ecran').classList.toggle('cachee', scene !== 'partage');
   $('#bandeau').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
+  document.body.dataset.scene = scene;
   // bandeau : celui de la bibliothèque s'il y en a un d'affiché, sinon le titre du live
   const ba = st.bandeauActif;
   const titre = ba ? ba.titre : (st.bandeau || session.titre), sous = ba ? (ba.sous || '') : (st.message || '');
@@ -190,7 +194,7 @@ function appliquerEtat(st) {
   $('#bandeau-msg').textContent = sous;
   // texte défilant
   const def = st.defilant || {};
-  $('#defilant').classList.toggle('cachee', !(def.actif && def.texte && (scene === 'live' || scene === 'partage')));
+  $('#defilant').classList.toggle('cachee', !(def.actif && def.texte && sceneCameras(scene)));
   const piste = $('#defilant .piste');
   if (piste.dataset.texte !== (def.texte || '')) {
     piste.dataset.texte = def.texte || '';
@@ -204,11 +208,12 @@ function appliquerEtat(st) {
   const clesActives = actives.map(cleSource);
 
   const ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
-  const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && scene !== 'intro' && scene !== 'fin';
+  const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && (scene === 'live' || scene === 'partage');
   document.body.classList.toggle('quiz-on', !!quizEnCours);
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
     ? (scene === 'partage' ? dispositionPartageV(ids, clesActives) : calculerDispositionV(st.layout, ids, st.focus))
     : (scene === 'partage' ? dispositionPartage(ids, clesActives) : calculerDisposition(st.layout, ids, st.focus));
+  if (scene === 'watch' && !quizEnCours) Object.assign(disp, VERTICAL ? calculerDispositionV(st.layout, ids, st.focus, ZONE_WATCH_V) : calculerDisposition(st.layout, ids, st.focus, ZONE_WATCH));
   for (const t of tuiles.values()) {
     if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
     else placer(t, disp[t.id]);
@@ -218,6 +223,7 @@ function appliquerEtat(st) {
   gererPlaylist();
   gererQuiz();
   gererChat();
+  gererWatch();
   appliquerVolumes();
   compteARebours();
   gererMusique(scene);
@@ -252,7 +258,7 @@ const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'You
 let chatAfficheTs = 0;
 function gererChat() {
   const c = etat && etat.chatAffiche;
-  const visible = !!c && etat.scene !== 'intro' && etat.scene !== 'fin';
+  const visible = !!c && sceneCameras(etat.scene);
   $('#chat-bulle').classList.toggle('cachee', !visible);
   document.body.classList.toggle('chat-on', visible);
   if (!c || c.ts === chatAfficheTs) return;
@@ -262,6 +268,36 @@ function gererChat() {
   $('#cb-auteur').textContent = c.auteur;
   $('#cb-texte').textContent = c.texte;
 }
+
+/* ----- Watch Party : le minuteur du film ----- */
+function gererWatch() {
+  const w = etat && etat.watch, scene = SCENE_FORCEE || (etat && etat.scene);
+  const grand = !!w && scene === 'watch';
+  const petit = !!w && !grand && w.pastille && (scene === 'live' || scene === 'partage') && !document.body.classList.contains('quiz-on');
+  const el = $('#watch');
+  el.classList.toggle('cachee', !(grand || petit));
+  el.classList.toggle('pastille', petit);
+  const top = $('#watch-top');
+  if (!w) { top.classList.add('cachee'); return; }
+  const t = maintenantHote(), pos = positionFilm(w, t);
+  $('#wp-titre').textContent = w.titre || 'Le film';
+  $('#wp-temps').textContent = texteFilm(pos);
+  const enCompte = w.top && t < w.top;
+  el.classList.toggle('lecture', !!w.lecture && !enCompte);
+  $('#wp-etat span').textContent = enCompte ? 'Top départ' : w.lecture ? 'Lecture' : 'En pause';
+  $('#wp-barre').style.width = w.duree ? Math.min(100, pos / w.duree * 100) + '%' : '0%';
+  $('#watch .wp-barre').style.visibility = w.duree ? '' : 'hidden';
+  // top départ : 5, 4, 3, 2, 1 puis « Lecture ! » pendant une seconde et demie
+  const voirTop = w.top && t < w.top + 1500 && sceneCameras(scene);
+  top.classList.toggle('cachee', !voirTop);
+  if (voirTop) {
+    const n = Math.ceil((w.top - t) / 1000);
+    $('#wt-n').textContent = n > 0 ? n : 'Lecture !';
+    top.classList.toggle('go', n <= 0);
+    $('#wt-sous').textContent = n > 0 ? `à ${texteFilm(w.pos)}` : '';
+  }
+}
+setInterval(() => { if (etat && etat.watch) gererWatch(); }, 200);
 
 /* ----- Quiz ----- */
 /* Place de la question : calculée avec celle des caméras (dispositions « centre » et « plein ») ;
@@ -407,6 +443,9 @@ addEventListener('message', e => {
   }
 });
 
+/* ----- La sortie OBS signale sa présence à la régie (voyant « Sortie OBS ») ----- */
+if (!PREVIEW && !DEMO) setInterval(() => { if (hote) ordre(hote.iframe, { sendData: { studioSebSortie: { v: VERTICAL ? 1 : 0 } }, type: 'rpcs' }); }, 3000);
+
 /* ----- Démarrage ----- */
 if (DEMO) {
   const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade'];
@@ -419,6 +458,7 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now(), revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 950 }], img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true };
   if (Q.get('chat')) st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 };
   if (Q.get('classement')) st.quiz = { dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   st.message = 'Pose tes questions dans le chat';

@@ -6,7 +6,7 @@
 <title>Invitation au live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/app.css?v=fcb6b0bd">
 <style>
   body {
     min-height: 100vh; color: var(--text, #fff);
@@ -36,6 +36,10 @@
   .boite h2 { margin: 0 0 12px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #statut { font-size: 12px; font-weight: 600; letter-spacing: .12em; padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,.1); color: var(--text); }
   #statut.direct { background: #e01e1e; color: #fff; }
+  #wi-etat { font-size: 12px; font-weight: 600; letter-spacing: .12em; padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,.1); color: var(--text); }
+  #wi-etat.lecture { background: #1f9d57; color: #fff; }
+  #wi-etat.top { background: var(--accent); color: var(--bg); }
+  body.camera-distante .pas-cam { display: none !important; }
   #ma-camera { width: 100%; height: 300px; border: 0; border-radius: 10px; background: #000; }
   .qz-btn { padding: 18px 14px; font-size: 18px; text-align: left; border-radius: 12px; background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.15); color: var(--text); }
   .qz-btn b { color: var(--accent); margin-right: 10px; }
@@ -59,7 +63,7 @@
       <input type="text" id="prenom" placeholder="Ton prénom ou ton pseudo" maxlength="28" required autocomplete="nickname">
       <button type="submit">Continuer</button>
     </form>
-    <div class="conseils">
+    <div class="conseils pas-cam">
       <div><b>🎧 Un casque</b>Ça évite l'écho pour tout le monde.</div>
       <div><b>💡 De la lumière</b>Face à une fenêtre ou une lampe, pas dans ton dos.</div>
       <div><b>🌐 Chrome ou Edge</b>Sur ordinateur, c'est le plus stable.</div>
@@ -72,6 +76,15 @@
     <div id="qz-question" style="font:400 clamp(26px,4vw,40px)/1.15 var(--font-title);margin-bottom:16px"></div>
     <div id="qz-choix" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
     <p id="qz-retour" class="aide" style="font-size:16px;margin:14px 0 0"></p>
+  </section>
+
+  <section id="watch-invite" class="boite" hidden style="margin-bottom:20px;border-color:var(--accent)">
+    <h2>On regarde ensemble <span id="wi-etat">EN PAUSE</span></h2>
+    <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+      <div id="wi-temps" style="font:400 clamp(44px,9vw,76px)/1 var(--font-title);font-variant-numeric:tabular-nums">0:00:00</div>
+      <div id="wi-titre" style="font:400 clamp(20px,3vw,28px)/1.2 var(--font-title);color:var(--muted)"></div>
+    </div>
+    <p class="aide" id="wi-aide" style="font-size:15px;margin:10px 0 0">Mets ton film au même endroit que ce minuteur. Le film n'est pas diffusé : chacun le regarde chez soi.</p>
   </section>
 
   <section id="coulisses" hidden>
@@ -88,11 +101,11 @@
         <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span class="aide" id="cam-appareils" style="flex:1;min-width:0;margin:0"></span><button type="button" id="btn-cam-changer" style="padding:6px 12px">Changer</button></div>
       </div>
       <p class="aide" id="ma-qualite" style="margin:10px 0 0"></p>
-      <form id="form-nom" style="display:flex;gap:8px;margin-top:14px">
+      <form id="form-nom" class="pas-cam" style="display:flex;gap:8px;margin-top:14px">
         <input type="text" id="mon-nom" maxlength="28" placeholder="Ton nom à l'écran" style="flex:1">
         <button type="submit">Renommer</button>
       </form>
-      <div style="margin-top:14px">
+      <div style="margin-top:14px" class="pas-cam">
         <button id="btn-mon-ecran" style="width:100%">🖥️ Partager mon écran</button>
         <iframe id="mon-ecran" hidden style="width:100%;height:160px;border:0;border-radius:10px;background:#000;margin-top:10px" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
         <p class="aide" style="margin:6px 0 0">Seulement si l'animateur te le demande. Il choisit ensuite s'il l'affiche.</p>
@@ -100,8 +113,8 @@
     </div>
   </section>
 </div>
-<script src="js/common.js"></script>
-<script src="js/reglages-media.js"></script>
-<script src="js/invite.js"></script>
+<script src="js/common.js?v=5b21c1bf"></script>
+<script src="js/reglages-media.js?v=2b1fab4a"></script>
+<script src="js/invite.js?v=a5e7ce21"></script>
 </body>
 </html>

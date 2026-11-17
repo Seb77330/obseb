@@ -38,7 +38,7 @@ function actions() {
   const A = [];
   const add = (groupe, titre, faire, mots = '') => A.push({ groupe, titre, faire, mots });
   // Scènes et mises en page
-  [['intro', 'Intro', '1'], ['live', 'Live', '2'], ['partage', 'Partage', '3'], ['fin', 'Fin', '4']]
+  [['intro', 'Intro', '1'], ['live', 'Plateau', '2'], ['partage', 'Écran partagé', '3'], ['watch', 'Watch Party', '4'], ['fin', 'Fin', '5']]
     .forEach(([s, n, k]) => add('Scène', `Passer en scène ${n}`, () => changerScene(s), `touche ${k} scene`));
   [['grille', 'Grille'], ['interview', 'Interview'], ['solo', 'Une personne']]
     .forEach(([l, n]) => add('Mise en page', `Mise en page ${n}`, () => changerLayout(l), 'disposition layout'));
@@ -74,6 +74,11 @@ function actions() {
   add('Quiz', 'Révéler la réponse', cliquer('#qz-reveler'), 'jeu');
   add('Quiz', 'Fermer la question', cliquer('#qz-fermer'), 'jeu');
   add('Quiz', $('#qz-scores').textContent, cliquer('#qz-scores'), 'classement scores jeu');
+  // Watch Party, caméras
+  add('Watch Party', 'Régler le minuteur du film', () => ouvrirOnglet('watch'), 'film timer netflix vlc regarder ensemble');
+  add('Watch Party', 'Top départ (5, 4, 3, 2, 1)', cliquer('#wp-top'), 'film lecture ensemble');
+  add('Caméras', 'Brancher une autre caméra', cliquer('#cam-ajouter'), 'multicam duplex camera');
+  $$('#commutation button').forEach(b => add('Caméras', `Passer sur ${b.textContent}`, cliquer(b), 'multicam commuter'));
   // Musique
   add('Musique', $('#mu-lecture').textContent.replace(/^\S+\s/, '') + ' la musique', cliquer('#mu-lecture'), 'play pause playlist');
   add('Musique', 'Morceau suivant', cliquer('#mu-suivante'), 'playlist next');
