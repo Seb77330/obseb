@@ -15,7 +15,7 @@
     live: () => !!etat.direct,
   };
   const agir = {
-    camera: () => { $('.carte-moi').scrollIntoView({ block: 'center', behavior: 'smooth' }); },
+    camera: () => { montrerPlateau(); $('.carte-moi').scrollIntoView({ block: 'center', behavior: 'smooth' }); },
     invite: () => $('#btn-invite').click(),
     obs: () => $('#btn-obs').click(),
     live: () => $('#btn-direct').click(),
@@ -27,7 +27,9 @@
 
   function maj() {
     let tout = true;
-    $$('#demarrage [data-etape]').forEach(b => { const ok = fait[b.dataset.etape](); b.classList.toggle('fait', ok); tout = tout && ok; });
+    let suivant = null;
+    $$('#demarrage [data-etape]').forEach(b => { const ok = fait[b.dataset.etape](); b.classList.toggle('fait', ok); if (!ok && !suivant) suivant = b; tout = tout && ok; });
+    $$('#demarrage [data-etape]').forEach(b => b.classList.toggle('suivant', b === suivant));
     boite.hidden = !!g.masque || tout;
   }
   maj();

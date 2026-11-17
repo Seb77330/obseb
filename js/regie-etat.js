@@ -126,8 +126,8 @@ function chevrons() {
     return { id, nom: NOMS_CHEVRON[id], ok, texte: el.querySelector('.txt').textContent, aide: el.title };
   });
 }
-elsVoyant.camera.onclick = () => $('.carte-moi').scrollIntoView({ block: 'start', behavior: 'smooth' });
-elsVoyant.micro.onclick = () => { if (etat.muet[ID_HOTE]) { etat.muet[ID_HOTE] = false; envoyer(); majEtatStudio(); toast('Micro rouvert'); } else $('.carte-moi').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+elsVoyant.camera.onclick = () => { montrerPlateau(); $('.carte-moi').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+elsVoyant.micro.onclick = () => { if (etat.muet[ID_HOTE]) { etat.muet[ID_HOTE] = false; envoyer(); majEtatStudio(); toast('Micro rouvert'); } else { montrerPlateau(); $('.carte-moi').scrollIntoView({ block: 'start', behavior: 'smooth' }); } };
 elsVoyant.sortie.onclick = () => $('#btn-obs').click();
 elsVoyant.invites.onclick = () => $('#btn-invite').click();
 elsVoyant.chat.onclick = () => ouvrirOnglet('chat');

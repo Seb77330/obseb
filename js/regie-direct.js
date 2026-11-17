@@ -115,6 +115,7 @@ function majDirect() {
   document.body.classList.toggle('en-direct', !!d);
   const sp = btnDirect.querySelector('span');
   sp.textContent = d ? `EN DIRECT ${hms(Date.now() - d.debut)}` : 'Démarrer le direct';
+  sp.dataset.court = d ? hms(Date.now() - d.debut) : 'Direct';   // sur téléphone, le bouton est plus court
   sp.style.fontFamily = d ? '' : 'inherit';
   btnDirect.title = d ? 'Couper une plateforme ou arrêter le direct' : 'Rien ne part tant que tu ne cliques pas ici';
   const badge = $('#badge-scene');

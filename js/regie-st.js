@@ -74,6 +74,7 @@ setInterval(reglerEcouteHote, 1000);
 
 /* ----- Réglages (onglet Titres) ----- */
 $('#st-actif').checked = !!etat.st.actif;
+if (etat.st.actif) $('#pli-st').open = true;   // sous-titres en marche : la partie s'ouvre toute seule
 $('#st-ecran').checked = !!etat.st.ecran;
 $('#st-actif').onchange = e => {
   etat.st.actif = e.target.checked;

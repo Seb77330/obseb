@@ -71,12 +71,12 @@ function majWatch() {
   $('#wp-barre').style.width = w.duree ? Math.min(100, pos / w.duree * 100) + '%' : '0%';
   const j = $('#wp-jouer');
   j.textContent = w.lecture ? 'Pause' : 'Lecture'; j.classList.toggle('primaire', !w.lecture);
-  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir au plateau' : 'Passer sur la scène Watch Party';
+  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir au plateau' : 'Scène Watch Party';
   $('#wp-scene').classList.toggle('primaire', etat.scene !== 'watch');
   $('#watch-point').hidden = !(w.lecture || etat.scene === 'watch');
   const auto = Date.now() - extVue < 5000;
   $('#wp-source .voyant').className = 'voyant' + (auto ? (extSite ? ' ok' : ' att') : '');
-  $('#wp-source-txt').innerHTML = !auto ? 'Minuteur manuel : c\'est toi qui lances et qui cales.'
+  $('#wp-source-txt').innerHTML = !auto ? 'Minuteur manuel'
     : extSite ? `<b>Minuteur automatique</b> : il suit ${esc(extSite)}.` : 'Extension détectée. Ouvre ton film et clique sur « Suivre le film de cet onglet ».';
 }
 setInterval(majWatch, 250); majWatch();

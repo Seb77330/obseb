@@ -203,3 +203,4 @@ setInterval(() => {
     $('#qz-retour').textContent = 'Temps écoulé.';
   }
 }, 250);
+garderEcranAllume();

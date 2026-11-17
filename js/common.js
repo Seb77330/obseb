@@ -168,7 +168,7 @@ function appliquerAffichage(a = lireAffichage()) {
 /* Bouton « Affichage » : petit menu avec les réglages, mémorisés dans ce navigateur */
 function boutonAffichage(conteneur) {
   const box = document.createElement('div'); box.className = 'bouton-affichage';
-  box.innerHTML = `<button type="button" title="Affichage : mode clair, sombre, daltonien…">Affichage</button>
+  box.innerHTML = `<button type="button" title="Affichage : mode clair, sombre, daltonien…"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" fill="currentColor" stroke="none"/></svg><span>Affichage</span></button>
     <div class="affichage-pop" hidden>
       <div class="titre-pop">Thème de l'interface</div>
       <div class="segment" data-r="mode"><button data-v="auto">Auto</button><button data-v="sombre">Sombre</button><button data-v="clair">Clair</button></div>
@@ -690,4 +690,14 @@ const fichiers = (() => {
 const LIMITES = { gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 25 }, regie: { musiques: 50 } };
 function formuleActuelle() {
   try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'gratuit'; } catch (e) { return 'gratuit'; }
+}
+
+/* ---------- Téléphone et tablette : l'écran ne se met pas en veille pendant le live ---------- */
+function garderEcranAllume() {
+  if (!('wakeLock' in navigator)) return;
+  let verrou = null;
+  const demander = async () => { if (verrou || document.visibilityState !== 'visible') return; try { verrou = await navigator.wakeLock.request('screen'); verrou.addEventListener('release', () => { verrou = null; }); } catch (e) { /* refusé : tant pis */ } };
+  document.addEventListener('visibilitychange', demander);
+  document.addEventListener('pointerdown', demander);
+  demander();
 }

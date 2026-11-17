@@ -3,17 +3,23 @@
 
 /* ----- Onglets ----- */
 const CLE_ONGLET = 'studioSeb:onglet';
-function ouvrirOnglet(nom) {
+/* Sur téléphone, un seul volet à la fois : le plateau (caméras, invités) ou l'outil choisi dans la barre du bas */
+const PETIT_ECRAN = matchMedia('(max-width: 1000px)');
+function montrerPlateau() { document.body.classList.add('volet-plateau'); }
+function ouvrirOnglet(nom, auDepart) {
+  if (nom === 'plateau') return montrerPlateau();
+  if (!auDepart) document.body.classList.remove('volet-plateau');
   if (nom === 'bandeaux') nom = 'habillage';   // les bandeaux sont rangés dans l'onglet Titres
   $$('.onglets button').forEach(b => b.classList.toggle('actif', b.dataset.tab === nom));
   $$('.onglet').forEach(o => { o.hidden = o.dataset.onglet !== nom; });
   try { localStorage.setItem(CLE_ONGLET, nom); } catch (e) { /* rien */ }
   if (nom === 'chat') { nonLus = 0; majNonLus(); const l = $('#chat-liste'); l.scrollTop = l.scrollHeight; }
 }
-$$('.onglets button').forEach(b => b.onclick = () => ouvrirOnglet(b.dataset.tab));
+$$('.onglets button').forEach(b => b.onclick = () => { ouvrirOnglet(b.dataset.volet || b.dataset.tab); if (PETIT_ECRAN.matches) window.scrollTo(0, 0); });
+montrerPlateau();   // sur téléphone, on arrive sur le plateau : la caméra d'abord
 let ongletDepart = 'habillage';
 try { ongletDepart = localStorage.getItem(CLE_ONGLET) || ongletDepart; } catch (e) { /* rien */ }
-ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habillage');
+ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habillage', true);
 
 /* Messages du chat non lus quand l'onglet Chat est fermé */
 let nonLus = 0;
@@ -32,7 +38,7 @@ $$('#menu-liens button').forEach(b => b.addEventListener('click', () => { $('#me
 /* ----- Recherche ----- */
 const sansAccents = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const cliquer = sel => () => { const el = typeof sel === 'string' ? $(sel) : sel; if (el) el.click(); };
-const champ = (onglet, sel) => () => { ouvrirOnglet(onglet); const el = $(sel); el.scrollIntoView({ block: 'center' }); el.focus(); };
+const champ = (onglet, sel) => () => { ouvrirOnglet(onglet); const el = $(sel); const pli = el.closest('details'); if (pli) pli.open = true; el.scrollIntoView({ block: 'center' }); el.focus(); };
 
 function actions() {
   const A = [];
@@ -73,7 +79,7 @@ function actions() {
   $$('#qz-liste .elt').forEach(el => { const b = el.querySelector('button'); add('Quiz', `Lancer : ${el.querySelector('b').textContent}`, cliquer(b), 'question jeu'); });
   add('Quiz', 'Révéler la réponse', cliquer('#qz-reveler'), 'jeu');
   add('Quiz', 'Fermer la question', cliquer('#qz-fermer'), 'jeu');
-  add('Quiz', $('#qz-scores').textContent, cliquer('#qz-scores'), 'classement scores jeu');
+  add('Quiz', 'Afficher ou masquer le classement', cliquer('#qz-scores'), 'classement scores jeu');
   // Watch Party, caméras
   add('Watch Party', 'Régler le minuteur du film', () => ouvrirOnglet('watch'), 'film timer netflix vlc regarder ensemble');
   add('Watch Party', 'Top départ (5, 4, 3, 2, 1)', cliquer('#wp-top'), 'film lecture ensemble');
@@ -136,3 +142,11 @@ addEventListener('keydown', e => {
 
 /* Bouton Affichage dans l'en-tête */
 boutonAffichage($('#place-affichage'));
+/* Téléphone : le cadrage se range avec le plateau ; pendant qu'on écrit, l'aperçu ne reste plus collé en haut (le clavier prend la place) */
+(() => {
+  const placer = () => { const r = $('#rangee-cadrage'); if (!r) return; if (PETIT_ECRAN.matches) $('.carte-moi').after(r); else $('#col-programme .colonne-corps').append(r); };
+  placer(); PETIT_ECRAN.addEventListener('change', placer);
+  const ecrit = el => el && el.matches && el.matches('input[type=text], input[type=url], input[type=password], input[type=time], input:not([type]), textarea');
+  document.addEventListener('focusin', e => { if (PETIT_ECRAN.matches && ecrit(e.target)) document.body.classList.add('saisie'); });
+  document.addEventListener('focusout', () => setTimeout(() => { if (!ecrit(document.activeElement)) document.body.classList.remove('saisie'); }, 150));
+})();

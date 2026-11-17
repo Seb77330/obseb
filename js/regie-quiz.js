@@ -67,7 +67,7 @@ function afficherQuiz() {
   const box = $('#qz-liste');
   const qz = etat.quiz;
   const liste = banque.filter(q => !filtreCat || (q.cat || 'Général') === filtreCat);
-  box.innerHTML = liste.length ? '' : '<div class="vide">Aucune question. Ajoute-en une ci-dessous. Pendant le live, « Lancer » l\'affiche à l\'écran et chez tes invités.</div>';
+  box.innerHTML = liste.length ? '' : '<div class="vide">Aucune question pour l\'instant.</div>';
   if (!banque.length) $('#qz-form').open = true;
   liste.forEach(q => {
     const enCours = qz.active && qz.active.qid === q.id;
@@ -105,7 +105,7 @@ async function lancerQuestion(q) {
   reponsesQuiz.set(q.id, new Map());
   etat.quiz.active = { qid: q.id, q: q.q, choix: q.choix, duree: q.duree, debut: Date.now(), revele: false, bonne: null, resultats: [], img: img || null };
   etat.quiz.afficherScores = false;
-  $('#qz-scores').textContent = 'Afficher le classement';
+  $('#qz-scores').textContent = 'Classement';
   envoyer(); afficherQuiz();
   toast('Question à l\'écran');
 }
@@ -193,7 +193,7 @@ $('#qz-scores').onclick = () => {
   etat.quiz.afficherScores = !etat.quiz.afficherScores;
   if (etat.quiz.afficherScores) etat.quiz.classement = Object.entries(etat.quiz.scores)
     .map(([id, pts]) => ({ nom: etat.noms[id] || 'Invité', pts })).sort((a, b) => b.pts - a.pts).slice(0, 10);
-  $('#qz-scores').textContent = etat.quiz.afficherScores ? 'Masquer le classement' : 'Afficher le classement';
+  $('#qz-scores').textContent = etat.quiz.afficherScores ? 'Masquer' : 'Classement';
   envoyer();
 };
 $('#qz-zero').onclick = () => { if (confirm('Remettre tous les scores à zéro ?')) { etat.quiz.scores = {}; etat.quiz.classement = []; envoyer(); } };

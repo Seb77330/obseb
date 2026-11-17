@@ -89,7 +89,8 @@ $('#btn-apercu-format').onclick = () => {
   apercuVertical = !apercuVertical;
   apercu.src = `sortie.html?preview=regie${apercuVertical ? '&format=vertical&zones=1' : ''}${location.hash.replace(/&k=[^&]*/, '')}`;
   $('#moniteur').classList.toggle('vertical', apercuVertical);
-  $('#btn-apercu-format').textContent = apercuVertical ? 'Voir en horizontal' : 'Voir en vertical';
+  $('#btn-apercu-format').classList.toggle('vertical', apercuVertical);
+  $('#btn-apercu-format').title = apercuVertical ? 'Aperçu vertical. Clique pour revenir à l\'horizontal.' : 'Aperçu horizontal. Clique pour voir le vertical (TikTok, Shorts, Reels).';
 };
 
 /* ----- Envoi de l'état vers la sortie OBS et les invités ----- */
@@ -168,6 +169,15 @@ $('#btn-heure').onclick = () => {
   etat.fin = d.getTime(); envoyer(); toast(`Compte à rebours jusqu'à ${v}`);
 };
 $('#btn-sans-compte').onclick = () => { etat.fin = null; envoyer(); };
+$('#heure-debut').onchange = () => { if ($('#heure-debut').value) $('#btn-heure').click(); };
+/* Les parties qu'on déplie gardent leur état d'un live à l'autre */
+(() => {
+  let plis = {}; try { plis = JSON.parse(localStorage.getItem('studioSeb:plis') || '{}'); } catch (e) { /* rien */ }
+  $$('details.pli[id]').forEach(d => {
+    if (d.id in plis) d.open = !!plis[d.id];
+    d.addEventListener('toggle', () => { plis[d.id] = d.open; try { localStorage.setItem('studioSeb:plis', JSON.stringify(plis)); } catch (e) { /* rien */ } });
+  });
+})();
 
 addEventListener('keydown', e => {
   if (e.target.matches('input:not([type=checkbox]):not([type=range]):not([type=radio]), textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -187,6 +197,10 @@ function basculerAntenne(id) {
   }
   envoyer();
 }
+const IC_MICRO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>';
+const IC_MICRO_COUPE = IC_MICRO.replace('</svg>', '<path d="M4 4l16 16"/></svg>');
+const IC_SEUL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/><circle cx="12" cy="10.5" r="2"/><path d="M8.8 16a3.2 3.2 0 0 1 6.4 0"/></svg>';
+const IC_LIEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
 const IC_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>';
 function creerCarte(id) {
   const estHote = id === ID_HOTE, cam = camsLocales.get(id);
@@ -200,8 +214,8 @@ function creerCarte(id) {
     ${estHote || cam ? '' : '<div class="qualite aide"></div>'}
     <div class="actions">
       <button class="petit antenne-btn"></button>
-      ${cam ? '' : '<button class="petit muet-btn">Muet</button>'}
-      <button class="petit focus-btn" title="Afficher cette source seule à l'écran">Seul</button>
+      ${cam ? '' : '<button class="petit muet-btn ic-btn"></button>'}
+      <button class="petit focus-btn ic-btn" title="Seul à l'écran">${IC_SEUL}</button>
       ${estHote || cam ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
       ${cam ? '<button class="petit retirer-btn" title="Débrancher cette caméra">✕</button>' : ''}
     </div>`;
@@ -260,7 +274,12 @@ function majCarte(id) {
   b.title = enDirect ? 'Retirer de l\'antenne' : 'Afficher cette source à l\'écran';
   b.className = 'petit antenne-btn' + (enDirect ? '' : ' primaire');
   const muet = c.el.querySelector('.muet-btn');
-  if (muet) { muet.textContent = etat.muet[id] ? 'Son coupé' : 'Muet'; muet.classList.toggle('rouge', !!etat.muet[id]); }
+  if (muet && muet.dataset.coupe !== String(!!etat.muet[id])) {
+    muet.dataset.coupe = String(!!etat.muet[id]);
+    muet.innerHTML = etat.muet[id] ? IC_MICRO_COUPE : IC_MICRO;
+    muet.title = etat.muet[id] ? 'Son coupé dans le live. Clique pour le remettre.' : 'Couper le son dans le live';
+    muet.classList.toggle('rouge', !!etat.muet[id]);
+  }
   const qe = c.el.querySelector('.qualite'), q = qualites.get(id);
   if (qe) {
     if (!q) qe.innerHTML = '<span class="voyant"></span>Qualité : en attente…';
@@ -289,7 +308,7 @@ function majInterface() {
   const nbInvites = invites.length;
   $('#nb-part').textContent = `${etat.onair.filter(id => ids.includes(id)).length} à l'antenne · ${nbInvites} invité${nbInvites > 1 ? 's' : ''}`;
   if (!$('#liste .vide') && nbInvites === 0) {
-    liste.insertAdjacentHTML('beforeend', '<div class="vide">Tes invités arriveront ici, en coulisses. Tu les mets à l\'antenne d\'un clic.<button class="primaire petit" id="vide-inviter">Copier le lien invités</button></div>');
+    liste.insertAdjacentHTML('beforeend', '<div class="vide" title="Tes invités arrivent ici, en coulisses. Tu les mets à l\'antenne d\'un clic.">Personne en coulisses<button class="primaire petit" id="vide-inviter">' + IC_LIEN + 'Copier le lien</button></div>');
     $('#vide-inviter').onclick = () => $('#btn-invite').click();
   }
   if (nbInvites > 0) $('#liste .vide')?.remove();
@@ -392,3 +411,4 @@ setInterval(() => {
 }, 120);
 
 envoyer();
+garderEcranAllume();

@@ -177,7 +177,7 @@ setInterval(majSources, 4000);
 /* ---------- Bandeaux ---------- */
 function afficherBandeaux() {
   const box = $('#bd-liste');
-  box.innerHTML = etat.bandeaux.length ? '' : '<div class="vide">Ajoute des bandeaux (noms des invités, questions, annonces) pour les afficher d\'un clic.</div>';
+  box.innerHTML = etat.bandeaux.length ? '' : '';
   etat.bandeaux.forEach((b, i) => {
     const on = etat.bandeauActif && etat.bandeauActif.id === b.id;
     const el = document.createElement('div');
