@@ -290,22 +290,29 @@
   .depot-vue .retirer { position: absolute; top: 4px; right: 4px; padding: 2px 7px; font-size: 12px; }
   .depot.grand { padding: 28px 16px; margin-top: 10px; }
   .depot.grand b { font-size: 15px; }
+  /* Musiques d'intro et de fin : une ligne par musique, on y dépose un fichier */
+  .sons { display: grid; gap: 8px; }
+  .son { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1.5px dashed var(--ui-line2); border-radius: 12px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .son:hover, .son.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
+  .son.plein { border-style: solid; border-color: var(--ui-line); background: var(--ui-panel2); }
+  .son-ic { flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--ui-input); border: 1px solid var(--ui-line); color: var(--ui-muted); }
+  .son.plein .son-ic, .son:hover .son-ic { color: var(--ui-accent); }
+  .son-ic svg { width: 17px; height: 17px; }
+  .son-txt { flex: 1; min-width: 0; }
+  .son-txt b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .son-txt small { display: block; font-size: 12.5px; line-height: 1.35; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .son button { flex: none; width: 34px; padding: 6px 0; }
   .sous-option { margin-top: 10px; }
   .sous-option summary { cursor: pointer; font-weight: 500; color: var(--ui-muted); font-size: 13px; margin-bottom: 8px; }
-  /* Import OBS : trois étapes numérotées, la troisième est la zone où l'on dépose */
-  .obs-pas { display: grid; gap: 8px; }
-  .obs-etape { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel2); color: var(--ui-text); text-decoration: none; text-align: left; }
-  .obs-etape .num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--mono); color: var(--ui-accent); border: 1px solid color-mix(in srgb, var(--ui-accent) 55%, transparent); }
-  .obs-etape .txt { flex: 1; min-width: 0; }
-  .obs-etape .txt b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; }
-  .obs-etape .txt small { display: block; font-size: 12.5px; color: var(--ui-muted); line-height: 1.35; }
-  .obs-etape > svg { flex: none; width: 18px; height: 18px; color: var(--ui-muted); }
-  a.obs-etape:hover { border-color: var(--ui-accent); } a.obs-etape:hover > svg { color: var(--ui-accent); }
-  .obs-etape.depot { display: flex; justify-items: start; border: 1.5px dashed var(--ui-line2); background: none; padding: 16px 12px; cursor: pointer; }
-  .obs-etape.depot:hover, .obs-etape.depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
-  .obs-choix { flex: none; display: flex; gap: 6px; }
+  /* Import OBS : une seule zone où déposer */
+  .obs-zone { padding: 26px 16px 22px; gap: 4px; }
+  .obs-zone > svg { width: 26px; height: 26px; color: var(--ui-muted); margin-bottom: 6px; transition: color .15s, transform .15s; }
+  .obs-zone:hover > svg, .obs-zone.survol > svg { color: var(--ui-accent); transform: translateY(-2px); }
+  .obs-zone b { font-size: 15px; }
+  .obs-zone small { font-size: 12.5px; }
+  .obs-zone button { margin-top: 12px; }
   #obs-rapport { margin-top: 10px; font-size: 13px; }
-  #obs-rapport .ok { color: var(--ui-green); } #obs-rapport .ko { color: var(--ui-ko); }
+  #obs-rapport .ok { color: var(--ui-green); } #obs-rapport .ko { color: var(--ui-ko); } #obs-rapport .att { color: var(--ui-ambre); }
   #obs-rapport ul { margin: 6px 0 0; padding-left: 18px; color: var(--ui-muted); }
   .grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (max-width: 520px) { .grille2 { grid-template-columns: 1fr; } }
@@ -489,16 +496,16 @@
             </div>
             <input type="text" id="f-logotexte" maxlength="10" placeholder="Pas de logo ? Écris un texte court, ex. SEB" aria-label="Texte du logo s'il n'y a pas d'image" style="margin-top:8px">
             <p class="aide" style="margin:8px 0 0" title="Les plateformes sanctionnent le compte qui diffuse.">Rien de choquant ni de volé : ces images passent en direct.</p>
-            <details class="sous-option"><summary>Coller un lien d'image</summary>
-              <input type="url" id="f-image" placeholder="Lien de l'image de fond (https://…)">
-              <input type="url" id="f-logo" placeholder="Lien du logo (https://…)" style="margin-top:6px">
-            </details>
+            <input type="url" id="f-image" hidden><input type="url" id="f-logo" hidden>
           </div>
-          <details class="bloc sous-option"><summary>Musiques d'intro et de fin</summary>
-            <input type="url" id="f-mintro" placeholder="Lien du MP3 d'intro (https://…)">
-            <input type="url" id="f-mfin" placeholder="Lien du MP3 de fin (https://…)" style="margin-top:6px">
-
-          </details>
+          <div class="bloc">
+            <div class="bloc-titre">Musiques</div>
+            <div class="sons">
+              <div class="son" data-son="musIntro" title="Glisse une musique ici, ou clique pour en choisir une sur ton ordinateur"><span class="son-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span><span class="son-txt"><b>Intro</b><small></small></span><button type="button" class="petit son-ecouter" title="Écouter" hidden>▶</button><button type="button" class="petit son-oter" title="Retirer" hidden>✕</button><input type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" hidden></div>
+              <div class="son" data-son="musFin" title="Glisse une musique ici, ou clique pour en choisir une sur ton ordinateur"><span class="son-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span><span class="son-txt"><b>Fin</b><small></small></span><button type="button" class="petit son-ecouter" title="Écouter" hidden>▶</button><button type="button" class="petit son-oter" title="Retirer" hidden>✕</button><input type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" hidden></div>
+            </div>
+            <input type="url" id="f-mintro" hidden><input type="url" id="f-mfin" hidden>
+          </div>
           <div class="bloc enregistrer-style">
             <div class="bloc-titre">Garder ce style</div>
             <div class="ligne-style">
@@ -512,20 +519,13 @@
       <details class="option" id="opt-obs">
         <summary><span class="opt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></span><span class="opt-txt"><b>Reprendre mon habillage OBS</b><small>Ton fond, ton logo et tes couleurs en un geste</small></span></summary>
         <div class="option-corps">
-          <div class="obs-pas">
-            <a class="obs-etape" href="obs/exporter-vers-obseb.lua" download title="À faire une seule fois">
-              <span class="num">1</span><span class="txt"><b>Télécharge le script</b><small>Une seule fois</small></span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>
-            </a>
-            <div class="obs-etape" title="Dans la fenêtre Scripts, ajoute le fichier téléchargé avec le bouton +, puis clique sur « Exporter vers OBSeb ». OBS crée un dossier avec ta scène et tes images.">
-              <span class="num">2</span><span class="txt"><b>Dans OBS, exporte</b><small>Outils › Scripts › Exporter vers OBSeb</small></span>
-            </div>
-            <div class="obs-etape depot" id="depot-obs" title="Le dossier créé par OBS, ou directement le fichier .json de ta collection avec ses images">
-              <span class="num">3</span><span class="txt"><b>Glisse le dossier ici</b><small>ou choisis-le</small></span>
-              <span class="obs-choix"><button type="button" class="petit" data-obs="dossier">Dossier</button><button type="button" class="petit" data-obs="fichiers">Fichiers</button></span>
-              <input type="file" id="obs-dossier" webkitdirectory hidden>
-              <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
-            </div>
+          <div class="depot obs-zone" id="depot-obs" title="Tu peux aussi glisser tes images (fond, logo) avec le fichier, ou juste après">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/></svg>
+            <b>Glisse ta scène OBS ici</b>
+            <small>Dans OBS : Collection de scènes › Exporter</small>
+            <button type="button" class="petit" data-obs="fichiers">Choisir le fichier</button>
+            <input type="file" id="obs-dossier" webkitdirectory hidden>
+            <input type="file" id="obs-fichiers" multiple accept=".json,image/*,audio/*" hidden>
           </div>
           <div id="obs-rapport"></div>
         </div>
@@ -580,7 +580,7 @@
 <script src="js/common.js?v=36014d33"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/accueil.js?v=2bef9961"></script>
-<script src="js/accueil-style.js?v=46330d81"></script>
+<script src="js/accueil-style.js?v=662f1963"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 </body>
 </html>

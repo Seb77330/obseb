@@ -11,6 +11,15 @@ const maxMusiques = () => LIMITES[formuleActuelle()].musiques;
 
 etat.playlist.forEach(m => { if (!m.id) m.id = idMusique(); });
 etat.musiqueScenes = etat.musiqueScenes || {};
+/* Musiques d'intro et de fin choisies à la création du live : elles arrivent ici une fois, déjà liées à leur scène */
+etat.musiquesTheme = etat.musiquesTheme || {};
+for (const [scene, cle] of [['intro', 'musIntro'], ['fin', 'musFin']]) {
+  const m = theme[cle];
+  if (!m || !m.id || etat.musiquesTheme[scene] === m.id) continue;
+  etat.musiquesTheme[scene] = m.id;
+  if (!etat.playlist.some(x => x.id === m.id)) etat.playlist.push({ id: m.id, nom: m.nom || 'Musique', fichier: 1, type: m.type || 'audio/mpeg', taille: m.taille || 0, theme: 1 });
+  etat.musiqueScenes[scene] = m.id;
+}
 const fichiersPerdus = new Set();      // morceaux dont le fichier n'est plus dans ce navigateur
 const envoisMusique = new Map();       // id -> { t: dernier envoi, pct }
 
@@ -83,7 +92,7 @@ function afficherMusiques() {
       const enCours = etat.playlist[etat.musique.idx];
       etat.playlist.splice(i, 1);
       for (const s of Object.keys(etat.musiqueScenes)) if (etat.musiqueScenes[s] === m.id) delete etat.musiqueScenes[s];
-      if (m.fichier) fichiers.oter(m.id).catch(() => {});
+      if (m.fichier && !m.theme) fichiers.oter(m.id).catch(() => {});   // une musique venue du thème peut servir à d'autres lives : son fichier reste
       fichiersPerdus.delete(m.id); envoisMusique.delete(m.id);
       // le morceau en cours garde sa place ; si c'est lui qu'on retire, la musique s'arrête
       const idx = enCours && enCours !== m ? etat.playlist.indexOf(enCours) : -1;

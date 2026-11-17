@@ -58,7 +58,58 @@ function majVisuels() {
     if (v) vue.querySelector('.retirer').onclick = e => { e.stopPropagation(); surcharge(CHAMP_THEME[d.dataset.cible], ''); majVisuels(); };
     $('#' + d.dataset.cible).value = v && !v.startsWith('data:') ? v : '';
   });
+  $$('.son').forEach(d => {
+    const m = t[d.dataset.son], lien = t[LIEN_SON[d.dataset.son]];
+    const nom = m && m.id ? m.nom : lien ? decodeURIComponent(String(lien).split('/').pop().split('?')[0]) : '';
+    d.classList.toggle('plein', !!nom);
+    d.querySelector('small').textContent = nom || 'Choisir une musique';
+    d.querySelector('.son-ecouter').hidden = !(m && m.id);
+    d.querySelector('.son-oter').hidden = !nom;
+  });
 }
+
+/* ----- Musiques d'intro et de fin : un fichier choisi sur l'ordinateur. Il reste dans ce navigateur ;
+   la régie le retrouve dans son onglet Musique, déjà lié à la scène Intro ou Fin. ----- */
+const LIEN_SON = { musIntro: 'musiqueIntro', musFin: 'musiqueFin' };   // anciens liens MP3, encore lus s'il y en a
+const TAILLE_MAX_SON = 15 * 1024 * 1024;
+let ecoute = null;
+function arreterEcoute() {
+  if (ecoute) { ecoute.pause(); URL.revokeObjectURL(ecoute.src); ecoute = null; }
+  $$('.son-ecouter').forEach(b => { b.textContent = '▶'; });
+}
+async function choisirSon(champ, f) {
+  if (!f) return;
+  if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|aac|wav|ogg|flac)$/i.test(f.name)) return toast('Ce fichier n\'est pas une musique');
+  if (f.size > TAILLE_MAX_SON) return toast('Musique trop lourde : 15 Mo au maximum');
+  const id = 'm' + Math.random().toString(36).slice(2, 10);
+  try { await fichiers.mettre(id, f); } catch (e) { return toast('Impossible de garder ce fichier dans ce navigateur'); }
+  arreterEcoute();
+  surcharge(LIEN_SON[champ], '');
+  surcharge(champ, { id, nom: f.name.replace(/\.\w+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 60) || 'Musique', type: f.type || 'audio/mpeg', taille: f.size });
+  majVisuels();
+  toast(champ === 'musIntro' ? 'Musique d\'intro ajoutée' : 'Musique de fin ajoutée');
+}
+$$('.son').forEach(d => {
+  const champ = d.dataset.son, input = d.querySelector('input[type=file]');
+  d.onclick = e => { if (!e.target.closest('button, input')) input.click(); };
+  input.onchange = () => { choisirSon(champ, input.files[0]); input.value = ''; };
+  d.ondragover = e => { e.preventDefault(); d.classList.add('survol'); };
+  d.ondragleave = () => d.classList.remove('survol');
+  d.ondrop = e => { e.preventDefault(); d.classList.remove('survol'); choisirSon(champ, e.dataTransfer.files[0]); };
+  d.querySelector('.son-oter').onclick = () => { arreterEcoute(); surcharge(champ, ''); surcharge(LIEN_SON[champ], ''); majVisuels(); };
+  const bouton = d.querySelector('.son-ecouter');
+  bouton.onclick = async () => {
+    const enCours = ecoute && bouton.textContent === '⏸';
+    arreterEcoute();
+    if (enCours) return;
+    const m = themeComplet(brouillon)[champ];
+    const blob = m && m.id ? await fichiers.lire(m.id).catch(() => null) : null;
+    if (!blob) return toast('Ce fichier n\'est plus dans ce navigateur : choisis-le à nouveau');
+    ecoute = new Audio(URL.createObjectURL(blob));
+    ecoute.onended = arreterEcoute;
+    ecoute.play().then(() => { bouton.textContent = '⏸'; }).catch(arreterEcoute);
+  };
+});
 const remplirFormDeBase = remplirForm;
 remplirForm = function () { remplirFormDeBase(); majVisuels(); };
 majVisuels();
@@ -68,7 +119,7 @@ const depotObs = $('#depot-obs');
 depotObs.onclick = e => {
   if (e.target.closest('input')) return;
   const b = e.target.closest('[data-obs]');
-  if (b && b.dataset.obs === 'fichiers') $('#obs-fichiers').click(); else $('#obs-dossier').click();
+  $('#obs-fichiers').click();
 };
 $('#obs-dossier').onchange = e => importerObs([...e.target.files]);
 $('#obs-fichiers').onchange = e => importerObs([...e.target.files]);
@@ -105,12 +156,15 @@ function saturation(hex) {
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   return { sat: max === 0 ? 0 : (max - min) / max, lum: (max + min) / 2 };
 }
+let dernierObs = null;   // la scène déjà déposée : on peut ajouter ses images après coup, sans tout redéposer
 async function importerObs(fichiers) {
   const rapport = $('#obs-rapport');
-  const json = fichiers.find(f => /collection\.json$/i.test(f.name)) || fichiers.find(f => /\.json$/i.test(f.name));
-  if (!json) { rapport.innerHTML = '<span class="ko">Je ne trouve pas le fichier .json de la collection OBS.</span> Glisse le dossier créé par « Exporter vers OBSeb », ou le fichier .json de ta collection (dans %APPDATA%\\obs-studio\\basic\\scenes).'; return; }
+  let json = fichiers.find(f => /collection\.json$/i.test(f.name)) || fichiers.find(f => /\.json$/i.test(f.name));
+  if (!json && dernierObs && fichiers.some(f => f.type.startsWith('image/'))) { json = dernierObs.json; fichiers = [...dernierObs.autres, ...fichiers]; }
+  if (json) dernierObs = { json, autres: fichiers.filter(f => f !== json) };
+  if (!json) { rapport.innerHTML = '<span class="ko">Je ne trouve pas de scène OBS dans ce que tu as déposé.</span> Dans OBS : Collection de scènes › Exporter, puis glisse le fichier ici.'; return; }
   let col;
-  try { col = JSON.parse(await json.text()); } catch (e) { rapport.innerHTML = '<span class="ko">Ce fichier .json n\'est pas une collection OBS lisible.</span>'; return; }
+  try { col = JSON.parse(await json.text()); } catch (e) { rapport.innerHTML = '<span class="ko">Ce fichier n\'est pas une scène OBS lisible.</span>'; return; }
   const sources = col.sources || [];
   const images = new Map(fichiers.filter(f => f.type.startsWith('image/')).map(f => [f.name.toLowerCase(), f]));
   const notes = [], manquants = [];
@@ -158,11 +212,10 @@ async function importerObs(fichiers) {
 
   brouillon.theme = Object.assign({ preset: brouillon.theme.preset || 'minimal' }, t);
   remplirForm(); apercu();
-  rapport.innerHTML = `<div class="ok">Collection « ${esc(col.name || json.name)} » importée : ${scenes.length} scène(s), ${sources.length - scenes.length} source(s).</div>
+  rapport.innerHTML = `<div class="ok">Scène « ${esc(col.name || json.name)} » reprise.</div>
     <ul>${notes.map(n => `<li>${esc(n)}</li>`).join('')}
-    ${manquants.length ? `<li class="ko">Images introuvables dans ce que tu as glissé : ${manquants.slice(0, 6).map(esc).join(', ')}${manquants.length > 6 ? '…' : ''}</li>` : ''}
-    ${musiques.length ? `<li>Musique repérée : ${musiques.map(m => esc(m.name)).join(', ')}. Ajoute son lien dans « Personnaliser » (un MP3 ne tient pas dans un lien).</li>` : ''}</ul>
-    <p class="aide" style="margin:8px 0 0">Vérifie l'aperçu, ajuste dans « Personnaliser », puis crée la session. Pour reproduire une scène OBS à l'identique (animations, placements), dis-le-moi : je transforme l'export en thème complet.</p>`;
+    ${manquants.length ? `<li class="att" title="${esc(manquants.slice(0, 8).join(', '))}">Il manque ${manquants.length} image${manquants.length > 1 ? 's' : ''} : glisse-${manquants.length > 1 ? 'les' : 'la'} ici pour reprendre ton fond et ton logo.</li>` : ''}
+    ${musiques.length ? `<li>Musique repérée : ${musiques.map(m => esc(m.name)).join(', ')}. Ajoute-la dans « Personnaliser le thème ».</li>` : ''}</ul>`;
   toast('Style importé depuis OBS');
 }
 
