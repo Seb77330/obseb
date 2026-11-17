@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OBSeb · flux</title>
+<style>
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; font: 13px/1.4 system-ui, sans-serif; color: #ddd; }
+  body.fond { background: #000; }
+  video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: transparent; }
+  body.cover video { object-fit: cover; }
+  video.miroir { transform: scaleX(-1); }
+  #etat { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.6); padding: 3px 8px; border-radius: 6px; font-size: 11px; }
+  #etat:empty { display: none; }
+</style>
+</head>
+<body>
+<video id="v" autoplay playsinline muted></video>
+<div id="etat"></div>
+<script src="js/vendor/livekit-client-2.23.0.umd.js"></script>
+<script src="js/lk-pont.js"></script>
+</body>
+</html>

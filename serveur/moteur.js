@@ -25,6 +25,12 @@ const W = 1920, H = 1080, FPS = 30;
 const DEBIT_VIDEO = process.env.DEBIT_VIDEO || '6000k';   // recommandé par YouTube pour du 1080p30
 const GARDE_JOURS = +process.env.OBSEB_GARDE_JOURS || 10;   // archive gardée 10 jours puis supprimée
 const ORIGINES = (process.env.OBSEB_ORIGINES || 'https://seb77330.github.io').split(',');
+const crypto = require('crypto');
+/* Serveur vidéo LiveKit (sur la même machine) */
+const LK_CLE = process.env.LIVEKIT_API_KEY || '';
+const LK_SECRET = process.env.LIVEKIT_API_SECRET || '';
+const LK_URL = process.env.LIVEKIT_URL_PUBLIQUE || '';          // ex. wss://1-2-3-4.sslip.io
+const FICHIER_SALLES = path.join(DOSSIER, '..', 'salles.json');  // salle -> empreinte de la clé de l'animateur
 
 fs.mkdirSync(DOSSIER, { recursive: true });
 
@@ -133,6 +139,42 @@ function menage() {
 }
 setInterval(menage, 3600000); menage();
 
+/* ----- Jetons LiveKit -----
+   Invités et spectateurs : il suffit de connaître la salle (nom aléatoire, présent dans leur lien).
+   Animateur (…_seb) et ses écrans (…_ecran1-4) : la clé de la régie est exigée ; la première clé vue
+   pour une salle devient la bonne (personne d'autre ne peut ensuite se faire passer pour l'animateur). */
+let salles = {};
+try { salles = JSON.parse(fs.readFileSync(FICHIER_SALLES, 'utf8')); } catch (e) { /* rien */ }
+const b64url = b => Buffer.from(b).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+function jwt(charge) {
+  const tete = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const corps = b64url(JSON.stringify(charge));
+  const sig = crypto.createHmac('sha256', LK_SECRET).update(`${tete}.${corps}`).digest('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+  return `${tete}.${corps}.${sig}`;
+}
+function jeton({ room, identite, nom, publier, cle }) {
+  if (!LK_CLE || !LK_SECRET || !LK_URL) throw new Error('LiveKit non configuré');
+  if (!/^[a-z0-9]{6,40}$/.test(room || '')) throw new Error('Salle invalide');
+  if (typeof identite !== 'string' || !identite.startsWith(room + '_') || identite.length > 80) throw new Error('Identité invalide');
+  const animateur = /_(seb|ecran\d)$/.test(identite);
+  if (animateur) {
+    if (!cle || typeof cle !== 'string') throw new Error('Clé de régie manquante');
+    const emp = crypto.createHash('sha256').update(room + ':' + cle).digest('hex');
+    if (!salles[room]) { salles[room] = emp; try { fs.writeFileSync(FICHIER_SALLES, JSON.stringify(salles)); } catch (e) { /* rien */ } }
+    else if (salles[room] !== emp) throw new Error('Clé de régie incorrecte');
+  }
+  const maintenant = Math.floor(Date.now() / 1000);
+  const token = jwt({
+    iss: LK_CLE, sub: identite, name: String(nom || '').slice(0, 40), nbf: maintenant - 10, exp: maintenant + 12 * 3600,
+    video: {
+      room, roomJoin: true, canSubscribe: true,
+      canPublish: !!publier, canPublishData: !!publier, canUpdateOwnMetadata: !!publier,
+      hidden: !publier,                 // la sortie et les vignettes sont invisibles pour les autres
+    },
+  });
+  return { url: LK_URL, token };
+}
+
 /* ----- Serveur HTTP ----- */
 function cors(req, res) {
   const o = req.headers.origin;
@@ -160,6 +202,9 @@ http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
   const url = new URL(req.url, 'http://x');
   if (url.pathname === '/sante') return json(res, 200, { ok: true });
+  if (req.method === 'POST' && url.pathname === '/jeton') {
+    try { return json(res, 200, jeton(await corps(req))); } catch (e) { return json(res, 403, { erreur: e.message }); }
+  }
   if (!autorise(req, url)) return json(res, 401, { erreur: 'Clé incorrecte' });
   try {
     if (req.method === 'GET' && url.pathname === '/etat') return json(res, 200, etat);

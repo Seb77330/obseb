@@ -203,14 +203,28 @@ function chargerPolices(liste) {
   document.head.appendChild(l);
 }
 
-/* ---------- Liens vdo.ninja ---------- */
+/* ---------- Transport vidéo : serveur OBSeb (LiveKit) ou vdo.ninja ----------
+   Avec un serveur OBSeb dans la session (session.serveur), les fenêtres vidéo passent par lk.html,
+   qui parle le même langage que vdo.ninja et y bascule tout seul si le serveur ne répond pas. */
+function transportSession() {
+  const s = (typeof lireSession === 'function' && location.hash.includes('s=')) ? lireSession() : null;
+  return s && s.serveur ? { serveur: s.serveur } : null;
+}
 function vdo(params) {
+  const t = transportSession();
+  const p = Object.assign({}, params);
+  if (t) {
+    p.lk = t.serveur;
+    // l'animateur et ses partages d'écran prouvent qu'ils sont bien l'animateur avec la clé de la régie
+    const k = hashParams().get('k');
+    if (k && p.push && /_(seb|ecran\d)$/.test(p.push)) p.cle = k;
+  }
   const parts = [];
-  for (const [k, val] of Object.entries(params)) {
+  for (const [k, val] of Object.entries(p)) {
     if (val === false || val === null || val === undefined) continue;
     parts.push(val === true ? k : `${k}=${encodeURIComponent(val)}`);
   }
-  return VDO + '?' + parts.join('&');
+  return (t ? baseUrl() + 'lk.html' : VDO) + '?' + parts.join('&');
 }
 /* Publier sa caméra dans la salle (invité ou hôte). */
 function urlPublier(session, streamId, label, opts = {}) {
@@ -400,8 +414,8 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
 }
 
 /* Pendant un quiz : tout le monde en rangée(s) en haut, le panneau du quiz dessous (jamais sur un visage) */
-const ZONE_QUIZ = { x: 70, y: 36, w: 1780, h: 250 };
-const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 330 };
+const ZONE_QUIZ = { x: 70, y: 36, w: 1780, h: 430 };   // les visages gardent presque la moitié de l'écran
+const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 560 };
 function dispositionQuiz(ids, vertical) {
   const n = ids.length; if (!n) return {};
   const z = vertical ? ZONE_QUIZ_V : ZONE_QUIZ, gap = 12;
