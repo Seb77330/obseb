@@ -678,6 +678,31 @@ function etatParDefaut(session) {
 }
 const CANAL = 'studioSeb';
 
+/* ---------- Musique : la suite des morceaux à jouer, et où on en est ----------
+   Partagé par la régie (qui décide) et par chaque lecteur (la sortie du live, les retours du studio) :
+   tous trouvent le même morceau au même moment.
+   etat.musique = { idx, lecture, n, t0, pos0, suite, boucle, auto }
+     suite : les morceaux d'une scène (ids), joués à la suite puis repris au début ;
+     sans suite : toute la liste à partir du morceau lancé ; t0 / pos0 : quand la lecture est partie, et d'où. */
+function suiteMusique(st) {
+  const l = (st && st.playlist) || [], m = (st && st.musique) || {};
+  if (!l.length) return [];
+  if (Array.isArray(m.suite)) { const ids = m.suite.filter(id => l.some(p => p.id === id)); if (ids.length) return ids; }
+  const i = l[m.idx] ? m.idx : 0;
+  if (m.boucle) return [l[i].id];
+  return l.slice(i).concat(l.slice(0, i)).map(p => p.id);
+}
+/* Le morceau en cours à l'instant t (heure de la régie) et la position dedans. Sans les durées, on ne connaît que le premier. */
+function positionMusique(st, t) {
+  const suite = suiteMusique(st), m = (st && st.musique) || {};
+  if (!suite.length) return null;
+  const durees = suite.map(id => +((st.playlist.find(p => p.id === id) || {}).d) || 0);
+  if (durees.some(d => !(d > 0))) return { id: suite[0], t: 0, connu: false };
+  let p = Math.max(0, (+m.pos0 || 0) + (m.lecture && m.t0 ? (t - m.t0) / 1000 : 0)) % durees.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < suite.length; i++) { if (p < durees[i]) return { id: suite[i], t: p, connu: true }; p -= durees[i]; }
+  return { id: suite[0], t: 0, connu: true };
+}
+
 /* Résumé des statistiques vdo.ninja (format variable selon les versions) :
    on cherche la plus grande résolution « L x H » et le plus grand débit en kbps */
 function resumeStats(stats) {

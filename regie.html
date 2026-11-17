@@ -223,6 +223,7 @@
   .mu-scenes { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; }
   .mu-scenes button { padding: 3px 8px; font-size: 12px; border-radius: 99px; background: transparent; color: var(--ui-muted); }
   .mu-scenes button:hover { color: var(--ui-text); }
+  .mu-scenes button i { font-style: normal; font-weight: 700; margin-left: 5px; opacity: .7; }
   .mu-scenes button.actif { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-sur-accent, #111); font-weight: 600; }
   .mu-note { display: block; margin-top: 7px; font-size: 12px; color: var(--ui-muted); }
   .mu-note.ko { color: var(--ui-red); }
@@ -723,6 +724,11 @@
           <button type="button" data-v="studio" title="Toi et tes invités l'entendez, en plus des spectateurs. Mets un casque : sinon ton micro la reprend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></svg>Tout le monde</button>
           <button type="button" data-v="live" title="Elle passe dans le live, mais ni toi ni tes invités ne l'entendez dans le studio."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></svg>Le live seulement</button>
         </div>
+        <label class="champ" id="mu-intro-titre">La musique d'intro démarre</label>
+        <div class="segment mu-ecoute" id="mu-intro" role="group" aria-labelledby="mu-intro-titre">
+          <button type="button" data-v="direct" title="Une seconde après ton clic sur « Démarrer le direct ». Avant, l'intro reste sans musique.">Avec le direct</button>
+          <button type="button" data-v="auto" title="Dès que la scène Intro est à l'écran, même avant le direct.">Dès l'intro</button>
+        </div>
         <details class="aide mu-par-lien">
           <summary>Ajouter par un lien</summary>
           <div class="ligne-boutons" style="flex-wrap:nowrap;margin-top:8px">
@@ -756,19 +762,19 @@
   </div>
 </div>
 
-<script src="js/common.js?v=6cbb29c8"></script>
-<script src="js/reglages-media.js?v=3e62aba8"></script>
+<script src="js/common.js?v=0b780580"></script>
+<script src="js/reglages-media.js?v=978ee531"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=a4fd9402"></script>
+<script src="js/regie.js?v=65957034"></script>
 <script src="js/regie-sources.js?v=98df5e91"></script>
-<script src="js/regie-musique.js?v=648c911a"></script>
+<script src="js/regie-musique.js?v=1b02f489"></script>
 <script src="js/regie-quiz.js?v=80082167"></script>
 <script src="js/regie-chat.js?v=79a3ced6"></script>
 <script src="js/regie-comptes.js?v=03347cc5"></script>
 <script src="js/regie-recherche.js?v=8986a628"></script>
-<script src="js/regie-direct.js?v=a0de5236"></script>
+<script src="js/regie-direct.js?v=f7bae645"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
-<script src="js/regie-cams.js?v=55166cf2"></script>
+<script src="js/regie-cams.js?v=a21b9b1b"></script>
 <script src="js/regie-watch.js?v=d4ce3fab"></script>
 <script src="js/regie-etat.js?v=af2213d7"></script>
 <script src="js/regie-st.js?v=211f6618"></script>

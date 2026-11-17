@@ -14,6 +14,7 @@ function plateformesPretes() {
 function demarrerDirect(ids) {
   etat.direct = { debut: Date.now(), plateformes: ids, coupees: [] };
   envoyer(); majDirect(); pop.hidden = true;
+  setTimeout(envoyer, 1000);      // la musique d'intro réglée « avec le direct » part une seconde après
   toast(ids.length ? `Direct démarré sur ${ids.length} plateforme${ids.length > 1 ? 's' : ''}` : 'Direct démarré (minuteur lancé)');
 }
 function arreterDirect() {

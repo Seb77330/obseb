@@ -60,17 +60,19 @@ function majVisuels() {
     $('#' + d.dataset.cible).value = v && !v.startsWith('data:') ? v : '';
   });
   $$('.son').forEach(d => {
-    const m = t[d.dataset.son], lien = t[LIEN_SON[d.dataset.son]];
-    const nom = m && m.id ? m.nom : lien ? decodeURIComponent(String(lien).split('/').pop().split('?')[0]) : '';
+    const liste = sonsDe(t, d.dataset.son), lien = t[LIEN_SON[d.dataset.son]];
+    const nom = liste.length > 1 ? `${liste.length} musiques à la suite : ${liste.map(x => x.nom).join(', ')}` : liste.length ? liste[0].nom : lien ? decodeURIComponent(String(lien).split('/').pop().split('?')[0]) : '';
     d.classList.toggle('plein', !!nom);
-    d.querySelector('small').textContent = nom || 'Choisir une musique';
-    d.querySelector('.son-ecouter').hidden = !(m && m.id);
+    d.querySelector('small').textContent = nom || 'Choisir une ou plusieurs musiques';
+    d.querySelector('.son-ecouter').hidden = !liste.length;
     d.querySelector('.son-oter').hidden = !nom;
   });
 }
 
-/* ----- Musiques d'intro et de fin : un fichier choisi sur l'ordinateur. Il reste dans ce navigateur ;
-   la régie le retrouve dans son onglet Musique, déjà lié à la scène Intro ou Fin. ----- */
+/* ----- Musiques d'intro et de fin : des fichiers choisis sur l'ordinateur (plusieurs = une playlist, jouée à la suite).
+   Ils restent dans ce navigateur ; la régie les retrouve dans son onglet Musique, déjà liés à la scène Intro ou Fin. ----- */
+const sonsDe = (t, champ) => [].concat(t[champ] || []).filter(x => x && x.id);
+const MAX_SONS = (typeof LIMITES !== 'undefined' && LIMITES.gratuit && LIMITES.gratuit.musiques) || 3;
 const LIEN_SON = { musIntro: 'musiqueIntro', musFin: 'musiqueFin' };   // anciens liens MP3, encore lus s'il y en a
 const TAILLE_MAX_SON = 15 * 1024 * 1024;
 let ecoute = null;
@@ -78,32 +80,39 @@ function arreterEcoute() {
   if (ecoute) { ecoute.pause(); URL.revokeObjectURL(ecoute.src); ecoute = null; }
   $$('.son-ecouter').forEach(b => { b.textContent = '▶'; });
 }
-async function choisirSon(champ, f) {
-  if (!f) return;
-  if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|aac|wav|ogg|flac)$/i.test(f.name)) return toast('Ce fichier n\'est pas une musique');
-  if (f.size > TAILLE_MAX_SON) return toast('Musique trop lourde : 15 Mo au maximum');
-  const id = 'm' + Math.random().toString(36).slice(2, 10);
-  try { await fichiers.mettre(id, f); } catch (e) { return toast('Impossible de garder ce fichier dans ce navigateur'); }
+async function choisirSon(champ, liste) {
+  const choisis = [...(liste || [])];
+  if (!choisis.length) return;
   arreterEcoute();
-  surcharge(LIEN_SON[champ], '');
-  surcharge(champ, { id, nom: f.name.replace(/\.\w+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 60) || 'Musique', type: f.type || 'audio/mpeg', taille: f.size });
+  let refus = '';
+  for (const f of choisis) {
+    const t = themeComplet(brouillon), deja = sonsDe(t, champ);
+    if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|aac|wav|ogg|flac)$/i.test(f.name)) { refus = 'Ce fichier n\'est pas une musique'; continue; }
+    if (f.size > TAILLE_MAX_SON) { refus = 'Musique trop lourde : 15 Mo au maximum'; continue; }
+    if (sonsDe(t, 'musIntro').length + sonsDe(t, 'musFin').length >= MAX_SONS) { refus = `${MAX_SONS} musiques par live au maximum (intro et fin réunies)`; break; }
+    const id = 'm' + Math.random().toString(36).slice(2, 10);
+    try { await fichiers.mettre(id, f); } catch (e) { refus = 'Impossible de garder ce fichier dans ce navigateur'; break; }
+    surcharge(LIEN_SON[champ], '');
+    surcharge(champ, deja.concat({ id, nom: f.name.replace(/\.\w+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 60) || 'Musique', type: f.type || 'audio/mpeg', taille: f.size }));
+  }
   majVisuels();
-  toast(champ === 'musIntro' ? 'Musique d\'intro ajoutée' : 'Musique de fin ajoutée');
+  const n = sonsDe(themeComplet(brouillon), champ).length;
+  toast(refus || (n > 1 ? `${n} musiques ${champ === 'musIntro' ? 'd\'intro' : 'de fin'}, jouées à la suite` : champ === 'musIntro' ? 'Musique d\'intro ajoutée' : 'Musique de fin ajoutée'));
 }
 $$('.son').forEach(d => {
   const champ = d.dataset.son, input = d.querySelector('input[type=file]');
   d.onclick = e => { if (!e.target.closest('button, input')) input.click(); };
-  input.onchange = () => { choisirSon(champ, input.files[0]); input.value = ''; };
+  input.onchange = () => { choisirSon(champ, input.files); input.value = ''; };
   d.ondragover = e => { e.preventDefault(); d.classList.add('survol'); };
   d.ondragleave = () => d.classList.remove('survol');
-  d.ondrop = e => { e.preventDefault(); d.classList.remove('survol'); choisirSon(champ, e.dataTransfer.files[0]); };
+  d.ondrop = e => { e.preventDefault(); d.classList.remove('survol'); choisirSon(champ, e.dataTransfer.files); };
   d.querySelector('.son-oter').onclick = () => { arreterEcoute(); surcharge(champ, ''); surcharge(LIEN_SON[champ], ''); majVisuels(); };
   const bouton = d.querySelector('.son-ecouter');
   bouton.onclick = async () => {
     const enCours = ecoute && bouton.textContent === '⏸';
     arreterEcoute();
     if (enCours) return;
-    const m = themeComplet(brouillon)[champ];
+    const m = sonsDe(themeComplet(brouillon), champ)[0];
     const blob = m && m.id ? await fichiers.lire(m.id).catch(() => null) : null;
     if (!blob) return toast('Ce fichier n\'est plus dans ce navigateur : choisis-le à nouveau');
     ecoute = new Audio(URL.createObjectURL(blob));

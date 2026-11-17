@@ -42,7 +42,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     aide.textContent = '';
     try {
       flux = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: choix.cam ? { exact: choix.cam } : undefined, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        video: { deviceId: choix.cam ? { exact: choix.cam } : undefined, width: { ideal: 1920 }, height: { ideal: 1080 }, aspectRatio: { ideal: 16 / 9 }, frameRate: { ideal: 30 } },
         audio: { deviceId: choix.mic ? { exact: choix.mic } : undefined }
       });
     } catch (e) {
@@ -109,7 +109,10 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
 /* Qualité demandée à la salle selon ce que la caméra donne vraiment (0 : 1080p, 1 : 720p, 2 : 360p).
    On n'impose jamais une taille exacte : une caméra qui ne sait pas la faire refuse alors de démarrer
    (c'est arrivé le 17/11 avec une webcam 720p à qui on demandait 1920 x 1080). */
-function qualiteCamera(h) { return !h || h >= 1080 ? 0 : h >= 720 ? 1 : 2; }
+function qualiteCamera(h) { return !h || h >= 900 ? 0 : h >= 600 ? 1 : 2; }
+/* 16/9 demandé (souhaité, jamais imposé) : une caméra 4K dont le capteur est un peu plus large que le 16/9 donnait
+   1920 x 1001 au lieu de 1920 x 1080, et passait alors pour une caméra 720p (image un peu pixelisée, le 17/11). */
+const FORMAT_CAMERA = 1.7778;
 
 /* Appareils retenus la dernière fois (pour redémarrer sans repasser par le réglage) */
 function appareilsRetenus(cle) {

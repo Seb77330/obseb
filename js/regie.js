@@ -69,7 +69,7 @@ function demarrerCamera(app) {
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
   // la meilleure image que la caméra sait donner (1080p avec une Cam Link, 720p avec une webcam) ; « detail » : le navigateur baisse les images/s plutôt que la définition
-  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, quality: qualiteCamera(app.h), maxframerate: 30, contenthint: 'detail' });
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: true, quality: qualiteCamera(app.h), aspectratio: FORMAT_CAMERA, maxframerate: 30, contenthint: 'detail' });
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;

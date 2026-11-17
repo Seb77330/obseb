@@ -91,7 +91,8 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     // Aperçu : l'hôte reste net (flux local), les invités en qualité réduite pour ne pas saturer leur connexion
     const estHote = id === idHote(session) || estCamLocale(id);     // tes caméras passent par ton propre PC
     // aperçus : basse qualité pour tout le monde, toi compris (chaque fenêtre qui te regarde coûte un encodage à ton PC)
-    const debitApercu = estHote ? 1500 : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
+    // dans ta régie, ta propre image reste nette (elle ne quitte pas ton PC) ; ailleurs les aperçus restent légers
+    const debitApercu = estHote ? (Q.get('preview') === 'regie' ? 5000 : 1500) : (Q.get('preview') === 'regie' ? 900 : (nb > 6 ? 150 : 300));
     const opts = PREVIEW
       ? { bitrate: ecran ? 1500 : debitApercu, noaudio: true }
       // Sortie OBS : ta caméra passe par ton propre PC, donc on peut monter très haut sans coût internet
@@ -272,7 +273,8 @@ if (!PREVIEW && !DEMO) {
 function gererMusique(scene) {
   const cible = etat ? (etat.volMusique ?? 0.5) : 0.5;
   for (const [nom, a] of Object.entries(musiques)) {
-    const active = nom === scene && !((etat && etat.musiqueScenes) || {})[nom];
+    const lies = ((etat && etat.musiqueScenes) || {})[nom];
+    const active = nom === scene && !(Array.isArray(lies) ? lies.length : lies);
     if (active && a.paused) { if (nom === 'fin') a.currentTime = 0; a.play().catch(() => {}); }
     clearInterval(a._fondu);
     a._fondu = setInterval(() => {
@@ -506,58 +508,88 @@ function recevoirMorceau(f) {
   fichierPret(f.id);
 }
 
-const lecteur = new Audio(); lecteur.preload = 'auto';
-let pisteLocale = { idx: -1, n: -1 }, adresseLecteur = '', fonduLecteur = null;
-function chargerPiste(p) {
-  const a = adressePiste(p);
-  if (a && a !== adresseLecteur) { adresseLecteur = a; lecteur.src = a; }
-  return !!a;
+/* Deux lecteurs : celui du morceau en cours, et celui qui finit de s'éteindre.
+   Changer de morceau est toujours un fondu enchaîné, jamais une coupure. */
+const FONDU_MUSIQUE = 1600;      // ms
+const lecteurs = [new Audio(), new Audio()];
+lecteurs.forEach(a => { a.preload = 'auto'; a._gain = 0; a._but = 0; a._ms = 450; });
+let lecteur = lecteurs[0];
+let enCours = { cle: '', id: '', pause: false };     // l'ordre de la régie en cours, le morceau joué, et si la régie l'a mis en pause
+const volumeMusique = () => Math.max(0, Math.min(1, (etat && etat.volMusique) ?? 0.5));
+let dernierMixage = performance.now();
+setInterval(() => {
+  const v = volumeMusique(), t = performance.now(), dt = t - dernierMixage;
+  dernierMixage = t;
+  for (const a of lecteurs) {
+    const pas = dt / a._ms;
+    if (a._gain !== a._but) a._gain = a._gain < a._but ? Math.min(a._but, a._gain + pas) : Math.max(a._but, a._gain - pas);
+    const vol = v * Math.sin(a._gain * Math.PI / 2);      // courbe à puissance constante : pas de creux au milieu d'un enchaînement
+    if (Math.abs(a.volume - vol) > 0.0005) a.volume = vol;
+    if (a._but === 0 && a._gain === 0 && !a.paused) a.pause();
+  }
+}, 40);
+function couperMusique() {
+  lecteurs.forEach(a => { a.pause(); a._gain = 0; a._but = 0; });
+  enCours = { cle: '', id: '', pause: false };
 }
-lecteur.addEventListener('ended', () => {
-  const l = (etat && etat.playlist) || [];
-  if (!l.length) return;
-  if (etat.musique && etat.musique.boucle) { lecteur.currentTime = 0; lecteur.play().catch(() => {}); return; }   // morceau lié à une scène : en boucle
-  pisteLocale.idx = (pisteLocale.idx + 1) % l.length;
-  adresseLecteur = '';
-  if (chargerPiste(l[pisteLocale.idx])) lecteur.play().catch(() => {});
-});
-/* Le retour du studio se cale sur le live : un aperçu ouvert en cours de morceau (invité qui arrive, aperçu rechargé)
-   reprend au bon endroit au lieu de repartir du début. La sortie du live, elle, ne saute jamais. */
-let caleSur = '';
-function calerRetour(m) {
-  if (!PREVIEW || !m.t0) return;
-  const cle = m.n + ':' + m.idx + ':' + m.t0;
-  if (caleSur === cle) return;
-  const faire = () => {
-    const d = lecteur.duration, o = (+m.pos0 || 0) + (maintenantHote() - m.t0) / 1000;
-    caleSur = cle;
-    if (!(d > 0) || !isFinite(d) || !(o >= 0) || o > 6 * 3600) return;
-    const cible = m.boucle ? o % d : o;
-    if (cible < d - 1 && Math.abs(lecteur.currentTime - cible) > 1.2) lecteur.currentTime = cible;
-  };
-  if (lecteur.readyState >= 1) faire(); else lecteur.addEventListener('loadedmetadata', faire, { once: true });
+/* Lance un morceau à une position donnée. Si un autre joue, il s'éteint pendant que celui-ci monte. */
+function jouerId(id, depuis) {
+  const p = ((etat && etat.playlist) || []).find(x => x.id === id);
+  const adresse = adressePiste(p);
+  if (!adresse) return false;                    // fichier pas encore arrivé : on réessaie quand il est là
+  const enchaine = !lecteur.paused && lecteur._gain > 0;
+  if (enchaine) {
+    const sortant = lecteur;
+    sortant._but = 0; sortant._ms = FONDU_MUSIQUE;
+    lecteur = lecteurs[0] === sortant ? lecteurs[1] : lecteurs[0];
+  }
+  const a = lecteur;
+  a.pause();
+  a._gain = 0; a._but = 1; a._ms = enchaine ? FONDU_MUSIQUE : 450;
+  a.volume = 0;
+  a.src = adresse;
+  if (depuis > 0) a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration) && depuis < a.duration - 0.3) a.currentTime = depuis; }, { once: true });
+  a.play().catch(() => {});
+  enCours.id = id;
+  return true;
 }
+// fin d'un morceau : le suivant de la suite part aussitôt (une suite d'un seul morceau tourne en boucle)
+lecteurs.forEach(a => a.addEventListener('ended', () => {
+  if (a !== lecteur || !etat || !(etat.musique || {}).lecture) return;
+  const suite = suiteMusique(etat);
+  if (!suite.length) return;
+  const suivant = suite[(suite.indexOf(enCours.id) + 1) % suite.length];
+  if (suivant === enCours.id) { a.currentTime = 0; a.play().catch(() => {}); return; }
+  if (!jouerId(suivant, 0)) enCours.cle = '';
+}));
 function gererPlaylist() {
   if (!etat) return;
-  if (!musiqueIci()) { if (!lecteur.paused) lecteur.pause(); caleSur = ''; return; }   // au retour du son, on se recale sur le live
+  if (!musiqueIci()) { couperMusique(); return; }
   const l = etat.playlist || [], m = etat.musique || {};
   l.forEach(p => { if (!p.url) adressePiste(p); });     // prépare les fichiers avant d'en avoir besoin
-
-  if (!l.length) { lecteur.pause(); return; }
-  if (m.idx !== pisteLocale.idx || m.n !== pisteLocale.n) pisteLocale = { idx: m.idx, n: m.n };
-  const pret = chargerPiste(l[pisteLocale.idx] || l[0]);
-  const volume = Math.min(1, etat.volMusique ?? 0.5);
-  if (m.lecture && pret) {
-    if (fonduLecteur) { clearInterval(fonduLecteur); fonduLecteur = null; }
-    lecteur.volume = volume;
-    if (lecteur.paused) { calerRetour(m); lecteur.play().catch(() => {}); }
-  } else if (!lecteur.paused && !fonduLecteur) {
-    // arrêt en fondu, pour ne pas couper net au changement de scène
-    fonduLecteur = setInterval(() => {
-      lecteur.volume = Math.max(0, lecteur.volume - 0.07);
-      if (lecteur.volume <= 0.001) { clearInterval(fonduLecteur); fonduLecteur = null; lecteur.pause(); }
-    }, 50);
+  if (!l.length) { couperMusique(); return; }
+  // l'ordre de la régie : il change à chaque nouveau morceau ou nouvelle suite, pas à une pause ni à une reprise
+  const cle = [m.n, Array.isArray(m.suite) ? m.suite.join(',') : 'i' + m.idx, m.boucle ? 1 : 0].join(':');
+  if (!m.lecture) {
+    // pause : la musique s'éteint en fondu et reste où elle est
+    if (cle === enCours.cle) enCours.pause = true;
+    lecteurs.forEach(a => { if (a._but !== 0) { a._but = 0; a._ms = 700; } });
+    return;
   }
+  if (cle === enCours.cle && enCours.pause && lecteur.src) {
+    // reprise : là où elle s'était arrêtée
+    enCours.pause = false;
+    lecteur._but = 1; lecteur._ms = 450;
+    if (lecteur.paused) lecteur.play().catch(() => {});
+    return;
+  }
+  if (cle === enCours.cle && !lecteur.paused) return;       // déjà en train de jouer cet ordre
+  // nouvel ordre (ou lecture qui n'a pas pu partir) : on se place là où en est le live.
+  // Une page ouverte en cours de route (invité qui arrive, aperçu rechargé) tombe ainsi sur le bon morceau, au bon endroit.
+  const pos = positionMusique(etat, maintenantHote());
+  if (!pos) return;
+  const depuis = pos.connu && (pos.id !== suiteMusique(etat)[0] || pos.t > 1.5) ? pos.t : 0;
+  if (jouerId(pos.id, depuis)) { enCours.cle = cle; enCours.pause = false; }
 }
 
 /* ----- Compte à rebours de l'intro ----- */
