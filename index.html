@@ -7,7 +7,7 @@
 <title>OBSeb</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/app.css?v=888f0576">
+<link rel="stylesheet" href="css/app.css?v=1244273f">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -265,11 +265,12 @@
   .nuancier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .nuance { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--ui-muted); cursor: pointer; }
   .nuance input[type=color] { width: 100%; height: 44px; border-radius: 10px; padding: 3px; cursor: pointer; }
-  .polices { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
-  .police { text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--ui-panel2); font-weight: 400; }
+  .polices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 260px; overflow-x: hidden; overflow-y: auto; padding: 2px 6px 2px 2px; }
+  .police { min-width: 0; text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--ui-panel2); font-weight: 400; }
   .police span { display: block; font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .police small { display: block; font-family: Inter, sans-serif; font-size: 11px; color: var(--ui-muted); margin-top: 4px; }
   .police.actif { outline: 2px solid var(--ui-accent); }
+  .police.actif small { color: inherit; opacity: .7; }
   .depots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .depot { position: relative; border: 1.5px dashed var(--ui-line2); border-radius: 12px; padding: 12px; display: grid; justify-items: center; text-align: center; gap: 2px; cursor: pointer; transition: border-color .15s, background .15s; }
   .depot:hover, .depot.survol { border-color: var(--ui-accent); background: var(--ui-panel2); }
