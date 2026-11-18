@@ -752,6 +752,63 @@ function dispositionPartageV(ids, sources, zone = ZONE_V, gap = 18) {
   return r;
 }
 
+/* ---------- Modes Réaction et Jeu ----------
+   Ce qui est partagé (bande-annonce, jeu) prend tout l'écran, bord à bord ; les caméras se posent par-dessus.
+   etat.reaction = { coin: 'hg'|'hd'|'bg'|'bd', taille: 'p'|'m'|'g', cote: 'haut'|'bas' (vertical : où va le partage) }.
+   Horizontal : caméra dans un coin, « m » = environ un huitième de l'écran (la moitié d'un quart).
+   Vertical : l'écran coupé en deux, le partage d'un côté (en entier, jamais rogné) et les caméras de l'autre.
+   Avec plusieurs sources, elles se partagent la place du partage (2 côte à côte, 3-4 en carré). */
+const MODES = ['plateau', 'reaction', 'jeu'];
+const TAILLES_REACTION = { p: 0.29, m: 0.354, g: 0.43 };   // part de la largeur (0,354² ≈ 1/8 de l'écran)
+function reglageReaction(st) {
+  const r = (st && st.reaction) || {};
+  return {
+    coin: ['hg', 'hd', 'bg', 'bd'].includes(r.coin) ? r.coin : 'bd',
+    taille: TAILLES_REACTION[r.taille] ? r.taille : 'm',
+    cote: r.cote === 'bas' ? 'bas' : 'haut'
+  };
+}
+function modeDe(st) { return st && MODES.includes(st.mode) ? st.mode : 'plateau'; }
+function sourcesPlein(sources, z, gap) {
+  const r = {}, n = sources.length;
+  if (n === 1) r[sources[0]] = { x: z.x, y: z.y, w: z.w, h: z.h };
+  else if (n === 2) { const w = (z.w - gap) / 2; sources.forEach((k, i) => { r[k] = fit169(z.x + i * (w + gap), z.y, w, z.h); }); }
+  else if (n > 2) {
+    const w = (z.w - gap) / 2, h = (z.h - gap) / 2;
+    sources.slice(0, 4).forEach((k, i) => {
+      const dx = n === 3 && i === 2 ? (w + gap) / 2 : 0;
+      r[k] = { x: z.x + (i % 2) * (w + gap) + dx, y: z.y + Math.floor(i / 2) * (h + gap), w, h };
+    });
+  }
+  return r;
+}
+function dispositionReaction(ids, sources, st, vertical = false) {
+  const reg = reglageReaction(st), r = {};
+  if (vertical) {
+    const W = SCENE_VW, H = SCENE_VH, moitie = H / 2;
+    if (!ids.length) return sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12);
+    const zp = { x: 0, y: reg.cote === 'haut' ? 0 : moitie, w: W, h: moitie };
+    const zc = { x: 0, y: reg.cote === 'haut' ? moitie : 0, w: W, h: moitie };
+    Object.assign(r, sourcesPlein(sources, zp, 12));
+    const m = Math.min(ids.length, 6), nc = m <= 1 ? 1 : m <= 4 ? 2 : 3;
+    Object.assign(r, grilleCellules(ids.slice(0, m), zc.x, zc.y, zc.w, zc.h, 8, [nc, Math.ceil(m / nc)]));
+    return r;
+  }
+  const W = SCENE_W, H = SCENE_H, marge = 36, e = 18;
+  Object.assign(r, sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12));
+  const m = Math.min(ids.length, 4);
+  if (!m) return r;
+  // à plusieurs, les caméras se rangent côte à côte depuis le coin, un peu plus petites
+  const k = m === 1 ? 1 : m === 2 ? 0.78 : 0.62;
+  const w = Math.round(W * TAILLES_REACTION[reg.taille] * k), h = Math.round(w * 9 / 16);
+  const droite = reg.coin[1] === 'd', bas = reg.coin[0] === 'b';
+  ids.slice(0, m).forEach((id, i) => {
+    const x = droite ? W - marge - (i + 1) * w - i * e : marge + i * (w + e);
+    r[id] = { x, y: bas ? H - marge - h : marge, w, h, z: 2 };
+  });
+  return r;
+}
+
 /* Pendant un quiz, trois dispositions au choix (etat.quiz.dispo) :
    « centre » (par défaut) : jusqu'à 4 personnes, les caméras en rangée et la question juste dessous, de la même largeur ;
                              à partir de 5, la question au milieu, les caméras réparties au-dessus et en dessous ;

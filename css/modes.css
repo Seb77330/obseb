@@ -1,0 +1,78 @@
+/* OBSeb : régie, modes du studio (Plateau, Réaction, Jeu) et bouton Enregistrer */
+
+/* ----- Modes ----- */
+.modes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 3px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-input); }
+.modes button { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; padding: 7px 6px; border: 0; background: none; font-size: 13px; font-weight: 500; border-radius: 7px; color: var(--ui-muted); }
+.modes button b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.modes button .ic { width: 17px; height: 17px; flex: none; }
+.modes button:hover { color: var(--ui-text); background: var(--ui-panel2); }
+.modes button.actif { color: var(--ui-text); background: var(--ui-panel2); box-shadow: inset 0 0 0 1.5px var(--ui-accent); }
+
+.mode-reglages { flex: none; display: grid; gap: 8px; margin-left: 72px; padding: 9px 10px; border-radius: 10px; background: color-mix(in srgb, var(--ui-accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--ui-accent) 28%, var(--ui-line)); }
+.mode-reglages[hidden] { display: none; }
+.md-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.md-tit { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ui-muted); }
+.md-tit:not(:first-child) { margin-left: 6px; }
+.md-coins, .md-tailles, .md-cotes { display: flex; gap: 4px; }
+.md-coins button { padding: 3px; border-radius: 6px; background: none; border: 1px solid transparent; line-height: 0; }
+.md-coins svg { width: 34px; height: 20px; display: block; }
+.md-coins .f, .md-cotes .f { fill: none; stroke: var(--ui-muted); stroke-width: 1.5; }
+.md-coins .q, .md-cotes .q { fill: var(--ui-muted); }
+.md-cotes .p { fill: color-mix(in srgb, var(--ui-muted) 35%, transparent); }
+.md-coins button:hover, .md-cotes button:hover { border-color: var(--ui-line2); }
+.md-coins button.actif, .md-cotes button.actif { border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+.md-coins button.actif .q, .md-cotes button.actif .q { fill: var(--ui-accent); }
+.md-tailles button { padding: 4px 9px; font-size: 12px; border-radius: 6px; background: none; border: 1px solid var(--ui-line); color: var(--ui-muted); }
+.md-tailles button.actif { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+.md-cotes button { display: flex; align-items: center; gap: 5px; padding: 3px 7px 3px 4px; font-size: 12px; border-radius: 6px; background: none; border: 1px solid transparent; color: var(--ui-muted); }
+.md-cotes svg { width: 13px; height: 21px; flex: none; }
+.md-cotes button.actif { color: var(--ui-text); }
+.md-appel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--ui-muted); }
+.md-appel span { margin-right: 2px; }
+
+/* ----- Enregistrer ----- */
+.rec-zone { margin-right: 6px; }
+.btn-rec { display: flex; align-items: center; gap: 8px; border: 1px solid var(--ui-line2); color: var(--ui-text); background: none; font-weight: 500; padding: 8px 12px; }
+.btn-rec:hover { border-color: var(--ui-red); }
+.btn-rec i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ui-red); box-sizing: border-box; }
+.btn-rec.on { border-color: var(--ui-red); color: var(--ui-red); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.btn-rec.on i { background: var(--ui-red); animation: pouls 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .btn-rec.on i { animation: none; } }
+.rec-pop { width: 360px; padding: 12px; }
+.rec-pop h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+.rec-formats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border: 1px solid var(--ui-line); border-radius: 9px; background: var(--ui-input); margin-bottom: 10px; }
+.rec-formats button { border: 0; background: none; padding: 6px; font-size: 12.5px; border-radius: 6px; color: var(--ui-muted); }
+.rec-formats button.actif { background: var(--ui-panel2); color: var(--ui-text); box-shadow: inset 0 0 0 1.5px var(--ui-accent); }
+.rec-nom { display: grid; gap: 4px; margin-bottom: 8px; }
+.rec-nom input { width: 100%; box-sizing: border-box; }
+.rec-ligne { display: flex; align-items: center; gap: 9px; padding: 6px 2px; border-bottom: 1px solid var(--ui-line); }
+.rec-ligne b { flex: 1; font-weight: 500; }
+.rec-ligne small { color: var(--ui-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.rec-ligne i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.rec-ok { background: #3ecf8e; } .rec-att { background: var(--ui-muted); opacity: .6; }
+.rec-pt { background: var(--ui-red); animation: pouls 1.6s ease-in-out infinite; }
+.rec-err { color: var(--ui-red); font-size: 12px; margin: 4px 0; }
+.rec-pop .menu-bas { display: grid; gap: 8px; margin-top: 12px; }
+.rec-pop .menu-bas button:disabled { opacity: .45; cursor: not-allowed; }
+.rec-liste { margin-top: 12px; border-top: 1px solid var(--ui-line); padding-top: 8px; }
+.rec-liste summary { cursor: pointer; font-size: 13px; font-weight: 500; }
+.rec-fichiers { display: grid; gap: 4px; margin-top: 8px; max-height: 220px; overflow: auto; }
+.rec-fichier { display: flex; align-items: center; gap: 6px; padding: 5px 0; }
+.rec-fichier span { flex: 1; min-width: 0; display: grid; }
+.rec-fichier b { font-weight: 500; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-fichier small { color: var(--ui-muted); font-size: 11.5px; }
+
+/* ----- Téléphone : pas de fenêtre d'enregistrement (le navigateur ne sait pas capturer l'onglet) ----- */
+@media (max-width: 1000px) {
+  #col-programme .mode-reglages { margin: 0 10px; }
+  .rec-zone { display: none; }
+  .modes button { font-size: 12px; gap: 5px; }
+}
+
+/* la fenêtre « Enregistrer » est un menu : ses boutons reprennent une vraie forme de bouton */
+.rec-pop .menu-bas button { text-align: center; background: var(--ui-panel2); border: 1px solid var(--ui-line); padding: 10px 12px; font-weight: 600; border-radius: 8px; }
+.rec-pop .menu-bas button.primaire { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-sur-accent); }
+.rec-pop .menu-bas #rec-go, .rec-pop .menu-bas .rec-stop { background: var(--ui-red); border-color: var(--ui-red); color: #fff; }
+.rec-pop .rec-formats button { text-align: center; padding: 6px; }
+.rec-pop .rec-fichier button { width: auto; padding: 5px 9px; text-align: center; border: 1px solid var(--ui-line); border-radius: 6px; font-size: 12px; }
+.rec-pop .rec-fichier .rec-suppr { color: var(--ui-muted); }

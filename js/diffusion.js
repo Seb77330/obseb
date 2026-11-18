@@ -25,9 +25,9 @@
   ui.id = 'diffusion-ui';
   ui.innerHTML = `<div class="df-carte">
       <div class="df-marque">OBS<b>eb</b> · fenêtre de diffusion</div>
-      <h1 id="df-titre">Prête à envoyer ton live</h1>
+      <h1 id="df-titre">Prête à envoyer ou enregistrer</h1>
       <p id="df-texte">Clique sur le bouton, puis sur <b>Partager</b> dans la fenêtre du navigateur. Laisse « Partager aussi le son de l'onglet » coché.</p>
-      <button id="df-go" class="df-bouton">Autoriser l'envoi depuis cette fenêtre</button>
+      <button id="df-go" class="df-bouton">Autoriser cette fenêtre</button>
       <ul class="df-conseils">
         <li>Garde cette fenêtre ouverte pendant tout le live. Tu peux la mettre derrière la régie, mais ne la réduis pas.</li>
         <li>Plus elle est grande, plus l'image est nette : agrandis-la au maximum, ou passe en plein écran sur un deuxième écran.</li>
@@ -99,7 +99,7 @@
       });
     } catch (e) {
       bouton.disabled = false;
-      dire('Envoi pas autorisé', 'Sans ton accord, le navigateur ne peut pas envoyer le live. Clique à nouveau et choisis <b>Partager</b>.');
+      dire('Fenêtre pas autorisée', 'Sans ton accord, le navigateur ne peut ni envoyer ni enregistrer le live. Clique à nouveau et choisis <b>Partager</b>.');
       return publier();
     }
     const piste = capture.getVideoTracks()[0];
@@ -117,11 +117,11 @@
     } catch (e) { mode = ''; }
     // sans capture de la scène seule, le panneau serait à l'image : on le cache
     document.body.classList.toggle('df-discret', mode !== 'element');
-    piste.onended = () => { arreterTout('La capture a été arrêtée (bouton « Arrêter le partage » du navigateur).'); capture = null; publier(); };
+    piste.onended = () => { arreterRec(); arreterTout('La capture a été arrêtée (bouton « Arrêter le partage » du navigateur).'); capture = null; publier(); };
     sortie = normaliser(piste);
     sortie.audio = capture.getAudioTracks()[0] || null;
     try { verrouEcran = await navigator.wakeLock.request('screen'); } catch (e) { /* facultatif */ }
-    dire('Fenêtre prête', sortie.audio ? 'Retourne dans la régie et démarre le direct. Rien ne part avant.'
+    dire('Fenêtre prête', sortie.audio ? 'Retourne dans la régie : démarre le direct ou l\'enregistrement. Rien ne part et rien n\'est enregistré avant.'
       : 'Prête, mais <b>sans le son</b> : la case « Partager aussi le son de l\'onglet » était décochée. Clique sur « Arrêter le partage » puis recommence.');
     bouton.hidden = true;
     publier();
@@ -189,12 +189,81 @@
     publier();
   }, 2000);
 
+  /* ----- Enregistrement : la même image que le live, écrite dans un fichier sur ton PC -----
+     Les morceaux partent au fur et à mesure dans l'espace de stockage du site (sur le disque, pas en mémoire),
+     donc même un enregistrement de plusieurs heures ne remplit pas la mémoire. À l'arrêt, le fichier est
+     téléchargé tout seul (dossier Téléchargements) et reste dans « Mes enregistrements » de la régie. */
+  let rec = null;   // { recorder, ecrivain, nom, debut, octets, file, erreur }
+  let dernierRec = null;
+  function formatRec() {
+    const essais = ['video/mp4;codecs=avc1.640028,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    const t = essais.find(x => window.MediaRecorder && MediaRecorder.isTypeSupported(x)) || '';
+    return { type: t, ext: t.startsWith('video/mp4') ? 'mp4' : 'webm' };
+  }
+  async function dossierRec() {
+    const racine = await navigator.storage.getDirectory();
+    return racine.getDirectoryHandle('enregistrements', { create: true });
+  }
+  async function demarrerRec(nomVoulu) {
+    if (rec || !sortie) return;
+    const { type, ext } = formatRec();
+    if (!window.MediaRecorder) { dernierRec = { erreur: 'Ce navigateur ne sait pas enregistrer : utilise Chrome ou Edge.' }; return publier(); }
+    const nom = `${String(nomVoulu || 'OBSeb').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .,()'-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60) || 'OBSeb'} ${FORMAT === 'vertical' ? 'vertical' : 'horizontal'}.${ext}`;
+    let ecrivain = null, fichier = null;
+    try {
+      try { await navigator.storage.persist(); } catch (e) { /* facultatif */ }
+      // le nom sur le disque est écrit sans accents ni espaces (certains systèmes les refusent) ; la régie le relit en clair
+      fichier = await (await dossierRec()).getFileHandle(encodeURIComponent(nom), { create: true });
+      ecrivain = await fichier.createWritable();
+    } catch (e) { ecrivain = null; }       // pas d'espace de stockage : on garde en mémoire (moins long possible)
+    const morceaux = [];
+    const pistes = [sortie.video, sortie.audio].filter(Boolean);
+    const h = tailleSortie().h > tailleSortie().w ? tailleSortie().w : tailleSortie().h;
+    let recorder;
+    try {
+      recorder = new MediaRecorder(new MediaStream(pistes), Object.assign({ videoBitsPerSecond: h >= 1080 ? 12000000 : 7000000, audioBitsPerSecond: 192000 }, type ? { mimeType: type } : {}));
+    } catch (e) { dernierRec = { erreur: 'Impossible de démarrer l\'enregistrement : ' + e.message }; if (ecrivain) ecrivain.abort().catch(() => {}); return publier(); }
+    rec = { recorder, ecrivain, fichier, nom, debut: Date.now(), octets: 0, morceaux, ecritures: Promise.resolve(), type: type || 'video/webm' };
+    recorder.ondataavailable = ev => {
+      if (!ev.data || !ev.data.size || !rec) return;
+      const r = rec; r.octets += ev.data.size;
+      if (r.ecrivain) r.ecritures = r.ecritures.then(() => r.ecrivain.write(ev.data)).catch(err => { r.erreur = 'Disque plein ou fichier refusé : ' + err.message; });
+      else r.morceaux.push(ev.data);
+    };
+    recorder.onstop = () => terminerRec();
+    recorder.onerror = ev => { if (rec) rec.erreur = (ev.error && ev.error.message) || 'Erreur pendant l\'enregistrement'; };
+    recorder.start(2000);    // un morceau toutes les 2 s
+    publier();
+  }
+  function arreterRec() { if (rec && rec.recorder.state !== 'inactive') rec.recorder.stop(); }
+  async function terminerRec() {
+    const r = rec; if (!r) return;
+    await r.ecritures;
+    let blob = null;
+    try {
+      if (r.ecrivain) { await r.ecrivain.close(); blob = await r.fichier.getFile(); }
+      else blob = new Blob(r.morceaux, { type: r.type });
+    } catch (e) { r.erreur = 'Le fichier n\'a pas pu être fermé : ' + e.message; }
+    rec = null;
+    dernierRec = { nom: r.nom, octets: blob ? blob.size : r.octets, duree: Date.now() - r.debut, erreur: r.erreur || '', fin: Date.now() };
+    if (blob && blob.size) telecharger(blob, r.nom);
+    publier();
+  }
+  function telecharger(blob, nom) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = nom;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 120000);
+  }
+
   function etat() {
     const s = sortie && sortie.video.getSettings ? sortie.video.getSettings() : {};
     const src = capture ? capture.getVideoTracks()[0].getSettings() : {};
     return {
       type: 'etat', format: FORMAT, t: Date.now(),
       phase: !capture ? 'attente' : enDirect ? 'direct' : 'prete',
+      rec: rec ? { actif: true, debut: rec.debut, octets: rec.octets, nom: rec.nom, erreur: rec.erreur || '' } : null,
+      dernierRec,
       son: !!(sortie && sortie.audio), mode,
       source: src.width ? { w: src.width, h: src.height } : null,
       sortie: Object.assign(tailleSortie(), s.frameRate ? { fps: Math.round(s.frameRate) } : {}),
@@ -207,8 +276,8 @@
     document.body.classList.toggle('en-cours', e.phase === 'direct');
     try { canal.postMessage(e); } catch (err) { /* rien */ }
     const pas = ui.querySelector('#df-pastille');
-    pas.hidden = !enDirect;
-    pas.textContent = enDirect ? `● En direct · ${e.cibles.filter(c => c.statut === 'en-direct').length}/${e.cibles.length}` : '';
+    pas.hidden = !enDirect && !rec;
+    pas.textContent = [enDirect ? `● En direct · ${e.cibles.filter(c => c.statut === 'en-direct').length}/${e.cibles.length}` : '', rec ? '⏺ Enregistrement' : ''].filter(Boolean).join('   ');
     ui.querySelector('#df-cibles').innerHTML = e.cibles.map(c => `<div class="df-cible ${c.statut}"><b>${esc(c.nom)}</b><span>${{ connexion: 'connexion…', reconnexion: 'reconnexion…', 'en-direct': c.mesure && c.mesure.kbps ? `${(c.mesure.kbps / 1000).toFixed(1)} Mb/s · ${c.mesure.h}p` : 'en direct', erreur: 'refusé' }[c.statut] || ''}</span>${c.erreur && c.statut !== 'en-direct' ? `<small>${esc(c.erreur)}</small>` : ''}</div>`).join('');
   }
 
@@ -220,7 +289,7 @@
       if (m.hauteur || m.debit) {
         const avant = reglages.hauteur;
         reglages = { hauteur: m.hauteur === 720 ? 720 : 1080, debit: Math.min(9000000, Math.max(1500000, +m.debit || 6000000)) };
-        if (avant !== reglages.hauteur) {   // nouvelle taille : on refait l'image fixe, et on la glisse dans les envois en cours sans couper
+        if (avant !== reglages.hauteur && !rec) {   // nouvelle taille (jamais pendant un enregistrement : le fichier serait coupé) : on refait l'image fixe, et on la glisse dans les envois en cours sans couper
           const audio = sortie.audio, ancienne = sortie;
           sortie = normaliser(capture.getVideoTracks()[0]); sortie.audio = audio;
           for (const c of cibles.values()) {
@@ -243,12 +312,16 @@
       dire('Direct terminé', 'Tu peux fermer cette fenêtre, ou la garder pour le prochain direct.');
       return publier();
     }
+    if (m.type === 'rec') {
+      if (m.action === 'start') demarrerRec(m.nom); else if (m.action === 'stop') arreterRec();
+      return publier();
+    }
     if (m.type === 'fermer') { arreterTout(); if (capture) capture.getTracks().forEach(t => t.stop()); window.close(); }
   };
   // la régie sait tout de suite que la fenêtre est là, puis toutes les 2 s (battement de cœur)
   publier();
-  addEventListener('beforeunload', e => { if (enDirect) { e.preventDefault(); e.returnValue = ''; } });
-  addEventListener('pagehide', () => { arreterTout(); try { canal.postMessage({ type: 'etat', format: FORMAT, phase: 'fermee', t: Date.now(), cibles: [] }); } catch (e) { /* rien */ } });
+  addEventListener('beforeunload', e => { if (enDirect || rec) { e.preventDefault(); e.returnValue = ''; } });
+  addEventListener('pagehide', () => { arreterTout(); arreterRec(); try { canal.postMessage({ type: 'etat', format: FORMAT, phase: 'fermee', t: Date.now(), cibles: [] }); } catch (e) { /* rien */ } });
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && capture && (!verrouEcran || verrouEcran.released)) { try { verrouEcran = await navigator.wakeLock.request('screen'); } catch (e) { /* facultatif */ } }
   });

@@ -121,7 +121,7 @@ function creerSource(src) {
   const cle = cleSource(src);
   if (src.type === 'ecran') {
     const t = creerTuile(src.ref, src.nom || 'Partage', { ecran: true, demo: !!src.demo });
-    if (src.demo) t.el.querySelector('.attente').textContent = src.nom;
+    if (src.demo) { t.el.querySelector('.attente').textContent = src.nom; t.el.classList.toggle('jeu', /jeu|console/i.test(src.nom)); }
     return t;
   }
   if (sourcesEl.has(cle)) return sourcesEl.get(cle);
@@ -146,7 +146,9 @@ function creerSource(src) {
     const f = document.createElement('iframe'); f.allow = 'autoplay *; fullscreen *; encrypted-media *';
     // sécurité : la page affichée ne peut ni changer l'adresse du live, ni ouvrir de fenêtres, ni lire d'où elle est affichée
     f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms');
-    f.referrerPolicy = 'no-referrer';
+    // les lecteurs vidéo (YouTube surtout) refusent de jouer sans savoir sur quel site ils sont (erreur 153) :
+    // on leur donne seulement l'adresse du site, jamais celle de la page (qui contient la session)
+    f.referrerPolicy = lecteur ? 'strict-origin' : 'no-referrer';
     const refWeb = /^https:\/\//i.test(String(src.ref || '')) ? src.ref : 'about:blank';
     // un lecteur vidéo reste muet dans les aperçus : son son ne part que dans la sortie du live
     f.src = lecteur && PREVIEW ? refWeb + (refWeb.includes('?') ? '&' : '?') + (refWeb.includes('twitch') ? 'muted=true' : refWeb.includes('vimeo') ? 'muted=1' : 'mute=1') : refWeb;
@@ -304,7 +306,13 @@ function appliquerEtat(st) {
   const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(MUR ? ZONE_MUR : ZONE, 720));
   const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
   const zoneScene = scene === 'watch' ? zoneWatch : zone;
+  // modes Réaction et Jeu : ce qui est partagé prend tout l'écran, les caméras se posent dans un coin (ou dessous en vertical)
+  const pleinEcran = avecPartage && !quizEnCours && modeDe(st) !== 'plateau';
+  document.body.classList.toggle('plein-partage', pleinEcran);
+  document.body.dataset.mode = pleinEcran ? modeDe(st) : '';
+  if (pleinEcran) document.body.dataset.coin = reglageReaction(st).coin;
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre')
+    : pleinEcran ? dispositionReaction(ids, clesActives, st, VERTICAL)
     : avecPartage ? (VERTICAL ? dispositionPartageV(ids, clesActives, zoneScene) : dispositionPartage(ids, clesActives, zoneScene))
     : VERTICAL ? dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR })
     : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR });
@@ -877,7 +885,8 @@ if (DEMO) {
   st.noms = {}; st.onair = [];
   for (let i = 0; i < Math.min(DEMO, 18); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
   const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
-  st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
+  st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: Q.get('srcnom') || 'Source ' + (i + 1), actif: true, demo: true }));
+  if (Q.get('mode')) { st.mode = Q.get('mode'); st.reaction = { coin: Q.get('coin') || 'bd', taille: Q.get('taille') || 'm', cote: Q.get('cote') || 'haut' }; }
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));

@@ -620,6 +620,7 @@
     #col-sources .colonne-corps, .onglet { max-width: 720px; margin: 0 auto; }
   }
 </style>
+<link rel="stylesheet" href="css/modes.css?v=8b8260cd">
 <link rel="stylesheet" href="css/regie-leger.css?v=9f3f4b70">
 </head>
 <body>
@@ -660,6 +661,10 @@
         <div class="ligne-boutons inv-ligne"><input type="text" id="inv-lien" readonly aria-label="Lien des invités"><button id="inv-copier">Copier</button></div>
         <button class="lien-bouton" id="inv-essai">Voir ce que verra ton invité</button>
       </div>
+    </div>
+    <div class="direct-zone rec-zone">
+      <button id="btn-rec" class="btn-rec" title="Enregistrer une vidéo sur ton PC, avec ou sans direct"><i></i><span>Enregistrer</span></button>
+      <div class="menu rec-pop" id="rec-pop" hidden></div>
     </div>
     <div class="direct-zone">
       <button id="btn-direct" class="btn-direct"><i></i><span>Démarrer le direct</span></button>
@@ -713,6 +718,11 @@
       </div>
       <div class="colonne-corps">
         <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe><button class="cam-appel" id="cam-appel" hidden title="Ta caméra n'est pas encore partie dans le live : l'aperçu attend"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 10.5l6-3.5v10l-6-3.5"/></svg><span>Démarrer ma caméra</span></button></div></div>
+        <div class="rangee" id="rangee-mode">
+          <span class="etiquette">Mode</span>
+          <div class="modes" id="modes" role="group" aria-label="Mode du studio"></div>
+        </div>
+        <div class="mode-reglages" id="mode-reglages" hidden></div>
         <div class="rangee">
           <span class="etiquette">Scènes</span>
           <div class="scenes" id="scenes" role="group" aria-label="Scène à l'antenne"></div>
@@ -1095,7 +1105,7 @@
 </div>
 <script src="js/vendor/qrcode.js?v=105f38a7"></script>
 <script src="js/effets.js?v=4095499a"></script>
-<script src="js/common.js?v=002689b9"></script>
+<script src="js/common.js?v=e651f369"></script>
 <script src="js/reglages-media.js?v=8a5c75cc"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/regie.js?v=8a913faa"></script>
@@ -1104,6 +1114,7 @@
 <script src="js/regie-habillages.js?v=29aeb23e"></script>
 <script src="js/regie-scenes.js?v=a6a58cf2"></script>
 <script src="js/regie-sources.js?v=5e3fcea7"></script>
+<script src="js/regie-modes.js?v=547f8a55"></script>
 <script src="js/regie-musique.js?v=c6714f68"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>
@@ -1112,6 +1123,7 @@
 <script src="js/regie-comptes.js?v=06661441"></script>
 <script src="js/whip.js?v=7130987e"></script>
 <script src="js/regie-diffusion.js?v=57e2cebc"></script>
+<script src="js/regie-enregistrer.js?v=e04446de"></script>
 <script src="js/regie-recherche.js?v=6a30168b"></script>
 <script src="js/regie-direct.js?v=ee3b0d60"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
@@ -1121,7 +1133,7 @@
 <script src="js/regie-st.js?v=211f6618"></script>
 <script src="js/regie-securite.js?v=63a7bf74"></script>
 <script src="js/aide-config.js?v=a60d146a"></script>
-<script src="js/aide-faq.js?v=0725b712"></script>
+<script src="js/aide-faq.js?v=a09cf167"></script>
 <script src="js/aide.js?v=b4477da0" data-place="regie"></script>
 </body>
 </html>
