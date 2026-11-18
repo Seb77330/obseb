@@ -1,0 +1,37 @@
+/* OBSeb : régie, choix du visuel de l'intro et de l'outro (onglet Titres) */
+.hb-formule { font-weight: 500; letter-spacing: 0; text-transform: none; margin-left: 6px; color: var(--ui-muted); opacity: .8; }
+.hb-apercu { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #000; border: 1px solid var(--ui-line); margin-bottom: 8px; }
+.hb-apercu iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+.hb-apercu-nom { position: absolute; left: 8px; bottom: 8px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; }
+.hb-choix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; border-radius: 10px; }
+.hb-choix.eclair { animation: hb-eclair 1.2s ease; }
+@keyframes hb-eclair { 0%, 60% { box-shadow: 0 0 0 3px var(--ui-accent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+.hb-carte {
+  position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 4px 4px 5px; min-width: 0;
+  border-radius: 9px; border: 1px solid var(--ui-line); background: var(--ui-panel2); color: var(--ui-text); cursor: pointer; text-align: center;
+  transition: border-color .15s, transform .15s;
+}
+.hb-carte:hover { border-color: var(--ui-line2); transform: translateY(-1px); }
+.hb-carte.actif { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent) inset; }
+.hb-carte.hb-vu:not(.actif) { border-style: dashed; border-color: var(--ui-muted); }
+.hb-carte b { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hb-carte em { position: absolute; top: 7px; right: 7px; font-style: normal; font-size: 9px; font-weight: 700; letter-spacing: .04em; padding: 1px 5px; border-radius: 4px; background: rgba(0,0,0,.65); color: #fff; }
+.hb-carte.verrou .hb-vig { opacity: .45; filter: grayscale(.6); }
+.hb-carte.verrou b { color: var(--ui-muted); }
+.hb-vig { display: block; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: #0d0d10; }
+.hb-vig svg { display: block; width: 100%; height: 100%; }
+.hb-vig .t { fill: #e9e9ee; } .hb-vig .a { fill: var(--ui-accent); } .hb-vig .f { fill: #3a3a44; } .hb-vig .v { fill: rgba(255,255,255,.08); stroke: rgba(255,255,255,.35); stroke-width: .6; }
+.hb-vig .l { fill: none; stroke: #c9c9d2; stroke-width: 1; } .hb-vig .l.d { stroke-dasharray: 1.5 2; stroke: #777; }
+.hb-vig .s { fill: none; stroke: var(--ui-accent); stroke-width: 2; stroke-linecap: round; }
+.hb-vig .b { opacity: .55; } .hb-vig .n { fill: #000; } .hb-vig .r { fill: #9c1a28; } .hb-vig .m rect { fill: #2c2c34; } .hb-vig .m rect.a { fill: var(--ui-accent); opacity: .7; }
+.hb-carte:hover .hb-vig .s, .hb-carte.actif .hb-vig .s { animation: hb-vig-tourne 2s linear infinite; transform-origin: 32px 18px; }
+@keyframes hb-vig-tourne { to { transform: rotate(1turn); } }
+.hb-compte { margin-top: 12px; padding: 10px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-panel2); }
+.hb-compte-tete { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hb-compte-tete .etiquette { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
+#hb-reste { font: 600 13px 'JetBrains Mono', monospace; color: var(--ui-muted); }
+#hb-reste.en-cours { color: var(--ui-accent); } #hb-reste.fini { color: var(--ui-green); }
+.hb-pre { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.hb-pre button { flex: 1 1 0; min-width: 0; padding: 5px 2px; white-space: nowrap; }
+.hb-sep { width: 1px; height: 22px; background: var(--ui-line); margin: 0 2px; }
+@media (max-width: 1000px) { .hb-choix { grid-template-columns: repeat(4, 1fr); } .hb-sep { display: none; } }

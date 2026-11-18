@@ -184,14 +184,21 @@ $('#bandeau').oninput = e => { etat.bandeau = e.target.value; envoyerBientot(); 
 $('#message').oninput = e => { etat.message = e.target.value; envoyerBientot(); };
 function envoyerBientot() { clearTimeout(envoyerBientot.t); envoyerBientot.t = setTimeout(envoyer, 250); }
 
-$$('[data-minutes]').forEach(b => b.onclick = () => { etat.fin = Date.now() + b.dataset.minutes * 60000; envoyer(); toast(`Compte à rebours : ${b.dataset.minutes} min`); });
+$$('[data-minutes]').forEach(b => b.onclick = () => { etat.debutCompte = Date.now(); etat.fin = etat.debutCompte + b.dataset.minutes * 60000; envoyer(); toast(`Compte à rebours : ${b.dataset.minutes} min`); });
+/* « + » : on ajoute (ou enlève) du temps au compte en cours ; sans compte, on en démarre un */
+$$('[data-ajout]').forEach(b => b.onclick = () => {
+  const d = +b.dataset.ajout * 1000, now = Date.now();
+  if (!etat.fin || etat.fin <= now) { if (d <= 0) return; etat.debutCompte = now; etat.fin = now + d; }
+  else { etat.fin = Math.max(now + 5000, etat.fin + d); if (!etat.debutCompte || etat.debutCompte > now) etat.debutCompte = now; }
+  envoyer();
+});
 $('#btn-heure').onclick = () => {
   const v = $('#heure-debut').value; if (!v) return toast("Choisis d'abord une heure");
   const [h, m] = v.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0);
   if (d < Date.now()) d.setDate(d.getDate() + 1);
-  etat.fin = d.getTime(); envoyer(); toast(`Compte à rebours jusqu'à ${v}`);
+  etat.debutCompte = Date.now(); etat.fin = d.getTime(); envoyer(); toast(`Compte à rebours jusqu'à ${v}`);
 };
-$('#btn-sans-compte').onclick = () => { etat.fin = null; envoyer(); };
+$('#btn-sans-compte').onclick = () => { etat.fin = null; etat.debutCompte = null; envoyer(); };
 $('#heure-debut').onchange = () => { if ($('#heure-debut').value) $('#btn-heure').click(); };
 /* Les parties qu'on déplie gardent leur état d'un live à l'autre */
 (() => {

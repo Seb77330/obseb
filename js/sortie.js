@@ -227,6 +227,7 @@ function appliquerEtat(st) {
     if (!t.ecran) t.el.querySelector('.nom').textContent = (st.noms || {})[t.id] || '';
   }
 
+  gererHabillages(st, scene);
   $('#intro').classList.toggle('cachee', scene !== 'intro');
   $('#fin').classList.toggle('cachee', scene !== 'fin');
   $('#tuiles').classList.toggle('cachee', !sceneCameras(scene));
@@ -723,13 +724,32 @@ function gererEffet() {
   jouerEffet(e.nom, Math.max(0, Math.min(1, etat.volEffets ?? 0.7)));
 }
 
+/* ----- Visuels de l'intro et de l'outro (js/habillages.js) ----- */
+let sceneAvant = null;
+function gererHabillages(st, scene) {
+  const ctx = { titre: session.titre, hote: session.hote, handle: session.handle || HANDLE_DEFAUT, vertical: VERTICAL,
+    invites: (st.onair || []).map(id => (st.noms || {})[id]).filter(Boolean) };
+  const avantI = $('#intro').dataset.style, avantF = $('#fin').dataset.style;
+  poserHabillage($('#intro'), 'intro', st.introStyle, ctx);
+  poserHabillage($('#fin'), 'fin', st.outroStyle, ctx);
+  if (avantI !== $('#intro').dataset.style || avantF !== $('#fin').dataset.style) ajusterTitres();
+  // l'animation d'entrée se rejoue chaque fois que la scène arrive à l'écran
+  if (scene !== sceneAvant && (scene === 'intro' || scene === 'fin')) rejouerEntree($(scene === 'intro' ? '#intro' : '#fin'));
+  sceneAvant = scene;
+}
+
 /* ----- Compte à rebours de l'intro ----- */
 function compteARebours() {
-  const el = $('#compte'), info = $('#intro-info');
-  if (!etat || !etat.fin) { el.textContent = ''; info.textContent = 'Installe-toi, on arrive'; return; }
+  const el = $('#compte'), info = $('#intro-info'), intro = $('#intro');
+  if (!etat || !etat.fin) { el.textContent = ''; info.textContent = 'Installe-toi, on arrive'; intro.dataset.compte = 'aucun'; intro.style.setProperty('--p', 0); return; }
   const ms = etat.fin - Date.now();
-  if (ms <= 0) { el.textContent = "C'est parti"; info.textContent = ''; return; }
+  // --p : la part du temps déjà écoulée (0 au départ, 1 à la fin), pour les anneaux et les barres des visuels
+  const total = etat.fin - (etat.debutCompte || etat.fin);
+  intro.style.setProperty('--p', total > 0 ? Math.min(1, Math.max(0, 1 - ms / total)).toFixed(4) : 0);
+  if (ms <= 0) { el.textContent = "C'est parti"; info.textContent = ''; intro.dataset.compte = 'fini'; return; }
+  intro.dataset.compte = 'en-cours';
   const s = Math.ceil(ms / 1000);
+  intro.dataset.tic = s % 2;
   const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60, d2 = n => String(n).padStart(2, '0');
   el.textContent = h ? `${h}:${d2(m)}:${d2(sec)}` : `${m}:${d2(sec)}`;   // 3:59:08 au-delà d'une heure
   info.textContent = 'Début du live dans';
@@ -811,6 +831,9 @@ if (DEMO) {
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   if (Q.get('qr')) st.qr = { lien: 'https://www.youtube.com/@sebastian_cineserie', titre: Q.get('qrtitre') ?? 'Abonne-toi à la chaîne', coin: Q.get('qr'), taille: Q.get('qrtaille') || 'm', ts: 1 };
+  if (Q.get('intro')) st.introStyle = Q.get('intro');
+  if (Q.get('outro')) st.outroStyle = Q.get('outro');
+  if (Q.get('compte')) { st.debutCompte = Date.now() - (+Q.get('ecoule') || 0) * 1000; st.fin = st.debutCompte + +Q.get('compte') * 1000; }
   st.message = 'Pose tes questions dans le chat';
   appliquerEtat(st);
 } else {

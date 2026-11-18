@@ -69,6 +69,8 @@ function actions() {
   add('Habillage', 'Modifier le message sous le titre', champ('habillage', '#message'), 'sous-titre');
   [2, 5, 10].forEach(m => add('Habillage', `Compte à rebours de ${m} minutes`, cliquer(`[data-minutes="${m}"]`), 'intro minuteur timer'));
   add('Habillage', 'Enlever le compte à rebours', cliquer('#btn-sans-compte'), 'minuteur');
+  add('Habillage', 'Ajouter une minute au compte à rebours', cliquer('[data-ajout="60"]'), 'plus minuteur timer temps');
+  if (typeof HABILLAGES === 'object') for (const sc of ['intro', 'fin']) HABILLAGES[sc].forEach(h => add('Habillage', `${sc === 'intro' ? 'Intro' : 'Outro'} : ${h.nom}`, () => { ouvrirChoixHabillage(sc); choisirHabillage(sc, h.id); }, `visuel style animation ${sc === 'fin' ? 'outro fin' : 'intro'} ${h.desc}`));
   // Bandeaux
   add('Bandeaux', 'Créer un bandeau', champ('bandeaux', '#bd-titre'), 'ajouter lower third');
   $$('#bd-liste .elt').forEach(el => add('Bandeaux', `Bandeau : ${el.querySelector('.txt').textContent.trim()}`, cliquer(el.querySelector('button')), 'afficher'));

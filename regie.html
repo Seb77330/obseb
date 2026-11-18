@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css?v=fe38768c">
+<link rel="stylesheet" href="css/regie-habillages.css?v=47ebf29b">
 <link rel="stylesheet" href="css/securite.css?v=e05cba99">
 <style>
   html, body { height: 100%; }
@@ -694,15 +695,28 @@
           <div><label class="champ" for="bandeau">Titre du bandeau</label><input type="text" id="bandeau"></div>
           <div><label class="champ" for="message">Message sous le titre</label><input type="text" id="message" placeholder="Ex. Pose tes questions dans le chat"></div>
         </div>
-        <h3 class="sous-titre">Compte à rebours de l'intro</h3>
-        <div class="ligne-boutons" style="align-items:center;flex-wrap:nowrap;gap:6px">
-          <button class="petit" data-minutes="2">2 min</button>
-          <button class="petit" data-minutes="5">5 min</button>
-          <button class="petit" data-minutes="10">10 min</button>
-          <input type="time" id="heure-debut" style="width:auto;min-width:0;flex:1;padding:5px 8px;font-size:13px" title="Ou jusqu'à une heure précise">
-          <button class="petit" id="btn-heure" hidden>Jusqu'à cette heure</button>
-          <button class="petit" id="btn-sans-compte" title="Sans compte à rebours">Aucun</button>
+        <h3 class="sous-titre">Intro <span class="hb-formule" id="hb-formule"></span></h3>
+        <div class="hb-apercu" title="L'intro choisie, en vrai, avec ton titre et tes couleurs"><iframe id="hb-apercu" tabindex="-1" title="Aperçu de l'intro"></iframe><span class="hb-apercu-nom" id="hb-apercu-nom"></span></div>
+        <div class="hb-choix" id="hb-intro" role="group" aria-label="Visuel de l'intro"></div>
+        <div class="hb-compte">
+          <div class="hb-compte-tete"><span class="etiquette">Compte à rebours</span><b id="hb-reste" title="Temps qui reste avant le début du live">Aucun</b></div>
+          <div class="ligne-boutons hb-pre">
+            <button class="petit" data-minutes="2" title="L'intro tourne en boucle pendant 2 minutes">2 min</button>
+            <button class="petit" data-minutes="5" title="L'intro tourne en boucle pendant 5 minutes">5 min</button>
+            <button class="petit" data-minutes="10" title="L'intro tourne en boucle pendant 10 minutes">10 min</button>
+            <span class="hb-sep"></span>
+            <button class="petit" data-ajout="-60" title="Enlever une minute">−1 min</button>
+            <button class="petit" data-ajout="30" title="Ajouter 30 secondes">+30 s</button>
+            <button class="petit primaire" data-ajout="60" title="Ajouter une minute">+1 min</button>
+          </div>
+          <div class="ligne-boutons" style="align-items:center;flex-wrap:nowrap;gap:6px;margin-top:6px">
+            <input type="time" id="heure-debut" style="width:auto;min-width:0;flex:1;padding:5px 8px;font-size:13px" title="Ou jusqu'à une heure précise">
+            <button class="petit" id="btn-heure" hidden>Jusqu'à cette heure</button>
+            <button class="petit" id="btn-sans-compte" title="Sans compte à rebours">Aucun</button>
+          </div>
         </div>
+        <h3 class="sous-titre">Outro</h3>
+        <div class="hb-choix" id="hb-fin" role="group" aria-label="Visuel de l'outro"></div>
 
       
         
@@ -1033,8 +1047,10 @@
 <script src="js/common.js?v=9b58cc66"></script>
 <script src="js/reglages-media.js?v=ff451cf3"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=09355e4e"></script>
-<script src="js/regie-scenes.js?v=4b4137a7"></script>
+<script src="js/regie.js?v=bfc10614"></script>
+<script src="js/habillages.js?v=cd70632a"></script>
+<script src="js/regie-habillages.js?v=43f8badf"></script>
+<script src="js/regie-scenes.js?v=2fa50846"></script>
 <script src="js/regie-sources.js?v=04c1ea9c"></script>
 <script src="js/regie-musique.js?v=8ca88ff4"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
@@ -1042,7 +1058,7 @@
 <script src="js/regie-qr.js?v=e4030782"></script>
 <script src="js/regie-chat.js?v=b8aad86c"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
-<script src="js/regie-recherche.js?v=29822e59"></script>
+<script src="js/regie-recherche.js?v=6bf10285"></script>
 <script src="js/regie-direct.js?v=351e17b3"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>

@@ -66,11 +66,15 @@ function dessinerScenes() {
   if (cle !== dessinerScenes.cle) {
     dessinerScenes.cle = cle;
     let i = 0;
-    const fixe = s => `<button data-scene="${s}" data-i="${i++}" title="${NOMS_SCENES[s][1]} (touche ${i})"><span class="sc-vue">${VIGNETTES[s]}</span><b${NOMS_SCENES[s][2] ? ` data-court="${NOMS_SCENES[s][2]}"` : ''}>${NOMS_SCENES[s][0]}</b><kbd>${i}</kbd></button>`;
+    const fixe = s => `<button data-scene="${s}" data-i="${i++}" title="${NOMS_SCENES[s][1]} (touche ${i})"><span class="sc-vue">${VIGNETTES[s]}</span><b${NOMS_SCENES[s][2] ? ` data-court="${NOMS_SCENES[s][2]}"` : ''}>${NOMS_SCENES[s][0]}</b><kbd>${i}</kbd>${s === 'intro' || s === 'fin' ? `<span class="sc-mod" data-hb="${s}" role="button" tabindex="0" title="Changer le visuel de ${s === 'intro' ? 'l\'intro' : 'l\'outro'}">✎</span>` : ''}</button>`;
     const plan = p => `<button data-plan="${esc(p.id)}" data-i="${i++}" title="${esc(p.nom)} : ${descriptionPlan(p)} (touche ${i})"><span class="sc-vue">${vignetteCadrage(p.layout, nbPlan(p))}</span><b>${esc(p.nom)}</b><kbd>${i}</kbd><span class="sc-mod" role="button" tabindex="0" title="Renommer cette scène, choisir qui elle montre, ou la supprimer">✎</span></button>`;
     $('#scenes').innerHTML = fixe('intro') + etat.plans.map(plan).join('') + fixe('partage') + fixe('watch') + fixe('fin')
       + (etat.plans.length < MAX_PLANS ? '<button class="sc-plus" id="sc-plus" title="Ajouter une scène de caméras : son nom, son cadrage, qui elle montre"><span class="sc-vue">+</span><b>Scène</b></button>' : '');
     $$('#scenes [data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene));
+    $$('#scenes [data-hb]').forEach(m => {
+      m.onclick = e => { e.stopPropagation(); ouvrirChoixHabillage(m.dataset.hb); };
+      m.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); m.click(); } };
+    });
     $$('#scenes [data-plan]').forEach(b => {
       b.onclick = () => allerPlan(b.dataset.plan);
       const m = b.querySelector('.sc-mod');
