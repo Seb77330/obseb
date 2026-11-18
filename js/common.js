@@ -266,6 +266,23 @@ function b64d(str) {
 function hashParams() {
   return new URLSearchParams(location.hash.replace(/^#/, ''));
 }
+/* ---------- Visuel du live (thème, titre) : la régie le change avant le direct ----------
+   La sortie OBS et les invités ont le visuel dans leur lien. Quand la régie le change, elle envoie sa version
+   (etat.visuel) ; une page qui a une autre version se recharge toute seule avec le nouveau visuel.
+   Les images importées depuis le PC (data:) ne voyagent pas : elles sont remplacées par « local:<empreinte> »
+   et chaque page garde la sienne si l'empreinte est la même. */
+function empreinteTexte(t) { let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + t.length.toString(36); }
+function jsonTrie(o) {
+  if (Array.isArray(o)) return '[' + o.map(jsonTrie).join(',') + ']';
+  if (o && typeof o === 'object') return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + jsonTrie(o[k])).join(',') + '}';
+  return JSON.stringify(o === undefined ? null : o);
+}
+function visuelDe(s) {
+  const t = {};
+  for (const [k, v] of Object.entries((s && s.theme) || {})) t[k] = typeof v === 'string' && v.startsWith('data:') ? 'local:' + empreinteTexte(v) : v;
+  const o = { theme: t, titre: (s && s.titre) || '', hote: (s && s.hote) || '', handle: (s && s.handle) || '' };
+  return { v: empreinteTexte(jsonTrie(o)), o };
+}
 function queryParams() {
   return new URLSearchParams(location.search);
 }

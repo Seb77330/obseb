@@ -76,3 +76,15 @@
 .rec-pop .rec-formats button { text-align: center; padding: 6px; }
 .rec-pop .rec-fichier button { width: auto; padding: 5px 9px; text-align: center; border: 1px solid var(--ui-line); border-radius: 6px; font-size: 12px; }
 .rec-pop .rec-fichier .rec-suppr { color: var(--ui-muted); }
+
+/* ----- Bouton « Visuel » et page du visuel par-dessus la régie ----- */
+.btn-visuel .cadenas { display: none; width: 14px; height: 14px; opacity: .8; }
+.btn-visuel.verrou { opacity: .55; }
+.btn-visuel.verrou .cadenas { display: inline-block; }
+#visuel-panneau { position: fixed; inset: 0; z-index: 200; background: var(--ui-bg); animation: vp-entree .18s ease-out; }
+#visuel-panneau iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; opacity: 0; transition: opacity .2s; }
+#visuel-panneau.pret iframe { opacity: 1; }
+.vp-charge { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ui-muted); }
+#visuel-panneau.pret .vp-charge { display: none; }
+@keyframes vp-entree { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { #visuel-panneau { animation: none; } }

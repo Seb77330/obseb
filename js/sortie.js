@@ -241,9 +241,40 @@ function appliquerVolumes() {
 function partageVisible(scene) { return (scene === 'live' || scene === 'watch') && sourcesActives().length > 0; }
 function sourcesActives() { return ((etat && etat.sources) || []).filter(x => x && x.actif && x.ref).slice(0, 4); }
 
+/* ----- Le visuel a changé dans la régie (avant le direct) : on se recharge avec le nouveau -----
+   Les images importées depuis le PC ne voyagent pas : on garde la nôtre si c'est la même, sinon on la cherche
+   dans la liste des lives de ce navigateur (fenêtre d'envoi, aperçus de la régie), sinon on fait sans. */
+const VISUEL_ICI = visuelDe(session).v;
+function suivreVisuel(vis) {
+  if (!vis || typeof vis.v !== 'string' || !vis.o || vis.v === VISUEL_ICI) return false;
+  try {   // pas de boucle : une seule tentative par version
+    if (sessionStorage.getItem('obseb:visuel') === vis.v) return false;
+    sessionStorage.setItem('obseb:visuel', vis.v);
+  } catch (e) { return false; }
+  let complet = null;
+  try { const e = JSON.parse(localStorage.getItem('studioSeb:sessions') || '[]').find(x => x.session && x.session.room === session.room); if (e && visuelDe(e.session).v === vis.v) complet = e.session; } catch (e) { /* rien */ }
+  let nouveau = complet;
+  if (!nouveau) {
+    const theme = {};
+    for (const [k, v] of Object.entries(vis.o.theme || {})) {
+      if (typeof v === 'string' && v.startsWith('local:')) {
+        const mien = (session.theme || {})[k];
+        if (typeof mien === 'string' && mien.startsWith('data:') && 'local:' + empreinteTexte(mien) === v) theme[k] = mien;
+      } else theme[k] = v;
+    }
+    nouveau = Object.assign({}, session, { theme, titre: String(vis.o.titre || session.titre).slice(0, 120), hote: String(vis.o.hote || session.hote).slice(0, 60), handle: String(vis.o.handle || session.handle || '').slice(0, 60) });
+  }
+  nouveau = Object.assign({}, session, { theme: nouveau.theme, titre: nouveau.titre, hote: nouveau.hote, handle: nouveau.handle });
+  const h = hashParams(); h.set('s', b64e(nouveau));
+  location.replace(location.pathname + location.search + '#' + h.toString());
+  location.reload();
+  return true;
+}
+
 /* ----- Appliquer l'état envoyé par la régie ----- */
 function appliquerEtat(st) {
   if (!st || (etat && st.ts && etat.ts && st.ts < etat.ts)) return;
+  if (!DEMO && suivreVisuel(st.visuel)) return;
   etat = st;
   calerHorloge(st.ts);
   const scene = SCENE_FORCEE || (st.scene === 'partage' ? 'live' : st.scene);
