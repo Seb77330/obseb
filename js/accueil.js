@@ -42,16 +42,18 @@ function carteTheme(id) {
   b.onclick = () => { brouillon.theme = { preset: id }; remplirForm(); apercu(); };
   return b;
 }
-[...ORDRE_THEMES, ...Object.keys(THEMES).filter(id => !ORDRE_THEMES.includes(id))].filter(id => THEMES[id]).forEach(id => {
-  const c = carteTheme(id); if (!GALERIE.includes(id)) c.classList.add('suite'); $('#galerie').appendChild(c);
-});
-/* On montre d'abord 9 thèmes ; le bouton déplie toute la galerie */
-function deplierGalerie(tout) {
-  $('#galerie').classList.toggle('tout', tout);
-  $('#galerie-tout').textContent = tout ? 'Réduire' : `Voir les ${Object.keys(THEMES).length} thèmes`;
+/* Les thèmes rangés par catégorie (common.js : CATEGORIES_THEMES), un onglet par catégorie */
+CATEGORIES_THEMES.forEach(c => c.themes.filter(id => THEMES[id]).forEach(id => { const k = carteTheme(id); k.dataset.cat = c.id; $('#galerie').appendChild(k); }));
+Object.keys(THEMES).filter(id => !$(`#galerie .theme-carte[data-preset="${id}"]`)).forEach(id => { const k = carteTheme(id); k.dataset.cat = 'essentiels'; $('#galerie').appendChild(k); });
+CATEGORIES_THEMES.forEach(c => $('#cats-themes').insertAdjacentHTML('beforeend',
+  `<button type="button" role="tab" data-cat="${c.id}">${esc(c.nom)}<small>${$$(`#galerie .theme-carte[data-cat="${c.id}"]`).length}</small></button>`));
+$('#cats-themes').insertAdjacentHTML('beforeend', `<button type="button" role="tab" data-cat="tous">Tous<small>${Object.keys(THEMES).length}</small></button>`);
+function choisirCategorie(cat) {
+  $$('#cats-themes button').forEach(b => b.setAttribute('aria-selected', b.dataset.cat === cat ? 'true' : 'false'));
+  $$('#galerie .theme-carte').forEach(k => { k.hidden = cat !== 'tous' && k.dataset.cat !== cat; });
 }
-$('#galerie-tout').onclick = () => deplierGalerie(!$('#galerie').classList.contains('tout'));
-deplierGalerie(false);
+$$('#cats-themes button').forEach(b => { b.onclick = () => choisirCategorie(b.dataset.cat); });
+choisirCategorie('essentiels');
 FONTS.forEach(f => $('#f-font').insertAdjacentHTML('beforeend', `<option>${esc(f)}</option>`));
 
 function remplirForm() {
@@ -65,7 +67,8 @@ function remplirForm() {
   $('#f-limite').value = String(brouillon.limite || 0);
   if (typeof majQuand === 'function') majQuand();
   const perso = Object.keys(brouillon.theme).some(k => k !== 'preset');
-  if (!GALERIE.includes(brouillon.theme.preset)) deplierGalerie(true);
+  const carteActive = $(`#galerie .theme-carte[data-preset="${brouillon.theme.preset}"]`);
+  if (carteActive && carteActive.hidden) choisirCategorie(carteActive.dataset.cat);
   const styleActif = typeof styleCorrespondant === 'function' ? styleCorrespondant(brouillon.theme) : null;
   $$('.theme-carte').forEach(b => b.classList.toggle('actif', styleActif ? b.dataset.style === styleActif.id : (!b.dataset.style && b.dataset.preset === brouillon.theme.preset)));
   if (perso) $('#opt-perso').open = true;

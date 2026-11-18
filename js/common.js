@@ -132,22 +132,46 @@ const THEMES = {
     nom: 'Stade', desc: 'Soir de match : pelouse et tableau d\'affichage.',
     bg: '#062414', bg2: '#0f4a26', accent: '#C6FF3D', text: '#ffffff', muted: '#9cc4a7',
     fontTitle: 'Teko', fontBody: 'Barlow', deco: 'pelouse', etiquette: 'bas', bandeau: 'barre'
+  },
+  /* Thèmes spéciaux (fêtes et grands soirs) */
+  halloween: {
+    nom: 'Halloween', desc: 'Pleine lune, brume orange et nuit violette.',
+    bg: '#0a0612', bg2: '#2a1240', accent: '#FF7A1A', accent2: '#9B5CFF', text: '#fbf3ea', muted: '#b9a5c9',
+    fontTitle: 'Creepster', fontBody: 'Inter', deco: 'halloween'
+  },
+  noel: {
+    nom: 'Noël', desc: 'Neige qui tombe, rouge sapin et lumières dorées.',
+    bg: '#06140f', bg2: '#0f3324', accent: '#E8323C', accent2: '#F2C14E', text: '#fffaf2', muted: '#a9c4b6',
+    fontTitle: 'Mountains of Christmas', fontBody: 'Inter', deco: 'neige'
+  },
+  ceremonie: {
+    nom: 'Cérémonie', desc: 'Soirée de remise de prix : projecteurs, tapis rouge, or.',
+    bg: '#07050a', bg2: '#2a0d14', accent: '#E3C06B', accent2: '#B3122E', text: '#fbf6ea', muted: '#b3a78f',
+    fontTitle: 'Italiana', fontBody: 'Inter', deco: 'ceremonie'
   }
 };
+/* Les thèmes rangés par catégorie, dans l'ordre de la galerie */
+const CATEGORIES_THEMES = [
+  { id: 'essentiels', nom: 'Essentiels', themes: ['minimal', 'studio', 'clair', 'pastel', 'neon'] },
+  { id: 'cinema', nom: 'Cinéma et séries', themes: ['cinema', 'bond', 'polar', 'horreur', 'western', 'fantasy', 'heros'] },
+  { id: 'pop', nom: 'Pop culture', themes: ['arene', 'anime', 'manga', 'pop', 'arcade', 'retro', 'vaisseau', 'cosmos', 'terminal'] },
+  { id: 'speciaux', nom: 'Spéciaux', themes: ['halloween', 'noel', 'ceremonie', 'artdeco', 'jt', 'gazette', 'stade'] }
+];
+function categorieDuTheme(id) { const c = CATEGORIES_THEMES.find(c => c.themes.includes(id)); return c ? c.id : 'essentiels'; }
 // Polices fines en premier ; les plus grasses restent disponibles pour certains thèmes
 /* Thèmes mis en avant dans la galerie ; les autres restent dans « Plus de thèmes » */
 const GALERIE = ['minimal', 'studio', 'cinema', 'bond', 'neon', 'clair', 'jt', 'retro', 'vaisseau'];
 /* L'ordre de toute la galerie (les thèmes mis en avant, puis les autres) */
-const ORDRE_THEMES = [...GALERIE, 'cosmos', 'terminal', 'arcade', 'manga', 'pop', 'heros', 'anime', 'horreur', 'polar', 'western', 'fantasy', 'artdeco', 'arene', 'gazette', 'pastel', 'stade'];
+const ORDRE_THEMES = [...GALERIE, 'cosmos', 'terminal', 'arcade', 'manga', 'pop', 'heros', 'anime', 'horreur', 'polar', 'western', 'fantasy', 'artdeco', 'arene', 'gazette', 'pastel', 'stade', 'halloween', 'noel', 'ceremonie'];
 const FONTS = ['Outfit', 'Inter', 'Cormorant Garamond', 'Marcellus', 'Italiana', 'Cinzel', 'Josefin Sans', 'DM Serif Display',
   'Fraunces', 'Space Grotesk', 'Playfair Display', 'Cinzel Decorative', 'Bebas Neue', 'Oswald', 'Montserrat',
   'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous',
-  'Barlow Condensed', 'Teko', 'Poiret One', 'Almendra', 'Rye', 'Fredoka', 'Audiowide', 'Orbitron', 'Michroma', 'VT323', 'Bungee', 'Dela Gothic One', 'Press Start 2P'];
+  'Barlow Condensed', 'Teko', 'Poiret One', 'Almendra', 'Rye', 'Fredoka', 'Audiowide', 'Orbitron', 'Michroma', 'VT323', 'Bungee', 'Dela Gothic One', 'Press Start 2P', 'Mountains of Christmas'];
 /* Certaines polices sont très larges ou très étroites : on ajuste la taille des titres, et leur graisse */
 const ECHELLE_POLICES = { 'Press Start 2P': .44, Michroma: .64, Orbitron: .76, Audiowide: .78, Bungee: .76, 'Dela Gothic One': .78, Rye: .84, Fredoka: .92,
   'Abril Fatface': .92, 'Barlow Condensed': 1.14, Teko: 1.22, VT323: 1.2 };
-const POIDS_TITRE = { 'Barlow Condensed': 700, Orbitron: 700, Teko: 600, Fredoka: 600 };
-const POIDS_POLICES = { 'Barlow Condensed': '500;600;700', Barlow: '400;500;600;700', 'IBM Plex Mono': '400;500;600', Orbitron: '500;700', Rajdhani: '500;600;700', Fredoka: '400;500;600', Nunito: '400;600;700', Teko: '400;500;600',
+const POIDS_TITRE = { 'Mountains of Christmas': 700, 'Barlow Condensed': 700, Orbitron: 700, Teko: 600, Fredoka: 600 };
+const POIDS_POLICES = { 'Mountains of Christmas': '400;700', 'Barlow Condensed': '500;600;700', Barlow: '400;500;600;700', 'IBM Plex Mono': '400;500;600', Orbitron: '500;700', Rajdhani: '500;600;700', Fredoka: '400;500;600', Nunito: '400;600;700', Teko: '400;500;600',
   Inter: '400;500;600;700', Outfit: '300;400;500;600', Montserrat: '500;700;800', 'Josefin Sans': '300;400;600',
   'Cormorant Garamond': '400;500;600', 'Space Grotesk': '400;500;600', Fraunces: '300;400;500' };
 
