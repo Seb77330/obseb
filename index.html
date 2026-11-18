@@ -112,7 +112,7 @@
   .formules.bascule .prix b, .formules.bascule .formules-tete p span { animation: prix-change .35s cubic-bezier(.2, .7, .2, 1); }
   @media (prefers-reduced-motion: reduce) { .formules.bascule .prix b, .formules.bascule .formules-tete p span { animation: none; } }
   @media (max-width: 620px) { .choix-obs button { padding: 9px 14px; font-size: 14px; } }
-  .offres { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+  .offres { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; max-width: 1080px; margin: 0 auto; }
   /* le halo derrière les cartes : les quatre couleurs, très doux */
   .offres::before { content: ''; position: absolute; z-index: -1; inset: 10% 3% -2%; background: linear-gradient(90deg, var(--f-essai), var(--f-essentiel) 36%, var(--f-pro) 68%, var(--f-regie)); filter: blur(90px); opacity: .13; pointer-events: none; }
   :root[data-mode="clair"] .offres::before { opacity: .16; }
@@ -176,7 +176,9 @@
   .formules-pied { margin: 30px auto 0; text-align: center; color: var(--ui-muted); font-size: 13px; }
   .formules-pied.obs-note { margin-bottom: -18px; font-size: 12px; }
   .formules-pied b { margin-right: 9px; padding: 2px 8px; border: 1px solid var(--ui-line2); border-radius: 99px; color: var(--ui-text); font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
-  @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+  .entreprises { max-width: 1080px; margin-left: auto; margin-right: auto; }
+  @media (min-width: 1081px) { .entreprises { grid-template-columns: minmax(0, 1fr) max-content auto; gap: 18px 32px; } .entreprises ul { grid-template-columns: repeat(2, max-content); } .entreprises h3 { text-wrap: balance; } }
+  @media (max-width: 900px) { .offres { grid-template-columns: 1fr; gap: 24px; max-width: 420px; } .entreprises { max-width: 420px; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
   @media (max-width: 620px) { .offres { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } .formules { margin-top: 64px; } .formules-tete { margin-bottom: 40px; } }
   /* les cartes arrivent l'une après l'autre quand on descend jusqu'aux formules */
   @keyframes offre-arrive { from { opacity: 0; transform: translateY(20px); } }
@@ -447,16 +449,8 @@
         <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.8" y="6" width="12.4" height="9" rx="2"/><rect x="13.2" y="8.5" width="8" height="12.5" rx="2" fill="var(--ui-panel)"/><path d="M6 19h4"/></svg></span><div><h3>Pro</h3><p class="pour" data-si="sans">Partout à la fois.</p><p class="pour" data-si="avec">Le live complet.</p></div></div>
         <p class="prix"><b data-si="sans">11</b><b data-si="avec">6</b><i>,99 €</i><span>par mois</span></p>
         <div class="chiffres-cles"><div><b data-si="sans">40 h</b><b data-si="avec">60 h</b><span>par mois</span></div><div><b>12</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li class="base">Tout Essentiel, et en plus :</li><li data-si="sans">Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li data-si="sans">Replay 10 jours, sous-titres à corriger</li><li data-si="avec">Sous-titres à corriger après le live</li><li>5 intros et 5 outros</li><li>Quiz : 25 questions</li></ul>
+        <ul><li class="base">Tout Essentiel, et en plus :</li><li data-si="sans">Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Plusieurs caméras</li><li data-si="sans">Replay 10 jours, sous-titres à corriger</li><li data-si="avec">Sous-titres à corriger après le live</li><li>Les 8 intros et les 8 outros</li><li>Quiz : 50 questions</li></ul>
         <button type="button" data-formule="pro">Bientôt disponible</button>
-      </article>
-      <article data-teinte="regie" class="offre">
-        
-        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><rect x="4" y="13" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="10" y="6.5" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="16" y="11" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/></svg></span><div><h3>Régie</h3><p class="pour" data-si="sans">Avec ton OBS.</p><p class="pour" data-si="avec">La régie complète.</p></div></div>
-        <p class="prix"><b data-si="sans">19</b><b data-si="avec">9</b><i>,99 €</i><span>par mois</span></p>
-        <div class="chiffres-cles"><div><b data-si="sans">70 h</b><b data-si="avec">120 h</b><span>par mois</span></div><div><b>15</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li class="base">Tout Pro, et en plus :</li><li data-si="sans">Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li data-si="sans">Replay 30 jours</li><li>Les 8 intros et les 8 outros</li><li>Quiz : 50 questions</li></ul>
-        <button type="button" data-formule="regie">Bientôt disponible</button>
       </article>
     </div>
     <aside class="entreprises" data-teinte="ent" aria-labelledby="entreprises-titre">
@@ -467,7 +461,7 @@
       </div>
       <ul>
         <li>3 personnes sur le compte</li>
-        <li>15 personnes à l'écran</li>
+        <li>12 personnes à l'écran</li>
         <li><span data-si="sans">100 h</span><span data-si="avec">200 h</span> par mois</li>
         <li>Les couleurs de la marque</li>
         <li>Webinaire sur inscription</li>
@@ -657,7 +651,7 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=5bc072c4"></script>
+<script src="js/common.js?v=1850ca2a"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/accueil.js?v=b5c088ab"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>

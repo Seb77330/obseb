@@ -1,7 +1,7 @@
 /* OBSeb : les visuels de l'intro et de l'outro (motion design en CSS, aux couleurs du thème).
    Partagé par la régie (liste, noms, formules) et par la sortie (ce qui passe à l'écran).
    Chaque visuel tourne en boucle ; le compte à rebours, lui, vient de la régie (etat.fin, etat.debutCompte).
-   L'ordre compte : la formule Gratuite a le premier, Essentiel les 3 premiers, Pro les 5 premiers, Régie les 8. */
+   L'ordre compte : la formule Gratuite a le premier, Essentiel les 3 premiers, Pro les 8. */
 'use strict';
 
 const HABILLAGES = {
@@ -27,14 +27,14 @@ const HABILLAGES = {
   ]
 };
 /* Nombre de visuels par formule (le même pour l'intro et l'outro) */
-const HABILLAGES_FORMULE = { gratuit: 1, essentiel: 3, pro: 5, regie: 8, beta: 8 };
-const NOMS_FORMULES_HB = { 1: 'Gratuit', 3: 'Essentiel', 5: 'Pro', 8: 'Régie' };
+const HABILLAGES_FORMULE = { gratuit: 1, essentiel: 3, pro: 8, regie: 8, beta: 8 };
+const NOMS_FORMULES_HB = { 1: 'Gratuit', 3: 'Essentiel', 8: 'Pro' };
 function nbHabillages() {
   const f = typeof formuleActuelle === 'function' ? formuleActuelle() : 'beta';
   return HABILLAGES_FORMULE[f] || 1;
 }
 /* La formule qu'il faut pour le visuel numéro i (à partir de 0) */
-function formulePourHabillage(i) { return i < 1 ? 'Gratuit' : i < 3 ? 'Essentiel' : i < 5 ? 'Pro' : 'Régie'; }
+function formulePourHabillage(i) { return i < 1 ? 'Gratuit' : i < 3 ? 'Essentiel' : 'Pro'; }
 function habillageAutorise(scene, id) {
   const i = HABILLAGES[scene].findIndex(h => h.id === id);
   return i >= 0 && i < nbHabillages();

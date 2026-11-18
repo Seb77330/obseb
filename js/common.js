@@ -889,7 +889,7 @@ const fichiers = (() => {
 /* ----- Ce que chaque formule permet.
    « beta » : la formule de Sebastian et des bêta-testeurs, tout au maximum. Tant que les comptes n'existent pas,
    c'est celle de tout le monde (demande de Sebastian, 17/11). ----- */
-const LIMITES = { beta: { musiques: 50 }, gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 25 }, regie: { musiques: 50 } };
+const LIMITES = { beta: { musiques: 50 }, gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 50 }, regie: { musiques: 50 } };
 function formuleActuelle() {
   try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'beta'; } catch (e) { return 'beta'; }
 }
