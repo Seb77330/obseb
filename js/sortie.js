@@ -762,7 +762,18 @@ function gererEffet() {
 
 /* ----- Visuels de l'intro et de l'outro (js/habillages.js) ----- */
 let sceneAvant = null;
+/* Thème en 3D : fond calculé par la carte graphique derrière les caméras (js/fonds3d.js), en pause pendant l'intro et l'outro */
+let fond3dDirect = null;
+if (theme.fond3d && typeof lancerFond3D === 'function') {
+  fond3dDirect = document.createElement('canvas'); fond3dDirect.className = 'fond-3d';
+  $('#stage').insertBefore(fond3dDirect, $('#stage').firstChild);
+  if (!lancerFond3D(fond3dDirect, theme.fond3d, .5)) { fond3dDirect.remove(); fond3dDirect = null; }
+}
 function gererHabillages(st, scene) {
+  if (fond3dDirect) fond3dDirect.classList.toggle('cachee', scene === 'intro' || scene === 'fin');
+  // un thème 3D apporte son intro et son outro tant qu'on n'en a pas choisi d'autres
+  if (!st.introStyle && theme.introStyle) st.introStyle = theme.introStyle;
+  if (!st.outroStyle && theme.outroStyle) st.outroStyle = theme.outroStyle;
   const ctx = { titre: session.titre, hote: session.hote, handle: session.handle || HANDLE_DEFAUT, vertical: VERTICAL,
     invites: (st.onair || []).map(id => (st.noms || {})[id]).filter(Boolean) };
   const avantI = $('#intro').dataset.style, avantF = $('#fin').dataset.style;

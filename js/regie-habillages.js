@@ -2,6 +2,7 @@
    etat.introStyle et etat.outroStyle partent vers la sortie ; la liste et les formules sont dans js/habillages.js. */
 'use strict';
 
+{ const t = themeComplet(session); if (!etat.introStyle && t.introStyle) etat.introStyle = t.introStyle; if (!etat.outroStyle && t.outroStyle) etat.outroStyle = t.outroStyle; }
 if (!habillageAutorise('intro', etat.introStyle)) etat.introStyle = 'classique';
 if (!habillageAutorise('fin', etat.outroStyle)) etat.outroStyle = 'classique';
 let hbVu = { scene: 'intro', id: etat.introStyle };          // ce que montre la petite fenêtre d'aperçu

@@ -133,6 +133,22 @@ const THEMES = {
     bg: '#062414', bg2: '#0f4a26', accent: '#C6FF3D', text: '#ffffff', muted: '#9cc4a7',
     fontTitle: 'Teko', fontBody: 'Barlow', deco: 'pelouse', etiquette: 'bas', bandeau: 'barre'
   },
+  /* Thèmes en 3D : fond calculé par la carte graphique pendant le direct (fond3d) + intro et outro 3D par défaut */
+  trailer3d: {
+    nom: 'Bande-annonce 3D', desc: 'Faisceaux dans la brume, poussière, titre en métal.',
+    bg: '#05070b', bg2: '#141018', accent: '#E8C36A', text: '#f6f1e6', muted: '#a39a86',
+    fontTitle: 'Cinzel', fontBody: 'Inter', deco: 'aucun', fond3d: 'a', introStyle: 'bandeannonce', outroStyle: 'bandeannonce'
+  },
+  plateau3d: {
+    nom: 'Plateau TV 3D', desc: 'Studio avec mur LED, sol qui brille, ouverture en lames.',
+    bg: '#04060c', bg2: '#0d1630', accent: '#FFC21A', text: '#ffffff', muted: '#9fb0d0',
+    fontTitle: 'Barlow Condensed', fontBody: 'Barlow', deco: 'aucun', fond3d: 'b', introStyle: 'plateau', outroStyle: 'plateau'
+  },
+  motion3d: {
+    nom: 'Motion 3D', desc: 'Métal liquide irisé derrière du verre dépoli.',
+    bg: '#07060d', bg2: '#1a1240', accent: '#FF4FA3', text: '#ffffff', muted: '#c2b6e0',
+    fontTitle: 'Montserrat', fontBody: 'Inter', deco: 'aucun', fond3d: 'c', introStyle: 'motion', outroStyle: 'motion'
+  },
   /* Thèmes spéciaux (fêtes et grands soirs) */
   halloween: {
     nom: 'Halloween', desc: 'Pleine lune, brume orange et nuit violette.',
@@ -153,6 +169,7 @@ const THEMES = {
 /* Les thèmes rangés par catégorie, dans l'ordre de la galerie */
 const CATEGORIES_THEMES = [
   { id: 'essentiels', nom: 'Essentiels', themes: ['minimal', 'studio', 'clair', 'pastel', 'neon'] },
+  { id: '3d', nom: '3D', themes: ['trailer3d', 'plateau3d', 'motion3d'] },
   { id: 'cinema', nom: 'Cinéma et séries', themes: ['cinema', 'bond', 'polar', 'horreur', 'western', 'fantasy', 'heros'] },
   { id: 'pop', nom: 'Pop culture', themes: ['arene', 'anime', 'manga', 'pop', 'arcade', 'retro', 'vaisseau', 'cosmos', 'terminal'] },
   { id: 'speciaux', nom: 'Spéciaux', themes: ['halloween', 'noel', 'ceremonie', 'artdeco', 'jt', 'gazette', 'stade'] }
@@ -162,7 +179,7 @@ function categorieDuTheme(id) { const c = CATEGORIES_THEMES.find(c => c.themes.i
 /* Thèmes mis en avant dans la galerie ; les autres restent dans « Plus de thèmes » */
 const GALERIE = ['minimal', 'studio', 'cinema', 'bond', 'neon', 'clair', 'jt', 'retro', 'vaisseau'];
 /* L'ordre de toute la galerie (les thèmes mis en avant, puis les autres) */
-const ORDRE_THEMES = [...GALERIE, 'cosmos', 'terminal', 'arcade', 'manga', 'pop', 'heros', 'anime', 'horreur', 'polar', 'western', 'fantasy', 'artdeco', 'arene', 'gazette', 'pastel', 'stade', 'halloween', 'noel', 'ceremonie'];
+const ORDRE_THEMES = [...GALERIE, 'cosmos', 'terminal', 'arcade', 'manga', 'pop', 'heros', 'anime', 'horreur', 'polar', 'western', 'fantasy', 'artdeco', 'arene', 'gazette', 'pastel', 'stade', 'halloween', 'noel', 'ceremonie', 'trailer3d', 'plateau3d', 'motion3d'];
 const FONTS = ['Outfit', 'Inter', 'Cormorant Garamond', 'Marcellus', 'Italiana', 'Cinzel', 'Josefin Sans', 'DM Serif Display',
   'Fraunces', 'Space Grotesk', 'Playfair Display', 'Cinzel Decorative', 'Bebas Neue', 'Oswald', 'Montserrat',
   'Special Elite', 'Creepster', 'Bangers', 'Luckiest Guy', 'Anton', 'Abril Fatface', 'Righteous',
