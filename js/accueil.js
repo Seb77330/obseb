@@ -307,6 +307,12 @@ $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   const poser = (v, anime) => {
     zone.dataset.obs = v;
     boutons.forEach(b => b.setAttribute('aria-pressed', b.dataset.obs === v));
+    // la formule mise en avant change avec la version : Essentiel sans OBS, Pro avec OBS
+    zone.querySelectorAll('[data-vedette]').forEach(o => {
+      const oui = o.dataset.vedette === v;
+      o.classList.toggle('vedette', oui);
+      o.querySelector('button[data-formule]').classList.toggle('primaire', oui);
+    });
     if (anime) { zone.classList.remove('bascule'); void zone.offsetWidth; zone.classList.add('bascule'); }
   };
   boutons.forEach(b => b.onclick = () => { poser(b.dataset.obs, true); try { localStorage.setItem('studioSeb:formulesObs', b.dataset.obs); } catch (e) { /* navigation privée */ } });
