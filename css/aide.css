@@ -75,3 +75,13 @@
 .faq-vide { color: var(--ui-muted); padding: 20px 0; }
 .faq-contact { margin-top: 36px; padding: 18px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); }
 .faq-contact h2 { margin: 0 0 6px; font-size: 17px; } .faq-contact p { margin: 0 0 10px; color: var(--ui-muted); }
+
+/* L'aide réfléchit : trois petits points qui sautent */
+.aide-points { display: flex; gap: 5px; align-items: center; padding: 13px 15px; }
+.aide-points span { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-muted, #8a92a0); animation: aide-saut 1.05s infinite ease-in-out; }
+.aide-points span:nth-child(2) { animation-delay: .15s; } .aide-points span:nth-child(3) { animation-delay: .3s; }
+@keyframes aide-saut { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-5px); opacity: 1; background: var(--ui-accent, #FFD21F); } }
+@media (prefers-reduced-motion: reduce) { .aide-points span { animation: aide-clignote 1.2s infinite; } @keyframes aide-clignote { 50% { opacity: 1; } } }
+.aide-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.aide-racine.reflechit .aide-saisie input { opacity: .6; }
+.aide-son { font-size: 13px; }

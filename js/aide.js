@@ -127,14 +127,15 @@ const AideRecherche = (() => {
   const racineEl = document.createElement('div');
   racineEl.className = 'aide-racine aide-' + place + (place === 'regie' ? ' aide-droite' : '');
   racineEl.innerHTML = `
-    <button type="button" class="aide-bulle" aria-expanded="false" aria-controls="aide-panneau" title="Une question ? L'aide répond tout de suite">
+    <button type="button" class="aide-bulle" aria-expanded="false" aria-controls="aide-panneau" title="Une question ? Demande à l'aide">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3.3 2.2c-.6.3-.9.7-.9 1.3M12 13.6v.1" class="aide-trait"/></svg>
       <span>Aide</span>
     </button>
     <section class="aide-panneau" id="aide-panneau" role="dialog" aria-label="Aide OBSeb" hidden>
       <header class="aide-tete">
-        <div><b>Aide</b><small>Réponses tout de suite, à partir de la FAQ</small></div>
+        <div><b>Aide</b><small>Répond à partir de la FAQ</small></div>
         <a class="aide-tout" href="faq.html" target="_blank" rel="noopener" title="Toutes les questions, sur une page">FAQ</a>
+        <button type="button" class="aide-son aide-fermer" aria-pressed="false">🔊</button>
         <button type="button" class="aide-fermer" aria-label="Fermer l'aide">✕</button>
       </header>
       <div class="aide-fil" aria-live="polite"></div>
@@ -175,23 +176,71 @@ const AideRecherche = (() => {
   function accueil() {
     ajouter('aide-bot', `<p>Salut ! Pose ta question comme tu veux : « ma caméra est noire », « c'est combien », « comment inviter un pote »…</p>${puces(POPULAIRES)}`);
   }
+  /* « L'aide réfléchit » : trois petits points et un petit son doux pendant une à deux secondes et demie, puis la réponse.
+     Le son est fabriqué par le navigateur (aucun fichier). Le bouton haut-parleur de l'en-tête le coupe, et c'est retenu. */
+  let sonCoupe = false; try { sonCoupe = localStorage.getItem('studioSeb:aideMuet') === '1'; } catch (e) { /* navigation privée */ }
+  let audio = null, occupe = false;
+  function bip(t, freq, duree, volume) {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(freq * 1.12, t + duree);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(volume, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t + duree + 0.02);
+  }
+  function sonReflexion(duree) {
+    if (sonCoupe) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+      const t0 = audio.currentTime + 0.05;
+      /* trois petites gouttes qui montent, comme les trois points, répétées toutes les 0,7 s */
+      for (let k = 0; k * 0.7 < duree - 0.4; k++) [0, 0.11, 0.22].forEach((d, i) => bip(t0 + k * 0.7 + d, 660 + i * 110, 0.09, 0.035));
+    } catch (e) { /* pas de son, tant pis */ }
+  }
+  function sonReponse() {
+    if (sonCoupe || !audio) return;
+    try { const t = audio.currentTime + 0.02; bip(t, 880, 0.12, 0.04); bip(t + 0.08, 1320, 0.16, 0.03); } catch (e) { /* rien */ }
+  }
+  function reflechir(secondes, quand) {
+    occupe = true; champ.disabled = true; racineEl.classList.add('reflechit');
+    const points = ajouter('aide-bot aide-points', '<span></span><span></span><span></span><em class="aide-cache">L\'aide réfléchit…</em>');
+    sonReflexion(secondes);
+    setTimeout(() => {
+      points.remove(); sonReponse(); quand();
+      occupe = false; champ.disabled = false; racineEl.classList.remove('reflechit'); champ.focus();
+    }, secondes * 1000);
+  }
+  /* plus la réponse est longue, plus elle « réfléchit » : entre 1,2 et 2,6 secondes */
+  const tempsPour = (txt) => Math.min(2.6, 1.2 + String(txt).length / 400) + Math.random() * 0.3;
+
   function repondre(question) {
+    if (occupe) return;
     derniereQuestion = question;
     ajouter('aide-moi', `<p>${esc(question)}</p>`);
     const res = moteur.chercher(question, 4);
     if (AideRecherche.sur(res)) {
       const [r, ...autres] = res;
       const proches = autres.filter(x => x.score >= r.score * .55).slice(0, 3).map(x => x.e.q);
-      const d = ajouter('aide-bot', `<p class="aide-q">${esc(r.e.q)}</p><p>${texte(r.e.r)}</p>
-        ${proches.length ? `<p class="aide-sous">Ou peut-être :</p>${puces(proches)}` : ''}
-        <button type="button" class="aide-lien aide-pasca">Ce n'est pas ma réponse</button>`);
-      d.querySelector('.aide-pasca').onclick = (ev) => { ev.target.remove(); ajouter('aide-bot', blocContact("Désolé ! Essaie avec d'autres mots, ou écris-nous : on te répond nous-mêmes.")); };
+      reflechir(tempsPour(r.e.r), () => {
+        const d = ajouter('aide-bot', `<p class="aide-q">${esc(r.e.q)}</p><p>${texte(r.e.r)}</p>
+          ${proches.length ? `<p class="aide-sous">Ou peut-être :</p>${puces(proches)}` : ''}
+          <button type="button" class="aide-lien aide-pasca">Ce n'est pas ma réponse</button>`);
+        d.querySelector('.aide-pasca').onclick = (ev) => {
+          if (occupe) return;
+          ev.target.remove();
+          reflechir(1, () => ajouter('aide-bot', blocContact("Désolé ! Essaie avec d'autres mots, ou écris-nous : on te répond nous-mêmes.")));
+        };
+      });
     } else if (res.length) {
-      ajouter('aide-bot', `<p>Je ne suis pas sûr d'avoir compris. Tu cherches l'une de celles-ci ?</p>${puces(res.slice(0, 3).map(x => x.e.q))}${blocContact("Sinon, écris-nous : on te répond nous-mêmes.")}`);
+      reflechir(1.8, () => ajouter('aide-bot', `<p>Je ne suis pas sûr d'avoir compris. Tu cherches l'une de celles-ci ?</p>${puces(res.slice(0, 3).map(x => x.e.q))}${blocContact("Sinon, écris-nous : on te répond nous-mêmes.")}`));
     } else {
-      ajouter('aide-bot', blocContact("Je n'ai pas de réponse à ça dans la FAQ. Essaie avec d'autres mots, ou écris-nous : on te répond nous-mêmes."));
+      reflechir(1.6, () => ajouter('aide-bot', blocContact("Je n'ai pas de réponse à ça dans la FAQ. Essaie avec d'autres mots, ou écris-nous : on te répond nous-mêmes.")));
     }
   }
+
+  const btnSon = racineEl.querySelector('.aide-son');
+  const majSon = () => { btnSon.textContent = sonCoupe ? '🔇' : '🔊'; btnSon.title = sonCoupe ? 'Remettre le petit son' : 'Couper le petit son'; btnSon.setAttribute('aria-pressed', String(sonCoupe)); };
+  btnSon.onclick = () => { sonCoupe = !sonCoupe; try { localStorage.setItem('studioSeb:aideMuet', sonCoupe ? '1' : '0'); } catch (e) { /* rien */ } majSon(); };
+  majSon();
 
   function ouvrir() {
     panneau.hidden = false; bulle.setAttribute('aria-expanded', 'true'); racineEl.classList.add('ouvert');
@@ -206,7 +255,7 @@ const AideRecherche = (() => {
   }
   bulle.onclick = () => panneau.hidden ? ouvrir() : fermer();
   if (btnEntete) btnEntete.onclick = () => panneau.hidden ? ouvrir() : fermer();
-  racineEl.querySelector('.aide-fermer').onclick = fermer;
+  racineEl.querySelector('.aide-fermer:not(.aide-son)').onclick = fermer;
   form.onsubmit = e => { e.preventDefault(); const q = champ.value.trim(); if (!q) return; champ.value = ''; repondre(q); };
   fil.addEventListener('click', e => { const b = e.target.closest('.aide-puce'); if (b) repondre(b.dataset.q); });
 })();
