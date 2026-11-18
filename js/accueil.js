@@ -92,49 +92,20 @@ $('#f-logotexte').oninput = e => surcharge('logoTexte', e.target.value.trim());
 $('#f-hote').oninput = e => { brouillon.hote = e.target.value || 'Sebastian'; apercu(); };
 $('#f-handle').oninput = e => { brouillon.handle = e.target.value || HANDLE_DEFAUT; apercu(); };
 $('#f-limite').onchange = e => { brouillon.limite = +e.target.value || 0; };
-$$('[data-apercu]').forEach(b => b.onclick = () => {
-  modeApercu = b.dataset.apercu;
-  $$('[data-apercu]').forEach(x => x.classList.toggle('actif', x === b));
-  apercu();
-});
 
-/* Les deux formats se voient en même temps, pour chaque moment du live (l'intro et la fin existent aussi en vertical) */
-$$('[data-format]').forEach(b => b.onclick = () => {
-  formatApercu = b.dataset.format;
-  try { localStorage.setItem('studioSeb:apercuFormat', formatApercu); } catch (e) { /* rien */ }
-  majFormatApercu(); apercu();
-});
-function majFormatApercu() {
-  $$('[data-format]').forEach(x => x.classList.toggle('actif', x.dataset.format === formatApercu));
-  $('#apercu-scene').dataset.format = formatApercu;
-  taillerApercu();
-}
-/* Les écrans prennent toute la place disponible, sans jamais déborder */
-function taillerApercu() {
-  const sc = $('#apercu-scene');
-  const W = sc.clientWidth, H = sc.clientHeight - 58;      // la légende sous l'écran : le format et les plateformes
-  if (W <= 0 || H <= 0) return;
-  const gap = parseFloat(getComputedStyle(sc).columnGap) || 20;
-  const h = formatApercu === 'deux' ? (W - gap) / (16 / 9 + 9 / 16) : formatApercu === 'h' ? W / (16 / 9) : W / (9 / 16);
-  sc.style.setProperty('--h', Math.max(80, Math.floor(Math.min(H, h))) + 'px');
-}
-new ResizeObserver(taillerApercu).observe($('#apercu-scene'));
-
+/* Plus de grand aperçu sur la page de création (il redisait la régie) : un petit aperçu reste dans
+   « Personnaliser le thème », pour voir ses couleurs, sa police et son logo en les changeant. */
 function urlApercu(s, mode, vertical) {
   const p = { intro: 'demo=3&scene=intro', live: 'demo=3', live6: 'demo=6', quiz: 'demo=3&quiz=1', fin: 'demo=3&scene=fin' }[mode] || 'demo=3';
   return `sortie.html?${p}${vertical ? '&format=vertical' : ''}#s=${b64e(Object.assign({}, s, { titre: s.titre || 'Titre de ton live' }))}`;
 }
 function apercu() {
   clearTimeout(apercu.t);
-  if ($('#vue-creation').hidden) return;
-  apercu.t = setTimeout(() => {
-    taillerApercu();
-    const n = ++apercu.n;
-    if (formatApercu !== 'v') $('#apercu-h').src = urlApercu(brouillon, modeApercu, false).replace('?', `?n=${n}&`);
-    if (formatApercu !== 'h') $('#apercu-v').src = urlApercu(brouillon, modeApercu, true).replace('?', `?n=${n}&`);
-  }, 200);
+  const f = document.getElementById('apercu-h');
+  if (!f || document.getElementById('vue-creation').hidden || !document.getElementById('opt-perso').open) return;
+  apercu.t = setTimeout(() => { f.src = urlApercu(brouillon, 'live', false).replace('?', `?n=${++apercu.n}&`); }, 250);
 }
-try { const f = localStorage.getItem('studioSeb:apercuFormat'); if (['deux', 'h', 'v'].includes(f)) formatApercu = f; } catch (e) { /* rien */ }
+document.getElementById('opt-perso').addEventListener('toggle', apercu);
 apercu.n = 0;
 
 /* ----- Deux vues : la liste de mes lives, et la création ----- */
@@ -144,7 +115,7 @@ function montrerVue(v, pousser = true) {
   document.body.classList.toggle('en-creation', v === 'creation');
   if (pousser) history.pushState(null, '', v === 'creation' ? '#nouveau' : location.pathname);
   scrollTo(0, 0);
-  if (v === 'creation') { majFormatApercu(); apercu(); if (!enEdition) setTimeout(() => $('#f-titre').focus(), 50); }
+  if (v === 'creation') { apercu(); if (typeof majBiblio === 'function') majBiblio(); if (!enEdition) setTimeout(() => $('#f-titre').focus(), 50); }
 }
 function ouvrirCreation(titre, bouton, modif) {
   $('#titre-form').textContent = titre; $('#btn-creer').textContent = bouton; $('#note-modif').hidden = !modif;

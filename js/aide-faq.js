@@ -18,12 +18,12 @@ const FAQ_CATEGORIES = [
   ['mobile', 'Téléphone et navigateurs'],
   ['securite', 'Sécurité et données'],
   ['pannes', 'Ça ne marche pas'],
-  { c: 'pannes', q: 'Ça bug, que faire ?',
-    r: '1. Recharge la page (Ctrl + Maj + R).\n2. Vérifie que tu es sur Chrome ou Edge, à jour.\n3. Ferme les autres onglets et applis qui utilisent la caméra ou le micro.\n4. Si ça continue, écris-nous en expliquant ce que tu faisais : on regarde.',
-    m: 'ca bug bug probleme beug plante crash marche plus rien ne marche' },
 ];
 
 const FAQ = [
+  { c: 'pannes', q: 'Ça bug, que faire ?',
+    r: '1. Recharge la page (Ctrl + Maj + R).\n2. Vérifie que tu es sur Chrome ou Edge, à jour.\n3. Ferme les autres onglets et applis qui utilisent la caméra ou le micro.\n4. Si ça continue, écris-nous en expliquant ce que tu faisais : on regarde.',
+    m: 'ca bug bug probleme beug plante crash marche plus rien ne marche' },
   /* ---------- Bien démarrer ---------- */
   { c: 'debut', q: "C'est quoi OBSeb ?",
     r: "Un studio de live dans ton navigateur. Tu crées ton live, tu invites des gens avec un simple lien, tu choisis qui est à l'écran, et le studio fabrique une belle image (thème, intro, bandeaux, quiz, chat…) que tu envoies sur tes plateformes.",

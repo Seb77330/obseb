@@ -28,7 +28,7 @@
   const lireNom = n => { try { return decodeURIComponent(n); } catch (e) { return n; } };
   async function listeFichiers() {
     const l = [];
-    try { for await (const [nom, h] of (await dossier()).entries()) if (h.kind === 'file') { const f = await h.getFile(); l.push({ nom: lireNom(nom), interne: nom, taille: f.size, date: f.lastModified, h }); } } catch (e) { /* pas de stockage */ }
+    try { for await (const [nom, h] of (await dossier()).entries()) if (h.kind === 'file' && !nom.endsWith('.json')) { const f = await h.getFile(); l.push({ nom: lireNom(nom), interne: nom, taille: f.size, date: f.lastModified, h }); } } catch (e) { /* pas de stockage */ }
     return l.sort((a, b) => b.date - a.date);
   }
   async function telecharger(h, nom) {
@@ -81,7 +81,7 @@
       bT.onclick = () => telecharger(f.h, f.nom);
       bS.onclick = async () => {
         if (!confirm(`Supprimer « ${f.nom} » de ce navigateur ?\nLe fichier déjà téléchargé sur ton PC n'est pas touché.`)) return;
-        try { await (await dossier()).removeEntry(f.interne); } catch (e) { toast('Impossible de supprimer ce fichier'); }
+        try { const d = await dossier(); await d.removeEntry(f.interne); d.removeEntry(f.interne + '.json').catch(() => {}); } catch (e) { toast('Impossible de supprimer ce fichier'); }
         remplirListe();
       };
       box.appendChild(d);

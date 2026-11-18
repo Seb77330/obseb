@@ -223,7 +223,7 @@
     try {
       recorder = new MediaRecorder(new MediaStream(pistes), Object.assign({ videoBitsPerSecond: h >= 1080 ? 12000000 : 7000000, audioBitsPerSecond: 192000 }, type ? { mimeType: type } : {}));
     } catch (e) { dernierRec = { erreur: 'Impossible de démarrer l\'enregistrement : ' + e.message }; if (ecrivain) ecrivain.abort().catch(() => {}); return publier(); }
-    rec = { recorder, ecrivain, fichier, nom, debut: Date.now(), octets: 0, morceaux, ecritures: Promise.resolve(), type: type || 'video/webm' };
+    rec = { recorder, ecrivain, fichier, nom, nomAffiche: String(nomVoulu || '').slice(0, 80), debut: Date.now(), octets: 0, morceaux, ecritures: Promise.resolve(), type: type || 'video/webm' };
     recorder.ondataavailable = ev => {
       if (!ev.data || !ev.data.size || !rec) return;
       const r = rec; r.octets += ev.data.size;
@@ -246,6 +246,16 @@
     } catch (e) { r.erreur = 'Le fichier n\'a pas pu être fermé : ' + e.message; }
     rec = null;
     dernierRec = { nom: r.nom, octets: blob ? blob.size : r.octets, duree: Date.now() - r.debut, erreur: r.erreur || '', fin: Date.now() };
+    // une petite fiche à côté du fichier : la page « Mes enregistrements » y lit la durée, le format et le live d'origine
+    if (r.fichier && blob) {
+      try {
+        const t = tailleSortie();
+        const fiche = await (await dossierRec()).getFileHandle(r.fichier.name + '.json', { create: true });
+        const w = await fiche.createWritable();
+        await w.write(JSON.stringify({ nom: r.nom, nomAffiche: r.nomAffiche, duree: dernierRec.duree, format: FORMAT, w: t.w, h: t.h, debut: r.debut, titre: session.titre || '', theme: (session.theme && session.theme.preset) || '' }));
+        await w.close();
+      } catch (e) { /* la fiche est facultative */ }
+    }
     if (blob && blob.size) telecharger(blob, r.nom);
     publier();
   }

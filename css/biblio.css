@@ -1,0 +1,80 @@
+/* OBSeb : accueil, « Mes lives » et « Mes enregistrements » */
+
+/* ----- Page de création : la bibliothèque à la place du grand aperçu ----- */
+.biblio { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 28px 20px; background: var(--ui-bg); overflow: auto; }
+.biblio-onglets { display: flex; gap: 22px; border-bottom: 1px solid var(--ui-line); margin-bottom: 18px; flex: none; }
+.biblio-onglets button { border: 0; background: none; padding: 10px 0 12px; font-size: 16px; font-weight: 600; color: var(--ui-muted); border-radius: 0; box-shadow: inset 0 -2px 0 transparent; display: flex; align-items: center; gap: 8px; }
+.biblio-onglets button:hover { color: var(--ui-text); background: none; }
+.biblio-onglets button.actif { color: var(--ui-text); box-shadow: inset 0 -2px 0 var(--ui-accent); }
+.biblio-onglets small, .biblio-groupe small, .biblio-filtres small { font: 500 12px var(--mono, monospace); color: var(--ui-muted); background: var(--ui-panel2); border-radius: 999px; padding: 1px 7px; }
+.biblio-onglets small:empty, .biblio-groupe small:empty { display: none; }
+.biblio-groupe { margin: 20px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); display: flex; align-items: center; gap: 8px; }
+.biblio-groupe:first-child, .biblio-filtres + .biblio-groupe { margin-top: 4px; }
+
+.biblio-vide { margin: 40px auto; max-width: 380px; text-align: center; color: var(--ui-muted); display: grid; justify-items: center; gap: 8px; }
+.biblio-vide b { color: var(--ui-text); font-size: 16px; }
+.biblio-vide p { margin: 0; line-height: 1.5; font-size: 14px; }
+.bv-ic { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--ui-red) 12%, transparent); color: var(--ui-red); }
+.bv-ic svg { width: 26px; height: 26px; }
+
+/* ----- Mes lives : des lignes ----- */
+.biblio-lignes { display: grid; gap: 8px; }
+.live-ligne { display: flex; align-items: center; gap: 14px; padding: 8px 10px 8px 8px; border-radius: 12px; background: var(--ui-panel); border: 1px solid var(--ui-line); }
+.live-ligne:hover { border-color: var(--ui-line2); }
+.live-ligne img { width: 112px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 7px; flex: none; background: var(--ui-panel2); }
+.ll-corps { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.ll-corps b { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ll-corps small { color: var(--ui-muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ll-actions { display: flex; gap: 6px; flex: none; }
+.ll-actions a { text-decoration: none; }
+
+/* ----- Mes enregistrements : une galerie de vidéos ----- */
+.biblio-filtres { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.biblio-filtres button { border: 1px solid var(--ui-line); background: none; padding: 6px 11px; font-size: 13px; border-radius: 999px; color: var(--ui-muted); display: flex; gap: 6px; align-items: center; }
+.biblio-filtres button.actif { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 12%, transparent); }
+.biblio-filtres button:disabled { opacity: .4; cursor: default; }
+.bf-total { margin-left: auto; font-size: 12.5px; color: var(--ui-muted); }
+.biblio-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; align-items: start; }
+.rec-carte { display: grid; gap: 8px; min-width: 0; }
+.rec-carte.vertical { grid-row: span 2; }
+.rc-vue { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: #000; cursor: pointer; }
+.rec-carte.vertical .rc-vue { aspect-ratio: 9 / 16; max-height: 400px; }
+.rc-img { position: absolute; inset: 0; background: #111 center / cover no-repeat; transition: transform .25s ease; }
+.rc-vue:hover .rc-img { transform: scale(1.03); }
+.rc-lecture { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,.55); color: #fff; opacity: 0; transition: opacity .2s ease; backdrop-filter: blur(4px); }
+.rc-lecture svg { width: 24px; height: 24px; margin-left: 3px; }
+.rc-vue:hover .rc-lecture, .rc-vue:focus-visible .rc-lecture { opacity: 1; }
+.rc-duree, .rc-format { position: absolute; bottom: 8px; font: 600 12px var(--mono, monospace); padding: 3px 7px; border-radius: 6px; background: rgba(0,0,0,.75); color: #fff; }
+.rc-duree { right: 8px; } .rc-duree:empty { display: none; }
+.rc-format { left: 8px; font-family: inherit; font-weight: 500; }
+.rc-corps { display: grid; gap: 2px; min-width: 0; }
+.rc-nom { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-corps small { color: var(--ui-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc-actions { display: flex; gap: 6px; }
+.rc-actions .rc-suppr { color: var(--ui-muted); }
+
+/* ----- Accueil : la même galerie sous « Mes lives » ----- */
+.biblio-accueil { margin-top: 34px; }
+.biblio-accueil .tete-section h2 { margin: 0; font-size: 22px; }
+#voir-recs { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+#voir-recs[hidden] { display: none; }
+
+/* ----- Lecteur ----- */
+.biblio-lecteur { padding: 0; border: 1px solid var(--ui-line2); border-radius: 14px; background: #000; color: #fff; width: min(1100px, 94vw); max-height: 92vh; overflow: hidden; }
+.biblio-lecteur.vertical { width: min(440px, 94vw); }
+.biblio-lecteur::backdrop { background: rgba(0,0,0,.75); }
+.bl-tete { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--ui-panel); color: var(--ui-text); }
+.bl-tete b { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.biblio-lecteur video { display: block; width: 100%; max-height: calc(92vh - 56px); background: #000; }
+
+/* ----- Petit aperçu dans « Personnaliser le thème » ----- */
+.perso-apercu { aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #000; margin-bottom: 14px; border: 1px solid var(--ui-line); }
+.perso-apercu iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+@media (max-width: 900px) {
+  .biblio { padding: 12px 14px; max-height: none; border-bottom: 1px solid var(--ui-line); }
+  .live-ligne { flex-wrap: wrap; }
+  .live-ligne img { width: 84px; }
+  .ll-actions { width: 100%; justify-content: flex-end; }
+  .biblio-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
