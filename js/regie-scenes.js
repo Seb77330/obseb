@@ -19,6 +19,7 @@ etat.plans = etat.plans.filter(p => p && p.id).slice(0, MAX_PLANS).map(p => ({
   id: String(p.id), nom: String(p.nom || 'Scène').slice(0, 18), layout: CADRAGES.includes(p.layout) ? p.layout : 'grille',
   qui: p.qui === 'tous' || (Number.isInteger(p.qui) && p.qui > 0) || Array.isArray(p.qui) ? p.qui : 'tous'
 }));
+if (etat.scene === 'partage') etat.scene = 'live';   // l'ancienne scène « Partage » : ce qui est partagé s'affiche maintenant dans les scènes de caméras
 const planActif = () => etat.plans.find(p => p.id === etat.plan) || etat.plans[0];
 if (!etat.plans.some(p => p.id === etat.plan)) etat.plan = etat.plans[0].id;
 if (!CADRAGES.includes(etat.layout)) etat.layout = planActif().layout;
@@ -68,7 +69,7 @@ function dessinerScenes() {
     let i = 0;
     const fixe = s => `<button data-scene="${s}" data-i="${i++}" title="${NOMS_SCENES[s][1]} (touche ${i})"><span class="sc-vue">${VIGNETTES[s]}</span><b${NOMS_SCENES[s][2] ? ` data-court="${NOMS_SCENES[s][2]}"` : ''}>${NOMS_SCENES[s][0]}</b><kbd>${i}</kbd>${s === 'intro' || s === 'fin' ? `<span class="sc-mod" data-hb="${s}" role="button" tabindex="0" title="Changer le visuel de ${s === 'intro' ? 'l\'intro' : 'l\'outro'}">✎</span>` : ''}</button>`;
     const plan = p => `<button data-plan="${esc(p.id)}" data-i="${i++}" title="${esc(p.nom)} : ${descriptionPlan(p)} (touche ${i})"><span class="sc-vue">${vignetteCadrage(p.layout, nbPlan(p))}</span><b>${esc(p.nom)}</b><kbd>${i}</kbd><span class="sc-mod" role="button" tabindex="0" title="Renommer cette scène, choisir qui elle montre, ou la supprimer">✎</span></button>`;
-    $('#scenes').innerHTML = fixe('intro') + etat.plans.map(plan).join('') + fixe('partage') + fixe('watch') + fixe('fin')
+    $('#scenes').innerHTML = fixe('intro') + etat.plans.map(plan).join('') + fixe('watch') + fixe('fin')
       + (etat.plans.length < MAX_PLANS ? '<button class="sc-plus" id="sc-plus" title="Ajouter une scène de caméras : son nom, son cadrage, qui elle montre"><span class="sc-vue">+</span><b>Scène</b></button>' : '');
     $$('#scenes [data-scene]').forEach(b => b.onclick = () => changerScene(b.dataset.scene));
     $$('#scenes [data-hb]').forEach(m => {
@@ -171,3 +172,12 @@ addEventListener('keydown', e => {
   if (c) changerLayout(c[0]);
 });
 dessinerScenes();
+
+/* Sur téléphone, si les scènes ne tiennent pas toutes sur la largeur, un fondu au bord montre qu'on peut glisser */
+function majDebordScenes() {
+  const el = $('#scenes');
+  if (el) el.classList.toggle('deborde', el.scrollWidth > el.clientWidth + 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+}
+addEventListener('resize', majDebordScenes);
+$('#scenes').addEventListener('scroll', majDebordScenes, { passive: true });
+setInterval(majDebordScenes, 1000);

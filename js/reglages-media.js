@@ -59,11 +59,15 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     const vt = flux.getVideoTracks()[0], at = flux.getAudioTracks()[0];
     const s = vt && vt.getSettings();
     if (s) {
-      res.textContent = s.height ? `${s.height}p${s.frameRate ? ' · ' + Math.round(s.frameRate) + ' i/s' : ''}` : '';
-      if (s.height && s.height < 1080) aide.textContent = `Cette caméra donne ${s.height}p. Pour du 1080p, choisis ta Cam Link.`;
+      // la définition se lit sur le petit côté : un téléphone tenu debout (1080 × 1920) filme en 1080p, pas en « 1920p »
+      const def = s.width && s.height ? Math.min(s.width, s.height) : s.height;
+      const debout = s.width && s.height && s.height > s.width;
+      res.textContent = def ? `${def}p${debout ? ' debout' : ''}${s.frameRate ? ' · ' + Math.round(s.frameRate) + ' i/s' : ''}` : '';
+      res.title = s.width && s.height ? `${s.width} × ${s.height}${debout ? ' : caméra tenue à la verticale, l\'image sera recadrée en 16:9 dans le live' : ''}` : '';
+      if (def && def < 1080) aide.textContent = `Cette caméra donne ${def}p. Pour du 1080p, choisis ta Cam Link.`;
     }
     choix.cam = s && s.deviceId; choix.mic = at && at.getSettings().deviceId;
-    choix.h = (s && s.height) || 0;   // ce que la caméra donne ici (pour l'affichage seulement : la salle demande toujours le mieux, voir urlPublier)
+    choix.h = (s && (s.width && s.height ? Math.min(s.width, s.height) : s.height)) || 0;   // ce que la caméra donne ici (pour l'affichage seulement : la salle demande toujours le mieux, voir urlPublier)
     // liste des appareils (les noms n'apparaissent qu'une fois l'accès autorisé)
     const app = await navigator.mediaDevices.enumerateDevices();
     const remplir = (sel, type, actuel) => {

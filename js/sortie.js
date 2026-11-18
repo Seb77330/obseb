@@ -6,7 +6,8 @@ const lienSur = u => (typeof u === 'string' && /^(https:\/\/|blob:|data:image\/(
 const Q = queryParams();
 const PREVIEW = Q.has('preview');           // aperçu léger : basse qualité, sans son
 const DEMO = parseInt(Q.get('demo') || '0', 10); // tuiles factices pour tester la mise en page
-const SCENE_FORCEE = Q.get('scene');
+/* l'ancienne scène « Partage » n'existe plus : ce qui est partagé s'affiche dans les scènes de caméras */
+const SCENE_FORCEE = Q.get('scene') === 'partage' ? 'live' : Q.get('scene');
 const VERTICAL = Q.get('format') === 'vertical';
 const LARG = VERTICAL ? SCENE_VW : SCENE_W, HAUT = VERTICAL ? SCENE_VH : SCENE_H;
 if (VERTICAL) document.body.classList.add('vertical');
@@ -191,7 +192,7 @@ function appliquerVolumes() {
     if (!PREVIEW) {
       const visible = sceneCameras(etat.scene);
       // ton micro reste ouvert quand c'est une autre de tes caméras qui est à l'écran
-      const enDirect = t.ecran ? (etat.scene === 'partage' && sourcesActives().some(x => x.ref === t.id))
+      const enDirect = t.ecran ? (partageVisible(etat.scene) && sourcesActives().some(x => x.ref === t.id))
         : (etat.onair.includes(t.id) || (t.id === idHote(session) && etat.onair.some(estCamLocale)));
       v = visible && enDirect ? (etat.vol[t.id] ?? 1) : 0;
       if (etat.muet && etat.muet[t.id]) v = 0;
@@ -200,11 +201,13 @@ function appliquerVolumes() {
   }
   for (const [cle, o] of sourcesEl) {
     if (!o.video) continue;
-    const actif = etat.scene === 'partage' && sourcesActives().some(x => cleSource(x) === cle);
+    const actif = partageVisible(etat.scene) && sourcesActives().some(x => cleSource(x) === cle);
     o.video.volume = PREVIEW || !actif ? 0 : Math.min(1, etat.vol[cle] ?? 1);
     if (actif && o.video.paused) o.video.play().catch(() => {});
   }
 }
+/* Ce qui est partagé (écran, image, vidéo, console) s'affiche dans toutes les scènes sauf l'intro et l'outro */
+function partageVisible(scene) { return (scene === 'live' || scene === 'watch') && sourcesActives().length > 0; }
 function sourcesActives() { return ((etat && etat.sources) || []).filter(x => x && x.actif && x.ref).slice(0, 4); }
 
 /* ----- Appliquer l'état envoyé par la régie ----- */
@@ -212,7 +215,7 @@ function appliquerEtat(st) {
   if (!st || (etat && st.ts && etat.ts && st.ts < etat.ts)) return;
   etat = st;
   calerHorloge(st.ts);
-  const scene = SCENE_FORCEE || st.scene;
+  const scene = SCENE_FORCEE || (st.scene === 'partage' ? 'live' : st.scene);
 
   // créer les tuiles des personnes connues, retirer les absents
   if (!DEMO) {
@@ -232,8 +235,9 @@ function appliquerEtat(st) {
   $('#fin').classList.toggle('cachee', scene !== 'fin');
   $('#tuiles').classList.toggle('cachee', !sceneCameras(scene));
   $('#logo-coin').classList.toggle('cachee', !sceneCameras(scene));
-  $('#ecran').classList.toggle('cachee', scene !== 'partage');
-  $('#bandeau').classList.toggle('cachee', !(scene === 'live' || scene === 'partage'));
+  const avecPartage = partageVisible(scene);
+  $('#ecran').classList.toggle('cachee', !avecPartage);
+  $('#bandeau').classList.toggle('cachee', scene !== 'live');
   document.body.dataset.scene = scene;
   // bandeau : celui de la bibliothèque s'il y en a un d'affiché, sinon le titre du live
   const ba = st.bandeauActif;
@@ -251,13 +255,13 @@ function appliquerEtat(st) {
     piste.style.animationDuration = Math.max(20, (def.texte || '').length * 0.9) + 's';
   }
 
-  // sources de la scène Partage
+  // ce qui est partagé : à côté des caméras, dans toutes les scènes sauf l'intro et l'outro
   const actives = sourcesActives();
-  if (scene === 'partage') actives.forEach(creerSource);
+  if (avecPartage) actives.forEach(creerSource);
   const clesActives = actives.map(cleSource);
 
   let ids = (st.onair || []).filter(id => tuiles.has(id) && !tuiles.get(id).ecran);
-  const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && (scene === 'live' || scene === 'partage');
+  const quizEnCours = st.quiz && (st.quiz.active || st.quiz.afficherScores) && scene === 'live';
   // une scène peut ne montrer qu'une partie des personnes à l'antenne (Solo, Duo…) : les autres restent entendues
   if (scene === 'live' && !quizEnCours && Array.isArray(st.visibles)) { const v = ids.filter(id => st.visibles.includes(id)); if (v.length) ids = v; }
   document.body.classList.toggle('quiz-on', !!quizEnCours);
@@ -270,15 +274,18 @@ function appliquerEtat(st) {
   const cote = z => !filChat ? z : VERTICAL ? Object.assign({}, z, { h: z.h - 300 }) : Object.assign({}, z, { w: z.w - 400 });
   const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(MUR ? ZONE_MUR : ZONE, 720));
   const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
-  const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre') : VERTICAL
-    ? (scene === 'partage' ? dispositionPartageV(ids, clesActives, zone) : dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR }))
-    : (scene === 'partage' ? dispositionPartage(ids, clesActives, zone) : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR }));
-  if (scene === 'watch' && !quizEnCours) Object.assign(disp, dispositionCadrage(st.layout, ids, st.focus, zoneWatch, { vertical: VERTICAL }));
+  const zoneScene = scene === 'watch' ? zoneWatch : zone;
+  const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre')
+    : avecPartage ? (VERTICAL ? dispositionPartageV(ids, clesActives, zoneScene) : dispositionPartage(ids, clesActives, zoneScene))
+    : VERTICAL ? dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR })
+    : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR });
+  if (scene === 'watch' && !quizEnCours && !avecPartage) Object.assign(disp, dispositionCadrage(st.layout, ids, st.focus, zoneWatch, { vertical: VERTICAL }));
+  const partageAffiche = avecPartage && !quizEnCours;
   for (const t of tuiles.values()) {
-    if (t.ecran) placer(t, scene === 'partage' ? disp[t.id] : null);
+    if (t.ecran) placer(t, partageAffiche ? disp[t.id] : null);
     else placer(t, disp[t.id]);
   }
-  for (const [cle, o] of sourcesEl) placer(o, scene === 'partage' ? disp[cle] : null);
+  for (const [cle, o] of sourcesEl) placer(o, partageAffiche ? disp[cle] : null);
   placerPanneauQuiz(quizEnCours ? disp.__panneau : null);
   gererPlaylist();
   gererEffet();
@@ -442,7 +449,7 @@ function poserChiffres(el, txt) {
 function gererWatch() {
   const w = etat && etat.watch, scene = SCENE_FORCEE || (etat && etat.scene);
   const grand = !!w && scene === 'watch';
-  const petit = !!w && !grand && w.pastille && (w.lecture || w.pos > 0) && (scene === 'live' || scene === 'partage') && !document.body.classList.contains('quiz-on');
+  const petit = !!w && !grand && w.pastille && (w.lecture || w.pos > 0) && scene === 'live' && !document.body.classList.contains('quiz-on');
   const el = $('#watch');
   el.classList.toggle('cachee', !(grand || petit));
   el.classList.toggle('pastille', petit);

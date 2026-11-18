@@ -22,6 +22,30 @@ let ongletDepart = 'habillage';
 try { ongletDepart = localStorage.getItem(CLE_ONGLET) || ongletDepart; } catch (e) { /* rien */ }
 ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habillage', true);
 
+/* Téléphone : cinq outils en bas et « Plus » pour les autres (Watch, QR, Musique, Diffusion) */
+(() => {
+  const plus = $('#onglet-plus'), pop = $('#plus-pop');
+  if (!plus || !pop) return;
+  const caches = $$('.onglets .tel-plus');
+  pop.innerHTML = caches.map(b => `<button type="button" data-vers="${b.dataset.tab}">${b.querySelector('svg').outerHTML}<span>${b.querySelector('span').textContent}</span>${b.querySelector('.point') ? '<span class="point" hidden></span>' : ''}</button>`).join('');
+  const fermer = () => { pop.hidden = true; plus.setAttribute('aria-expanded', 'false'); };
+  plus.onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; plus.setAttribute('aria-expanded', String(!pop.hidden)); maj(); };
+  pop.querySelectorAll('[data-vers]').forEach(b => b.onclick = () => { fermer(); ouvrirOnglet(b.dataset.vers); window.scrollTo(0, 0); maj(); });
+  document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target) && !plus.contains(e.target)) fermer(); });
+  function maj() {
+    const actif = caches.find(b => b.classList.contains('actif'));
+    plus.classList.toggle('actif', !!actif && !document.body.classList.contains('volet-plateau'));
+    let alerte = false;
+    caches.forEach(b => {
+      const pt = b.querySelector('.point'), v = pop.querySelector(`[data-vers="${b.dataset.tab}"]`);
+      v.classList.toggle('actif', b === actif);
+      if (pt) { const vu = !pt.hidden; alerte = alerte || vu; const p2 = v.querySelector('.point'); if (p2) p2.hidden = !vu; }
+    });
+    $('#plus-point').hidden = !alerte;
+  }
+  setInterval(maj, 700); maj();
+})();
+
 /* Messages du chat non lus quand l'onglet Chat est fermé */
 function majNonLus() { const p = $('#chat-non-lus'); p.hidden = !nonLus; p.textContent = nonLus > 99 ? '99+' : nonLus; }
 new MutationObserver(muts => {
@@ -44,7 +68,7 @@ function actions() {
   const A = [];
   const add = (groupe, titre, faire, mots = '') => A.push({ groupe, titre, faire, mots });
   // Scènes et mises en page
-  [['intro', 'Intro'], ['partage', 'Écran partagé'], ['watch', 'Watch Party'], ['fin', 'Outro']]
+  [['intro', 'Intro'], ['watch', 'Watch Party'], ['fin', 'Outro']]
     .forEach(([s, n]) => add('Scène', `Passer en scène ${n}`, () => changerScene(s), 'scene fin'));
   etat.plans.forEach(p => add('Scène', `Passer en scène ${p.nom}`, () => allerPlan(p.id), 'scene plateau cameras'));
   add('Scène', 'Ajouter une scène de caméras', () => ajouterScene(), 'plateau nouvelle scene');

@@ -86,9 +86,14 @@ $('#btn-cam-changer').onclick = () => {
   $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false;
   reglageCam.ouvrir();
 };
+/* Tant que la caméra n'est pas démarrée, l'aperçu ne peut rien montrer : un gros bouton le dit, et la démarre d'un geste */
+const majAppelCam = () => { $('#cam-appel').hidden = $('#cam-reglage').hidden; };
+new MutationObserver(majAppelCam).observe($('#cam-reglage'), { attributes: true, attributeFilter: ['hidden'] });
+$('#cam-appel').onclick = () => { const go = $('#cam-reglage .rm-go'); if (go) go.click(); };
 const retenus = appareilsRetenus(CLE_CAM);
 if (retenus && retenus.h) demarrerCamera(retenus);   // sans mesure de la caméra (choix retenu avant le 17/11), on repasse une fois par le réglage : il sert à afficher ce qu'elle filme vraiment
 else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
+majAppelCam();
 
 /* ----- Aperçu de l'antenne ----- */
 const apercu = $('#apercu');
@@ -137,12 +142,7 @@ function noterLiveTermine() {
   } catch (err) { /* stockage indisponible */ }
 }
 function changerScene(s) {
-  // rien à montrer pour l'instant : on ouvre l'onglet où l'on choisit quoi partager, au lieu d'un message
-  if (s === 'partage' && !(etat.sources || []).some(x => x && x.actif && x.ref)) {
-    if (typeof ouvrirOnglet === 'function') ouvrirOnglet('sources');
-    if (typeof proposerPartage === 'function') proposerPartage();
-    toast('Choisis ce que tu veux montrer, dans l\'onglet Partage');
-  }
+  if (s === 'partage') s = 'live';   // plus de scène « Partage » : ce qui est partagé s'affiche dans toutes les scènes sauf l'intro et l'outro
   etat.scene = s; envoyer();
 }
 function changerLayout(l) {
@@ -164,16 +164,17 @@ function majLimiteur() {
   if (!LIMITE_MS) { el.hidden = true; return; }
   el.hidden = false;
   // le compte suit le direct (bouton « Démarrer le direct »), pas les scènes
-  if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()}`; el.title = 'Le décompte démarre avec le direct'; return; }
+  if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()}`; el.dataset.court = dureeTexte(+session.limite).trim(); el.title = 'Le décompte démarre avec le direct'; return; }
   const reste = etat.direct.debut + LIMITE_MS - Date.now();
   if (reste <= 0) {
-    el.className = 'limiteur alerte'; el.textContent = 'Temps écoulé';
+    el.className = 'limiteur alerte'; el.textContent = 'Temps écoulé'; el.dataset.court = 'Fini';
     if (!limiteAtteinte) { limiteAtteinte = true; arreterDirect(); toast('Durée maximale atteinte : direct arrêté, écran de fin affiché'); }
     return;
   }
   const alerte = reste <= 20 * 60000;
   el.className = 'limiteur' + (alerte ? ' alerte' : '');
   el.textContent = alerte ? `Attention : plus que ${hms(reste)}` : `Fin du live dans ${hms(reste)}`;
+  el.dataset.court = hms(reste);
 }
 setInterval(majLimiteur, 250); majLimiteur();
 $$('[data-layout]').forEach(b => b.onclick = () => changerLayout(b.dataset.layout));

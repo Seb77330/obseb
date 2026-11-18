@@ -140,6 +140,11 @@
   .moniteur .cadre169 { width: min(100cqw, 100cqh * 16 / 9); border-radius: 8px; box-sizing: border-box; border: 2px solid var(--ui-line); }
   body.en-direct .moniteur .cadre169 { border-color: var(--ui-red); box-shadow: 0 0 0 1px var(--ui-red); }
   .moniteur.vertical .cadre169 { width: min(100cqw, 100cqh * 9 / 16); aspect-ratio: 9/16; }
+  .moniteur .cadre169 { position: relative; }
+  .cam-appel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; display: flex; align-items: center; gap: 8px; white-space: nowrap; padding: 9px 16px; border-radius: 99px; border: 0; background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .cam-appel[hidden] { display: none; }
+  .cam-appel:hover { filter: brightness(1.08); }
+  .hb-jusqua { flex: none; white-space: nowrap; font-size: 12.5px; }
   .rangee { flex: none; display: flex; align-items: center; gap: 10px; }
   .rangee > .etiquette { width: 62px; flex: none; }
   .scenes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); gap: 6px; }
@@ -491,6 +496,7 @@
   #bloque { max-width: 560px; margin: 12vh auto; text-align: center; padding: 20px; }
   /* ----- Téléphone et tablette : le programme reste en haut, un seul volet à la fois, les onglets en bas ----- */
   .que-mobile { display: none !important; }
+  .que-tel, .plus-pop { display: none !important; }
   @media (max-width: 1000px) {
     html, body { height: auto; }
     body { display: block; overflow: visible; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
@@ -554,6 +560,29 @@
     .participant .actions .ic-btn { width: 46px; padding: 9px 0; }
     .sous-tete button { padding: 7px 12px; font-size: 13px; }
     .direct-pop .ligne-pf button { padding: 8px 12px; }
+    /* rien ne dépasse de l'écran : sinon le téléphone dézoome et on peut glisser la page de côté */
+    html, body { overflow-x: clip; max-width: 100%; }
+    header > * { flex-shrink: 0; }
+    header .session { flex: 1 1 0; min-width: 0; }
+    .puce-beta, #demarrage { display: none !important; }
+    .limiteur { font-size: 0; padding: 6px 9px; }
+    .limiteur::after { content: attr(data-court); font-size: 12px; }
+    .limiteur.alerte { font-size: 0; padding: 6px 10px; }
+    .limiteur.alerte::after { font-size: 13px; }
+    #col-programme .colonne-tete { gap: 8px; }
+    /* scènes : elles tiennent sur la largeur ; s'il en reste, on glisse et un fondu le montre au bord */
+    .scenes { gap: 4px; }
+    .scenes button { flex: 1 1 auto; min-width: 0; padding: 10px 7px; }
+    .scenes button b { font-size: 12.5px; overflow: visible; }
+    .scenes .sc-plus { flex: 0 0 38px; padding: 10px 0; }
+    .scenes .sc-plus b { font-size: 0 !important; }
+    .scenes .sc-plus b::before { content: '+'; font-size: 18px; line-height: 1; font-weight: 500; }
+    .scenes.deborde { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+    /* compte à rebours : deux rangées de trois boutons, l'heure précise dit ce qu'elle est */
+    .hb-pre { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .hb-pre .hb-sep { display: none; }
+    .hb-pre button { min-width: 0; padding: 10px 4px; }
+    .cam-appel { font-size: 15px; padding: 11px 18px; }
   }
   /* téléphone tenu à l'horizontale : l'aperçu à gauche, le volet à droite */
   @media (max-width: 1000px) and (max-height: 520px) and (orientation: landscape) {
@@ -565,6 +594,18 @@
     .scenes button b { font-size: 12px; } .scenes button b[data-court]::after { font-size: 12px; }
   }
   @media (max-width: 600px) {
+    #zone-liens-obs { display: none; }
+    /* en bas : cinq outils et « Plus » pour les autres, rien de caché hors de l'écran */
+    .que-tel { display: flex !important; }
+    .onglets .tel-plus { display: none !important; }
+    .onglets { overflow: visible; }
+    .onglets button { flex: 1 1 0; min-width: 0; padding: 8px 2px 7px; }
+    .onglets #onglet-plus.actif, .onglets #onglet-plus[aria-expanded="true"] { color: var(--ui-accent); background: var(--ui-panel2); box-shadow: inset 0 2px 0 var(--ui-accent); }
+    .plus-pop:not([hidden]) { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 6px; position: fixed; left: 8px; right: 8px; bottom: calc(70px + env(safe-area-inset-bottom)); z-index: 36; padding: 8px; background: var(--ui-panel); border: 1px solid var(--ui-line2); border-radius: 14px; box-shadow: 0 -10px 40px rgba(0,0,0,.5); }
+    .plus-pop button { display: flex; align-items: center; gap: 10px; padding: 14px 12px; font-size: 15px; text-align: left; background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 10px; position: relative; }
+    .plus-pop button.actif { border-color: var(--ui-accent); color: var(--ui-accent); }
+    .plus-pop .ic { width: 20px; height: 20px; }
+    .plus-pop .point { position: static; margin-left: auto; }
     .demarrage button.suivant { padding: 0; } .demarrage button.suivant span { display: none; }
     .wp-ecran .tc { font-size: 34px; }
   }
@@ -584,7 +625,7 @@
     <div class="horloge" title="Heure de ton ordinateur"><span class="tc" id="horloge">00:00:00</span></div>
     <button class="icone-btn" id="btn-recherche" title="Rechercher une action (Ctrl K)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
     <span id="place-affichage"></span>
-    <div class="menu-liens">
+    <div class="menu-liens" id="zone-liens-obs">
       <button id="btn-liens" class="avec-ic" title="Les liens à coller dans OBS"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>OBS</span></button>
       <div class="menu" id="menu-liens" hidden>
         <button id="btn-obs">Copier le lien OBS (horizontal)<small>À coller dans une source navigateur 1920 × 1080</small></button>
@@ -663,7 +704,7 @@
         </div>
       </div>
       <div class="colonne-corps">
-        <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe></div></div>
+        <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe><button class="cam-appel" id="cam-appel" hidden title="Ta caméra n'est pas encore partie dans le live : l'aperçu attend"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 10.5l6-3.5v10l-6-3.5"/></svg><span>Démarrer ma caméra</span></button></div></div>
         <div class="rangee">
           <span class="etiquette">Scènes</span>
           <div class="scenes" id="scenes" role="group" aria-label="Scène à l'antenne"></div>
@@ -683,12 +724,14 @@
         <button data-tab="habillage"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg><span>Titres</span></button>
         <button data-tab="sources"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Partage</span></button>
         <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Quiz</span><span class="point" id="quiz-point" hidden></span></button>
-        <button data-tab="watch"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Watch</span><span class="point" id="watch-point" hidden></span></button>
+        <button data-tab="watch" class="tel-plus"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg><span>Watch</span><span class="point" id="watch-point" hidden></span></button>
         <button data-tab="chat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span>Chat</span><span class="pastille-n" id="chat-non-lus" hidden></span></button>
-        <button data-tab="qr"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><path d="M14 14h2.5v2.5M20.5 14v2.5M14 20.5h2.5M20.5 20.5h-1.5v-1.5"/></svg><span>QR</span><span class="point" id="qr-point" hidden></span></button>
-        <button data-tab="musique"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Musique</span></button>
-        <button data-tab="comptes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg><span>Diffusion</span></button>
+        <button data-tab="qr" class="tel-plus"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><path d="M14 14h2.5v2.5M20.5 14v2.5M14 20.5h2.5M20.5 20.5h-1.5v-1.5"/></svg><span>QR</span><span class="point" id="qr-point" hidden></span></button>
+        <button data-tab="musique" class="tel-plus"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Musique</span></button>
+        <button data-tab="comptes" class="tel-plus"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg><span>Diffusion</span></button>
+        <button class="que-tel" id="onglet-plus" aria-haspopup="true" aria-expanded="false" title="Les autres outils"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg><span>Plus</span><span class="point" id="plus-point" hidden></span></button>
       </nav>
+      <div class="plus-pop" id="plus-pop" hidden></div>
       <section class="onglet" data-onglet="habillage" hidden>
         <h3 class="sous-titre" style="margin-top:0">Bandeau du bas</h3>
         <div class="grille2">
@@ -710,7 +753,7 @@
             <button class="petit primaire" data-ajout="60" title="Ajouter une minute">+1 min</button>
           </div>
           <div class="ligne-boutons" style="align-items:center;flex-wrap:nowrap;gap:6px;margin-top:6px">
-            <input type="time" id="heure-debut" style="width:auto;min-width:0;flex:1;padding:5px 8px;font-size:13px" title="Ou jusqu'à une heure précise">
+            <label class="aide hb-jusqua" for="heure-debut">Ou jusqu'à</label><input type="time" id="heure-debut" style="width:auto;min-width:0;flex:1;padding:5px 8px;font-size:13px" title="Ou jusqu'à une heure précise">
             <button class="petit" id="btn-heure" hidden>Jusqu'à cette heure</button>
             <button class="petit" id="btn-sans-compte" title="Sans compte à rebours">Aucun</button>
           </div>
@@ -1045,21 +1088,21 @@
 <script src="js/vendor/qrcode.js?v=105f38a7"></script>
 <script src="js/effets.js?v=4095499a"></script>
 <script src="js/common.js?v=9b58cc66"></script>
-<script src="js/reglages-media.js?v=ff451cf3"></script>
+<script src="js/reglages-media.js?v=8a5c75cc"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=bfc10614"></script>
+<script src="js/regie.js?v=c8e05fa9"></script>
 <script src="js/habillages.js?v=cd70632a"></script>
 <script src="js/regie-habillages.js?v=43f8badf"></script>
-<script src="js/regie-scenes.js?v=2fa50846"></script>
-<script src="js/regie-sources.js?v=04c1ea9c"></script>
-<script src="js/regie-musique.js?v=8ca88ff4"></script>
+<script src="js/regie-scenes.js?v=a6a58cf2"></script>
+<script src="js/regie-sources.js?v=5e3fcea7"></script>
+<script src="js/regie-musique.js?v=c6714f68"></script>
 <script src="js/regie-quiz.js?v=cb582cbd"></script>
 <script src="js/regie-essai.js?v=9eadc51b"></script>
 <script src="js/regie-qr.js?v=e4030782"></script>
 <script src="js/regie-chat.js?v=b8aad86c"></script>
 <script src="js/regie-comptes.js?v=06661441"></script>
-<script src="js/regie-recherche.js?v=6bf10285"></script>
-<script src="js/regie-direct.js?v=351e17b3"></script>
+<script src="js/regie-recherche.js?v=5689dc34"></script>
+<script src="js/regie-direct.js?v=badeb666"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
 <script src="js/regie-watch.js?v=d9f776ec"></script>

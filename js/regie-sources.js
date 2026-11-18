@@ -1,7 +1,7 @@
 /* OBSeb : régie, partie Sources (4 max) et Bandeaux (la musique est dans regie-musique.js) */
 'use strict';
 
-/* Ce qu'on peut montrer sur la scène Écran partagé (4 choses au plus à la fois). Un clic et c'est parti :
+/* Ce qu'on peut montrer à côté des caméras (toutes les scènes sauf l'intro et l'outro) (4 choses au plus à la fois). Un clic et c'est parti :
    « Mon écran » ouvre le choix de la fenêtre, « Image » ouvre le choix du fichier, « Lien » accepte ce qu'on colle. */
 const ICONE_SRC = {
   monecran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/></svg>',
@@ -10,13 +10,15 @@ const ICONE_SRC = {
   console: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8h10a5 5 0 0 1 4.900 4l.800 4a2.300 2.300 0 0 1-4 2l-1.700-2H7l-1.700 2a2.300 2.300 0 0 1-4-2l.800-4A5 5 0 0 1 7 8z"/><path d="M7.500 11v3M6 12.500h3M16 11.500h.01M18 13.500h.01"/></svg>',
   lien: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/></svg>'
 };
+/* sur téléphone, le navigateur ne sait pas partager l'écran : on ne propose que ce qui marche */
+const TEL_SOURCES = !(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) || matchMedia('(pointer: coarse) and (max-width: 1000px)').matches;
 const CHOIX_SOURCE = [
   ['monecran', 'Mon écran', 'Fenêtre, onglet ou écran entier'],
   ['ecraninvite', "Écran d'un invité", 'Quand il partage le sien'],
   ['console', 'Console', "Avec un boîtier d'acquisition"],
-  ['image', 'Image', 'Depuis ton ordinateur'],
+  ['image', 'Image', TEL_SOURCES ? 'Depuis ton téléphone' : 'Depuis ton ordinateur'],
   ['lien', 'Lien', 'Vidéo MP4, YouTube, page web']
-];
+].filter(([ui]) => !(TEL_SOURCES && (ui === 'monecran' || ui === 'console')));
 const NOM_SOURCE = { monecran: 'Mon écran', ecraninvite: "Écran d'un invité", console: 'Console', image: 'Image', lien: 'Lien' };
 const ecransActifs = new Set();      // tes partages d'écran en cours (ids vdo.ninja)
 const iframesEcran = new Map();      // n° de source -> iframe de partage
@@ -133,21 +135,21 @@ function viderSource(i) {
 function construireSlots() {
   const box = $('#sources');
   box.innerHTML = `
-    <div class="src-scene" id="src-scene" hidden><span>C'est prêt, mais la scène affichée est une autre.</span><button type="button" class="petit primaire">Montrer à l'écran</button></div>
+    <div class="src-scene" id="src-scene" hidden><span>C'est prêt. Ça s'affichera dès que tu quittes l'intro ou l'outro.</span><button type="button" class="petit primaire">Passer aux caméras</button></div>
     <div id="src-slots"></div>
     <div class="src-choix" id="src-choix">
       <div class="src-choix-titre"></div>
       <div class="src-choix-grille">${CHOIX_SOURCE.map(([ui, nom, aide]) => `<button type="button" data-ui="${ui}">${ICONE_SRC[ui]}<b>${nom}</b><small>${aide}</small></button>`).join('')}</div>
       <input type="file" accept="image/*" hidden>
-      <p class="aide src-astuce">Tu peux aussi coller un lien ou une image ici (Ctrl+V).</p>
+      ${TEL_SOURCES ? '' : '<p class="aide src-astuce">Tu peux aussi coller un lien ou une image ici (Ctrl+V).</p>'}
     </div>`;
-  box.querySelector('#src-scene button').onclick = () => changerScene('partage');
+  box.querySelector('#src-scene button').onclick = () => (typeof allerPlan === 'function' && etat.plans && etat.plans.length ? allerPlan(etat.plan || etat.plans[0].id) : changerScene('live'));
   etat.sources.forEach((src, i) => {
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
       <div class="tete"><span class="src-ic"></span><b class="src-nom"></b>
-        <label class="src-ecran" title="Affiché ou non sur la scène Écran partagé"><span>À l'écran</span><span class="interrupteur"><input type="checkbox" class="actif"><span></span></span></label>
+        <label class="src-ecran" title="Affiché ou non à l'écran, à côté des caméras (dans toutes les scènes sauf l'intro et l'outro)"><span>À l'écran</span><span class="interrupteur"><input type="checkbox" class="actif"><span></span></span></label>
         <button type="button" class="petit src-oter" title="Retirer ce partage">✕</button>
       </div>
       <div class="ecran-cadre" hidden></div>
@@ -433,10 +435,10 @@ function majSlots() {
   choix.querySelector('.src-choix-titre').textContent = pleins ? 'Montrer autre chose en plus' : 'Que veux-tu montrer ?';
   majSceneSources();
 }
-/* Quelque chose est prêt mais la scène affichée n'est pas « Écran partagé » : un bouton pour y passer */
+/* Quelque chose est prêt mais l'intro ou l'outro est à l'écran (le partage n'y apparaît pas) : un bouton pour passer aux caméras */
 function majSceneSources() {
   const b = $('#src-scene');
-  if (b) b.hidden = !(etat.scene !== 'partage' && etat.sources.some(s => s.actif && s.ref));
+  if (b) b.hidden = !((etat.scene === 'intro' || etat.scene === 'fin') && etat.sources.some(s => s.actif && s.ref));
 }
 setInterval(majSceneSources, 500);
 /* On passe sur la scène Écran partagé sans rien à montrer : les choix se mettent en évidence */
