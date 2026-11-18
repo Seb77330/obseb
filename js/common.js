@@ -917,7 +917,11 @@ const fichiers = (() => {
    « beta » : la formule de Sebastian et des bêta-testeurs, tout au maximum. Tant que les comptes n'existent pas,
    c'est celle de tout le monde (demande de Sebastian, 17/11). ----- */
 const LIMITES = { beta: { musiques: 50 }, gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 50 }, regie: { musiques: 50 }, entreprise: { musiques: 50 } };
+/* Pendant la bêta (jusqu'au 1er janvier 2027), tout le monde a tout, quelle que soit la formule choisie ou affichée */
+const FIN_BETA = Date.UTC(2027, 0, 1);
+function enBeta() { return Date.now() < FIN_BETA; }
 function formuleActuelle() {
+  if (enBeta()) return 'beta';
   try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'beta'; } catch (e) { return 'beta'; }
 }
 

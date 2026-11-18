@@ -158,6 +158,7 @@ function verifierMateriel3D() {
   const montrer = r => {
     el.hidden = false; el.classList.toggle('juste', !r.ok);
     el.textContent = r.ok ? 'Ton ordinateur fait tourner les intros et outros en 3D (Bande-annonce, Plateau TV, Motion).'
+      : enBeta() ? 'Ton ordinateur est un peu juste pour les intros et outros en 3D : elles restent disponibles pendant la bêta, mais peuvent saccader.'
       : 'Ton ordinateur est un peu juste pour les intros et outros en 3D : on les a masquées pour que ton live reste fluide. Tous les autres visuels restent là.';
   };
   const r = resultatMateriel3D();

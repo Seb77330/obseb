@@ -46,7 +46,7 @@ function formulePourHabillage(i) { return i < 1 ? 'Gratuit' : i < 3 ? 'Essentiel
 function habillage3D(scene, id) { const h = HABILLAGES[scene].find(x => x.id === id); return (h && h.d3) || ''; }
 function habillageAutorise(scene, id) {
   const i = HABILLAGES[scene].findIndex(h => h.id === id);
-  if (i >= 0 && HABILLAGES[scene][i].d3 && typeof fonds3dDispo === 'function' && !fonds3dDispo()) return false;
+  if (i >= 0 && HABILLAGES[scene][i].d3 && !(typeof enBeta === 'function' && enBeta()) && typeof fonds3dDispo === 'function' && !fonds3dDispo()) return false;
   return i >= 0 && i < nbHabillages();
 }
 /* Le visuel à montrer : celui choisi s'il existe, sinon le classique */

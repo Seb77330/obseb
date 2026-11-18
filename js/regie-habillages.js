@@ -12,7 +12,7 @@ function dessinerHabillages() {
     const choisi = scene === 'intro' ? etat.introStyle : etat.outroStyle;
     // un ordinateur trop juste pour la 3D ne voit pas ces visuels (test fait au clic sur « Nouveau live »)
     $('#hb-' + scene).innerHTML = HABILLAGES[scene].map((h, i) => {
-      if (h.d3 && !fonds3dDispo()) return '';
+      if (h.d3 && !fonds3dDispo() && !enBeta()) return '';   // pendant la bêta, tout reste visible
       const libre = i < n;
       return `<button type="button" class="hb-carte${h.id === choisi ? ' actif' : ''}${libre ? '' : ' verrou'}${hbVu.scene === scene && hbVu.id === h.id ? ' hb-vu' : ''}" data-id="${h.id}"
         title="${esc(h.nom)} : ${esc(h.desc)}${libre ? '' : ` (formule ${formulePourHabillage(i)})`}" aria-pressed="${h.id === choisi}">
@@ -21,7 +21,7 @@ function dessinerHabillages() {
     $$('#hb-' + scene + ' .hb-carte').forEach(b => b.onclick = () => choisirHabillage(scene, b.dataset.id));
   }
   const tot = HABILLAGES.intro.length;
-  $('#hb-formule').textContent = !fonds3dDispo() ? 'Visuels 3D masqués : ton ordinateur est trop juste pour les faire tourner sans saccades'
+  $('#hb-formule').textContent = !fonds3dDispo() ? (enBeta() ? 'Visuels 3D : ton ordinateur est un peu juste, ils peuvent saccader' : 'Visuels 3D masqués : ton ordinateur est trop juste pour les faire tourner sans saccades')
     : n >= tot ? '' : `${n} sur ${tot} avec ta formule`;
 }
 
