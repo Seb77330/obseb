@@ -301,6 +301,18 @@ $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
   toast("Cette formule n'est pas encore ouverte. Pendant la bêta, tout le studio est gratuit.");
 });
+/* Avec OBS ou sans OBS : les prix et quelques lignes changent ; le choix est gardé dans ce navigateur */
+(function () {
+  const zone = $('#formules'), boutons = $$('#choix-obs button'); if (!zone || !boutons.length) return;
+  const poser = (v, anime) => {
+    zone.dataset.obs = v;
+    boutons.forEach(b => b.setAttribute('aria-pressed', b.dataset.obs === v));
+    if (anime) { zone.classList.remove('bascule'); void zone.offsetWidth; zone.classList.add('bascule'); }
+  };
+  boutons.forEach(b => b.onclick = () => { poser(b.dataset.obs, true); try { localStorage.setItem('studioSeb:formulesObs', b.dataset.obs); } catch (e) { /* navigation privée */ } });
+  let garde = ''; try { garde = localStorage.getItem('studioSeb:formulesObs') || ''; } catch (e) { /* navigation privée */ }
+  if (garde === 'avec') poser('avec', false);
+})();
 (function () {
   const zone = $('#formules'); if (!zone) return;
   zone.addEventListener('pointermove', e => {

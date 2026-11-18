@@ -99,6 +99,18 @@
   .formules-tete h2 { margin: 14px 0 10px; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.08; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
   .formules-tete h2 em { font-style: normal; white-space: nowrap; background: linear-gradient(90deg, var(--t-essai), var(--t-essentiel) 36%, var(--t-pro) 68%, var(--t-regie)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .formules-tete p { margin: 0; color: var(--ui-muted); font-size: 16px; }
+  /* Avec OBS ou sans OBS : un interrupteur, et tout ce qui porte data-si ne se montre que dans sa version */
+  .formules[data-obs="sans"] [data-si="avec"], .formules[data-obs="avec"] [data-si="sans"] { display: none !important; }
+  .choix-obs { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; margin: 26px 0 12px; padding: 4px; border-radius: 99px; background: var(--ui-input); border: 1px solid var(--ui-line); }
+  .choix-obs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 22px; border: 0; border-radius: 99px; background: none; color: var(--ui-muted); font-size: 15px; font-weight: 600; white-space: nowrap; }
+  .choix-obs button:hover { color: var(--ui-text); }
+  .choix-obs button[aria-pressed="true"] { background: var(--t-essentiel, var(--ui-accent)); color: var(--ui-sur-accent, #111); }
+  .choix-obs button i { font: 600 10px var(--mono); font-style: normal; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 99px; border: 1px solid currentColor; opacity: .85; }
+  .formules-tete p.obs-dit { font-size: 14px; max-width: 520px; margin: 0 auto; text-wrap: balance; }
+  @keyframes prix-change { from { opacity: 0; transform: translateY(8px); } }
+  .formules.bascule .prix b, .formules.bascule .formules-tete p span { animation: prix-change .35s cubic-bezier(.2, .7, .2, 1); }
+  @media (prefers-reduced-motion: reduce) { .formules.bascule .prix b, .formules.bascule .formules-tete p span { animation: none; } }
+  @media (max-width: 620px) { .choix-obs button { padding: 9px 14px; font-size: 14px; } }
   .offres { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
   /* le halo derrière les cartes : les quatre couleurs, très doux */
   .offres::before { content: ''; position: absolute; z-index: -1; inset: 10% 3% -2%; background: linear-gradient(90deg, var(--f-essai), var(--f-essentiel) 36%, var(--f-pro) 68%, var(--f-regie)); filter: blur(90px); opacity: .13; pointer-events: none; }
@@ -161,6 +173,7 @@
   @media (max-width: 1080px) { .entreprises { grid-template-columns: 1fr; gap: 18px; margin-top: 22px; } .ent-prix { justify-content: space-between; } .ent-prix p { justify-items: start; } }
   @media (max-width: 620px) { .entreprises { max-width: 420px; margin-left: auto; margin-right: auto; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
   .formules-pied { margin: 30px auto 0; text-align: center; color: var(--ui-muted); font-size: 13px; }
+  .formules-pied.obs-note { margin-bottom: -18px; font-size: 12px; }
   .formules-pied b { margin-right: 9px; padding: 2px 8px; border: 1px solid var(--ui-line2); border-radius: 99px; color: var(--ui-text); font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
   @media (max-width: 1080px) { .offres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
   @media (max-width: 620px) { .offres { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } .formules { margin-top: 64px; } .formules-tete { margin-bottom: 40px; } }
@@ -399,11 +412,17 @@
     <div id="lives"></div>
   </details>
 
-  <section class="formules" id="formules" aria-labelledby="formules-titre">
+  <section class="formules" id="formules" data-obs="sans" aria-labelledby="formules-titre">
     <div class="formules-tete">
       <span class="sur-titre">Formules</span>
       <h2 id="formules-titre">Ton live, <em>à tes couleurs.</em></h2>
-      <p>30 jours gratuits. Dès 6,99 € ensuite.</p>
+      <p>30 jours gratuits. Dès <span data-si="sans">6,99 €</span><span data-si="avec">3,99 €</span> ensuite.</p>
+      <div class="choix-obs" id="choix-obs" role="group" aria-label="Avec ou sans OBS">
+        <button type="button" data-obs="sans" aria-pressed="true">Sans OBS</button>
+        <button type="button" data-obs="avec" aria-pressed="false">Avec OBS<i>moins cher</i></button>
+      </div>
+      <p class="obs-dit" data-si="sans">Rien à installer : le site envoie ton direct vers tes plateformes.</p>
+      <p class="obs-dit" data-si="avec">OBS, un logiciel gratuit sur ton ordinateur, envoie le direct. Le studio fait tout le reste.</p>
     </div>
     <div class="offres">
       <article data-teinte="essai" class="offre">
@@ -417,25 +436,25 @@
       <article data-teinte="essentiel" class="offre vedette">
         <span class="offre-badge">Recommandée</span>
         <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span><div><h3>Essentiel</h3><p class="pour">Le live propre.</p></div></div>
-        <p class="prix"><b>6</b><i>,99 €</i><span>par mois</span></p>
-        <div class="chiffres-cles"><div><b>15 h</b><span>par mois</span></div><div><b>8</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li>3 plateformes en même temps</li><li>Sans logo du studio</li><li>Sous-titres en direct</li><li>Les 25 thèmes, tes styles gardés</li><li>Quiz : 15 questions</li></ul>
+        <p class="prix"><b data-si="sans">6</b><b data-si="avec">3</b><i>,99 €</i><span>par mois</span></p>
+        <div class="chiffres-cles"><div><b data-si="sans">15 h</b><b data-si="avec">Illimité</b><span data-si="sans">par mois</span><span data-si="avec">de direct</span></div><div><b>8</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
+        <ul><li data-si="sans">3 plateformes en même temps</li><li data-si="avec">Ton OBS envoie le direct</li><li>Sans logo du studio</li><li>Sous-titres en direct</li><li>Les 25 thèmes, tes styles gardés</li><li>Quiz : 15 questions</li></ul>
         <button type="button" class="primaire" data-formule="essentiel">Bientôt disponible</button>
       </article>
       <article data-teinte="pro" class="offre">
         
-        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.8" y="6" width="12.4" height="9" rx="2"/><rect x="13.2" y="8.5" width="8" height="12.5" rx="2" fill="var(--ui-panel)"/><path d="M6 19h4"/></svg></span><div><h3>Pro</h3><p class="pour">Partout à la fois.</p></div></div>
-        <p class="prix"><b>11</b><i>,99 €</i><span>par mois</span></p>
-        <div class="chiffres-cles"><div><b>30 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li class="base">Tout Essentiel, et en plus :</li><li>Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Replay 10 jours, sous-titres à corriger</li><li>Quiz : 25 questions</li></ul>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.8" y="6" width="12.4" height="9" rx="2"/><rect x="13.2" y="8.5" width="8" height="12.5" rx="2" fill="var(--ui-panel)"/><path d="M6 19h4"/></svg></span><div><h3>Pro</h3><p class="pour" data-si="sans">Partout à la fois.</p><p class="pour" data-si="avec">Le live complet.</p></div></div>
+        <p class="prix"><b data-si="sans">11</b><b data-si="avec">6</b><i>,99 €</i><span>par mois</span></p>
+        <div class="chiffres-cles"><div><b data-si="sans">30 h</b><b data-si="avec">Illimité</b><span data-si="sans">par mois</span><span data-si="avec">de direct</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
+        <ul><li class="base">Tout Essentiel, et en plus :</li><li data-si="sans">Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li data-si="sans">Replay 10 jours, sous-titres à corriger</li><li data-si="avec">Sous-titres à corriger après le live</li><li>Quiz : 25 questions</li></ul>
         <button type="button" data-formule="pro">Bientôt disponible</button>
       </article>
       <article data-teinte="regie" class="offre">
         
-        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><rect x="4" y="13" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="10" y="6.5" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="16" y="11" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/></svg></span><div><h3>Régie</h3><p class="pour">Avec ton OBS.</p></div></div>
-        <p class="prix"><b>19</b><i>,99 €</i><span>par mois</span></p>
-        <div class="chiffres-cles"><div><b>60 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
-        <ul><li class="base">Tout Pro, et en plus :</li><li>Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li>Replay 30 jours</li><li>Quiz : 50 questions</li></ul>
+        <div class="offre-tete"><span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><rect x="4" y="13" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="10" y="6.5" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/><rect x="16" y="11" width="4" height="3.4" rx="1.2" fill="var(--ui-panel)"/></svg></span><div><h3>Régie</h3><p class="pour" data-si="sans">Avec ton OBS.</p><p class="pour" data-si="avec">La régie complète.</p></div></div>
+        <p class="prix"><b data-si="sans">19</b><b data-si="avec">9</b><i>,99 €</i><span>par mois</span></p>
+        <div class="chiffres-cles"><div><b data-si="sans">60 h</b><b data-si="avec">Illimité</b><span data-si="sans">par mois</span><span data-si="avec">de direct</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
+        <ul><li class="base">Tout Pro, et en plus :</li><li data-si="sans">Tu gardes ton OBS</li><li>Ta scène OBS reprise</li><li>Plusieurs caméras</li><li data-si="sans">Replay 30 jours</li><li>Quiz : 50 questions</li></ul>
         <button type="button" data-formule="regie">Bientôt disponible</button>
       </article>
     </div>
@@ -456,6 +475,7 @@
         <button type="button" data-formule="entreprise">En préparation</button>
       </div>
     </aside>
+    <p class="formules-pied obs-note" data-si="avec">Illimité : pour un usage normal du studio, sans diffusion en continu 24 h sur 24.</p>
     <p class="formules-pied"><b>Bêta</b>Tout est gratuit jusqu'au 1er janvier 2027, avec OBS. Le direct depuis le site arrive avec les formules.</p>
   </section>
 
@@ -636,7 +656,7 @@
 </dialog>
 <script src="js/common.js?v=9b58cc66"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=3f9e4af6"></script>
+<script src="js/accueil.js?v=b5c088ab"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>
 <script src="js/accueil-style.js?v=41260911"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
