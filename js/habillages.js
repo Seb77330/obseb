@@ -27,7 +27,7 @@ const HABILLAGES = {
   ]
 };
 /* Nombre de visuels par formule (le même pour l'intro et l'outro) */
-const HABILLAGES_FORMULE = { gratuit: 1, essentiel: 3, pro: 8, regie: 8, beta: 8 };
+const HABILLAGES_FORMULE = { gratuit: 1, essentiel: 3, pro: 8, regie: 8, entreprise: 8, beta: 8 };
 const NOMS_FORMULES_HB = { 1: 'Gratuit', 3: 'Essentiel', 8: 'Pro' };
 function nbHabillages() {
   const f = typeof formuleActuelle === 'function' ? formuleActuelle() : 'beta';

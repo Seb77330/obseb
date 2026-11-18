@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>OBSeb · Confidentialité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css?v=fe38768c">
+<link rel="stylesheet" href="css/comptes.css?v=6c53bbfb">
+<style>
+  .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
+  .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
+  .barre .etiquette { padding-left: 14px; border-left: 1px solid var(--ui-line); }
+  @media (max-width: 600px) { .barre { padding: 10px 16px; } }
+</style>
+</head>
+<body>
+<header class="barre">
+  <a class="marque" href="index.html" title="Accueil">OBS<b>eb</b></a>
+  <span class="etiquette">Confidentialité</span>
+  <span style="flex:1"></span>
+  <span id="place-affichage"></span>
+</header>
+<main class="texte-legal">
+  <h1>Tes données, en clair</h1>
+  <p class="doux">Mis à jour le 18 novembre 2026.</p>
+
+  <h2>Ce qu'on garde</h2>
+  <p>Seulement pour la personne qui crée des lives, quand elle a un compte :</p>
+  <ul>
+    <li>ton adresse e-mail ;</li>
+    <li>ton nom et ta photo, si tu te connectes avec Google ;</li>
+    <li>ta formule et la date de création du compte.</li>
+  </ul>
+  <p>Ça sert à une seule chose : te connecter et appliquer ta formule. Rien n'est vendu, rien n'est partagé pour de la publicité.</p>
+
+  <h2>Ce qu'on ne garde pas</h2>
+  <ul>
+    <li>Aucun mot de passe : tu te connectes avec Google ou avec un code reçu par e-mail.</li>
+    <li>Tes clés de stream restent dans ton navigateur, sur ton ordinateur.</li>
+    <li>On n'enregistre ni l'image ni le son de tes lives. Ils passent directement entre les navigateurs, avec l'aide du service vdo.ninja pour que chacun se trouve.</li>
+    <li>Tes invités n'ont pas de compte : le prénom qu'ils tapent sert seulement pendant le live.</li>
+  </ul>
+
+  <h2>Où c'est rangé</h2>
+  <ul>
+    <li>Les comptes : chez Supabase, sur des serveurs en Union européenne.</li>
+    <li>Les e-mails avec ton code : envoyés par Brevo, un service français.</li>
+    <li>La connexion avec Google : Google nous transmet seulement ton nom, ton e-mail et ta photo. Aucun accès à ta chaîne YouTube ni à tes e-mails.</li>
+  </ul>
+
+  <h2>Combien de temps</h2>
+  <p>Tant que ton compte existe. Le bouton « Supprimer mon compte », dans le menu de ton compte, efface tout tout de suite. Quand le paiement ouvrira, les factures seront gardées 10 ans, comme la loi le demande.</p>
+
+  <h2>Ce que le navigateur garde</h2>
+  <p>Pas de cookie de publicité ni de pistage. Ton navigateur garde ta connexion (pour que tu restes connecté) et tes lives, dans son stockage local. Tu peux tout effacer en te déconnectant ou en vidant les données du site.</p>
+
+  <h2>Tes droits</h2>
+  <p>Tu peux voir, corriger, récupérer ou effacer tes données, et t'opposer à leur utilisation. Écris-nous : <span id="contact">l'adresse de contact arrive très bientôt</span>. Si la réponse ne te convient pas, tu peux t'adresser à la CNIL (cnil.fr).</p>
+
+  <p style="margin-top:36px"><a href="index.html">Retour à mes lives</a></p>
+</main>
+<script src="js/common.js?v=bc81323b"></script>
+<script src="js/aide-config.js?v=a60d146a"></script>
+<script src="js/confidentialite.js?v=d1ae61de"></script>
+</body>
+</html>
