@@ -105,6 +105,7 @@ function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
     iframe.addEventListener('load', () => {
       if (!PREVIEW) ordre(iframe, { getLoudness: true });
       appliquerVolumes();
+      const t = tuiles.get(id); if (t) { t.fit = null; appliquerCadre(t); }   // une fenêtre rechargée repart de zéro : on lui redit comment cadrer
     });
     el.appendChild(iframe);
   }
@@ -168,6 +169,34 @@ function creerSource(src) {
   sourcesEl.set(cle, o);
   return o;
 }
+/* ----- Cadrage de chaque caméra : remplir la case, ou tout voir (sans rien rogner) -----
+   « Auto » (par défaut) : on regarde la taille réelle de l'image reçue, sans jamais rien imposer à la caméra.
+   Image debout (téléphone tenu à la verticale) : on la montre en entier. Image couchée (16:9, téléphone tourné,
+   webcam) : elle remplit la case. Ça suit la rotation pendant le live, pour toutes les caméras, invités compris. */
+const CSS_VOIR = ':root{--fit-style:contain!important}video{object-fit:contain!important}';
+const CSS_REMPLIR = ':root{--fit-style:cover!important}video{object-fit:cover!important}';
+function modeCadre(id) { const m = etat && etat.cadre && etat.cadre[id]; return m === 'voir' || m === 'remplir' ? m : 'auto'; }
+function appliquerCadre(t) {
+  if (!t || t.ecran || !t.iframe) return;
+  const m = modeCadre(t.id);
+  const voir = m === 'voir' || (m === 'auto' && !!t.res && t.res.h > t.res.w * 1.05);
+  t.el.classList.toggle('tout-voir', voir);
+  if (t.fit === voir) return;
+  t.fit = voir;
+  ordre(t.iframe, { style: voir ? CSS_VOIR : CSS_REMPLIR });
+}
+// la taille de l'image reçue, demandée à chaque fenêtre toutes les 1,5 s (elle change quand on tourne le téléphone)
+setInterval(() => { for (const t of tuiles.values()) if (t.iframe && !t.ecran) ordre(t.iframe, { getStats: true, streamID: t.id }); }, 1500);
+function lireTaille(stats) {
+  if (!stats || typeof stats !== 'object') return null;
+  const cherche = o => {
+    if (!o || typeof o !== 'object') return null;
+    if (typeof o.resolution === 'string') { const m = o.resolution.match(/(\d+)\s*x\s*(\d+)/); if (m && +m[1] && +m[2]) return { w: +m[1], h: +m[2] }; }
+    for (const v of Object.values(o)) { if (v && typeof v === 'object') { const r = cherche(v); if (r) return r; } }
+    return null;
+  };
+  return cherche(stats);
+}
 function supprimerTuile(id) {
   const t = tuiles.get(id);
   if (!t) return;
@@ -227,7 +256,7 @@ function appliquerEtat(st) {
     }
   }
   for (const t of tuiles.values()) {
-    if (!t.ecran) t.el.querySelector('.nom').textContent = (st.noms || {})[t.id] || '';
+    if (!t.ecran) { t.el.querySelector('.nom').textContent = (st.noms || {})[t.id] || ''; appliquerCadre(t); }
   }
 
   gererHabillages(st, scene);
@@ -800,7 +829,18 @@ addEventListener('message', e => {
     appliquerEtat(d[CANAL]);
     return;
   }
-  // 3) niveaux sonores des tuiles
+  // 3) taille de l'image reçue (pour le cadrage automatique)
+  if (d.stats) {
+    for (const t of tuiles.values()) {
+      if (t.iframe && !t.ecran && e.source === t.iframe.contentWindow) {
+        const r = lireTaille(d.stats);
+        if (r && (!t.res || t.res.w !== r.w || t.res.h !== r.h)) { t.res = r; appliquerCadre(t); }
+        break;
+      }
+    }
+    return;
+  }
+  // 4) niveaux sonores des tuiles
   if (d.loudness !== undefined) {
     for (const t of tuiles.values()) {
       if (t.iframe && e.source === t.iframe.contentWindow) {

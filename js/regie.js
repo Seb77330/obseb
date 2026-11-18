@@ -230,6 +230,25 @@ const IC_MICRO_COUPE = IC_MICRO.replace('</svg>', '<path d="M4 4l16 16"/></svg>'
 const IC_SEUL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/><circle cx="12" cy="10.5" r="2"/><path d="M8.8 16a3.2 3.2 0 0 1 6.4 0"/></svg>';
 const IC_LIEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
 const IC_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>';
+const IC_CADRE = {
+  auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><rect x="9.5" y="8.5" width="5" height="7" rx="1"/><path d="M6 3.5l1.5 1.5M18 3.5L16.5 5"/></svg>',
+  voir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><rect x="9" y="7.5" width="6" height="9" rx="1"/></svg>',
+  remplir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 9.5h10v5H7z" fill="currentColor" stroke="none" opacity=".45"/></svg>'
+};
+const TITRE_CADRE = {
+  auto: 'Cadrage automatique : image debout montrée en entier, image couchée (16:9) qui remplit la case. Suit la rotation du téléphone. Clique pour « Tout voir ».',
+  voir: 'Tout voir : l\'image entière, sans rien rogner. Clique pour « Remplir ».',
+  remplir: 'Remplir : l\'image remplit toute la case (les bords peuvent être rognés). Clique pour revenir en automatique.'
+};
+etat.cadre = etat.cadre || {};
+function majCadreBtn(id) {
+  const c = cartes.get(id); if (!c) return;
+  const b = c.el.querySelector('.cadre-btn'); if (!b) return;
+  const m = etat.cadre[id] || 'auto';
+  if (b.dataset.m === m) return;
+  b.dataset.m = m; b.innerHTML = IC_CADRE[m]; b.title = TITRE_CADRE[m];
+  b.classList.toggle('actif-doux', m !== 'auto');
+}
 function creerCarte(id) {
   const estHote = id === ID_HOTE, cam = camsLocales.get(id);
   const el = document.createElement('div');
@@ -244,6 +263,7 @@ function creerCarte(id) {
       <button class="petit antenne-btn"></button>
       ${cam ? '' : '<button class="petit muet-btn ic-btn"></button>'}
       <button class="petit focus-btn ic-btn" title="Seul à l'écran">${IC_SEUL}</button>
+      <button class="petit cadre-btn ic-btn"></button>
       ${estHote || cam ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
       ${cam ? '<button class="petit retirer-btn" title="Débrancher cette caméra">✕</button>' : ''}
     </div>`;
@@ -275,6 +295,12 @@ function creerCarte(id) {
     if (!etat.onair.includes(id)) etat.onair.push(id);
     etat.focus = id; etat.layout = 'solo'; envoyer();
   };
+  el.querySelector('.cadre-btn').onclick = () => {
+    const suite = { auto: 'voir', voir: 'remplir', remplir: 'auto' }[etat.cadre[id] || 'auto'];
+    if (suite === 'auto') delete etat.cadre[id]; else etat.cadre[id] = suite;
+    majCadreBtn(id); envoyer();
+    toast({ auto: 'Cadrage automatique', voir: 'Tout voir : image entière', remplir: 'Remplir la case' }[suite]);
+  };
   const haut = el.querySelector('.haut-btn');
   if (haut) haut.onclick = () => {
     const i = etat.onair.indexOf(id);
@@ -284,6 +310,7 @@ function creerCarte(id) {
   if (retirer) retirer.onclick = () => { if (typeof retirerCam === 'function') retirerCam(id); };
   const c = { el, iframe, niveau: 0 };
   cartes.set(id, c);
+  majCadreBtn(id);
   return c;
 }
 /* Ce que tu entends dans ton casque suit le même volume que le live */
@@ -385,9 +412,10 @@ addEventListener('message', e => {
       const q = resumeStats(d.stats);
       const n = d.stats.total_outbound_connections;
       const el = $('#etat-camera');
+      if (q.grand && hauteurCamera >= q.grand) hauteurCamera = q.h;   // mesure retenue avant le 18/11 sur le grand côté (téléphone debout)
       statsCamera = { h: q.h, kbps: q.kbps, n: typeof n === 'number' ? n : null, vu: Date.now() };
       if (typeof n === 'number' && n === 0) el.innerHTML = '<span class="voyant att"></span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${hauteurCamera || q.h ? ' · ' + (hauteurCamera || q.h) + 'p' : ''}`;
+      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${hauteurCamera || q.h ? ' · ' + (hauteurCamera || q.h) + 'p' + (q.debout ? ' debout' : '') : ''}`;
       el.title = infoEnvoiCamera();
     }
     if (d.streamIDs) {

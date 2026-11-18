@@ -198,6 +198,15 @@ addEventListener('message', async e => {
       if (p) dire({ loudness: Math.round((p.audioLevel || 0) * 100) });
     }, 100);
   }
+  if (d.style && typeof d.style === 'string') {
+    // cadrage demandé par la sortie : seulement remplir ou tout voir
+    if (/object-fit:\s*contain/.test(d.style)) document.body.classList.remove('cover');
+    else if (/object-fit:\s*cover/.test(d.style)) document.body.classList.add('cover');
+  }
+  if (d.getStats && VIEW) {
+    dire({ stats: { resolution: video.videoWidth ? `${video.videoWidth} x ${video.videoHeight}` : '' } });
+    return;
+  }
   if (d.getStats) {
     const pub = room.localParticipant.getTrackPublication(ECRAN ? LK.Track.Source.ScreenShare : LK.Track.Source.Camera);
     const t = pub && pub.track;

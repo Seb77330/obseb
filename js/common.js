@@ -840,6 +840,9 @@ function resumeStats(stats) {
       if (/^(width|frameWidth)$/.test(k) && typeof v === 'number' && v > r.w) r.w = v;
     }
   })(racine, 0);
+  // la définition se lit sur le petit côté : un téléphone tenu debout (1080 × 1920) donne du 1080p, pas du « 1920p »
+  r.grand = Math.max(r.w, r.h);
+  if (r.w && r.h) { r.debout = r.h > r.w; r.h = Math.min(r.w, r.h); }
   return r;
 }
 

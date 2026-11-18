@@ -29,7 +29,16 @@ ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habill
   const caches = $$('.onglets .tel-plus');
   pop.innerHTML = caches.map(b => `<button type="button" data-vers="${b.dataset.tab}">${b.querySelector('svg').outerHTML}<span>${b.querySelector('span').textContent}</span>${b.querySelector('.point') ? '<span class="point" hidden></span>' : ''}</button>`).join('');
   const fermer = () => { pop.hidden = true; plus.setAttribute('aria-expanded', 'false'); };
-  plus.onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; plus.setAttribute('aria-expanded', String(!pop.hidden)); maj(); };
+  // la bulle d'aide ne flotte plus sur la page (elle cachait des boutons) : elle se range ici, sur téléphone
+  const ajouterAide = () => {
+    const bulle = document.querySelector('.aide-bulle');
+    if (!bulle || pop.querySelector('[data-aide]')) return;
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.aide = '1';
+    b.innerHTML = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Aide</span>';
+    b.onclick = () => { fermer(); bulle.click(); };
+    pop.appendChild(b);
+  };
+  plus.onclick = e => { e.stopPropagation(); ajouterAide(); pop.hidden = !pop.hidden; plus.setAttribute('aria-expanded', String(!pop.hidden)); maj(); };
   pop.querySelectorAll('[data-vers]').forEach(b => b.onclick = () => { fermer(); ouvrirOnglet(b.dataset.vers); window.scrollTo(0, 0); maj(); });
   document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target) && !plus.contains(e.target)) fermer(); });
   function maj() {

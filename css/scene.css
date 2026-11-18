@@ -79,6 +79,8 @@ body.sortie { background: #000; }
   color: var(--muted); font: 700 22px var(--font-body); letter-spacing: .1em; text-transform: uppercase;
   background: linear-gradient(135deg, var(--bg2), var(--bg));
 }
+/* caméra montrée en entier (image debout) : le fond du thème remplit les côtés, sans texte d'attente */
+.tuile.tout-voir .attente { font-size: 0; }
 .tuile.demo .attente { color: #fff; font-size: 64px; font-family: var(--font-title); }
 .tuile.silhouette .attente { background-size: cover; background-position: center; }
 
