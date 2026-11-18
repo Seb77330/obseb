@@ -860,11 +860,11 @@ if (PREVIEW && window.parent !== window) setInterval(() => { const b = fichierDe
 
 /* ----- Démarrage ----- */
 if (DEMO) {
-  const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade'];
+  const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade', 'Lucas', 'Emma', 'Rayan', 'Chloé', 'Adam', 'Lina'];
   const st = etatParDefaut(session);
   st.scene = SCENE_FORCEE || 'live';
   st.noms = {}; st.onair = [];
-  for (let i = 0; i < Math.min(DEMO, 11); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
+  for (let i = 0; i < Math.min(DEMO, 18); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
   const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: 'Source ' + (i + 1), actif: true, demo: true }));
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
