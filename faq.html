@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>OBSeb · Aide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css?v=fe38768c">
+<link rel="stylesheet" href="css/aide.css?v=acf06158">
+<style>
+  .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
+  .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
+  .barre .etiquette { padding-left: 14px; border-left: 1px solid var(--ui-line); }
+  @media (max-width: 600px) { .barre { padding: 10px 16px; } .faq-wrap { padding: 24px 16px 80px; } }
+</style>
+</head>
+<body>
+<header class="barre">
+  <a class="marque" href="index.html" title="Accueil">OBS<b>eb</b></a>
+  <span class="etiquette">Aide</span>
+  <span style="flex:1"></span>
+  <span id="place-affichage"></span>
+</header>
+<main class="faq-wrap">
+  <h1>Questions fréquentes</h1>
+  <p class="faq-intro">Tape ta question avec tes mots : les réponses les plus proches remontent tout de suite.</p>
+  <input type="search" class="faq-cherche" id="faq-cherche" placeholder="Ex. : ma caméra est noire, c'est combien, inviter un ami…" aria-label="Chercher dans l'aide" autocomplete="off">
+  <nav class="faq-cats" id="faq-cats" aria-label="Catégories"></nav>
+  <div id="faq-liste"></div>
+  <section class="faq-contact" id="faq-contact">
+    <h2>Pas trouvé ?</h2>
+    <p>Écris-nous : on te répond nous-mêmes.</p>
+    <div id="faq-mail"></div>
+  </section>
+</main>
+<script src="js/common.js?v=9b58cc66"></script>
+<script src="js/aide-config.js?v=a60d146a"></script>
+<script src="js/aide-faq.js?v=3b10d074"></script>
+<script src="js/aide.js?v=b4477da0" data-place="aucune"></script>
+<script src="js/faq-page.js?v=4bb20013"></script>
+</body>
+</html>

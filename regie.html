@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css?v=fe38768c">
+<link rel="stylesheet" href="css/aide.css?v=acf06158">
 <link rel="stylesheet" href="css/regie-habillages.css?v=47ebf29b">
 <link rel="stylesheet" href="css/securite.css?v=e05cba99">
 <style>
@@ -202,7 +203,7 @@
   .bascule:not(.vertical) .h, .bascule.vertical .v { background: var(--ui-accent); color: var(--ui-sur-accent); }
   .avec-ic { display: flex; align-items: center; gap: 8px; }
   header .bouton-affichage > button span { display: none; }
-  header .bouton-affichage > button, #btn-recherche { padding: 7px 9px; }
+  header .bouton-affichage > button, #btn-recherche, #btn-aide { padding: 7px 9px; }
   kbd { white-space: nowrap; color: var(--ui-text); background: var(--ui-input); border: 1px solid var(--ui-line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font: 11px var(--mono); }
 
   /* Outils : onglets à droite */
@@ -624,6 +625,7 @@
     <span id="limiteur" class="limiteur" hidden></span>
     <div class="horloge" title="Heure de ton ordinateur"><span class="tc" id="horloge">00:00:00</span></div>
     <button class="icone-btn" id="btn-recherche" title="Rechercher une action (Ctrl K)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    <button class="icone-btn" id="btn-aide" title="Aide : pose ta question"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.4v.4M12 16.8v.1"/></svg></button>
     <span id="place-affichage"></span>
     <div class="menu-liens" id="zone-liens-obs">
       <button id="btn-liens" class="avec-ic" title="Les liens à coller dans OBS"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>OBS</span></button>
@@ -1109,5 +1111,8 @@
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 <script src="js/regie-securite.js?v=63a7bf74"></script>
+<script src="js/aide-config.js?v=a60d146a"></script>
+<script src="js/aide-faq.js?v=3b10d074"></script>
+<script src="js/aide.js?v=b4477da0" data-place="regie"></script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+/* OBSeb : bulle d'aide (js/aide.js) et page FAQ. Reprend les couleurs de l'interface (css/app.css). */
+.aide-racine { position: fixed; bottom: 18px; z-index: 900; font: 14px/1.45 Inter, system-ui, sans-serif; color: var(--ui-text, #eceef2); }
+.aide-droite { right: 18px; } .aide-gauche { left: 18px; }
+.aide-bulle { display: flex; align-items: center; gap: 7px; padding: 10px 15px 10px 12px; border-radius: 999px;
+  background: var(--ui-accent, #FFD21F); color: var(--ui-sur-accent, #111); border: 0; font-weight: 600; font-size: 14px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.35); cursor: pointer; }
+.aide-bulle:hover { background: var(--ui-accent, #FFD21F); filter: brightness(1.06); }
+.aide-bulle svg { width: 20px; height: 20px; fill: currentColor; }
+.aide-bulle .aide-trait { fill: none; stroke: var(--ui-accent, #FFD21F); stroke-width: 1.8; stroke-linecap: round; }
+.aide-racine.ouvert .aide-bulle { display: none; }
+
+.aide-panneau { position: absolute; bottom: 0; width: min(380px, calc(100vw - 24px)); height: min(560px, calc(100dvh - 90px));
+  display: flex; flex-direction: column; background: var(--ui-panel, #101216); border: 1px solid var(--ui-line2, #363c48);
+  border-radius: 16px; box-shadow: 0 18px 50px rgba(0,0,0,.45); overflow: hidden; }
+.aide-panneau[hidden] { display: none; }
+.aide-droite .aide-panneau { right: 0; } .aide-gauche .aide-panneau { left: 0; }
+.aide-tete { display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; border-bottom: 1px solid var(--ui-line, #23272f); }
+.aide-tete div { flex: 1; min-width: 0; display: grid; }
+.aide-tete b { font-size: 15px; } .aide-tete small { color: var(--ui-muted, #8a92a0); font-size: 12px; }
+.aide-tout { font-size: 12.5px; color: var(--ui-muted, #8a92a0); text-decoration: none; padding: 5px 9px; border: 1px solid var(--ui-line, #23272f); border-radius: 8px; }
+.aide-tout:hover { color: var(--ui-text, #eceef2); border-color: var(--ui-line2, #363c48); }
+.aide-fermer { padding: 5px 9px; font-size: 13px; line-height: 1; }
+
+.aide-fil { position: relative; flex: 1; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.aide-msg { max-width: 92%; padding: 10px 12px; border-radius: 13px; }
+.aide-msg p { margin: 0 0 6px; } .aide-msg p:last-child { margin-bottom: 0; }
+.aide-bot { align-self: flex-start; background: var(--ui-panel2, #171a20); border: 1px solid var(--ui-line, #23272f); border-bottom-left-radius: 4px; }
+.aide-moi { align-self: flex-end; background: var(--ui-accent, #FFD21F); color: var(--ui-sur-accent, #111); border-bottom-right-radius: 4px; }
+.aide-q { font-weight: 600; }
+.aide-sous { color: var(--ui-muted, #8a92a0); font-size: 12.5px; margin-top: 8px !important; }
+.aide-puces { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.aide-puce { padding: 6px 10px; font-size: 12.5px; text-align: left; border-radius: 999px; line-height: 1.3; }
+.aide-lien { background: none; border: 0; padding: 4px 0 0; color: var(--ui-muted, #8a92a0); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
+.aide-lien:hover { background: none; color: var(--ui-text, #eceef2); }
+.aide-mail { display: inline-block; margin-top: 6px; padding: 8px 12px; border-radius: 9px; background: var(--ui-accent, #FFD21F); color: var(--ui-sur-accent, #111); font-weight: 600; text-decoration: none; }
+.aide-bientot { color: var(--ui-muted, #8a92a0); font-size: 12.5px; }
+
+.aide-saisie { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--ui-line, #23272f); }
+.aide-saisie input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--ui-line2, #363c48); background: var(--ui-input, #0b0d10); font-size: 16px; }
+.aide-saisie button { padding: 0 14px; background: var(--ui-accent, #FFD21F); color: var(--ui-sur-accent, #111); border-color: var(--ui-accent, #FFD21F); }
+
+@media (max-width: 600px) {
+  .aide-racine { bottom: 12px; } .aide-droite { right: 12px; } .aide-gauche { left: 12px; }
+  .aide-bulle span { display: none; } .aide-bulle { padding: 11px; }
+  .aide-racine.ouvert { left: 8px; right: 8px; bottom: 8px; }
+  .aide-racine.ouvert .aide-panneau { position: static; width: auto; height: calc(100dvh - 16px); }
+}
+/* Régie : sur ordinateur, bouton « ? » dans l'en-tête et panneau sous l'en-tête ; sur téléphone, bulle ronde au-dessus des onglets */
+@media (min-width: 1001px) {
+  .aide-regie { top: 62px; bottom: auto; right: 12px; }
+  .aide-regie .aide-bulle { display: none; }
+  .aide-regie .aide-panneau { top: 0; bottom: auto; }
+}
+@media (max-width: 1000px) {
+  #btn-aide { display: none; }
+  .aide-racine.aide-regie:not(.ouvert) { bottom: 76px; }
+  .aide-regie .aide-bulle span { display: none; } .aide-regie .aide-bulle { padding: 11px; }
+}
+
+/* ----- Page FAQ ----- */
+.faq-wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 100px; }
+.faq-wrap h1 { font-size: 28px; margin: 0 0 6px; }
+.faq-intro { color: var(--ui-muted); margin: 0 0 20px; }
+.faq-cherche { width: 100%; padding: 13px 14px; font-size: 16px; border-radius: 12px; border: 1px solid var(--ui-line2); background: var(--ui-input); }
+.faq-cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 6px; }
+.faq-cats a { font-size: 13px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--ui-line); color: var(--ui-muted); text-decoration: none; }
+.faq-cats a:hover { color: var(--ui-text); border-color: var(--ui-line2); }
+.faq-section h2 { font-size: 18px; margin: 30px 0 10px; scroll-margin-top: 80px; }
+.faq-wrap details { border: 1px solid var(--ui-line); border-radius: 11px; background: var(--ui-panel); margin-bottom: 8px; }
+.faq-wrap summary { cursor: pointer; padding: 13px 16px; font-weight: 600; list-style: none; display: flex; gap: 10px; }
+.faq-wrap summary::-webkit-details-marker { display: none; }
+.faq-wrap summary::before { content: '+'; color: var(--ui-accent); font-weight: 700; width: 12px; flex: none; }
+.faq-wrap details[open] summary::before { content: '–'; }
+.faq-wrap details p { margin: 0; padding: 0 16px 14px 38px; color: var(--ui-text); white-space: pre-line; }
+.faq-vide { color: var(--ui-muted); padding: 20px 0; }
+.faq-contact { margin-top: 36px; padding: 18px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-panel); }
+.faq-contact h2 { margin: 0 0 6px; font-size: 17px; } .faq-contact p { margin: 0 0 10px; color: var(--ui-muted); }
