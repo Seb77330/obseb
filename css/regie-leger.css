@@ -1,0 +1,143 @@
+/* OBSeb, régie allégée (18/11) : moins de cadres, moins de boutons « en boîte », moins de texte.
+   Chargé après le style de la page : il ne fait qu'enlever du poids visuel, les fonctions restent les mêmes. */
+
+/* ----- Barre du haut : des icônes nues, seul « Démarrer le direct » garde un cadre ----- */
+header { border-bottom-color: transparent; background: var(--ui-bg); }
+header .session { border-left: 0; padding-left: 4px; }
+.horloge { border: 0; padding: 0 6px; }
+.horloge .tc { color: var(--ui-muted); font-size: 15px; }
+header button:not(.btn-direct):not(.primaire), header .bouton-affichage > button, .icone-btn {
+  background: transparent; border-color: transparent; color: var(--ui-muted);
+}
+header button:not(.btn-direct):not(.primaire):hover, header .bouton-affichage > button:hover {
+  background: var(--ui-hover); color: var(--ui-text); border-color: transparent;
+}
+.puce-beta { border: 0; padding: 2px 0; margin-left: -2px; opacity: .8; }
+.limiteur { background: transparent !important; border-color: transparent !important; color: var(--ui-muted); }
+
+/* ----- Les trois colonnes : des surfaces, pas des boîtes dans des boîtes ----- */
+main { gap: 14px; padding: 4px 14px 12px; }
+.colonne { border: 0; background: transparent; border-radius: 12px; }
+#col-programme { background: transparent; }
+#col-sources, #col-droite { background: var(--ui-panel); }
+.colonne-tete { border-bottom: 0; background: transparent; height: 40px; }
+.colonne-tete > .etiquette { opacity: .75; }
+
+/* ----- Sources : ta caméra et tes invités sans cadre autour ----- */
+.carte-moi, .participant { border-color: transparent; background: transparent; padding: 0; }
+.participant.antenne { border-color: transparent; }
+.participant.antenne .vignette, .carte-moi.antenne #ma-camera { box-shadow: 0 0 0 2px var(--ui-accent); }
+body.en-direct .participant.antenne .vignette { box-shadow: 0 0 0 2px var(--ui-red); }
+#ma-camera, .participant .vignette { border-radius: 10px; }
+.participant .actions button, .cam-ligne button, .sous-tete button {
+  background: transparent; border-color: transparent; color: var(--ui-muted);
+}
+.participant .actions button:hover, .cam-ligne button:hover, .sous-tete button:hover { background: var(--ui-hover); color: var(--ui-text); }
+.participant .actions .antenne-btn { background: var(--ui-panel2); color: var(--ui-text); }
+.participant .actions .antenne-btn.primaire, .participant .actions .antenne-btn.actif { background: var(--ui-accent); color: var(--ui-sur-accent); }
+.vu { height: 4px; }
+.sous-tete { margin-top: 14px; }
+.sous-tete .etiquette { opacity: .75; }
+#liste .vide { border: 0; padding: 4px 2px; gap: 8px; background: none; }
+#liste .vide #vide-inviter { justify-self: start; }
+.cam-ajout { border: 0; }
+
+/* ----- Programme : l'image d'abord ----- */
+.moniteur .cadre169 { border-width: 1px; border-radius: 12px; }
+.badge-direct { background: transparent; padding: 3px 4px; }
+.bascule { border: 0 !important; background: transparent !important; }
+.rangee > .etiquette { opacity: .7; }
+
+/* Scènes : vignettes plus basses, pas de cadre, le numéro n'apparaît qu'au survol */
+.scenes { gap: 8px; }
+.scenes button { background: transparent; border-color: transparent; padding: 4px 4px 5px; gap: 4px; }
+.scenes button:hover { background: var(--ui-hover); border-color: transparent; }
+.scenes .sc-vue { max-height: 38px; background: var(--ui-panel2); }
+.scenes button kbd { opacity: 0; transition: opacity .15s; }
+.scenes button:hover kbd { opacity: .85; }
+.scenes button b { font-weight: 500; color: var(--ui-muted); }
+.scenes button.actif { background: color-mix(in srgb, var(--ui-accent) 14%, transparent); border-color: transparent; color: var(--ui-text); }
+.scenes button.actif b { color: var(--ui-text); font-weight: 600; }
+.scenes button.actif .sc-vue { background: var(--ui-panel2); box-shadow: 0 0 0 2px var(--ui-accent); }
+.scenes button.actif .sc-vue rect, .scenes button.actif .sc-vue polygon { fill: var(--ui-line2); }
+.scenes button.actif .sc-vue .q { fill: var(--ui-accent); }
+.scenes button.actif kbd { background: transparent; border-color: transparent; }
+body.en-direct .scenes button.actif { background: color-mix(in srgb, var(--ui-red) 16%, transparent); border-color: transparent; color: var(--ui-text); }
+body.en-direct .scenes button.actif .sc-vue { box-shadow: 0 0 0 2px var(--ui-red); }
+.scenes .sc-plus { border: 0; }
+
+/* Cadrage : une ligne de mots, la pastille jaune seulement sur le choix */
+.cadrages { border: 0; background: transparent; padding: 0; gap: 2px; }
+.cadrages .sc-vue { display: none; }
+.cadrages button { color: var(--ui-muted); padding: 6px 4px; }
+.cadrages button.actif { background: var(--ui-panel2); color: var(--ui-text); box-shadow: inset 0 -2px 0 var(--ui-accent); }
+#rangee-cadrage .coche { color: var(--ui-muted); font-size: 13px; }
+
+/* ----- Panneau de droite ----- */
+.onglets { background: transparent; border-bottom: 1px solid var(--ui-line); padding: 4px 6px 0; }
+.onglets button { border-radius: 6px 6px 0 0; }
+.onglets button.actif { background: transparent; }
+.onglet { padding: 16px; }
+.sous-titre { margin-top: 22px; }
+.qz-dispos button, .wp-modes button { background: transparent; }
+.qz-dispos button.actif, .wp-modes button.actif { background: var(--ui-panel2); }
+.pli { border-top-color: var(--ui-line); }
+.pli > summary { padding: 14px 0 12px; }
+.pli-resume { margin-left: auto; min-width: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ui-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+.pli-resume:empty { display: none; }
+.pli > summary .pli-resume + * { margin-left: 0; }
+.pli-resume .voyant { flex: none; }
+
+/* Watch Party : le minuteur et la lecture devant, le reste replié */
+[data-onglet="watch"] .wp-ecran { border: 0; background: var(--ui-input); border-radius: 14px; padding: 18px 14px 14px; }
+[data-onglet="watch"] .wp-ecran .tc { font-size: 46px; letter-spacing: -.01em; }
+[data-onglet="watch"] .wp-barre { height: 3px; background: var(--ui-panel2); }
+[data-onglet="watch"] .wp-transport { grid-template-columns: 1fr 2fr 1fr; gap: 8px; margin-top: 12px; }
+[data-onglet="watch"] .wp-transport [data-wp-saut="-1"], [data-onglet="watch"] .wp-transport [data-wp-saut="1"] { display: none; }
+[data-onglet="watch"] .wp-transport button:not(.primaire):not(.joue) { background: transparent; border-color: var(--ui-line); }
+.wp-actions { display: flex; gap: 8px; align-items: center; margin: 10px 0 8px; }
+.wp-actions button { flex: 1; background: transparent; }
+.wp-actions button.annule { border-color: var(--ui-red); color: var(--ui-red); }
+.wp-actions button.actif-doux { border-color: var(--ui-accent); color: var(--ui-accent); }
+.wp-actions .wp-discret { flex: none; border-color: transparent; color: var(--ui-muted); font-size: 13px; padding: 9px 6px; }
+.wp-actions .wp-discret:hover { color: var(--ui-text); background: var(--ui-hover); }
+[data-onglet="watch"] .pli input + .wp-ligne, [data-onglet="watch"] .pli .wp-ligne + .wp-ligne { margin-top: 8px; }
+[data-onglet="watch"] .pli .wp-styles { margin-bottom: 10px; }
+#wp-pli-suivre .wp-pas { margin-top: 0; }
+
+/* ----- Barre d'état du bas : des voyants, sans traits entre eux ----- */
+#etat-studio { border-top-color: transparent; background: var(--ui-bg); }
+#etat-studio button, #etat-studio .pousse { border: 0 !important; padding: 0 12px; }
+#etat-studio button[data-niveau=ok] { opacity: .7; }
+
+/* ----- En clair : des surfaces à peine teintées ----- */
+:root[data-mode="clair"] #col-sources, :root[data-mode="clair"] #col-droite { box-shadow: 0 1px 2px rgba(20, 24, 33, .06), 0 0 0 1px var(--ui-line); }
+
+/* ----- Téléphone et tablette : on garde la mise en page dédiée ----- */
+@media (max-width: 1000px) {
+  #col-sources, #col-droite { background: transparent; }
+  #col-programme { background: var(--ui-bg); }
+  :root[data-mode="clair"] #col-sources, :root[data-mode="clair"] #col-droite { box-shadow: none; }
+  main { padding: 0; gap: 0; }
+  .scenes button { background: var(--ui-panel2); }
+  .onglets { background: var(--ui-header); border-top: 1px solid var(--ui-line); border-bottom: 0; padding: 5px 6px calc(5px + env(safe-area-inset-bottom)); }
+  .onglets button { border-radius: 6px; }
+  #etat-studio { background: none; }
+}
+/* retouches : le résumé collé au chevron ; dans les vignettes de scène, le jaune seulement sur la scène choisie */
+.pli > summary:has(.pli-resume:not(:empty))::after { margin-left: 10px; }
+.scenes button:not(.actif) .sc-vue .q { fill: var(--ui-muted); }
+.scenes button:not(.actif):hover .sc-vue .q { fill: var(--ui-text); }
+
+/* Titres : les cartes d'intro et d'outro sans cadre, la choisie entourée (pas remplie de jaune) */
+.hb-carte { border-color: transparent; background: transparent; }
+.hb-carte:hover { border-color: transparent; background: var(--ui-hover); }
+.hb-carte.actif { background: transparent; color: var(--ui-text); border-color: transparent; box-shadow: none; }
+.hb-carte.actif .hb-vig { box-shadow: 0 0 0 2px var(--ui-accent); }
+.hb-carte b { font-weight: 500; color: var(--ui-muted); }
+.hb-carte.actif b { color: var(--ui-text); font-weight: 600; }
+.hb-apercu { border: 0; }
+.hb-compte { border: 0; padding: 12px 0 0; background: transparent; }
+.hb-pre button:not(.primaire):not(.actif) { background: transparent; }
+.hb-pre button.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); }
+.wp-actions button { white-space: nowrap; padding-left: 8px; padding-right: 8px; }

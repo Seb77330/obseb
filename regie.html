@@ -620,6 +620,7 @@
     #col-sources .colonne-corps, .onglet { max-width: 720px; margin: 0 auto; }
   }
 </style>
+<link rel="stylesheet" href="css/regie-leger.css?v=9f3f4b70">
 </head>
 <body>
 <div id="app" hidden>
@@ -861,8 +862,7 @@
         <button class="petit" id="qz-zero" style="margin-top:14px">Remettre les scores à zéro</button>
       </section>
       <section class="onglet" data-onglet="watch" hidden>
-        <p class="intro-onglet" title="Le film n'est pas diffusé : c'est son minuteur qui passe à l'écran, pour que tout le monde se cale dessus.">Chacun lance le film chez soi, le minuteur passe à l'écran.</p>
-        <div class="wp-ecran" id="wp-ecran">
+        <div class="wp-ecran" id="wp-ecran" title="Le film n'est pas diffusé : chacun le lance chez soi, et c'est ce minuteur qui passe à l'écran pour que tout le monde se cale dessus.">
           <div class="wp-film" id="wp-film"></div>
           <div class="tc" id="wp-temps">0:00:00</div>
           <div class="wp-etat" id="wp-etat">En pause</div>
@@ -875,24 +875,28 @@
           <button data-wp-saut="1" title="Avancer d'une seconde">+1 s</button>
           <button data-wp-saut="10" title="Avancer de 10 secondes">+10 s</button>
         </div>
-        <div class="wp-ligne wp-deux">
+        <div class="wp-actions">
           <button id="wp-top" title="Compte à rebours 5, 4, 3, 2, 1 à l'écran et chez tes invités : tout le monde appuie sur lecture en même temps. Un second clic pendant le compte l'annule.">Top départ</button>
-          <button id="wp-zero" title="Arrête le minuteur et le remet à 0:00:00. Tu peux le rétablir pendant dix secondes.">Remettre à zéro</button>
-        </div>
-        <div class="wp-ligne">
-          <input type="text" id="wp-caler" class="tc" placeholder="0:42:17" inputmode="numeric" aria-label="Position du film">
-          <button id="wp-caler-btn" title="Mettre le minuteur à cette position du film">Caler ici</button>
+          <button id="wp-scene" title="Passer à la scène Watch Party">Scène Watch</button>
+          <button id="wp-zero" class="wp-discret" title="Arrête le minuteur et le remet à 0:00:00. Tu peux le rétablir pendant dix secondes.">Remettre à zéro</button>
         </div>
 
-        <h3 class="sous-titre">Le film</h3>
-        <input type="text" id="wp-titre" placeholder="Titre du film ou de la série" maxlength="60">
-        <div class="wp-ligne">
-          <input type="text" id="wp-episode" placeholder="Saison 1, épisode 4 (facultatif)" maxlength="40" title="Écris « s1e4 » ou « 1x04 » : c'est mis en forme tout seul">
-          <input type="text" id="wp-duree" class="tc" placeholder="Durée 2:46:00" inputmode="numeric" style="flex:0 0 132px" title="La durée du film : elle sert à la barre de progression, au temps restant et à l'heure de fin. Avec l'extension, elle se remplit toute seule.">
-        </div>
+        <details class="pli" id="wp-pli-film">
+          <summary>Le film <span class="pli-resume" id="wp-resume-film"></span></summary>
+          <input type="text" id="wp-titre" placeholder="Titre du film ou de la série" maxlength="60">
+          <div class="wp-ligne">
+            <input type="text" id="wp-episode" placeholder="Saison 1, épisode 4 (facultatif)" maxlength="40" title="Écris « s1e4 » ou « 1x04 » : c'est mis en forme tout seul">
+            <input type="text" id="wp-duree" class="tc" placeholder="Durée 2:46:00" inputmode="numeric" style="flex:0 0 132px" title="La durée du film : elle sert à la barre de progression, au temps restant et à l'heure de fin. Avec l'extension, elle se remplit toute seule.">
+          </div>
+          <div class="wp-ligne">
+            <input type="text" id="wp-caler" class="tc" placeholder="Aller à 0:42:17" inputmode="numeric" aria-label="Position du film">
+            <button id="wp-caler-btn" title="Mettre le minuteur à cette position du film">Caler ici</button>
+          </div>
+        </details>
 
-        <h3 class="sous-titre">Habillage</h3>
-        <div class="qz-dispos wp-styles" id="wp-styles">
+        <details class="pli" id="wp-pli-look">
+          <summary>À l'écran <span class="pli-resume" id="wp-resume-look"></span></summary>
+          <div class="qz-dispos wp-styles" id="wp-styles">
           <button data-wstyle="bandeau" title="Un bandeau aux couleurs de ton thème">
             <svg viewBox="0 0 64 36" aria-hidden="true"><rect x="4" y="13" width="56" height="16" rx="3"/><circle class="q" cx="13" cy="21" r="4.5"/><rect class="q" x="40" y="18" width="16" height="6" rx="1"/></svg>Bandeau</button>
           <button data-wstyle="pellicule" title="Une bande de film avec ses perforations, qui défile pendant la lecture">
@@ -904,23 +908,19 @@
           <button data-wstyle="epure" title="Rien que le temps, en très grand, posé sur l'image">
             <svg viewBox="0 0 64 36" aria-hidden="true"><rect class="q" x="30" y="13" width="30" height="10" rx="1.5"/><rect x="4" y="28" width="56" height="1.6" rx=".8"/><circle class="q" cx="24" cy="28.8" r="2.4"/></svg>Épuré</button>
         </div>
-        <h3 class="sous-titre">Le minuteur affiche</h3>
-        <div class="wp-modes" id="wp-modes">
+          <div class="wp-modes" id="wp-modes">
           <button data-wmode="ecoule" title="Le temps écoulé depuis le début du film"><b>0:42:17</b>Écoulé</button>
           <button data-wmode="restant" title="Le temps qu'il reste avant la fin"><b>−2:03:43</b>Restant</button>
           <button data-wmode="double" title="Le temps écoulé, et la durée du film"><b>0:42 <i>sur</i> 2:46</b>Les deux</button>
           <button data-wmode="fin" title="Le temps écoulé, et l'heure à laquelle le film se termine"><b>fin à 23 h 14</b>Heure de fin</button>
         </div>
-        <p class="aide" id="wp-mode-aide" hidden>Indique la durée du film juste au-dessus : sans elle, le minuteur montre le temps écoulé.</p>
+          <p class="aide" id="wp-mode-aide" hidden>Indique la durée du film dans « Le film » : sans elle, le minuteur montre le temps écoulé.</p>
+          <label class="aide coche" style="margin-top:10px" title="Sur les autres scènes, le minuteur reste dans un coin"><input type="checkbox" id="wp-pastille"> Minuteur en petit sur les autres scènes</label>
+        </details>
 
-        <div class="ligne-boutons" style="margin-top:14px">
-          <button id="wp-scene" class="primaire">Scène Watch Party</button>
-        </div>
-        <label class="aide coche" style="margin-top:10px" title="Sur les autres scènes, le minuteur reste dans un coin"><input type="checkbox" id="wp-pastille"> Minuteur en petit sur les autres scènes</label>
-
-                <div class="wp-source" id="wp-source" style="margin-top:16px"><span class="voyant"></span><span id="wp-source-txt">Minuteur manuel</span></div>
-        <details class="aide" style="margin-top:8px">
-          <summary style="cursor:pointer">Suivre Netflix, Prime Video, Disney+, YouTube ou VLC</summary>
+        <details class="pli" id="wp-pli-suivre">
+          <summary>Suivre ton film <span class="pli-resume"><span class="voyant"></span><span id="wp-source-txt">Minuteur manuel</span></span></summary>
+          <div id="wp-source" hidden></div>
           <ol class="wp-pas">
             <li>Télécharge <a href="extension/obseb-watch.zip" download>l'extension OBSeb Watch</a> et décompresse le dossier.</li>
             <li>Dans Chrome ou Edge, ouvre <b>chrome://extensions</b>, active <b>Mode développeur</b>, puis <b>Charger l'extension non empaquetée</b> et choisis le dossier.</li>
@@ -1115,7 +1115,7 @@
 <script src="js/regie-direct.js?v=ee3b0d60"></script>
 <script src="js/regie-guide.js?v=eeae13c3"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
-<script src="js/regie-watch.js?v=d9f776ec"></script>
+<script src="js/regie-watch.js?v=2f3c6da8"></script>
 <script src="js/regie-etat.js?v=e574de89"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 <script src="js/regie-securite.js?v=63a7bf74"></script>

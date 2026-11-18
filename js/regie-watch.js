@@ -121,12 +121,18 @@ function majWatch() {
   $$('#wp-styles button').forEach(b => b.classList.toggle('actif', b.dataset.wstyle === w.style));
   $$('#wp-modes button').forEach(b => { b.classList.toggle('actif', b.dataset.wmode === w.mode); b.classList.toggle('faute', !w.duree && b.dataset.wmode !== 'ecoule'); });
   $('#wp-mode-aide').hidden = !!w.duree || w.mode === 'ecoule';
-  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Revenir aux caméras' : 'Scène Watch Party';
-  $('#wp-scene').classList.toggle('primaire', etat.scene !== 'watch');
+  $('#wp-scene').textContent = etat.scene === 'watch' ? 'Retour caméras' : 'Scène Watch';
+  $('#wp-scene').classList.toggle('actif-doux', etat.scene === 'watch');
+  // ce qui est choisi dans chaque partie repliée, lisible sans la déplier
+  const nomDe = (sel, attr, v) => { const b = document.querySelector(`${sel} [${attr}="${v}"]`); return b ? b.textContent.replace(/^[\s\d:−,]+/, '').replace(/sur\s*\S+/, '').trim() : ''; };
+  $('#wp-resume-film').textContent = [w.titre, w.duree ? wpTexte(w.duree) : ''].filter(Boolean).join(' · ') || 'à remplir';
+  const mode = { ecoule: 'écoulé', restant: 'restant', double: 'les deux', fin: 'heure de fin' }[w.mode] || '';
+  $('#wp-resume-look').textContent = [nomDe('#wp-styles', 'data-wstyle', w.style), mode].filter(Boolean).join(' · ');
   $('#watch-point').hidden = !(w.lecture || etat.scene === 'watch');
   const auto = Date.now() - extVue < 5000;
-  $('#wp-source .voyant').className = 'voyant' + (auto ? (extSite ? ' ok' : ' att') : '');
-  $('#wp-source-txt').innerHTML = !auto ? 'Minuteur manuel'
-    : extSite ? `<b>Minuteur automatique</b> : il suit ${esc(extSite)}.` : 'Extension détectée. Ouvre ton film et clique sur « Suivre le film de cet onglet ».';
+  $('#wp-pli-suivre .voyant').className = 'voyant' + (auto ? (extSite ? ' ok' : ' att') : '');
+  $('#wp-source-txt').textContent = !auto ? 'manuel' : extSite ? 'suit ' + extSite : 'extension prête';
+  $('#wp-source-txt').title = !auto ? 'Le minuteur avance quand tu appuies sur Lecture.'
+    : extSite ? `Minuteur automatique : il suit ${extSite}.` : 'Extension détectée. Ouvre ton film et clique sur « Suivre le film de cet onglet ».';
 }
 setInterval(majWatch, 250); majWatch();
