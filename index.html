@@ -281,6 +281,10 @@
   .theme-carte.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
   .theme-carte.actif::after { content: '✓'; position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; display: grid; place-items: center; background: var(--ui-accent); color: var(--ui-sur-accent); font-size: 12px; font-weight: 700; border-radius: 50%; }
   /* Les finitions : une liste de lignes, une icône, un titre, une explication dessous */
+  /* Résultat du test du matériel (visuels 3D) */
+  .materiel-3d { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 12.5px; color: var(--ui-muted); line-height: 1.45; }
+  .materiel-3d::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c, #3ecf8e); box-shadow: 0 0 8px var(--c, #3ecf8e); }
+  .materiel-3d.juste { --c: #f5a524; }
   /* Catégories de thèmes : des onglets au-dessus de la galerie */
   .cats-themes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .cats-themes button { background: none; border: 1px solid var(--ui-line); color: var(--ui-muted); font-size: 12.5px; font-weight: 500; padding: 6px 12px; border-radius: 999px; }
@@ -538,6 +542,7 @@
           <div class="galerie" id="galerie-styles"></div>
           <div class="sous-etape">Thèmes du site</div>
         </div>
+        <p class="materiel-3d" id="materiel-3d" hidden></p>
         <div class="cats-themes" id="cats-themes" role="tablist" aria-label="Catégories de thèmes"></div>
         <div class="galerie" id="galerie"></div>
 
@@ -664,7 +669,8 @@
 <script src="js/comptes-config.js?v=65c90150"></script>
 <script src="js/comptes.js?v=9c891fe5"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/accueil.js?v=6c9a368f"></script>
+<script src="js/fonds3d.js?v=380fb846"></script>
+<script src="js/accueil.js?v=8122f76a"></script>
 <script src="js/accueil-compte.js?v=f6b38e06"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>
 <script src="js/accueil-style.js?v=41260911"></script>

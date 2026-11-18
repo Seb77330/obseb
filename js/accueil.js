@@ -152,6 +152,20 @@ function ouvrirCreation(titre, bouton, modif) {
   remplirForm(); montrerVue('creation');
 }
 addEventListener('popstate', () => montrerVue(location.hash === '#nouveau' ? 'creation' : 'liste', false));
+/* Test du matériel : la carte graphique peut-elle faire tourner les visuels 3D sans saccades ? (refait au plus une fois par semaine) */
+function verifierMateriel3D() {
+  const el = $('#materiel-3d');
+  const montrer = r => {
+    el.hidden = false; el.classList.toggle('juste', !r.ok);
+    el.textContent = r.ok ? 'Ton ordinateur fait tourner les intros et outros en 3D (Bande-annonce, Plateau TV, Motion).'
+      : 'Ton ordinateur est un peu juste pour les intros et outros en 3D : on les a masquées pour que ton live reste fluide. Tous les autres visuels restent là.';
+  };
+  const r = resultatMateriel3D();
+  if (r && Date.now() - (r.quand || 0) < 7 * 864e5) return montrer(r);
+  el.hidden = false; el.classList.remove('juste'); el.textContent = 'Petit test de ton ordinateur pour les visuels 3D…';
+  setTimeout(() => testerMateriel3D().then(montrer), 400);
+}
+$('#btn-nouveau').addEventListener('click', verifierMateriel3D);
 $('#btn-nouveau').onclick = () => { enEdition = null; brouillon = nouvelleSession('', 'minimal'); if (typeof appliquerStyleDefaut === 'function') appliquerStyleDefaut(brouillon); ouvrirCreation('Nouveau live', 'Créer le live', false); };
 
 $('#btn-creer').onclick = async () => {
