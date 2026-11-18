@@ -16,6 +16,16 @@
      POST /salle/exclure            {room, cle, identite}   le met dehors (et l'empêche de revenir sous ce nom)
      POST /salle/verrouiller        {room, cle}             plus personne ne peut entrer (deverrouiller pour rouvrir)
 
+   Relais (« le facteur ») : le navigateur de l'animateur monte le live lui-même et nous envoie UNE vidéo finie (WHIP) ;
+   le serveur ne la remonte pas, il la recopie telle quelle vers YouTube et les autres (seul le son passe en AAC).
+     POST /relais/ouvrir     {room, cle, destinations:[rtmp…], format}   → {whip, jeton, chemin}
+     POST /relais/modifier   {room, cle, chemin, destinations}           change les plateformes sans couper l'envoi
+     POST /relais/fermer     {room, cle, chemin}
+     POST /relais/etat       {room, cle, chemin}
+     POST /whip/<chemin>     (Authorization: Bearer <jeton>)              offre WebRTC du navigateur, transmise à MediaMTX
+     DELETE /whip/<chemin>/s/<session>                                    fin de l'envoi
+     POST /debit             octets au hasard : mesure du débit montant pour le check-up (aucune donnée gardée)
+
    Sécurité : le moteur n'écoute que sur 127.0.0.1 (Caddy fait le HTTPS devant), toute clé est comparée en temps constant,
    les essais sont limités à 30 par minute et par adresse.
 */
@@ -278,13 +288,130 @@ function telechargementSigne(nom, url) {
   return egal(crypto.createHmac('sha256', SECRET).update(nom + ':' + exp).digest('hex').slice(0, 32), sig);
 }
 
+
+/* ----- Relais : « le facteur » -----
+   Le navigateur a déjà monté le live (caméras, thème, textes). Il l'envoie en WebRTC (WHIP) à MediaMTX, sur la machine.
+   ffmpeg relit ce flux et le recopie SANS le réencoder (-c:v copy) vers chaque plateforme ; seul le son passe d'Opus à AAC
+   (exigé par le RTMP). Coût : quelques % d'un cœur par live, au lieu d'un Chrome + un encodage 1080p complets.
+   MediaMTX demande une image clé toutes les 2 s (exigence de YouTube : 4 s maximum). */
+const MTX_WHIP = process.env.MTX_WHIP || 'http://127.0.0.1:8889';
+const MTX_RTSP = process.env.MTX_RTSP || 'rtsp://127.0.0.1:8554';
+const RELAIS_MAX = +process.env.OBSEB_RELAIS_MAX || 15;           // lives relayés en même temps sur ce serveur
+const ENREGISTRER_RELAIS = process.env.OBSEB_RELAIS_ARCHIVE !== '0';  // garde aussi une copie du live (replay), sans réencodage
+const relais = new Map();   // chemin -> { room, jeton, destinations, format, ffmpeg, depuis, envoiDepuis, redemarrages, erreur, ferme }
+const RTMP_OK = u => typeof u === 'string' && u.length < 600 && /^rtmps?:\/\/[^\s|\[\]]+$/.test(u);   // pas de | ni [ ] (options du tee de ffmpeg)
+
+function verifRelais({ room, cle, chemin }, besoinChemin = true) {
+  if (typeof room !== 'string' || !/^[a-z0-9]{6,40}$/.test(room) || !cleValide(room, cle)) throw refus('Clé de régie incorrecte');
+  if (!besoinChemin) return null;
+  const r = relais.get(chemin);
+  if (!r || r.room !== room) throw refus('Relais inconnu');
+  return r;
+}
+function ouvrirRelais(q) {
+  verifRelais(q, false);
+  const dest = Array.isArray(q.destinations) ? q.destinations : [];
+  if (!dest.length || dest.length > 8 || !dest.every(RTMP_OK)) throw refus('Plateformes invalides');
+  const format = q.format === 'vertical' ? 'vertical' : 'horizontal';
+  // un seul relais par salle et par format : rouvrir remplace l'ancien
+  for (const [c, r] of relais) if (r.room === q.room && r.format === format) fermerRelais(c);
+  if (relais.size >= RELAIS_MAX) throw refus('Relais complet pour l\'instant', { complet: true });
+  const chemin = 'r' + crypto.randomBytes(9).toString('hex');
+  const r = { room: q.room, jeton: crypto.randomBytes(24).toString('hex'), destinations: dest, format, ffmpeg: null,
+    depuis: Date.now(), envoiDepuis: null, redemarrages: 0, erreur: null, ferme: false, fichier: null };
+  relais.set(chemin, r);
+  // personne n'envoie dans les 3 minutes : on referme
+  r.minuteur = setTimeout(() => { if (!r.envoiDepuis) fermerRelais(chemin); }, 180000);
+  journal('Relais ouvert', chemin, format, dest.length, 'plateforme(s)');
+  return { chemin, jeton: r.jeton, whip: `/whip/${chemin}` };
+}
+function lancerCopie(chemin) {
+  const r = relais.get(chemin);
+  if (!r || r.ferme || r.ffmpeg) return;
+  const sorties = r.destinations.map(u => `[f=flv:onfail=ignore]${u}`);
+  if (ENREGISTRER_RELAIS) {
+    if (!r.fichier) r.fichier = `live-${new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19)}-${r.format}.mkv`;
+    // une reprise après coupure écrit un nouveau morceau plutôt que d'écraser le premier
+    const f = r.redemarrages ? r.fichier.replace(/\.mkv$/, `-${r.redemarrages}.mkv`) : r.fichier;
+    sorties.push(`[f=matroska:onfail=ignore]${path.join(DOSSIER, f)}`);
+  }
+  const p = spawn('ffmpeg', [
+    '-hide_banner', '-loglevel', 'error', '-rtsp_transport', 'tcp', '-timeout', '5000000',
+    '-i', `${MTX_RTSP}/${chemin}`,
+    '-map', '0:v:0', '-map', '0:a:0?',
+    '-c:v', 'copy',                                     // l'image n'est PAS réencodée : c'est tout l'intérêt
+    '-c:a', 'aac', '-b:a', '160k', '-ar', '48000', '-ac', '2',
+    '-flags', '+global_header', '-f', 'tee', sorties.join('|')
+  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  r.ffmpeg = p;
+  p.stderr.on('data', d => { r.dernier = d.toString().slice(-300); });
+  p.on('exit', code => {
+    r.ffmpeg = null;
+    if (r.ferme) return;
+    // le navigateur n'envoie pas encore, ou s'est reconnecté : on réessaie tant que le relais est ouvert
+    if (code && r.envoiDepuis) { r.redemarrages++; r.erreur = (r.dernier || '').trim().slice(-200) || null; }
+    if (r.redemarrages > 200) return fermerRelais(chemin);
+    r.relance = setTimeout(() => lancerCopie(chemin), 2000);
+  });
+}
+function fermerRelais(chemin) {
+  const r = relais.get(chemin); if (!r) return { ok: true };
+  r.ferme = true; clearTimeout(r.minuteur); clearTimeout(r.relance);
+  if (r.ffmpeg) { const p = r.ffmpeg; p.kill('SIGINT'); setTimeout(() => { try { p.kill('SIGKILL'); } catch (e) { /* déjà fini */ } }, 8000); }
+  if (r.session) fetch(`${MTX_WHIP}${r.session}`, { method: 'DELETE' }).catch(() => {});
+  relais.delete(chemin);
+  journal('Relais fermé', chemin);
+  return { ok: true };
+}
+function modifierRelais(q) {
+  const r = verifRelais(q);
+  const dest = Array.isArray(q.destinations) ? q.destinations : [];
+  if (!dest.length || dest.length > 8 || !dest.every(RTMP_OK)) throw refus('Plateformes invalides');
+  r.destinations = dest;
+  if (r.ffmpeg) r.ffmpeg.kill('SIGINT');   // ffmpeg repart tout seul avec la nouvelle liste (environ 2 s de coupure sur les plateformes)
+  return { ok: true };
+}
+function etatRelais(q) {
+  const r = verifRelais(q);
+  return { recu: !!r.envoiDepuis, copie: !!r.ffmpeg, depuis: r.envoiDepuis, redemarrages: r.redemarrages, erreur: r.erreur, plateformes: r.destinations.length };
+}
+/* WHIP : le navigateur envoie son offre ici ; on vérifie le jeton puis on la passe à MediaMTX (qui n'écoute que sur la machine) */
+async function whipOffre(chemin, req, res) {
+  const r = relais.get(chemin);
+  const h = req.headers.authorization || '';
+  if (!r || !egal(h, `Bearer ${r.jeton}`)) return json(res, 403, { erreur: 'Jeton de relais incorrect' });
+  let sdp = ''; for await (const c of req) { sdp += c; if (sdp.length > 2e5) return json(res, 413, { erreur: 'Offre trop grande' }); }
+  const rep = await fetch(`${MTX_WHIP}/${chemin}/whip`, { method: 'POST', headers: { 'Content-Type': 'application/sdp' }, body: sdp });
+  const txt = await rep.text();
+  if (rep.status !== 201) { journal('MediaMTX refuse', rep.status, txt.slice(0, 200)); return json(res, 502, { erreur: 'Le relais ne répond pas' }); }
+  // la session MediaMTX (pour la fermer) reste côté serveur ; le navigateur reçoit sa propre adresse
+  const loc = rep.headers.get('location') || '';
+  r.session = loc.startsWith('/') ? loc : null;
+  r.envoiDepuis = r.envoiDepuis || Date.now();
+  clearTimeout(r.relance); r.relance = setTimeout(() => lancerCopie(chemin), 1500);   // le temps que la vidéo arrive
+  res.writeHead(201, Object.assign({ 'Content-Type': 'application/sdp', Location: `/whip/${chemin}/s` }, ENTETES_SURS));
+  res.end(txt);
+}
+function whipFin(chemin, res) {
+  const r = relais.get(chemin);
+  if (r && r.session) { fetch(`${MTX_WHIP}${r.session}`, { method: 'DELETE' }).catch(() => {}); r.session = null; }
+  res.writeHead(200, ENTETES_SURS); res.end();
+}
+/* Débit montant (check-up) : on compte les octets reçus, on ne garde rien */
+async function debit(req, res) {
+  const t0 = Date.now(); let n = 0;
+  for await (const c of req) { n += c.length; if (n > 40e6) break; }
+  json(res, 200, { octets: n, ms: Date.now() - t0 });
+}
+
 /* ----- Serveur HTTP ----- */
 function cors(req, res) {
   const o = req.headers.origin;
   if (o && ORIGINES.includes(o)) {
     res.setHeader('Access-Control-Allow-Origin', o);
     res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Expose-Headers', 'Location');
   }
 }
 function json(res, code, obj) { res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, ENTETES_SURS)); res.end(JSON.stringify(obj)); }
@@ -309,14 +436,15 @@ function autorise(req, url) {
 /* Limite de débit pour les jetons (anti-abus) : 30 demandes par minute et par adresse */
 const demandes = new Map();
 const ENTETES_SURS = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' };
-function tropDeDemandes(req) {
+function tropDeDemandes(req, seau = '', max = 30) {
   // derrière Caddy (sur la machine), l'adresse du visiteur est dans X-Forwarded-For ; sinon on ne croit pas cet en-tête
   const local = /^(::ffff:)?127\.0\.0\.1$|^::1$/.test(req.socket.remoteAddress || '');
   const ip = local ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() || 'local' : (req.socket.remoteAddress || '');
-  const t = Date.now(), l = (demandes.get(ip) || []).filter(x => t - x < 60000);
-  l.push(t); demandes.set(ip, l);
+  const k = seau + ip;
+  const t = Date.now(), l = (demandes.get(k) || []).filter(x => t - x < 60000);
+  l.push(t); demandes.set(k, l);
   if (demandes.size > 5000) demandes.clear();
-  return l.length > 30;
+  return l.length > max;
 }
 
 http.createServer(async (req, res) => {
@@ -334,6 +462,23 @@ http.createServer(async (req, res) => {
     if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
     try { return json(res, 200, await commandeSalle(salle[1], await corps(req))); }
     catch (e) { return json(res, e.refus ? 403 : 502, { erreur: e.refus ? e.message : 'Le serveur vidéo ne répond pas' }); }
+  }
+  const rel = url.pathname.match(/^\/relais\/(ouvrir|modifier|fermer|etat)$/);
+  if (req.method === 'POST' && rel) {
+    if (tropDeDemandes(req)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
+    try {
+      const q = await corps(req);
+      const f = { ouvrir: ouvrirRelais, modifier: modifierRelais, etat: etatRelais, fermer: x => { verifRelais(x); return fermerRelais(x.chemin); } }[rel[1]];
+      return json(res, 200, f(q));
+    } catch (e) { return json(res, e.refus ? 403 : 500, { erreur: e.refus ? e.message : 'Erreur du serveur', complet: !!e.complet }); }
+  }
+  const wh = url.pathname.match(/^\/whip\/(r[0-9a-f]{18})(\/s)?$/);
+  if (wh && req.method === 'POST' && !wh[2]) { try { return await whipOffre(wh[1], req, res); } catch (e) { return json(res, 502, { erreur: 'Le relais ne répond pas' }); } }
+  if (wh && req.method === 'DELETE' && wh[2]) return whipFin(wh[1], res);
+  if (req.method === 'POST' && url.pathname === '/debit') {
+    // compteur à part : la mesure de débit ne doit jamais empêcher de démarrer le direct juste après
+    if (tropDeDemandes(req, 'debit:', 120)) return json(res, 429, { erreur: 'Trop de demandes, réessaie dans une minute' });
+    return debit(req, res);
   }
   // téléchargement d'un enregistrement : lien signé (valable 1 h) ou clé secrète dans l'en-tête
   const m = url.pathname.match(/^\/enregistrements\/([\w.-]+)$/);
@@ -357,4 +502,4 @@ http.createServer(async (req, res) => {
   } catch (e) { json(res, 400, { erreur: e.message }); }
 }).listen(PORT, ECOUTE, () => journal(`OBSeb Cloud prêt sur ${ECOUTE}:${PORT}`));
 
-process.on('SIGTERM', async () => { await arreter(); process.exit(0); });
+process.on('SIGTERM', async () => { for (const c of [...relais.keys()]) fermerRelais(c); await arreter(); process.exit(0); });

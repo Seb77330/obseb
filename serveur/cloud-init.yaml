@@ -41,6 +41,17 @@ write_files:
       LimitNOFILE=500000
       [Install]
       WantedBy=multi-user.target
+  - path: /etc/systemd/system/mediamtx.service
+    content: |
+      [Unit]
+      Description=OBSeb relais (MediaMTX)
+      After=network-online.target
+      [Service]
+      User=obseb
+      ExecStart=/usr/local/bin/mediamtx /etc/mediamtx.yml
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
   - path: /etc/systemd/system/obseb.service
     content: |
       [Unit]
@@ -64,6 +75,9 @@ runcmd:
   - ufw allow 3478/udp
   - ufw allow 7881/tcp
   - ufw allow 50000:60000/udp
+  # relais : la vidéo déjà montée par le navigateur de l'animateur (WebRTC)
+  - ufw allow 8189/udp
+  - ufw allow 8189/tcp
   - ufw --force enable
   - systemctl enable --now fail2ban
   # Chrome
@@ -111,6 +125,13 @@ runcmd:
     chmod 600 /etc/livekit.yaml
     printf 'LIVEKIT_API_KEY=%s\nLIVEKIT_API_SECRET=%s\nLIVEKIT_URL_PUBLIQUE=wss://lk.%s\n' "$CLE" "$SEC" "$DOM" >> /etc/obseb.env
     printf 'lk.%s {\n  reverse_proxy 127.0.0.1:7880\n}\n' "$DOM" >> /etc/caddy/Caddyfile
+  # Relais (« le facteur ») : MediaMTX reçoit le live monté par le navigateur, ffmpeg le recopie sans le réencoder
+  - |
+    V=v1.15.3
+    curl -fsSL "https://github.com/bluenviron/mediamtx/releases/download/$V/mediamtx_${V}_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin mediamtx
+    IP=$(curl -s http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
+    sed "s/^webrtcAdditionalHosts:.*/webrtcAdditionalHosts: [$IP]/" /opt/obseb/serveur/mediamtx.yml > /etc/mediamtx.yml
+  - systemctl daemon-reload && systemctl enable --now mediamtx
   - systemctl daemon-reload && systemctl enable --now livekit
   - systemctl restart caddy
   - systemctl daemon-reload && systemctl enable --now obseb

@@ -1,0 +1,35 @@
+# OBSeb : MediaMTX, la « boîte aux lettres » du relais.
+# Le navigateur de l'animateur y dépose le live déjà monté (WebRTC, via le moteur qui vérifie le jeton) ;
+# ffmpeg le relit en local et le recopie vers les plateformes. Rien n'est joignable de l'extérieur à part la vidéo WebRTC.
+logLevel: warn
+api: no
+metrics: no
+pprof: no
+playback: no
+rtmp: no
+hls: no
+srt: no
+
+rtsp: yes
+rtspTransports: [tcp]
+rtspAddress: 127.0.0.1:8554
+
+webrtc: yes
+webrtcAddress: 127.0.0.1:8889          # l'offre WHIP n'arrive que par le moteur (jeton vérifié)
+webrtcLocalUDPAddress: :8189           # la vidéo elle-même (port à ouvrir dans le pare-feu)
+webrtcLocalTCPAddress: :8189           # secours si l'UDP est bloqué chez le client
+webrtcIPsFromInterfaces: yes
+webrtcAdditionalHosts: []              # rempli à l'installation avec l'IP publique
+
+# seuls les programmes de la machine (le moteur et ffmpeg) peuvent publier ou lire
+authInternalUsers:
+  - user: any
+    ips: ['127.0.0.1', '::1']
+    permissions:
+      - action: publish
+      - action: read
+
+pathDefaults:
+  overridePublisher: yes               # une reconnexion du navigateur remplace l'ancien envoi
+paths:
+  all_others:

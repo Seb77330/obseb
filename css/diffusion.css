@@ -1,0 +1,28 @@
+/* OBSeb : fenêtre de diffusion (sortie.html?diffuser=1). Le panneau n'est jamais à l'image : seule la scène est capturée. */
+body.diffusion #stage { isolation: isolate; }   /* exigé pour capturer la scène seule */
+#diffusion-ui { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; pointer-events: none;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #f2f2f5; }
+#diffusion-ui .df-carte { pointer-events: auto; width: min(520px, calc(100vw - 32px)); background: rgba(14, 14, 20, .92); backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 26px 28px; box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+#diffusion-ui .df-marque { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #9a9aa8; }
+#diffusion-ui .df-marque b { color: #ff4d5e; }
+#diffusion-ui h1 { font-size: 24px; font-weight: 600; margin: 8px 0 6px; }
+#diffusion-ui p { margin: 0 0 14px; color: #c9c9d3; }
+#diffusion-ui .df-bouton { width: 100%; border: 0; border-radius: 12px; padding: 14px; font: inherit; font-weight: 600; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #ff4d5e, #c2185b); box-shadow: 0 8px 24px rgba(255,77,94,.35); }
+#diffusion-ui .df-bouton:disabled { opacity: .5; cursor: wait; }
+#diffusion-ui .df-conseils { margin: 16px 0 0; padding: 0 0 0 18px; color: #9a9aa8; font-size: 13px; }
+#diffusion-ui .df-conseils li { margin: 4px 0; }
+#diffusion-ui .df-beta { margin: 14px 0 0; font-size: 12px; color: #7d7d8c; }
+#diffusion-ui .df-cible { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); font-size: 14px; }
+#diffusion-ui .df-cible span { color: #9a9aa8; font-variant-numeric: tabular-nums; }
+#diffusion-ui .df-cible.en-direct span { color: #4ade80; }
+#diffusion-ui .df-cible.erreur span, #diffusion-ui .df-cible small { color: #ff8a8a; }
+#diffusion-ui .df-cible small { grid-column: 1 / -1; font-size: 12px; }
+#diffusion-ui .df-pastille { position: fixed; top: 10px; left: 10px; pointer-events: none; background: #e11d48; color: #fff; font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px; }
+/* en direct, le panneau se fait discret (il reste au survol) */
+body.diffusion.en-cours #diffusion-ui .df-carte { opacity: 0; transition: opacity .3s; }
+body.diffusion.en-cours #diffusion-ui:hover .df-carte { opacity: 1; }
+/* capture sans « scène seule » (navigateur plus ancien) : le panneau serait filmé, donc on le cache une fois prête */
+body.diffusion.df-discret.prete #diffusion-ui { display: none; }

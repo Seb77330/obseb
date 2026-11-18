@@ -17,9 +17,18 @@ function demarrerDirect(ids) {
   setTimeout(envoyer, 1000);      // la musique d'intro réglée « avec le direct » part une seconde après
   toast(ids.length ? `Direct démarré sur ${ids.length} plateforme${ids.length > 1 ? 's' : ''}` : 'Direct démarré (minuteur lancé)');
 }
+/* Sans OBS : le check-up a choisi le chemin ; si c'est le navigateur, la fenêtre de diffusion part en même temps que le direct */
+async function lancerDirect(ids) {
+  const go = $('#pop-go');
+  if (go) { go.disabled = true; go.textContent = 'Connexion…'; }
+  try { if (typeof diffusionDemarrer === 'function') await diffusionDemarrer(ids); }
+  catch (e) { toast(e.message); if (go) { go.disabled = false; go.textContent = 'Démarrer le direct'; } return; }
+  demarrerDirect(ids);
+}
 function arreterDirect() {
   if (!etat.direct) return;
   etat.direct = null;
+  if (typeof diffusionArreter === 'function') diffusionArreter();
   noterLiveTermine();       // seul un vrai direct arrêté arrive dans « Lives terminés »
   if (etat.scene !== 'fin') changerScene('fin'); else envoyer();
   majDirect(); pop.hidden = true;
@@ -32,6 +41,7 @@ function basculerPlateforme(id) {
   if (d.plateformes.length && d.plateformes.every(x => d.coupees.includes(x))) {
     if (confirm('Toutes les plateformes sont coupées. Arrêter le direct et afficher l\'écran de fin ?')) return arreterDirect();
   }
+  if (typeof diffusionMaj === 'function') diffusionMaj(d.plateformes.filter(x => !d.coupees.includes(x)));
   envoyer(); majDirect(); dessinerPop();
 }
 
@@ -75,7 +85,9 @@ function animerPorte() {
 }
 function dessinerPop() {
   const d = etat.direct;
-  const noteObs = serveurBranche() ? '' : '<p class="aide" style="margin:10px 0 0">Pour l\'instant, c\'est OBS qui envoie l\'image aux plateformes : démarre et arrête aussi le direct dans OBS. Avec le serveur OBSeb, ce bouton le fera tout seul.</p>';
+  // l'ancienne note « c'est OBS qui envoie » ne s'affiche plus que si le navigateur ne peut rien envoyer lui-même
+  const envoiNav = () => typeof preparationEnvoi === 'function' && preparationEnvoi(d ? d.plateformes : plateformesPretes().map(x => x.p.id)).formatsNav.length > 0;
+  const noteObs = serveurBranche() || envoiNav() ? '' : '<p class="aide" style="margin:10px 0 0">Si tu utilises OBS, c\'est lui qui envoie l\'image : démarre et arrête aussi le direct dans OBS.</p>';
   if (!d) {
     const pretes = plateformesPretes();
     pop.innerHTML = `<h4>Démarrer le direct ?</h4>
@@ -83,12 +95,18 @@ function dessinerPop() {
       <p class="aide" style="margin:0 0 8px">Les spectateurs te verront dès que tu cliques. Rien ne part avant.</p>
       ${pretes.length ? pretes.map(({ p, c }) => ligne(p, `<small>${nomFormat(c.format)}</small><input type="checkbox" data-pf="${p.id}" checked>`)).join('')
         : '<p class="aide" style="margin:0">Aucune plateforme configurée dans l\'onglet Diffusion.</p>'}
+      ${typeof blocEnvoi === 'function' ? blocEnvoi(pretes.map(x => x.p.id)) : ''}
       ${noteObs}
       <div class="menu-bas">
         <button class="rouge" id="pop-go">Démarrer le direct</button>
         <button id="pop-annuler">Annuler</button>
       </div>`;
-    $('#pop-go').onclick = () => demarrerDirect([...pop.querySelectorAll('[data-pf]:checked')].map(x => x.dataset.pf));
+    $('#pop-go').onclick = () => lancerDirect([...pop.querySelectorAll('[data-pf]:checked')].map(x => x.dataset.pf));
+    if (typeof brancherBlocEnvoi === 'function') {
+      brancherBlocEnvoi(pop, () => { pop.hidden = false; dessinerPop(); });
+      majBoutonGo($('#pop-go'));
+      pop.querySelectorAll('[data-pf]').forEach(c => c.onchange = () => majEnvoiDirect());
+    }
     animerPorte();
   } else {
     const liste = d.plateformes.map(id => PLATEFORMES_LIVE.find(p => p.id === id)).filter(Boolean);
@@ -97,6 +115,7 @@ function dessinerPop() {
         const coupe = d.coupees.includes(p.id);
         return ligne(p, `<small class="${coupe ? '' : 'on'}">${coupe ? 'coupé' : '● en direct'}</small><button class="petit" data-bascule="${p.id}">${coupe ? 'Relancer' : 'Couper'}</button>`);
       }).join('') : '<p class="aide" style="margin:0">Aucune plateforme suivie (direct envoyé par OBS).</p>'}
+      ${typeof suiviEnvoi === 'function' ? suiviEnvoi() : ''}
       ${noteObs}
       <div class="menu-bas">
         <button class="rouge" id="pop-stop">Arrêter le direct partout</button>
@@ -123,7 +142,14 @@ function majDirect() {
   badge.classList.toggle('rouge-direct', !!d);
   badge.textContent = (d ? 'En direct · ' : 'Hors direct · ') + ({ intro: 'Intro', live: (typeof planActif === 'function' && planActif().nom) || 'Plateau', watch: 'Watch Party', fin: 'Outro' }[etat.scene] || '');
 }
-btnDirect.onclick = e => { e.stopPropagation(); if (pop.hidden) { dessinerPop(); pop.hidden = false; } else pop.hidden = true; };
+btnDirect.onclick = e => {
+  e.stopPropagation();
+  if (!pop.hidden) { pop.hidden = true; return; }
+  const ouvrir = () => { dessinerPop(); pop.hidden = false; };
+  // première fois : le check-up passe avant (une seule fois par quart d'heure), puis le menu s'ouvre
+  if (!etat.direct && typeof lancerCheckup === 'function' && !checkup && plateformesPretes().length) return lancerCheckup(ouvrir);
+  ouvrir();
+};
 pop.addEventListener('click', e => e.stopPropagation());   // les boutons du menu se redessinent : le clic ne doit pas le fermer
 document.addEventListener('click', e => { if (!pop.hidden && !e.target.closest('.direct-zone')) pop.hidden = true; });
 setInterval(() => { majDirect(); if (!pop.hidden && etat.direct) { const h = pop.querySelector('h4'); if (h) h.textContent = `En direct depuis ${hms(Date.now() - etat.direct.debut)}`; } }, 1000);
