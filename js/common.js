@@ -808,7 +808,8 @@ function reglageReaction(st) {
     taille: TAILLES_REACTION[r.taille] ? r.taille : 'm',
     cote: r.cote === 'bas' ? 'bas' : 'haut',
     petit: r.petit === 'partage' ? 'partage' : 'camera',   // ce qui est en petit : la caméra (par défaut) ou ce qui est partagé
-    vdispo: r.vdispo === 'coin' ? 'coin' : 'pile'           // en vertical : l'un au-dessus de l'autre (par défaut), ou en petit dans un coin
+    vdispo: r.vdispo === 'coin' ? 'coin' : 'pile',          // en vertical : l'un au-dessus de l'autre (par défaut), ou en petit dans un coin
+    vchoix: !!r.vchoix                                     // la personne a choisi un réglage vertical (sinon rien n'est surligné dans la régie)
   };
 }
 function modeDe(st) { return st && MODES.includes(st.mode) ? st.mode : 'plateau'; }
@@ -849,20 +850,23 @@ function dispositionReactionInverse(ids, sources, reg, vertical) {
   vignettesCoin(sources.slice(0, 3), reg.coin, W * (vertical ? TAILLES_REACTION_V : TAILLES_REACTION)[reg.taille], z, vertical ? 14 : 18, r);
   return r;
 }
-/* Vertical « empilé » : la vidéo au-dessus de la caméra (ou l'inverse), l'un plus grand que l'autre,
-   tout dans la bande que TikTok / Instagram / YouTube ne recouvrent pas (profil en haut, commentaires en bas).
-   Le petit bloc prend 34 / 40 / 46 % de la hauteur selon la taille S / M / L. */
-const PART_PILE = { p: 0.34, m: 0.40, g: 0.46 };
+/* Vertical « empilé » : la vidéo au-dessus de la caméra (ou l'inverse).
+   La vidéo garde toujours son format 16:9 sur toute la largeur (rien de rogné) et reste dans la bande que
+   TikTok / Instagram / YouTube ne recouvrent pas. La caméra prend le reste, en plus grand :
+   sous la vidéo, elle peut descendre un peu sous les commentaires (ton visage reste au-dessus) ;
+   au-dessus de la vidéo, elle ne monte jamais dans la zone du profil. S / M / L règle la hauteur de la caméra. */
+const CAM_PILE_BAS = { p: 560, m: 680, g: 790 }, CAM_PILE_HAUT = { p: 400, m: 460, g: 510 };
 function dispositionPile(ids, sources, reg) {
-  const W = SCENE_VW, y0 = SURES_V.haut, H = SURES_V.bas - SURES_V.haut, gap = 12, r = {};
-  if (!ids.length) {   // personne à l'écran : la vidéo seule, au milieu de la bande sûre
-    const h = Math.min(H, Math.round(W * 9 / 16) * (sources.length > 1 ? 2 : 1));
-    return sourcesPlein(sources, { x: 0, y: y0 + (H - h) / 2, w: W, h }, 8);
+  const W = SCENE_VW, y0 = SURES_V.haut, yb = SURES_V.bas, gap = 12, r = {};
+  const hV = sources.length > 1 ? Math.round(W / 2 * 9 / 16) : Math.round(W * 9 / 16);   // 608 (deux vidéos : côte à côte)
+  if (!ids.length) return sourcesPlein(sources, { x: 0, y: y0 + (yb - y0 - hV) / 2, w: W, h: hV }, 8);
+  let yVideo, yCam, hCam;
+  if (reg.cote === 'haut') { yVideo = y0; yCam = y0 + hV + gap; hCam = CAM_PILE_BAS[reg.taille]; }
+  else {   // caméra en haut : les deux blocs centrés dans la bande sûre
+    hCam = Math.min(CAM_PILE_HAUT[reg.taille], yb - y0 - hV - gap);
+    yCam = y0 + Math.round((yb - y0 - hV - gap - hCam) / 2); yVideo = yCam + hCam + gap;
   }
-  const hPetit = Math.round((H - gap) * PART_PILE[reg.taille]);
-  const hVideo = reg.petit === 'partage' ? hPetit : H - gap - hPetit, hCam = H - gap - hVideo;
-  const yVideo = reg.cote === 'haut' ? y0 : y0 + hCam + gap, yCam = reg.cote === 'haut' ? y0 + hVideo + gap : y0;
-  Object.assign(r, sourcesPlein(sources, { x: 0, y: yVideo, w: W, h: hVideo }, 8));
+  Object.assign(r, sourcesPlein(sources, { x: 0, y: yVideo, w: W, h: hV }, 8));
   const m = Math.min(ids.length, 6), nc = m <= 1 ? 1 : m <= 4 ? 2 : 3;
   Object.assign(r, grilleCellules(ids.slice(0, m), 0, yCam, W, hCam, 8, [nc, Math.ceil(m / nc)]));
   return r;

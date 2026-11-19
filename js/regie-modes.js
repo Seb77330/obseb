@@ -58,6 +58,7 @@ function petitSvg(q) {
 }
 function inverserReaction() {
   etat.reaction.petit = etat.reaction.petit === 'partage' ? 'camera' : 'partage';
+  if (etat.reaction.vchoix && etat.reaction.vdispo === 'pile') etat.reaction.cote = etat.reaction.cote === 'haut' ? 'bas' : 'haut';   // en vertical empilé : haut et bas s'échangent
   envoyer(); dessinerReglagesMode();
   toast(etat.reaction.petit === 'partage' ? 'Ta caméra en grand, le partage en petit dans le coin' : 'Le partage en grand, ta caméra en petit dans le coin');
 }
@@ -86,14 +87,15 @@ function dessinerReglagesMode() {
     <span class="md-sep" aria-hidden="true"></span>
     <div class="md-groupe md-coins" role="group" aria-label="Coin de ce qui est en petit" title="${quoi} en petit : choisis le coin">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="${quoi} ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
     <div class="md-groupe md-tailles" role="group" aria-label="Taille de ce qui est en petit">${[['p', 'S', 'petite'], ['m', 'M', 'moyenne'], ['g', 'L', 'grande']].map(([t, n, l]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="${quoi} : taille ${l}">${n}</button>`).join('')}</div>
-    <div class="md-groupe md-cotes" role="group" aria-label="En vertical (TikTok, Reels, Shorts)">${[['haut', `En vertical : ${nomVideo.toLowerCase()} en haut, ta caméra en bas, sous la zone du profil TikTok`], ['bas', `En vertical : ta caméra en haut, ${nomVideo.toLowerCase()} en bas, au-dessus des commentaires`], ['coin', `En vertical : ${quoi.toLowerCase()} en petit dans le coin choisi`]].map(([c, t]) => `<button type="button" data-cote="${c}" class="${(c === 'coin' ? r.vdispo === 'coin' : r.vdispo !== 'coin' && r.cote === c) ? 'actif' : ''}" title="${t}">${coteSvg(c)}</button>`).join('')}</div>
-    <button type="button" class="md-inverser${inv ? ' actif' : ''}" aria-pressed="${inv}" title="${inv ? 'Ta caméra est en grand, ' + nomVideo.toLowerCase() + ' en petit' : nomVideo + ' est en grand, ta caméra en petit'}. Clique pour échanger (en vertical empilé : celui qui est en petit prend le bloc le plus petit)">${petitSvg(r.petit === 'partage' ? 'partage' : 'camera')}<span>Inverser</span></button>`;
+    <div class="md-groupe md-cotes" role="group" aria-label="En vertical (TikTok, Reels, Shorts)">${[['haut', `En vertical : ${nomVideo.toLowerCase()} en haut, ta caméra en bas, sous la zone du profil TikTok`], ['bas', `En vertical : ta caméra en haut, ${nomVideo.toLowerCase()} en bas, au-dessus des commentaires`], ['coin', `En vertical : ${quoi.toLowerCase()} en petit dans le coin choisi`]].map(([c, t]) => `<button type="button" data-cote="${c}" class="${r.vchoix && (c === 'coin' ? r.vdispo === 'coin' : r.vdispo !== 'coin' && r.cote === c) ? 'actif' : ''}" title="${t}">${coteSvg(c)}</button>`).join('')}</div>
+    <button type="button" class="md-inverser${inv ? ' actif' : ''}" aria-pressed="${inv}" title="${inv ? 'Ta caméra est en grand, ' + nomVideo.toLowerCase() + ' en petit' : nomVideo + ' est en grand, ta caméra en petit'}. Clique pour échanger (en vertical empilé : la vidéo et ta caméra échangent le haut et le bas)">${petitSvg(r.petit === 'partage' ? 'partage' : 'camera')}<span>Inverser</span></button>`;
   box.querySelector('.md-inverser').onclick = inverserReaction;
   box.querySelectorAll('[data-coin]').forEach(b => b.onclick = () => { etat.reaction.coin = b.dataset.coin; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-taille]').forEach(b => b.onclick = () => { etat.reaction.taille = b.dataset.taille; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-cote]').forEach(b => b.onclick = () => {
-    const c = b.dataset.cote;
-    if (c === 'coin') etat.reaction.vdispo = 'coin'; else { etat.reaction.vdispo = 'pile'; etat.reaction.cote = c; }
+    const c = b.dataset.cote, r = etat.reaction;
+    if (b.classList.contains('actif')) { r.vchoix = false; r.vdispo = 'pile'; r.cote = 'haut'; toast('Réglage vertical retiré (par défaut : la vidéo en haut, ta caméra en bas)'); }   // recliquer désactive
+    else { r.vchoix = true; if (c === 'coin') r.vdispo = 'coin'; else { r.vdispo = 'pile'; r.cote = c; } }
     envoyer(); dessinerReglagesMode();
   });
   box.querySelectorAll('[data-src]').forEach(b => b.onclick = () => b.dataset.src === 'change' ? ouvrirOnglet('sources') : choisirSourceMode(b.dataset.src));
