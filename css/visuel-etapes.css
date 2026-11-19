@@ -21,7 +21,7 @@ body.vp-etapes.page-visuel #f-quand-date:not([hidden]) { display: flex !importan
 .vp-fermer:hover { color: var(--ui-text); background: var(--ui-hover); }
 
 /* les étapes : une rangée de pastilles, la courante en jaune, les faites cochées */
-.vp-nav { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.vp-nav { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .vp-nav button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px 4px; border: 0; background: none; color: var(--ui-muted); font-size: 11px; line-height: 1.15; border-radius: 8px; }
 .vp-nav button:hover { color: var(--ui-text); background: var(--ui-hover); }
 .vp-num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--mono, monospace); border: 1px solid var(--ui-line2); }
@@ -52,3 +52,13 @@ body.vp-etapes #vp-suiv, body.vp-etapes #btn-creer { flex: 1; }
   .vp-nom { font-size: 10px; }
   .vp-nav { gap: 2px; }
 }
+
+/* étape Textes : intitulé discret au-dessus de chaque case, rangé par groupe comme à l'écran */
+.vp-groupe { margin: 0 0 18px; }
+.vp-groupe h3 { margin: 0 0 8px; font: 600 11px var(--mono, monospace); letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
+.vp-champ { display: block; margin: 0 0 10px; }
+.vp-champ > span { display: block; font-size: 12px; color: var(--ui-muted); margin: 0 0 5px; }
+.vp-champ input, .vp-champ select { width: 100%; box-sizing: border-box; margin: 0; }
+details.vp-plus { border-top: 1px solid var(--ui-line); padding-top: 12px; }
+details.vp-plus summary { cursor: pointer; font-size: 13px; color: var(--ui-muted); margin-bottom: 10px; }
+details.vp-plus summary:hover { color: var(--ui-text); }
