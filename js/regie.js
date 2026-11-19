@@ -263,10 +263,7 @@ function creerCarte(id) {
       <button class="petit antenne-btn"></button>
       ${cam ? '' : '<button class="petit muet-btn ic-btn"></button>'}
       <button class="petit focus-btn ic-btn" title="Seul à l'écran">${IC_SEUL}</button>
-      <button class="petit cadre-btn ic-btn"></button>
-      ${estHote || cam ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
       ${cam ? '<button class="petit retirer-btn" title="Débrancher cette caméra">✕</button>' : ''}
-      ${faux ? '<button class="petit retirer-btn" title="Retirer cet invité de test">✕</button>' : ''}
     </div>`;
   let iframe = null;
   if (cam) el.querySelector('.vignette').appendChild(cam.iframe);      // la fenêtre qui publie la caméra sert aussi d'aperçu
@@ -297,7 +294,7 @@ function creerCarte(id) {
     if (!etat.onair.includes(id)) etat.onair.push(id);
     etat.focus = id; etat.layout = 'solo'; envoyer();
   };
-  el.querySelector('.cadre-btn').onclick = () => {
+  if (el.querySelector('.cadre-btn')) el.querySelector('.cadre-btn').onclick = () => {
     const suite = { auto: 'voir', voir: 'remplir', remplir: 'auto' }[etat.cadre[id] || 'auto'];
     if (suite === 'auto') delete etat.cadre[id]; else etat.cadre[id] = suite;
     majCadreBtn(id); envoyer();
@@ -310,6 +307,12 @@ function creerCarte(id) {
   };
   const retirer = el.querySelector('.retirer-btn');
   if (retirer) retirer.onclick = () => { if (faux) { if (typeof retirerFaux === 'function') retirerFaux(id); } else if (typeof retirerCam === 'function') retirerCam(id); };
+  // un clic sur l'image met la personne à l'antenne (ou l'en retire) : la scène de caméras s'adapte toute seule
+  if (!estHote) {
+    const v = el.querySelector('.vignette');
+    v.classList.add('cliquable');
+    v.addEventListener('click', e => { if (e.target.closest('button, input, a')) return; el.querySelector('.antenne-btn').click(); });
+  }
   const c = { el, iframe, niveau: 0 };
   cartes.set(id, c);
   majCadreBtn(id);

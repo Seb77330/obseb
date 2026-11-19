@@ -128,3 +128,14 @@ body.visuel-ouvert #cam-appel { display: none !important; }
 }
 @media (max-width: 1000px) { .md-inverser { display: none; } }   /* sur téléphone, les deux gros boutons « En petit » suffisent pour alterner */
 @media (min-width: 1001px) and (max-width: 1400px) { .md-coins button { padding: 4px 3px; } .md-coins svg { width: 24px; height: 15px; } .md-tailles button { width: 26px; } .md-video-choix button { padding: 6px 9px; } .md-sep { display: none; } .md-inverser span { display: none; } .md-inverser { padding: 4px 6px; } }
+
+/* 19/11 : plus de rangée « Mode » ; sous les scènes, les réglages de la scène choisie */
+#rangee-mode[hidden] { display: none; }
+.scene-infos { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: 72px; padding: 2px 0; font-size: 12.5px; }
+.scene-infos[hidden] { display: none; }
+.scene-infos .si-tit { color: var(--ui-muted); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; margin-right: 2px; }
+.scene-infos .si-sep { width: 1px; height: 20px; background: var(--ui-line); margin: 0 6px; }
+.scene-infos button { padding: 5px 11px; border-radius: 99px; font-size: 12.5px; }
+.participant .vignette.cliquable { cursor: pointer; }
+.participant .vignette.cliquable:hover { outline: 2px solid var(--ui-accent); outline-offset: -2px; }
+@media (max-width: 1000px) { #col-programme .scene-infos { margin: 0 10px; } }

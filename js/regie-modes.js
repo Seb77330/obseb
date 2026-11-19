@@ -67,9 +67,9 @@ function inverserReaction() {
 function dessinerReglagesMode() {
   const box = $('#mode-reglages');
   const m = etat.mode, r = etat.reaction;
-  box.hidden = m === 'plateau';
+  box.hidden = m === 'plateau' || etat.scene !== 'live';
   box.dataset.mode = m;
-  if (m === 'plateau') return;
+  if (box.hidden) return;
   const actives = (etat.sources || []).filter(s => s && s.actif && s.ref);
   const jeu = m === 'jeu', nomVideo = jeu ? 'Le jeu' : 'La bande-annonce';
   const choix = jeu
@@ -117,9 +117,9 @@ function majModes() {
   $$('#modes [data-mode]').forEach(b => b.classList.toggle('actif', b.dataset.mode === etat.mode));
   document.body.dataset.modeStudio = etat.mode;
   // le cadrage ne sert qu'aux caméras seules : caché en Réaction et en Jeu, et pendant l'intro et l'outro
-  const rc = $('#rangee-cadrage'); if (rc) rc.hidden = etat.mode !== 'plateau' || etat.scene === 'intro' || etat.scene === 'fin';
+  const rc = $('#rangee-cadrage'); if (rc) rc.hidden = !((etat.scene === 'live' && etat.mode === 'plateau') || etat.scene === 'watch');
   const actives = (etat.sources || []).filter(s => s && s.actif && s.ref).length;
-  const cle = JSON.stringify([etat.mode, etat.reaction, actives > 0]);
+  const cle = JSON.stringify([etat.mode, etat.scene, etat.reaction, actives > 0]);
   if (cle !== cleModes) { cleModes = cle; dessinerReglagesMode(); }
 }
 majModes();

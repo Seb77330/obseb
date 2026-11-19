@@ -622,7 +622,7 @@
     #col-sources .colonne-corps, .onglet { max-width: 720px; margin: 0 auto; }
   }
 </style>
-<link rel="stylesheet" href="css/modes.css?v=b15d5eeb">
+<link rel="stylesheet" href="css/modes.css?v=b283d836">
 <link rel="stylesheet" href="css/regie-leger.css?v=46db023e">
 <link rel="stylesheet" href="css/faux.css?v=e2d3aac6">
 </head>
@@ -722,15 +722,14 @@
       </div>
       <div class="colonne-corps">
         <div class="moniteur" id="moniteur"><div class="cadre169"><iframe id="apercu"></iframe><button class="cam-appel" id="cam-appel" hidden title="Ta caméra n'est pas encore partie dans le live : l'aperçu attend"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 10.5l6-3.5v10l-6-3.5"/></svg><span>Démarrer ma caméra</span></button></div></div>
-        <div class="rangee" id="rangee-mode">
-          <span class="etiquette">Mode</span>
-          <div class="modes" id="modes" role="group" aria-label="Mode du studio"></div>
-        </div>
-        <div class="mode-reglages" id="mode-reglages" hidden></div>
+        <div class="rangee" id="rangee-mode" hidden><div class="modes" id="modes" role="group" aria-label="Mode du studio"></div></div>
         <div class="rangee">
           <span class="etiquette">Scènes</span>
           <div class="scenes" id="scenes" role="group" aria-label="Scène à l'antenne"></div>
         </div>
+        <!-- les réglages de la scène choisie : cadrage (caméras), coin et taille (Réaction, Jeu), visuel (Intro, Outro), film (Watch) -->
+        <div class="mode-reglages" id="mode-reglages" hidden></div>
+        <div class="scene-infos" id="scene-infos" hidden></div>
         <div class="rangee" id="rangee-cadrage">
           <span class="etiquette">Cadrage</span>
           <div class="cadrages" id="cadrages" role="group" aria-label="Cadrage des caméras"></div>
@@ -1111,13 +1110,13 @@
 <script src="js/common.js?v=32f8b686"></script>
 <script src="js/reglages-media.js?v=150f2489"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=a309e3bd"></script>
+<script src="js/regie.js?v=88733591"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
 <script src="js/habillages.js?v=c066d580"></script>
 <script src="js/regie-habillages.js?v=04ad0c8c"></script>
-<script src="js/regie-scenes.js?v=de699dff"></script>
+<script src="js/regie-scenes.js?v=aa35d1bf"></script>
 <script src="js/regie-sources.js?v=f0901976"></script>
-<script src="js/regie-modes.js?v=ca9c90bb"></script>
+<script src="js/regie-modes.js?v=2da49e39"></script>
 <script src="js/regie-musique.js?v=56892513"></script>
 <script src="js/regie-quiz.js?v=0c5ee75f"></script>
 <script src="js/regie-essai.js?v=cc78e443"></script>
@@ -1132,7 +1131,7 @@
 <script src="js/regie-direct.js?v=6db7a926"></script>
 <script src="js/regie-guide.js?v=ed556d71"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
-<script src="js/regie-faux.js?v=484e94ae"></script>
+<script src="js/regie-faux.js?v=74fd5a18"></script>
 <script src="js/regie-watch.js?v=2f3c6da8"></script>
 <script src="js/regie-etat.js?v=ed91ae08"></script>
 <script src="js/regie-st.js?v=211f6618"></script>

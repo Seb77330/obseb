@@ -50,7 +50,7 @@ barreFaux.querySelector('.faux-plus').onclick = ajouterFaux;
 barreFaux.querySelector('.faux-quatre').onclick = () => {
   while (etat.faux.length < 4) ajouterFaux();
   for (const id of etat.faux) if (!etat.onair.includes(id) && etat.onair.length < MAX_ANTENNE) etat.onair.push(id);
-  toast('4 invités de test à l\'antenne : essaie Solo, Duo, Plateau…');
+  toast('4 invités de test à l\'antenne : clique sur leur carte pour les retirer ou les remettre');
   envoyer(); majFauxBarre();
 };
 barreFaux.querySelector('.faux-retirer').onclick = () => retirerTousFaux();
