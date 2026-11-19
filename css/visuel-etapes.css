@@ -62,3 +62,13 @@ body.vp-etapes #vp-suiv, body.vp-etapes #btn-creer { flex: 1; }
 details.vp-plus { border-top: 1px solid var(--ui-line); padding-top: 12px; }
 details.vp-plus summary { cursor: pointer; font-size: 13px; color: var(--ui-muted); margin-bottom: 10px; }
 details.vp-plus summary:hover { color: var(--ui-text); }
+
+/* étape « Quand » : la durée sur une seule ligne */
+.vp-duree { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 12px; border: 1px solid var(--ui-line); border-radius: 10px; font-size: 13.5px; cursor: help; }
+.vp-duree > span:nth-child(2) { flex: 1; }
+.vp-duree-ic { font-size: 15px; opacity: .8; }
+.vp-duree select { width: auto; min-width: 104px; margin: 0; }
+.vp-pane .quand .aide, .vp-pane #f-quand-resume { font-size: 12.5px; }
+/* « Garder ce style » dans l'étape Thème */
+details.vp-style { margin-top: 18px; }
+.vp-pane details.vp-style .enregistrer-style { margin-top: 0; padding-top: 0; border-top: 0; }

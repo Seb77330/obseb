@@ -103,8 +103,8 @@
 @keyframes vp-cote { from { opacity: 0; transform: translateX(24px); } }
 /* pendant le choix du visuel, le gros bouton caméra ne cache pas le titre dans l'aperçu */
 body.visuel-ouvert #cam-appel { display: none !important; }
-#titre-session.cliquable { cursor: pointer; border-radius: 6px; }
-#titre-session.cliquable:hover { text-decoration: underline; text-decoration-color: var(--ui-accent); text-underline-offset: 3px; }
+#titre-session.cliquable, #sous-session.cliquable { cursor: pointer; border-radius: 6px; }
+#titre-session.cliquable:hover, #sous-session.cliquable:hover { text-decoration: underline; text-decoration-color: var(--ui-accent); text-underline-offset: 3px; }
 
 /* ----- Ce qui se met en petit : ta caméra, ou l'inverse (le partage en petit sur ta caméra) ----- */
 .md-qui { display: flex; gap: 4px; padding: 2px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-input); }

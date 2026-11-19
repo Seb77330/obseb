@@ -53,11 +53,11 @@
     if (!applique && essai.actif) revenir();
   }
   btn.onclick = () => ouvrir();
-  // le titre du live, en haut à gauche : un clic ouvre l'étape « Titre et date »
+  // le titre du live, en haut à gauche : un clic ouvre l'étape « Textes » (où se change le titre)
   const titreEl = $('#titre-session');
-  if (titreEl) { titreEl.classList.add('cliquable'); titreEl.title = 'Changer le titre ou programmer le live'; titreEl.onclick = () => ouvrir('titre'); }
-  // un live programmé : sa date sous le titre
-  if (session.debut && typeof quandTexte === 'function') { const ss = $('#sous-session'); if (ss) ss.textContent = 'Programmé : ' + quandTexte(session.debut); }
+  if (titreEl) { titreEl.classList.add('cliquable'); titreEl.title = 'Changer le titre'; titreEl.onclick = () => ouvrir('textes'); }
+  // un live programmé : sa date sous le titre, un clic ouvre l'étape « Quand »
+  if (session.debut && typeof quandTexte === 'function') { const ss = $('#sous-session'); if (ss) { ss.textContent = 'Programmé : ' + quandTexte(session.debut); ss.classList.add('cliquable'); ss.title = 'Changer la date ou la durée'; ss.onclick = () => ouvrir('titre'); } }
 
   /* L'essai en direct dans l'aperçu : chaque choix du panneau est montré tout de suite (sortie, aperçus),
      sans rien enregistrer. Les images du PC voyagent par la liste des lives de ce navigateur. */

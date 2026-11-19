@@ -1,7 +1,7 @@
 /* MESA : le visuel du live, réglé par étapes dans la régie.
    La régie ouvre cette page dans un panneau sur le côté (index.html?visuel=<salle>&embed=1&panneau=1) :
    l'aperçu de la régie reste visible au centre et change à chaque choix.
-   Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Textes, 7 Date et durée.
+   Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Textes, 7 Quand (date et durée).
    Chaque choix est envoyé à la régie (message « apercu ») ; « Appliquer au live » l'enregistre pour de bon. */
 'use strict';
 (() => {
@@ -31,8 +31,8 @@
       els: [blocDe('.sons')] },
     { id: 'textes', nom: 'Textes', titre: 'Les textes de l\'intro et de l\'outro', aide: 'Chaque texte se change ici. Laisse une case vide pour garder le texte proposé.',
       els: [] },
-    { id: 'titre', nom: 'Date et durée', titre: 'La date et la durée', aide: 'Programme le live si tu veux prévenir tes invités. La durée maximale arrête le direct toute seule.',
-      els: ['.quand', '#f-limite', '#opt-toi .option-corps > p.aide', blocDe('#style-nom')] }
+    { id: 'titre', nom: 'Quand', titre: 'Quand a lieu le live ?', aide: 'Facultatif : programmer prévient tes invités.',
+      els: ['.quand', '#f-limite'] }
   ];
 
   const corps = $('.creation-choix .choix-corps');
@@ -101,9 +101,23 @@
       apercu();
     };
   });
-  // la case « Durée maximale » garde son intitulé
-  const lim = $('#f-limite');
-  if (lim) { const l = document.createElement('label'); l.className = 'vp-champ'; l.innerHTML = '<span>Durée maximale du direct</span>'; lim.replaceWith(l); l.appendChild(lim); }
+  // la durée maximale : une seule ligne, l'explication au survol
+  const lim = panes.querySelector('#f-limite');   // déjà rangé dans l'étape (pas encore dans la page)
+  if (lim) {
+    const l = document.createElement('label'); l.className = 'vp-duree';
+    l.title = '20 minutes avant la fin, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l\'heure dite, le live passe sur l\'écran de fin.';
+    l.innerHTML = '<span class="vp-duree-ic" aria-hidden="true">⏱</span><span>Arrêt automatique</span>';
+    lim.replaceWith(l); l.appendChild(lim);
+    const o = lim.querySelector('option[value="0"]'); if (o) o.textContent = 'Jamais';
+  }
+  // « Garder ce style » va avec le thème, pas avec la date : un pli discret en bas de l'étape Thème
+  const blocStyle = blocDe('#style-nom'), paneTheme = panes.querySelector('.vp-pane[data-etape="0"]');
+  if (blocStyle && paneTheme) {
+    const d = document.createElement('details'); d.className = 'vp-plus vp-style';
+    d.innerHTML = '<summary>Garder ce style pour plus tard</summary>';
+    blocStyle.querySelector('.bloc-titre')?.remove();
+    d.appendChild(blocStyle); paneTheme.appendChild(d);
+  }
 
   // ce qui reste de l'ancienne page (titres d'étapes, plis vides, retour) est caché par la feuille de style
   corps.prepend(tete, nav, panes);
