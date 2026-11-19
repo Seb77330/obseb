@@ -94,7 +94,7 @@ function garnirProg(el, session) {
   if (!zone) return;
   const entree = lire().find(x => x.session.room === session.room) || {};
   const menu = el.querySelector('[data-a=programmer]');
-  if (menu) menu.firstChild.textContent = session.debut ? 'Changer la date' : 'Programmer';
+  if (menu) (menu.querySelector('.lib') || menu.firstChild).textContent = session.debut ? 'Changer la date' : 'Programmer';
   const agenda = el.querySelector('[data-a=agenda]');
   if (agenda) agenda.hidden = !aVenir(session);
   if (!aVenir(session)) { zone.hidden = true; return; }

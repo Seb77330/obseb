@@ -1,7 +1,7 @@
 /* MESA : le visuel du live, réglé par étapes dans la régie.
    La régie ouvre cette page dans un panneau sur le côté (index.html?visuel=<salle>&embed=1&panneau=1) :
    l'aperçu de la régie reste visible au centre et change à chaque choix.
-   Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Titre et date.
+   Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Textes, 7 Date et durée.
    Chaque choix est envoyé à la régie (message « apercu ») ; « Appliquer au live » l'enregistre pour de bon. */
 'use strict';
 (() => {
@@ -29,8 +29,10 @@
       els: [blocDe('.depots')] },
     { id: 'musiques', nom: 'Musiques', titre: 'Les musiques', aide: 'Facultatif. Elles jouent pendant l\'intro et l\'outro.',
       els: [blocDe('.sons')] },
-    { id: 'titre', nom: 'Titre et date', titre: 'Le titre et la date', aide: 'Le titre s\'affiche dans l\'intro et le bandeau. Programme le live si tu veux prévenir tes invités.',
-      els: ['#f-titre', '.quand', '#opt-toi .option-corps', blocDe('#style-nom')] }
+    { id: 'textes', nom: 'Textes', titre: 'Les textes de l\'intro et de l\'outro', aide: 'Chaque texte se change ici. Laisse une case vide pour garder le texte proposé.',
+      els: [] },
+    { id: 'titre', nom: 'Date et durée', titre: 'La date et la durée', aide: 'Programme le live si tu veux prévenir tes invités. La durée maximale arrête le direct toute seule.',
+      els: ['.quand', '#f-limite', '#opt-toi .option-corps > p.aide', blocDe('#style-nom')] }
   ];
 
   const corps = $('.creation-choix .choix-corps');
@@ -51,11 +53,62 @@
     e.els.forEach(x => { const el = typeof x === 'string' ? $(x) : x; if (el) p.appendChild(el); });
     panes.appendChild(p);
   });
+  /* L'étape « Textes » : un champ par texte affiché, rangé comme à l'écran (intro, puis outro) */
+  const champTexte = (k, label) => `<label class="vp-champ"><span>${esc(label)}</span><input type="text" maxlength="60" data-texte="${k}" placeholder="${esc(TEXTES_DEFAUT[k])}"></label>`;
+  const paneTextes = panes.querySelector('.vp-pane[data-etape="' + ETAPES.findIndex(e => e.id === 'textes') + '"]');
+  paneTextes.insertAdjacentHTML('beforeend', `
+    <div class="vp-groupe"><h3>Intro</h3>
+      ${champTexte('introSur', 'Au-dessus du titre')}
+      <div class="vp-place" data-place="titre"></div>
+      ${champTexte('introInfo', 'Sous le titre')}
+      ${champTexte('introCompte', 'Avant le compte à rebours')}
+      ${champTexte('introAvec', 'Devant ton nom')}
+      <div class="vp-place" data-place="hote"></div>
+    </div>
+    <div class="vp-groupe"><h3>Outro</h3>
+      ${champTexte('finSur', 'Au-dessus du titre')}
+      ${champTexte('finInfo', 'Sous le titre')}
+      <div class="vp-place" data-place="handle"></div>
+    </div>
+    <details class="vp-groupe vp-plus"><summary>Textes de certains visuels</summary>
+      ${champTexte('introParti', 'Fin du compte à rebours')}
+      ${champTexte('introBandeau', 'Bandeau défilant de l\'intro (Plateau TV)')}
+      ${champTexte('finBandeau', 'Bandeau défilant de l\'outro (Plateau TV)')}
+      ${champTexte('finTypo', 'Mot répété (outro Typo)')}
+      ${champTexte('finPresente', 'Générique : avant ton nom')}
+      ${champTexte('finAvec', 'Générique : avant les invités')}
+      ${champTexte('finRetrouve', 'Générique : avant ton compte')}
+      ${champTexte('finAdieu', 'Générique : le mot de la fin')}
+    </details>`);
+  // le titre, ton nom et ton compte existent déjà dans la page : on les range à leur place, avec un intitulé
+  const placer = (place, sel, label) => {
+    const cible = paneTextes.querySelector(`[data-place="${place}"]`), el = $(sel);
+    if (!cible || !el) return;
+    const l = document.createElement('label'); l.className = 'vp-champ'; l.innerHTML = `<span>${esc(label)}</span>`;
+    l.appendChild(el); cible.replaceWith(l);
+  };
+  placer('titre', '#f-titre', 'Titre du live');
+  placer('hote', '#f-hote', 'Ton nom');
+  placer('handle', '#f-handle', 'Ton compte');
+  paneTextes.querySelectorAll('input[data-texte]').forEach(inp => {
+    const k = inp.dataset.texte;
+    inp.value = (brouillon.textes && brouillon.textes[k]) || '';
+    inp.oninput = () => {
+      const v = inp.value.trim();
+      brouillon.textes = Object.assign({}, brouillon.textes);
+      if (v) brouillon.textes[k] = inp.value; else delete brouillon.textes[k];
+      if (!Object.keys(brouillon.textes).length) delete brouillon.textes;
+      apercu();
+    };
+  });
+  // la case « Durée maximale » garde son intitulé
+  const lim = $('#f-limite');
+  if (lim) { const l = document.createElement('label'); l.className = 'vp-champ'; l.innerHTML = '<span>Durée maximale du direct</span>'; lim.replaceWith(l); l.appendChild(lim); }
+
   // ce qui reste de l'ancienne page (titres d'étapes, plis vides, retour) est caché par la feuille de style
   corps.prepend(tete, nav, panes);
   // les plis « Reprendre mon habillage OBS » et « Mon nom et la durée » : le premier reste un pli, le second s'ouvre à plat
   const obs = $('#opt-obs'); if (obs) obs.open = false;
-  const toi = $('#opt-toi .option-corps'); if (toi) toi.classList.add('vp-a-plat');
 
   /* Le pied : Précédent, Suivant, et Appliquer à la dernière étape */
   const pied = $('.pied-form');
@@ -75,7 +128,6 @@
     suiv.hidden = dernier; creer.hidden = !dernier;
     suiv.textContent = dernier ? '' : `Suivant : ${ETAPES[cur + 1].nom}`;
     corps.scrollTop = 0;
-    if (ETAPES[cur].id === 'titre') setTimeout(() => { const t = $('#f-titre'); if (t && !t.value.trim()) t.focus(); }, 50);
     try { sessionStorage.setItem('obseb:vpEtape', String(cur)); } catch (e) { /* rien */ }
   }
   $$('.vp-nav button').forEach(b => b.onclick = () => aller(+b.dataset.etape));

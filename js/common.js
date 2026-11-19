@@ -277,10 +277,23 @@ function jsonTrie(o) {
   if (o && typeof o === 'object') return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + jsonTrie(o[k])).join(',') + '}';
   return JSON.stringify(o === undefined ? null : o);
 }
+/* ----- Les textes de l'intro et de l'outro : modifiables dans le panneau Visuel (session.textes) -----
+   Une case vide = le texte par défaut ci-dessous. */
+const TEXTES_DEFAUT = {
+  introSur: 'Le live commence dans un instant', introInfo: 'Installe-toi, on arrive', introCompte: 'Début du live dans',
+  introAvec: 'avec', introParti: "C'est parti", introBandeau: 'À suivre',
+  finSur: "Merci d'avoir regardé", finInfo: 'Abonne-toi pour ne rien rater', finBandeau: 'Abonne-toi',
+  finPresente: 'Présenté par', finAvec: 'Avec', finRetrouve: 'Retrouve-nous', finAdieu: 'À très vite', finTypo: 'Merci'
+};
+function texteDe(s, k) {
+  const v = s && s.textes && typeof s.textes[k] === 'string' ? s.textes[k].trim() : '';
+  return v || TEXTES_DEFAUT[k] || '';
+}
 function visuelDe(s) {
   const t = {};
   for (const [k, v] of Object.entries((s && s.theme) || {})) t[k] = typeof v === 'string' && v.startsWith('data:') ? 'local:' + empreinteTexte(v) : v;
   const o = { theme: t, titre: (s && s.titre) || '', hote: (s && s.hote) || '', handle: (s && s.handle) || '' };
+  if (s && s.textes && Object.keys(s.textes).length) o.textes = s.textes;
   return { v: empreinteTexte(jsonTrie(o)), o };
 }
 function queryParams() {

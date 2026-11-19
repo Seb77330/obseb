@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="css/biblio.css?v=f983b373">
 <link rel="stylesheet" href="css/comptes.css?v=f26f4388">
 <link rel="stylesheet" href="css/aide.css?v=7b8e54d6">
-<link rel="stylesheet" href="css/visuel-etapes.css?v=cd9a3fe1">
+<link rel="stylesheet" href="css/visuel-etapes.css?v=c1236212">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -27,14 +27,31 @@
 
   /* Mes lives : une carte par live */
   .cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
-  .session { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; overflow: visible; display: flex; flex-direction: column; }
-  .session .mini { position: relative; aspect-ratio: 16/9; border-radius: 11px 11px 0 0; overflow: hidden; background: #000; }
+  .session { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 14px; overflow: visible; display: flex; flex-direction: column; transition: border-color .15s, transform .15s; }
+  .session:hover { border-color: var(--ui-line2); }
+  .session .mini { position: relative; display: block; aspect-ratio: 16/9; border-radius: 13px 13px 0 0; overflow: hidden; background: #000; }
   .session .mini iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
-  .session .corps { padding: 14px; display: grid; gap: 4px; }
-  .session h3 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.3; }
-  .session .meta { color: var(--ui-muted); font-size: 13px; margin-bottom: 10px; }
-  .session .actions { display: flex; gap: 8px; align-items: center; }
-  .session .actions a { flex: 1; } .session .actions a button { width: 100%; }
+  .mini-voile { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .45); opacity: 0; transition: opacity .15s; }
+  .session .mini:hover .mini-voile, .session .mini:focus-visible .mini-voile { opacity: 1; }
+  .mini-ouvrir { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--ui-accent); color: #111; font-weight: 600; font-size: 14px; }
+  .mini-ouvrir .ic { width: 16px; height: 16px; fill: currentColor; stroke: none; }
+  .etat-live { position: absolute; top: 10px; left: 10px; padding: 4px 9px; border-radius: 999px; font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; background: rgba(0, 0, 0, .6); color: #fff; backdrop-filter: blur(4px); }
+  .etat-live.prog { background: var(--ui-accent); color: #111; }
+  .session .corps { padding: 14px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .session h3 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session .meta { color: var(--ui-muted); font-size: 13px; margin-bottom: 12px; }
+  .session .prog-zone:not([hidden]) { margin-bottom: 12px; }
+  .session .actions { display: flex; gap: 6px; align-items: center; margin-top: auto; }
+  .session .actions a.ouvrir { flex: 1; } .session .actions a button { width: 100%; }
+  /* miniatures d'un live programmé : une petite rangée, la carte reste compacte */
+  .session .minis { height: 76px; justify-content: flex-start; }
+  .session .mini-case.h, .session .mini-case.v { flex: none; height: 100%; }
+  .session .mini-case.v .mini-ajout small, .session .mini-case.v .mini-ajout b { display: none; }
+  .session .minis-tete small { display: none; }
+  .ic-btn { width: 42px; height: 42px; flex: none; display: grid; place-items: center; padding: 0; border-radius: 9px; border: 1px solid var(--ui-line); background: none; color: var(--ui-muted); }
+  .ic-btn:hover, .plus[open] > summary.ic-btn { color: var(--ui-text); background: var(--ui-panel2); }
+  .ic-btn .ic { width: 18px; height: 18px; }
+  .plus > summary.ic-btn { padding: 0; letter-spacing: .08em; font-size: 12px; }
 
   /* Live programmé : la date, puis les miniatures */
   .quand { display: grid; gap: 8px; margin-top: 10px; }
@@ -221,11 +238,15 @@
   .plus > summary { list-style: none; cursor: pointer; padding: 9px 12px; border: 1px solid var(--ui-line); border-radius: 7px; color: var(--ui-muted); font-size: 12px; letter-spacing: .1em; user-select: none; }
   .plus > summary::-webkit-details-marker { display: none; }
   .plus[open] > summary { background: var(--ui-panel2); color: var(--ui-text); }
-  .plus .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 300px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
-  .plus .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 12px; font-weight: 500; }
+  .plus .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 236px; background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .plus .menu button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 10px; font-weight: 500; border-radius: 8px; }
   .plus .menu button:hover { background: var(--ui-panel2); }
-  .plus .menu small { display: block; color: var(--ui-muted); font-size: 12px; font-weight: 400; margin-top: 2px; }
-  .plus .menu .danger { color: var(--ui-ko); }
+  .plus .menu button .ic { width: 16px; height: 16px; flex: none; color: var(--ui-muted); }
+  .plus .menu button .lib { flex: 1; }
+  .plus .menu small { color: var(--ui-muted); font: 400 11px var(--mono); }
+  .plus .menu .menu-titre { padding: 6px 10px 4px; font: 600 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
+  .plus .menu hr { border: 0; border-top: 1px solid var(--ui-line); margin: 5px 4px; }
+  .plus .menu .danger, .plus .menu .danger .ic { color: var(--ui-ko); }
 
   /* Création d'un live : l'aperçu à gauche (horizontal et vertical), ce qu'on choisit à droite. Tout tient dans l'écran. */
   body.en-creation { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -645,6 +666,11 @@
         <option value="60">1 h</option>
         <option value="90">1 h 30</option>
         <option value="135">2 h 15</option>
+        <option value="180">3 h</option>
+        <option value="240">4 h</option>
+        <option value="360">6 h</option>
+        <option value="480">8 h</option>
+        <option value="720">12 h</option>
       </select>
       <p class="aide" title="Le compte démarre avec le bouton « Démarrer le direct ». Toi seul vois le minuteur.">20 minutes avant la fin, un minuteur rouge apparaît dans ta régie. À l'heure dite, le live passe sur l'écran de fin.</p>
 
@@ -678,20 +704,20 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=d6904e8a"></script>
+<script src="js/common.js?v=d50374ab"></script>
 <script src="js/vendor/supabase-2.119.0.umd.js?v=4bc1644c"></script>
 <script src="js/comptes-config.js?v=014eeea5"></script>
 <script src="js/comptes.js?v=449b0824"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
-<script src="js/accueil.js?v=995b34e6"></script>
+<script src="js/accueil.js?v=05961d15"></script>
 <script src="js/accueil-compte.js?v=7c1a3f9f"></script>
-<script src="js/accueil-prog.js?v=6f8cfd23"></script>
+<script src="js/accueil-prog.js?v=01a85935"></script>
 <script src="js/accueil-style.js?v=2bfb6b68"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 <script src="js/accueil-biblio.js?v=69aeaf7e"></script>
 <script src="js/accueil-nouveau.js?v=9568d336"></script>
-<script src="js/visuel-etapes.js?v=7ef1307c"></script>
+<script src="js/visuel-etapes.js?v=194dca25"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
 <script src="js/aide-faq.js?v=5d7f8b52"></script>
 <script src="js/aide.js?v=29af8856" data-place="droite"></script>

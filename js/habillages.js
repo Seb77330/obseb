@@ -56,6 +56,7 @@ function habillageDe(scene, id) { return HABILLAGES[scene].some(h => h.id === id
 function decorHabillage(scene, id, ctx) {
   const e = s => (typeof esc === 'function' ? esc(s) : String(s));
   const titre = e(ctx.titre || ''), v = !!ctx.vertical;
+  const T = k => e(ctx.t ? ctx.t(k) : (typeof TEXTES_DEFAUT === 'object' ? TEXTES_DEFAUT[k] : ''));
   const rep = (n, f) => Array.from({ length: n }, (_, i) => f(i)).join('');
   const bande = cls => `<div class="hb-bande ${cls}"><div class="hb-film">${rep(2, () => `<div class="hb-cases">${rep(12, () => '<i></i>')}</div>`)}</div></div>`;
   const carres = () => {
@@ -88,7 +89,7 @@ function decorHabillage(scene, id, ctx) {
       generique: `${bande('gauche')}${bande('droite')}<div class="hb-grain"></div>`,
       neon: `<div class="hb-ciel"></div><div class="hb-soleil"></div><div class="hb-sol"><div class="hb-grille"></div></div>`,
       iris: `<div class="hb-iris"></div>`,
-      typo: `<div class="hb-lignes">${lignes('MERCI', v ? 9 : 6)}</div>`,
+      typo: `<div class="hb-lignes">${lignes(T('finTypo').toUpperCase(), v ? 9 : 6)}</div>`,
       aurore: `<div class="hb-lueurs"><b></b><b></b><b></b><b></b></div>`,
       mosaique: carres(),
       rideau: `<div class="hb-rideau g"></div><div class="hb-rideau d"></div><div class="hb-lambrequin"></div><div class="hb-spot"></div>`,
@@ -104,25 +105,26 @@ function decorHabillage(scene, id, ctx) {
 function piecesHabillage(scene, id, ctx) {
   const e = s => (typeof esc === 'function' ? esc(s) : String(s));
   const rep = (n, f) => Array.from({ length: n }, (_, i) => f(i)).join('');
+  const T = k => e(ctx.t ? ctx.t(k) : (typeof TEXTES_DEFAUT === 'object' ? TEXTES_DEFAUT[k] : ''));
   if (scene === 'intro' && id === 'orbite') return `<svg class="hb-anneaux" viewBox="0 0 600 600" aria-hidden="true">
       <circle class="a1" cx="300" cy="300" r="290"/><circle class="a2" cx="300" cy="300" r="262"/>
       <circle class="a3" cx="300" cy="300" r="236"/><circle class="reste" cx="300" cy="300" r="214" pathLength="1000"/>
       <g class="a4"><circle cx="300" cy="10" r="9"/></g></svg>`;
   if (scene === 'intro' && id === 'pellicule') return `<div class="hb-amorce" aria-hidden="true"><svg viewBox="0 0 600 600"><circle cx="300" cy="300" r="280"/><circle cx="300" cy="300" r="236"/><path d="M300 0v600M0 300h600"/></svg><div class="hb-balayage"></div></div>`;
   if (scene === 'intro' && id === 'plateau') {
-    const fil = [ctx.titre, ctx.hote ? `Avec ${ctx.hote}` : '', ctx.handle].filter(Boolean).map(t => `<span>${e(t)}</span>`).join('');
-    return `<div class="hb-bandeau" aria-hidden="true"><b>À SUIVRE</b><div class="hb-fil"><div>${fil}${fil}${fil}${fil}</div></div></div>`;
+    const fil = [ctx.titre, ctx.hote ? `${ctx.t ? ctx.t('finAvec') : 'Avec'} ${ctx.hote}` : '', ctx.handle].filter(Boolean).map(t => `<span>${e(t)}</span>`).join('');
+    return `<div class="hb-bandeau" aria-hidden="true"><b>${T('introBandeau').toUpperCase()}</b><div class="hb-fil"><div>${fil}${fil}${fil}${fil}</div></div></div>`;
   }
-  if (scene === 'fin' && id === 'plateau') return `<div class="hb-bandeau" aria-hidden="true"><b>ABONNE-TOI</b><div class="hb-fil"><div>${rep(8, () => `<span>${e(ctx.handle || '')}</span>`)}</div></div></div>`;
+  if (scene === 'fin' && id === 'plateau') return `<div class="hb-bandeau" aria-hidden="true"><b>${T('finBandeau').toUpperCase()}</b><div class="hb-fil"><div>${rep(8, () => `<span>${e(ctx.handle || '')}</span>`)}</div></div></div>`;
   if (scene === 'fin' && id === 'generique') {
     const autres = (ctx.invites || []).filter(n => n && n !== ctx.hote);
     const bloc = `<div class="hb-g-bloc">
-      <div class="hb-g-sur">Merci d'avoir regardé</div>
+      <div class="hb-g-sur">${T('finSur')}</div>
       <div class="hb-g-titre">${e(ctx.titre || '')}</div>
-      <div class="hb-g-role">Présenté par</div><div class="hb-g-nom">${e(ctx.hote || '')}</div>
-      ${autres.length ? `<div class="hb-g-role">Avec</div>${autres.map(n => `<div class="hb-g-nom">${e(n)}</div>`).join('')}` : ''}
-      <div class="hb-g-role">Retrouve-nous</div><div class="hb-g-nom accent">${e(ctx.handle || '')}</div>
-      <div class="hb-g-fin">À très vite</div></div>`;
+      <div class="hb-g-role">${T('finPresente')}</div><div class="hb-g-nom">${e(ctx.hote || '')}</div>
+      ${autres.length ? `<div class="hb-g-role">${T('finAvec')}</div>${autres.map(n => `<div class="hb-g-nom">${e(n)}</div>`).join('')}` : ''}
+      <div class="hb-g-role">${T('finRetrouve')}</div><div class="hb-g-nom accent">${e(ctx.handle || '')}</div>
+      <div class="hb-g-fin">${T('finAdieu')}</div></div>`;
     return `<div class="hb-generique" aria-hidden="true"><div class="hb-g-piste" style="--n:${autres.length}">${bloc}${bloc}</div></div>`;
   }
   return '';
@@ -132,7 +134,7 @@ function piecesHabillage(scene, id, ctx) {
 function poserHabillage(section, scene, id, ctx) {
   if (!section) return;
   id = habillageDe(scene, id);
-  const cle = JSON.stringify([id, ctx.titre, ctx.hote, ctx.handle, ctx.invites, ctx.vertical]);
+  const cle = JSON.stringify([id, ctx.titre, ctx.hote, ctx.handle, ctx.invites, ctx.vertical, ctx.t ? Object.keys(TEXTES_DEFAUT).map(ctx.t) : 0]);
   if (section.dataset.hbCle === cle) return;
   const change = section.dataset.style !== id;
   section.dataset.hbCle = cle;

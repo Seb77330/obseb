@@ -210,31 +210,37 @@ function afficherSessions() {
     const t = themeComplet(session);
     const el = document.createElement('div');
     el.className = 'session'; el.dataset.room = session.room;
+    const prog = session.debut && session.debut > Date.now();
     el.innerHTML = `
-      <div class="mini"><iframe loading="lazy" src="${esc(urlApercu(session, 'intro'))}"></iframe></div>
+      <a class="mini" href="${esc(L.regie)}" title="Ouvrir la régie"><iframe loading="lazy" tabindex="-1" src="${esc(urlApercu(session, 'intro'))}"></iframe>
+        <span class="mini-voile"><span class="mini-ouvrir"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Ouvrir la régie</span></span>
+        <span class="etat-live${prog ? ' prog' : ''}">${prog ? 'Programmé' : 'Prêt'}</span></a>
       <div class="corps">
-        <h3>${esc(session.titre)}</h3>
-        <div class="meta">Thème ${esc((t.nom || 'perso').replace(/\s*\(.*\)$/, ''))} · créé le ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR')}</div>
+        <h3 title="${esc(session.titre)}">${esc(session.titre)}</h3>
+        <div class="meta">${esc((t.nom || 'perso').replace(/\s*\(.*\)$/, ''))} · ${new Date(session.cree || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
         <div class="prog-zone" hidden></div>
         <div class="actions">
-          <a href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
-          <button data-a="invite" title="Copier le lien à envoyer à tes invités">Lien invités</button>
+          <a class="ouvrir" href="${esc(L.regie)}"><button class="primaire">Ouvrir la régie</button></a>
+          <button class="ic-btn" data-a="invite" title="Copier le lien à envoyer à tes invités" aria-label="Copier le lien invités"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+          <button class="ic-btn" data-a="modifier" title="Modifier le visuel (thème, couleurs, textes, date)" aria-label="Modifier le visuel"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.1-.9-1.6-.9-2.6 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></button>
           <details class="plus">
-            <summary title="Plus d'options">•••</summary>
+            <summary class="ic-btn" title="Plus d'options" aria-label="Plus d'options">•••</summary>
             <div class="menu">
-              <button data-a="obs">Copier le lien OBS<small>Source navigateur 1920 × 1080</small></button>
-              <button data-a="vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)</small></button>
-              <button data-a="programmer">Programmer<small>Le jour et l'heure, puis les miniatures</small></button>
-              <button data-a="agenda" hidden>Ajouter à mon agenda<small>Un rappel 15 minutes avant</small></button>
-              <button data-a="modifier">Modifier le visuel<small>Dans la régie : thème, couleurs, titre, date</small></button>
-              <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même thème</small></button>
-              <button data-a="suppr" class="danger">Supprimer</button>
+              <div class="menu-titre">Liens pour OBS</div>
+              <button data-a="obs" title="Source navigateur 1920 × 1080"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/></svg><span class="lib">Horizontal</span><small>1920 × 1080</small></button>
+              <button data-a="vertical" title="Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7.5" y="3" width="9" height="18" rx="2"/></svg><span class="lib">Vertical</span><small>1080 × 1920</small></button>
+              <hr>
+              <button data-a="programmer" title="Le jour et l'heure, puis les miniatures"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="lib">Programmer</span></button>
+              <button data-a="agenda" hidden title="Un rappel 15 minutes avant"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></svg><span class="lib">Ajouter à mon agenda</span></button>
+              <button data-a="dupliquer" title="Nouveau live avec le même thème"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lib">Dupliquer</span></button>
+              <hr>
+              <button data-a="suppr" class="danger"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg><span class="lib">Supprimer</span></button>
             </div>
           </details>
         </div>
       </div>`;
     el.querySelector('[data-a=invite]').onclick = () => copier(L.invite, 'Lien invités copié');
-    el.querySelector('[data-a=obs]').onclick = () => copier(L.sortie, 'Lien OBS copié');
+    el.querySelector('[data-a=obs]').onclick = () => copier(L.sortie, 'Lien OBS horizontal copié');
     el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
     el.querySelector('[data-a=programmer]').onclick = () => ouvrirProgrammation(session.room);
     el.querySelector('[data-a=agenda]').onclick = () => telechargerAgenda(session, baseUrl());

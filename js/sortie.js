@@ -62,6 +62,7 @@ function ajusterTitres() {
 addEventListener('load', ajusterTitres);
 if (document.fonts) document.fonts.ready.then(ajusterTitres);
 document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = session.hote);
+document.querySelectorAll('[data-texte]').forEach(e => e.textContent = texteDe(session, e.dataset.texte));
 document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
 $('#logo').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="">` : esc(theme.logoTexte || 'SEB');
 $('#logo').classList.toggle('image', !!theme.logo);
@@ -262,9 +263,10 @@ function suivreVisuel(vis) {
         if (typeof mien === 'string' && mien.startsWith('data:') && 'local:' + empreinteTexte(mien) === v) theme[k] = mien;
       } else theme[k] = v;
     }
-    nouveau = Object.assign({}, session, { theme, titre: String(vis.o.titre || session.titre).slice(0, 120), hote: String(vis.o.hote || session.hote).slice(0, 60), handle: String(vis.o.handle || session.handle || '').slice(0, 60) });
+    nouveau = Object.assign({}, session, { theme, titre: String(vis.o.titre || session.titre).slice(0, 120), hote: String(vis.o.hote || session.hote).slice(0, 60), handle: String(vis.o.handle || session.handle || '').slice(0, 60), textes: vis.o.textes && typeof vis.o.textes === 'object' ? vis.o.textes : undefined });
   }
-  nouveau = Object.assign({}, session, { theme: nouveau.theme, titre: nouveau.titre, hote: nouveau.hote, handle: nouveau.handle });
+  nouveau = Object.assign({}, session, { theme: nouveau.theme, titre: nouveau.titre, hote: nouveau.hote, handle: nouveau.handle, textes: nouveau.textes });
+  if (!nouveau.textes) delete nouveau.textes;
   const h = hashParams(); h.set('s', b64e(nouveau));
   location.replace(location.pathname + location.search + '#' + h.toString());
   location.reload();
@@ -814,7 +816,7 @@ function gererHabillages(st, scene) {
   // un thème 3D apporte son intro et son outro tant qu'on n'en a pas choisi d'autres
   if (!st.introStyle && theme.introStyle) st.introStyle = theme.introStyle;
   if (!st.outroStyle && theme.outroStyle) st.outroStyle = theme.outroStyle;
-  const ctx = { titre: session.titre, hote: session.hote, handle: session.handle || HANDLE_DEFAUT, vertical: VERTICAL,
+  const ctx = { titre: session.titre, hote: session.hote, handle: session.handle || HANDLE_DEFAUT, vertical: VERTICAL, t: k => texteDe(session, k),
     invites: (st.onair || []).map(id => (st.noms || {})[id]).filter(Boolean) };
   const avantI = $('#intro').dataset.style, avantF = $('#fin').dataset.style;
   poserHabillage($('#intro'), 'intro', st.introStyle, ctx);
@@ -828,18 +830,18 @@ function gererHabillages(st, scene) {
 /* ----- Compte à rebours de l'intro ----- */
 function compteARebours() {
   const el = $('#compte'), info = $('#intro-info'), intro = $('#intro');
-  if (!etat || !etat.fin) { el.textContent = ''; info.textContent = 'Installe-toi, on arrive'; intro.dataset.compte = 'aucun'; intro.style.setProperty('--p', 0); return; }
+  if (!etat || !etat.fin) { el.textContent = ''; info.textContent = texteDe(session, 'introInfo'); intro.dataset.compte = 'aucun'; intro.style.setProperty('--p', 0); return; }
   const ms = etat.fin - Date.now();
   // --p : la part du temps déjà écoulée (0 au départ, 1 à la fin), pour les anneaux et les barres des visuels
   const total = etat.fin - (etat.debutCompte || etat.fin);
   intro.style.setProperty('--p', total > 0 ? Math.min(1, Math.max(0, 1 - ms / total)).toFixed(4) : 0);
-  if (ms <= 0) { el.textContent = "C'est parti"; info.textContent = ''; intro.dataset.compte = 'fini'; return; }
+  if (ms <= 0) { el.textContent = texteDe(session, 'introParti'); info.textContent = ''; intro.dataset.compte = 'fini'; return; }
   intro.dataset.compte = 'en-cours';
   const s = Math.ceil(ms / 1000);
   intro.dataset.tic = s % 2;
   const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60, d2 = n => String(n).padStart(2, '0');
   el.textContent = h ? `${h}:${d2(m)}:${d2(sec)}` : `${m}:${d2(sec)}`;   // 3:59:08 au-delà d'une heure
-  info.textContent = 'Début du live dans';
+  info.textContent = texteDe(session, 'introCompte');
 }
 setInterval(compteARebours, 250);
 
