@@ -8,27 +8,35 @@
 .modes button:hover { color: var(--ui-text); background: var(--ui-panel2); }
 .modes button.actif { color: var(--ui-text); background: var(--ui-panel2); box-shadow: inset 0 0 0 1.5px var(--ui-accent); }
 
-.mode-reglages { flex: none; display: grid; gap: 8px; margin-left: 72px; padding: 9px 10px; border-radius: 10px; background: color-mix(in srgb, var(--ui-accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--ui-accent) 28%, var(--ui-line)); }
+/* Réglages du mode : une seule ligne d'icônes, sans cadre ni phrase (le détail est au survol) */
+.mode-reglages { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: 72px; padding: 2px 0; }
 .mode-reglages[hidden] { display: none; }
-.md-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
-.md-tit { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ui-muted); }
-.md-tit:not(:first-child) { margin-left: 6px; }
-.md-coins, .md-tailles, .md-cotes { display: flex; gap: 4px; }
-.md-coins button { padding: 3px; border-radius: 6px; background: none; border: 1px solid transparent; line-height: 0; }
-.md-coins svg { width: 34px; height: 20px; display: block; }
-.md-coins .f, .md-cotes .f { fill: none; stroke: var(--ui-muted); stroke-width: 1.5; }
-.md-coins .q, .md-cotes .q { fill: var(--ui-muted); }
-.md-cotes .p { fill: color-mix(in srgb, var(--ui-muted) 35%, transparent); }
-.md-coins button:hover, .md-cotes button:hover { border-color: var(--ui-line2); }
-.md-coins button.actif, .md-cotes button.actif { border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
-.md-coins button.actif .q, .md-cotes button.actif .q { fill: var(--ui-accent); }
-.md-tailles button { padding: 4px 9px; font-size: 12px; border-radius: 6px; background: none; border: 1px solid var(--ui-line); color: var(--ui-muted); }
-.md-tailles button.actif { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
-.md-cotes button { display: flex; align-items: center; gap: 5px; padding: 3px 7px 3px 4px; font-size: 12px; border-radius: 6px; background: none; border: 1px solid transparent; color: var(--ui-muted); }
-.md-cotes svg { width: 13px; height: 21px; flex: none; }
-.md-cotes button.actif { color: var(--ui-text); }
-.md-appel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--ui-muted); }
-.md-appel span { margin-right: 2px; }
+#rangee-cadrage[hidden] { display: none; }
+.md-sep { width: 1px; height: 22px; background: var(--ui-line); margin: 0 2px; }
+.md-groupe { display: flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--ui-input); border: 1px solid var(--ui-line); }
+.md-groupe button { border: 0; background: none; border-radius: 7px; color: var(--ui-muted); line-height: 1; }
+.md-groupe button:hover { color: var(--ui-text); background: var(--ui-hover); }
+.md-groupe button.actif { color: var(--ui-text); background: var(--ui-panel2); box-shadow: inset 0 0 0 1.5px var(--ui-accent); }
+.md-video-choix button { padding: 6px 11px; font-size: 12.5px; font-weight: 500; }
+.md-video-choix button.primaire { background: var(--ui-accent); color: var(--ui-sur-accent); }
+.md-video { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; font-size: 12.5px; border-radius: 9px; border: 1px solid var(--ui-line); background: none; color: var(--ui-text); }
+.md-video i { width: 8px; height: 8px; border-radius: 50%; background: #3ecf8e; }
+.md-video:hover { border-color: var(--ui-line2); background: var(--ui-hover); }
+.md-coins button { padding: 4px 5px; }
+.md-coins svg { width: 28px; height: 17px; display: block; }
+.md-coins .f, .md-cotes .f, .md-inverser .f { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .7; }
+.md-coins .q, .md-cotes .q { fill: currentColor; opacity: .55; }
+.md-coins button.actif .q, .md-cotes button.actif .q { fill: var(--ui-accent); opacity: 1; }
+.md-cotes .p { fill: currentColor; opacity: .18; }
+.md-tailles button { width: 30px; padding: 6px 0; font: 600 12px var(--mono, monospace); }
+.md-cotes button { padding: 3px 7px; }
+.md-cotes svg { width: 11px; height: 18px; display: block; }
+.md-inverser { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 6px; font-size: 12.5px; border-radius: 9px; border: 1px solid var(--ui-line); background: none; color: var(--ui-muted); }
+.md-inverser:hover { color: var(--ui-text); border-color: var(--ui-line2); }
+.md-inverser svg { width: 30px; height: 18px; display: block; }
+.md-inverser .q { fill: var(--ui-accent); }
+.md-inverser .g, .md-inverser .i { fill: currentColor; opacity: .75; }
+.md-inverser .i { fill: var(--ui-sur-accent); opacity: 1; }
 
 /* ----- Enregistrer ----- */
 .rec-zone { margin-right: 6px; }
@@ -119,3 +127,4 @@ body.visuel-ouvert #cam-appel { display: none !important; }
   .md-note { flex-basis: 100%; }
 }
 @media (max-width: 1000px) { .md-inverser { display: none; } }   /* sur téléphone, les deux gros boutons « En petit » suffisent pour alterner */
+@media (min-width: 1001px) and (max-width: 1400px) { .md-coins button { padding: 4px 3px; } .md-coins svg { width: 24px; height: 15px; } .md-tailles button { width: 26px; } .md-video-choix button { padding: 6px 9px; } .md-sep { display: none; } .md-inverser span { display: none; } .md-inverser { padding: 4px 6px; } }

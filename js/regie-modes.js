@@ -58,6 +58,8 @@ function inverserReaction() {
   envoyer(); dessinerReglagesMode();
   toast(etat.reaction.petit === 'partage' ? 'Ta caméra en grand, le partage en petit dans le coin' : 'Le partage en grand, ta caméra en petit dans le coin');
 }
+/* Les réglages du mode tiennent sur une seule ligne, sans phrase : la vidéo, le coin, la taille, le vertical, Inverser.
+   Le détail de chaque bouton est au survol. */
 function dessinerReglagesMode() {
   const box = $('#mode-reglages');
   const m = etat.mode, r = etat.reaction;
@@ -65,36 +67,29 @@ function dessinerReglagesMode() {
   box.dataset.mode = m;
   if (m === 'plateau') return;
   const actives = (etat.sources || []).filter(s => s && s.actif && s.ref);
-  const appel = m === 'reaction'
-    ? `<div class="md-appel"><span>${actives.length ? 'Ta bande-annonce est à l\'écran.' : 'Choisis ta bande-annonce :'}</span>
-         <button type="button" class="petit ${actives.length ? '' : 'primaire'}" data-src="monecran" title="Ouvre ta bande-annonce sur YouTube dans un autre onglet, puis choisis cet onglet et coche « Partager l'audio »">Partager l'onglet YouTube</button>
-         <button type="button" class="petit" data-src="lien" title="Colle le lien de la vidéo (YouTube, Vimeo, MP4…)">Coller un lien</button></div>`
-    : `<div class="md-appel"><span>${actives.length ? 'Ton jeu est à l\'écran.' : 'Branche ton jeu :'}</span>
-         ${TEL_SOURCES ? '' : '<button type="button" class="petit ' + (actives.length ? '' : 'primaire') + '" data-src="console" title="PS5, Xbox, Switch : avec un boîtier d\'acquisition (Cam Link, Elgato…)">Console</button>'}
-         ${TEL_SOURCES ? '' : '<button type="button" class="petit" data-src="monecran" title="PS Remote Play, Xbox, GeForce Now, un jeu sur PC : choisis sa fenêtre">Fenêtre de jeu</button>'}
-         <button type="button" class="petit" data-src="lien" title="Le flux d'un lien : une chaîne Twitch, une vidéo…">Lien</button></div>`;
-  const inv = r.petit === 'partage', nomPartage = m === 'jeu' ? 'Le jeu' : 'Le partage';
-  const quoi = inv ? (m === 'jeu' ? 'Jeu' : 'Partage') : 'Caméra';
+  const jeu = m === 'jeu', nomVideo = jeu ? 'Le jeu' : 'La bande-annonce';
+  const choix = jeu
+    ? [!TEL_SOURCES && ['console', 'Console', 'PS5, Xbox, Switch : avec un boîtier d\'acquisition (Cam Link, Elgato…)'],
+       !TEL_SOURCES && ['monecran', 'Fenêtre', 'PS Remote Play, Xbox, GeForce Now, un jeu sur PC : choisis sa fenêtre'],
+       ['lien', 'Lien', 'Le flux d\'un lien : une chaîne Twitch, une vidéo…']].filter(Boolean)
+    : [['monecran', 'YouTube', 'Ouvre ta bande-annonce sur YouTube dans un autre onglet, puis choisis cet onglet et coche « Partager l\'audio »'],
+       ['lien', 'Lien', 'Colle le lien de la vidéo (YouTube, Vimeo, MP4…)']];
+  const video = actives.length
+    ? `<button type="button" class="md-video ok" data-src="change" title="${nomVideo} est à l'écran. Clique pour la changer dans l'onglet Partage"><i></i>${jeu ? 'Jeu' : 'Vidéo'} à l'écran</button>`
+    : `<div class="md-groupe md-video-choix" role="group" aria-label="${nomVideo}">${choix.map(([u, n, t], i) => `<button type="button" data-src="${u}" class="${i === 0 ? 'primaire' : ''}" title="${t}">${n}</button>`).join('')}</div>`;
+  const inv = r.petit === 'partage', quoi = inv ? (jeu ? 'Le jeu' : 'Le partage') : 'Ta caméra';
   box.innerHTML = `
-    <div class="md-ligne md-petit">
-      <span class="md-tit">En petit</span>
-      <div class="md-qui" role="group" aria-label="Ce qui se met en petit dans le coin">${[['camera', 'Ma caméra', 'Ta caméra en petit dans le coin, ' + nomPartage.toLowerCase() + ' en grand'], ['partage', nomPartage, nomPartage + ' en petit dans le coin, ta caméra en grand']].map(([q, n, t]) => `<button type="button" data-petit="${q}" class="${r.petit === q ? 'actif' : ''}" aria-pressed="${r.petit === q}" title="${t}">${petitSvg(q)}<span>${n}</span></button>`).join('')}</div>
-      <button type="button" class="petit md-inverser" title="Échange d'un clic ce qui est en grand et ce qui est en petit">⇄ Inverser</button>
-    </div>
-    <div class="md-ligne">
-      <span class="md-tit">${inv ? 'Coin' : 'Horizontal'}</span>
-      <div class="md-coins" role="group" aria-label="Coin de ce qui est en petit">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="${quoi} ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
-      <div class="md-tailles" role="group" aria-label="Taille de ce qui est en petit">${[['p', 'Petite'], ['m', 'Moyenne'], ['g', 'Grande']].map(([t, n]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="${quoi} : taille ${n.toLowerCase()}${t === 'm' && !inv ? ' (environ un huitième de l\'écran)' : ''}">${n}</button>`).join('')}</div>
-      ${inv ? '<span class="md-note">En vertical aussi : même coin, dans la zone que TikTok ne cache pas</span>' : `<span class="md-tit">Vertical</span>
-      <div class="md-cotes" role="group" aria-label="Où va la bande-annonce en vertical">${[['haut', 'en haut'], ['bas', 'en bas']].map(([c, n]) => `<button type="button" data-cote="${c}" class="${r.cote === c ? 'actif' : ''}" title="${m === 'jeu' ? 'Le jeu' : 'La bande-annonce'} ${n}, la caméra ${c === 'haut' ? 'en bas' : 'en haut'}">${coteSvg(c)}<span>${m === 'jeu' ? 'Jeu' : 'B.-A.'} ${n}</span></button>`).join('')}</div>`}
-    </div>
-    ${appel}`;
-  box.querySelectorAll('[data-petit]').forEach(b => b.onclick = () => { if (etat.reaction.petit !== b.dataset.petit) inverserReaction(); });
+    ${video}
+    <span class="md-sep" aria-hidden="true"></span>
+    <div class="md-groupe md-coins" role="group" aria-label="Coin de ce qui est en petit" title="${quoi} en petit : choisis le coin">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="${quoi} ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
+    <div class="md-groupe md-tailles" role="group" aria-label="Taille de ce qui est en petit">${[['p', 'S', 'petite'], ['m', 'M', 'moyenne'], ['g', 'L', 'grande']].map(([t, n, l]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="${quoi} : taille ${l}">${n}</button>`).join('')}</div>
+    ${inv ? '' : `<div class="md-groupe md-cotes" role="group" aria-label="En vertical">${[['haut', 'en haut'], ['bas', 'en bas']].map(([c, n]) => `<button type="button" data-cote="${c}" class="${r.cote === c ? 'actif' : ''}" title="En vertical : ${nomVideo.toLowerCase()} ${n}, ta caméra ${c === 'haut' ? 'en bas' : 'en haut'}">${coteSvg(c)}</button>`).join('')}</div>`}
+    <button type="button" class="md-inverser${inv ? ' actif' : ''}" aria-pressed="${inv}" title="${inv ? 'Ta caméra est en grand, ' + nomVideo.toLowerCase() + ' en petit' : nomVideo + ' est en grand, ta caméra en petit'}. Clique pour échanger${inv ? ' (en vertical aussi : même coin, dans la zone que TikTok ne cache pas)' : ''}">${petitSvg(r.petit === 'partage' ? 'partage' : 'camera')}<span>Inverser</span></button>`;
   box.querySelector('.md-inverser').onclick = inverserReaction;
   box.querySelectorAll('[data-coin]').forEach(b => b.onclick = () => { etat.reaction.coin = b.dataset.coin; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-taille]').forEach(b => b.onclick = () => { etat.reaction.taille = b.dataset.taille; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-cote]').forEach(b => b.onclick = () => { etat.reaction.cote = b.dataset.cote; envoyer(); dessinerReglagesMode(); });
-  box.querySelectorAll('[data-src]').forEach(b => b.onclick = () => choisirSourceMode(b.dataset.src));
+  box.querySelectorAll('[data-src]').forEach(b => b.onclick = () => b.dataset.src === 'change' ? ouvrirOnglet('sources') : choisirSourceMode(b.dataset.src));
 }
 /* Un raccourci vers l'onglet Partage : on l'ouvre et on choisit la bonne source, comme si tu avais cliqué dedans */
 function choisirSourceMode(ui) {
@@ -112,6 +107,8 @@ let cleModes = '';
 function majModes() {
   $$('#modes [data-mode]').forEach(b => b.classList.toggle('actif', b.dataset.mode === etat.mode));
   document.body.dataset.modeStudio = etat.mode;
+  // le cadrage ne sert qu'aux caméras seules : caché en Réaction et en Jeu, et pendant l'intro et l'outro
+  const rc = $('#rangee-cadrage'); if (rc) rc.hidden = etat.mode !== 'plateau' || etat.scene === 'intro' || etat.scene === 'fin';
   const actives = (etat.sources || []).filter(s => s && s.actif && s.ref).length;
   const cle = JSON.stringify([etat.mode, etat.reaction, actives > 0]);
   if (cle !== cleModes) { cleModes = cle; dessinerReglagesMode(); }
