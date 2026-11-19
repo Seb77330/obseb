@@ -1,4 +1,4 @@
-/* OBSeb : accueil, « Mes lives » et « Mes enregistrements » */
+/* MESA : accueil, « Mes lives » et « Mes enregistrements » */
 
 /* ----- Page de création : la bibliothèque à la place du grand aperçu ----- */
 .biblio { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 28px 20px; background: var(--ui-bg); overflow: auto; }

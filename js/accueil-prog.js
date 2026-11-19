@@ -1,4 +1,4 @@
-/* OBSeb : accueil, programmer un live (jour et heure) et lui donner ses miniatures.
+/* MESA : accueil, programmer un live (jour et heure) et lui donner ses miniatures.
    La date est rangée dans le live (session.debut) : elle voyage avec le lien des invités, qui la voient à leur heure.
    Les miniatures sont mises aux tailles demandées par les plateformes (horizontale 1280 × 720 en 16:9, moins de 2 Mo,
    la règle de YouTube ; verticale 1080 × 1920) et gardées dans ce navigateur, prêtes à télécharger.

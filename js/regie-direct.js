@@ -1,4 +1,4 @@
-/* OBSeb : démarrer et arrêter le direct, en général ou plateforme par plateforme.
+/* MESA : démarrer et arrêter le direct, en général ou plateforme par plateforme.
    Les scènes (Intro, Plateau, Écran partagé, Fin) ne lancent JAMAIS le direct : on peut tout régler sans risque.
    Le direct ne démarre qu'avec ce bouton, après confirmation. */
 'use strict';

@@ -1,4 +1,4 @@
-/* OBSeb : la FAQ du studio. C'est la seule source de la bulle d'aide et de la page faq.html.
+/* MESA : la FAQ du studio. C'est la seule source de la bulle d'aide et de la page faq.html.
    Une entrée = c (catégorie), q (la question), r (la réponse, en texte simple, sauts de ligne permis),
    m (d'autres façons de poser la question, des mots que les gens tapent : ils aident la recherche).
    Règle : ne rien écrire ici qui n'existe pas encore dans le studio. Ce qui arrive plus tard est dit « bientôt ». */
@@ -25,14 +25,14 @@ const FAQ = [
     r: '1. Recharge la page (Ctrl + Maj + R).\n2. Vérifie que tu es sur Chrome ou Edge, à jour.\n3. Ferme les autres onglets et applis qui utilisent la caméra ou le micro.\n4. Si ça continue, écris-nous en expliquant ce que tu faisais : on regarde.',
     m: 'ca bug bug probleme beug plante crash marche plus rien ne marche' },
   /* ---------- Bien démarrer ---------- */
-  { c: 'debut', q: "C'est quoi OBSeb ?",
+  { c: 'debut', q: "C'est quoi MESA ?",
     r: "Un studio de live dans ton navigateur. Tu crées ton live, tu invites des gens avec un simple lien, tu choisis qui est à l'écran, et le studio fabrique une belle image (thème, intro, bandeaux, quiz, chat…) que tu envoies sur tes plateformes.",
     m: "studio presentation c'est quoi ca sert a quoi a quoi sert le site explication concept" },
   { c: 'debut', q: "Comment je crée mon premier live ?",
     r: "Sur l'accueil, clique sur « Créer mon premier live » (ou « Nouveau live ») : tu arrives tout de suite dans la régie. Le panneau « Visuel » s'ouvre et te guide par étapes : thème, couleurs, police, logo et fond, musiques, puis titre et date. Seul le thème compte, le reste est facultatif.",
     m: "creer nouveau live commencer demarrer premiere fois premier pas debuter" },
   { c: 'debut', q: "Faut-il installer quelque chose ?",
-    r: "Non. Le studio marche dans Chrome ou Edge, sans rien installer. Seuls deux outils sont en option : OBS (si tu veux envoyer le direct avec lui) et l'extension OBSeb Watch pour la Watch Party.",
+    r: "Non. Le studio marche dans Chrome ou Edge, sans rien installer. Seuls deux outils sont en option : OBS (si tu veux envoyer le direct avec lui) et l'extension MESA Watch pour la Watch Party.",
     m: "installer telecharger logiciel application appli programme" },
   { c: 'debut', q: "Faut-il créer un compte ?",
     r: "Pas pendant la bêta : il n'y a pas encore de comptes. Tes lives sont gardés dans ton navigateur. Les comptes arriveront avec les formules payantes.",
@@ -407,9 +407,9 @@ const FAQ = [
     r: "Onglet Watch, « Top départ » : un compte à rebours 5, 4, 3, 2, 1 s'affiche à l'écran et chez tes invités, et tout le monde appuie sur lecture ensemble. Un second clic pendant le compte l'annule.",
     m: "synchroniser netflix synchro caler top depart meme moment ensemble lecture" },
   { c: 'watch', q: "Le minuteur peut-il suivre mon film tout seul ?",
-    r: "Oui, avec l'extension OBSeb Watch pour Chrome ou Edge : elle suit Netflix, Prime Video, Disney+, YouTube ou VLC à la seconde, pauses comprises. Les instructions d'installation sont dans l'onglet Watch.",
+    r: "Oui, avec l'extension MESA Watch pour Chrome ou Edge : elle suit Netflix, Prime Video, Disney+, YouTube ou VLC à la seconde, pauses comprises. Les instructions d'installation sont dans l'onglet Watch.",
     m: "extension chrome suivre netflix prime disney youtube automatique obseb watch" },
-  { c: 'watch', q: "Comment installer l'extension OBSeb Watch ?",
+  { c: 'watch', q: "Comment installer l'extension MESA Watch ?",
     r: "Télécharge-la depuis l'onglet Watch et décompresse le dossier. Dans Chrome ou Edge, ouvre chrome://extensions, active « Mode développeur », puis « Charger l'extension non empaquetée » et choisis le dossier.",
     m: "installer extension watch chrome extensions mode developpeur" },
   { c: 'watch', q: "Ça marche avec VLC ?",
@@ -425,7 +425,7 @@ const FAQ = [
     r: "Dans l'onglet Watch, écris par exemple « s1e4 » ou « 1x04 » : c'est mis en forme tout seul.",
     m: "episode saison serie s1e4 numero" },
 
-  { c: 'watch', q: "L'extension OBSeb Watch ne suit pas mon film",
+  { c: 'watch', q: "L'extension MESA Watch ne suit pas mon film",
     r: "Vérifie que le film est ouvert dans un onglet de Chrome ou Edge, que tu as cliqué sur l'icône de l'extension puis « Suivre le film de cet onglet », et que le « Mode développeur » est toujours activé dans chrome://extensions. Recharge l'onglet du film si besoin. Sans extension, le minuteur manuel marche toujours.",
     m: 'extension marche pas ne suit pas watch bug minuteur bloque' },
 

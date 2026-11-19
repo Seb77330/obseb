@@ -1,4 +1,4 @@
-/* OBSeb : visuels de l'intro et de l'outro (voir js/habillages.js).
+/* MESA : visuels de l'intro et de l'outro (voir js/habillages.js).
    Tout est aux couleurs du thème (--bg, --bg2, --accent, --accent2, --text, --muted) et tourne en boucle.
    Seules des transformations et des opacités bougent : léger pour OBS, même sur un petit ordinateur. */
 

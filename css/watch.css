@@ -1,4 +1,4 @@
-/* OBSeb : Watch Party, les habillages du minuteur (onglet Watch de la régie).
+/* MESA : Watch Party, les habillages du minuteur (onglet Watch de la régie).
    Le socle (place, taille, version « pastille », vertical) est dans scene.css ; ici, cinq dessins au choix :
    bandeau (le socle), pellicule, panneau (tableau des départs), anneau, epure. */
 #watch .wp-ep { display: none; }

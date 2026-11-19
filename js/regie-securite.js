@@ -1,4 +1,4 @@
-/* OBSeb : salle d'attente (avec le serveur OBSeb seulement).
+/* MESA : salle d'attente (avec le serveur MESA seulement).
    Un invité qui ouvre le lien arrive en salle d'attente : sans caméra ni micro, il ne voit et n'entend rien.
    L'animateur le fait entrer (ou le refuse) ici ; il peut aussi fermer la salle à clé et exclure quelqu'un.
    Le serveur applique ces décisions lui-même : un lien partagé trop largement ne suffit plus pour entrer. */
@@ -18,7 +18,7 @@ async function commandeSalle(action, identite) {
     body: JSON.stringify({ room: session.room, cle, identite })
   });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.erreur || 'Le serveur OBSeb ne répond pas');
+  if (!r.ok) throw new Error(j.erreur || 'Le serveur MESA ne répond pas');
   return j;
 }
 

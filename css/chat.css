@@ -1,4 +1,4 @@
-/* OBSeb : un message du chat mis en avant à l'écran. Quatre façons, au choix dans l'onglet Chat :
+/* MESA : un message du chat mis en avant à l'écran. Quatre façons, au choix dans l'onglet Chat :
    bulle (bulle de BD qui saute), depeche (bandeau tapé à la machine), affiche (grande citation), postit (note collée de travers).
    #chat-bulle porte la place et la disparition ; .cb-boite porte le dessin et l'arrivée. */
 #chat-bulle { position: absolute; z-index: 6; right: 70px; bottom: 58px; width: 820px; transition: opacity .35s ease, transform .35s ease; pointer-events: none; }

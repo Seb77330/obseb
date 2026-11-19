@@ -1,4 +1,4 @@
-/* OBSeb : la régie */
+/* MESA : la régie */
 'use strict';
 
 const $ = s => document.querySelector(s);
@@ -377,7 +377,7 @@ const nomsInvites = new Map();      // dernier nom choisi par chaque invité
 const renommesParMoi = new Set();   // invités que tu as renommés : leur propre nom ne t'écrase plus
 function arrivee(id, label) {
   if (!id || id === ID_HOTE || camsLocales.has(id)) return;     // tes propres caméras sont déjà connues
-  if (typeof enAttente === 'function' && enAttente(id, label)) return;   // serveur OBSeb : salle d'attente (js/regie-securite.js)
+  if (typeof enAttente === 'function' && enAttente(id, label)) return;   // serveur MESA : salle d'attente (js/regie-securite.js)
   const nouveau = !presents.has(id);
   presents.set(id, { vu: Date.now() });
   if (estEcran(id)) { if (label) nomsEcrans.set(id, label); if (nouveau && typeof majSources === 'function') majSources(); }

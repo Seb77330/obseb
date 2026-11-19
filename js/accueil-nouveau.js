@@ -1,4 +1,4 @@
-/* OBSeb : accueil, créer un live en un clic, et la page « Visuel du live » ouverte depuis la régie.
+/* MESA : accueil, créer un live en un clic, et la page « Visuel du live » ouverte depuis la régie.
    Nouveau live : le live est créé tout de suite et on part dans la régie (titre, date et visuel s'y règlent).
    Le visuel se règle par étapes dans un panneau de la régie, qui ouvre cette page
    (index.html?visuel=<salle>&embed=1&panneau=1, voir js/visuel-etapes.js). « Appliquer » renvoie le live modifié à la régie. */

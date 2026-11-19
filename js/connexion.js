@@ -1,4 +1,4 @@
-/* OBSeb : page de connexion (Google, ou code reçu par e-mail) */
+/* MESA : page de connexion (Google, ou code reçu par e-mail) */
 'use strict';
 (async function () {
   const $ = s => document.querySelector(s);

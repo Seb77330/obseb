@@ -1,4 +1,4 @@
-/* OBSeb : fonds en 3D calculés par la carte graphique (WebGL) pour les visuels Bande-annonce, Plateau et Motion.
+/* MESA : fonds en 3D calculés par la carte graphique (WebGL) pour les visuels Bande-annonce, Plateau et Motion.
    Optimisé pour presque toutes les machines : dessin en petite taille puis agrandi, 30 images par seconde au plus,
    rien quand la scène n'est pas à l'écran, finesse qui baisse toute seule si l'ordinateur peine, image fixe en dernier recours.
    Seules les couleurs du thème (--accent) entrent dans le calcul. */

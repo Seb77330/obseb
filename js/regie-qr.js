@@ -1,4 +1,4 @@
-/* OBSeb : régie, onglet QR et fenêtre « Inviter ».
+/* MESA : régie, onglet QR et fenêtre « Inviter ».
    Onglet QR : tes codes (un lien + un petit texte) sont gardés dans ce navigateur, pour tous tes lives.
    Un clic en pose un à l'écran, dans le coin choisi ; la sortie du live redessine le code à partir du lien. */
 'use strict';

@@ -1,4 +1,4 @@
-/* OBSeb : accueil (sessions et thèmes) */
+/* MESA : accueil (sessions et thèmes) */
 'use strict';
 
 const $ = s => document.querySelector(s);

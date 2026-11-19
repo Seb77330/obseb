@@ -1,4 +1,4 @@
-/* OBSeb : régie, onglet Musique.
+/* MESA : régie, onglet Musique.
    Tu ajoutes un fichier depuis ton ordinateur (ou un lien). Le fichier reste dans ce navigateur ;
    la sortie le reçoit par le canal de la régie, puis le garde chez elle.
    Chaque morceau peut être lié à une scène : il démarre tout seul quand tu passes sur cette scène. */

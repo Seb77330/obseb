@@ -1,4 +1,4 @@
-/* OBSeb : la page faq.html. Toutes les questions par catégorie, et une recherche qui comprend les questions formulées autrement. */
+/* MESA : la page faq.html. Toutes les questions par catégorie, et une recherche qui comprend les questions formulées autrement. */
 'use strict';
 (() => {
   const moteur = AideRecherche.index(FAQ);
@@ -33,7 +33,7 @@
   if (email) {
     const a = document.createElement('a');
     a.className = 'aide-mail'; a.textContent = '✉ Écrire au support';
-    a.href = `mailto:${email}?subject=${encodeURIComponent('Aide OBSeb')}&body=${encodeURIComponent('Ma question :\n\n\n---\nNavigateur : ' + navigator.userAgent)}`;
+    a.href = `mailto:${email}?subject=${encodeURIComponent('Aide MESA')}&body=${encodeURIComponent('Ma question :\n\n\n---\nNavigateur : ' + navigator.userAgent)}`;
     mail.appendChild(a);
   } else mail.innerHTML = `<p class="aide-bientot">L'adresse e-mail du support arrive très bientôt.</p>`;
 

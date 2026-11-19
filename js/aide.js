@@ -1,4 +1,4 @@
-/* OBSeb : la bulle d'aide. Elle cherche la réponse dans la FAQ (js/aide-faq.js), sans IA et sans serveur :
+/* MESA : la bulle d'aide. Elle cherche la réponse dans la FAQ (js/aide-faq.js), sans IA et sans serveur :
    tout se passe dans le navigateur. Si rien ne convient, elle propose d'écrire au support (js/aide-config.js).
    Le moteur (AideRecherche) sert aussi à la page faq.html. */
 'use strict';
@@ -131,7 +131,7 @@ const AideRecherche = (() => {
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3.3 2.2c-.6.3-.9.7-.9 1.3M12 13.6v.1" class="aide-trait"/></svg>
       <span>Aide</span>
     </button>
-    <section class="aide-panneau" id="aide-panneau" role="dialog" aria-label="Aide OBSeb" hidden>
+    <section class="aide-panneau" id="aide-panneau" role="dialog" aria-label="Aide MESA" hidden>
       <header class="aide-tete">
         <div><b>Aide</b><small>Répond à partir de la FAQ</small></div>
         <a class="aide-tout" href="faq.html" target="_blank" rel="noopener" title="Toutes les questions, sur une page">FAQ</a>
@@ -170,7 +170,7 @@ const AideRecherche = (() => {
   }
   function lienMail() {
     const corps = `Ma question : ${derniereQuestion || ''}\n\n(Écris ici ce que tu faisais et ce qui s'est passé.)\n\n---\nPage : ${location.pathname.split('/').pop() || 'accueil'}\nNavigateur : ${navigator.userAgent}`;
-    return `mailto:${email}?subject=${encodeURIComponent('Aide OBSeb : ' + (derniereQuestion || 'ma question').slice(0, 80))}&body=${encodeURIComponent(corps)}`;
+    return `mailto:${email}?subject=${encodeURIComponent('Aide MESA : ' + (derniereQuestion || 'ma question').slice(0, 80))}&body=${encodeURIComponent(corps)}`;
   }
 
   function accueil() {

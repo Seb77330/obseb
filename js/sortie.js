@@ -1,4 +1,4 @@
-/* OBSeb : page Sortie (source navigateur OBS, aperçus régie et invités) */
+/* MESA : page Sortie (source navigateur OBS, aperçus régie et invités) */
 'use strict';
 /* Sécurité : seules les adresses https (ou un fichier choisi dans la régie) s'affichent ; jamais javascript: ni autre chose */
 const lienSur = u => (typeof u === 'string' && /^(https:\/\/|blob:|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(u.trim())) ? u.trim() : '';

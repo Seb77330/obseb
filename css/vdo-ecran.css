@@ -1,4 +1,4 @@
-/* Feuille chargée DANS la page de partage d'écran de vdo.ninja (paramètre &css), telle qu'on la voit dans la régie OBSeb.
+/* Feuille chargée DANS la page de partage d'écran de vdo.ninja (paramètre &css), telle qu'on la voit dans la régie MESA.
    Avant le partage, il ne reste qu'un bouton net, au lieu d'un titre et d'un dessin coupés par le cadre. */
 #add_screen, .screenshare-icon, #gear_screen, #videoSettings2 { display: none !important; }
 #container-2 { margin: 0 auto !important; padding: 14px !important; min-height: 0 !important; height: auto !important; box-shadow: none !important; border: 0 !important; background: none !important; }

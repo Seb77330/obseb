@@ -1,4 +1,4 @@
-/* OBSeb : le visuel du live, réglé par étapes dans la régie.
+/* MESA : le visuel du live, réglé par étapes dans la régie.
    La régie ouvre cette page dans un panneau sur le côté (index.html?visuel=<salle>&embed=1&panneau=1) :
    l'aperçu de la régie reste visible au centre et change à chaque choix.
    Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Titre et date.

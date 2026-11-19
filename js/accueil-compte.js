@@ -1,4 +1,4 @@
-/* OBSeb, accueil : le bouton du compte dans la barre, et « Nouveau live » réservé aux comptes connectés.
+/* MESA, accueil : le bouton du compte dans la barre, et « Nouveau live » réservé aux comptes connectés.
    Sans configuration des comptes (bêta), rien ne change et ce fichier ne fait rien. */
 'use strict';
 (function () {

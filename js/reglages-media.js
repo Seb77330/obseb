@@ -1,4 +1,4 @@
-/* OBSeb : réglage caméra + micro, avant de rejoindre le live (régie et coulisses invité).
+/* MESA : réglage caméra + micro, avant de rejoindre le live (régie et coulisses invité).
    On choisit ici ses appareils avec un vrai aperçu et un indicateur de son,
    puis la caméra démarre toute seule dans la salle avec ces appareils (plus d'écran de réglage compliqué). */
 'use strict';

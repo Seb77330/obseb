@@ -1,4 +1,4 @@
-/* OBSeb : le visuel du live par étapes, dans le panneau de la régie (js/visuel-etapes.js) */
+/* MESA : le visuel du live par étapes, dans le panneau de la régie (js/visuel-etapes.js) */
 body.vp-etapes, body.vp-etapes.en-creation { height: 100vh; overflow: hidden; display: block; }
 body.vp-etapes #vue-creation { height: 100vh; }
 body.vp-etapes .creation { display: block; height: 100%; }

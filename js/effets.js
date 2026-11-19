@@ -1,4 +1,4 @@
-/* OBSeb : effets sonores.
+/* MESA : effets sonores.
    Ils sont fabriqués par le navigateur au moment du clic : aucun fichier à charger, aucun droit d'auteur.
    Chaque recette reçoit (ctx, sortie, t) : elle branche ses sons sur « sortie » à partir de l'instant t. */
 'use strict';

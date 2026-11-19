@@ -1,4 +1,4 @@
-/* OBSeb : régie, « Vue invité ».
+/* MESA : régie, « Vue invité ».
    Ouvre la page d'un invité à côté de la régie (ou dans une fenêtre à part), sans caméra : l'animateur voit ce que
    voit un invité et répond au quiz lui-même. Les deux pages se parlent dans ce navigateur, rien ne passe par la salle. */
 'use strict';

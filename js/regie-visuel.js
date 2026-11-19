@@ -1,4 +1,4 @@
-/* OBSeb : régie, bouton « Visuel ».
+/* MESA : régie, bouton « Visuel ».
    Le visuel du live se règle ici, par étapes (thème, couleurs, police, logo et fond, musiques, titre et date),
    dans un panneau sur le côté de la régie (index.html?visuel=<salle>&embed=1&panneau=1, js/visuel-etapes.js).
    L'aperçu de la régie reste visible et suit chaque choix (message « apercu »). « Appliquer au live » enregistre :

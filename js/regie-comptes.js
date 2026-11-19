@@ -1,6 +1,6 @@
-/* OBSeb : régie, onglet Comptes (où le live est diffusé).
+/* MESA : régie, onglet Comptes (où le live est diffusé).
    Les clés de stream restent dans ce navigateur (jamais dans les liens ni dans l'état envoyé aux invités).
-   Le serveur OBSeb les recevra au lancement du direct. */
+   Le serveur MESA les recevra au lancement du direct. */
 'use strict';
 
 const PLATEFORMES_LIVE = [

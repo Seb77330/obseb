@@ -1,4 +1,4 @@
-/* OBSeb : régie, onglets d'outils, menu des liens et recherche (Ctrl+K) */
+/* MESA : régie, onglets d'outils, menu des liens et recherche (Ctrl+K) */
 'use strict';
 
 /* ----- Onglets ----- */

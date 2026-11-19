@@ -1,4 +1,4 @@
-/* OBSeb : bulle d'aide (js/aide.js) et page FAQ. Reprend les couleurs de l'interface (css/app.css). */
+/* MESA : bulle d'aide (js/aide.js) et page FAQ. Reprend les couleurs de l'interface (css/app.css). */
 .aide-racine { position: fixed; bottom: 18px; z-index: 900; font: 14px/1.45 Inter, system-ui, sans-serif; color: var(--ui-text, #eceef2); }
 .aide-droite { right: 18px; } .aide-gauche { left: 18px; }
 .aide-bulle { display: flex; align-items: center; gap: 7px; padding: 10px 15px 10px 12px; border-radius: 999px;

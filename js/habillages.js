@@ -1,4 +1,4 @@
-/* OBSeb : les visuels de l'intro et de l'outro (motion design en CSS, aux couleurs du thème).
+/* MESA : les visuels de l'intro et de l'outro (motion design en CSS, aux couleurs du thème).
    Partagé par la régie (liste, noms, formules) et par la sortie (ce qui passe à l'écran).
    Chaque visuel tourne en boucle ; le compte à rebours, lui, vient de la régie (etat.fin, etat.debutCompte).
    L'ordre compte : la formule Gratuite a le premier, Essentiel les 3 premiers, Pro les 8. */

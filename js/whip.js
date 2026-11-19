@@ -1,5 +1,5 @@
-/* OBSeb : envoi d'une vidéo en WebRTC selon la norme WHIP (RFC 9725).
-   Sert à deux choses : envoyer le live tout droit à Twitch, ou l'envoyer au relais OBSeb (qui le recopie vers YouTube et les autres).
+/* MESA : envoi d'une vidéo en WebRTC selon la norme WHIP (RFC 9725).
+   Sert à deux choses : envoyer le live tout droit à Twitch, ou l'envoyer au relais MESA (qui le recopie vers YouTube et les autres).
    Toujours en H.264 : c'est ce que Twitch exige, et ce que le relais peut recopier vers le RTMP sans rien réencoder. */
 'use strict';
 

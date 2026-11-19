@@ -1,8 +1,8 @@
-/* OBSeb : la fenêtre de diffusion (sortie.html?diffuser=1).
+/* MESA : la fenêtre de diffusion (sortie.html?diffuser=1).
    C'est la même page que la sortie OBS. Ici, c'est le navigateur de l'animateur qui en fait UNE vidéo finie
    (capture de cette fenêtre, découpée sur la scène seule), puis qui l'envoie :
      - tout droit à Twitch (WHIP, rien ne passe par nos serveurs),
-     - ou au relais OBSeb, qui la recopie telle quelle vers YouTube et les autres.
+     - ou au relais MESA, qui la recopie telle quelle vers YouTube et les autres.
    La régie pilote cette fenêtre (canal BroadcastChannel, même navigateur) : elle envoie « go » avec les destinations, puis « stop ».
    Une fenêtre capturée reste dessinée même derrière la régie : le navigateur ne la met pas en veille. */
 'use strict';
@@ -24,7 +24,7 @@
   const ui = document.createElement('div');
   ui.id = 'diffusion-ui';
   ui.innerHTML = `<div class="df-carte">
-      <div class="df-marque">OBS<b>eb</b> · fenêtre de diffusion</div>
+      <div class="df-marque"><svg class="marque-ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ui-accent)"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="var(--ui-sur-accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>MESA</span> · fenêtre de diffusion</div>
       <h1 id="df-titre">Prête à envoyer ou enregistrer</h1>
       <p id="df-texte">Clique sur le bouton, puis sur <b>Partager</b> dans la fenêtre du navigateur. Laisse « Partager aussi le son de l'onglet » coché.</p>
       <button id="df-go" class="df-bouton">Autoriser cette fenêtre</button>
@@ -208,7 +208,7 @@
     if (rec || !sortie) return;
     const { type, ext } = formatRec();
     if (!window.MediaRecorder) { dernierRec = { erreur: 'Ce navigateur ne sait pas enregistrer : utilise Chrome ou Edge.' }; return publier(); }
-    const nom = `${String(nomVoulu || 'OBSeb').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .,()'-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60) || 'OBSeb'} ${FORMAT === 'vertical' ? 'vertical' : 'horizontal'}.${ext}`;
+    const nom = `${String(nomVoulu || 'MESA').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .,()'-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60) || 'MESA'} ${FORMAT === 'vertical' ? 'vertical' : 'horizontal'}.${ext}`;
     let ecrivain = null, fichier = null;
     try {
       try { await navigator.storage.persist(); } catch (e) { /* facultatif */ }

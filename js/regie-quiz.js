@@ -1,4 +1,4 @@
-/* OBSeb : régie, mode quiz (les invités répondent sur leur écran, chronométrés).
+/* MESA : régie, mode quiz (les invités répondent sur leur écran, chronométrés).
    La banque de questions est commune à tous tes lives (jusqu'à 50), rangée par catégories.
    Les images sont réduites (800 px, ~40 Ko) et gardées dans ce navigateur. */
 'use strict';

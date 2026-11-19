@@ -1,4 +1,4 @@
-/* OBSeb : accueil, choix du style (thèmes prêts, personnalisation, import depuis OBS) */
+/* MESA : accueil, choix du style (thèmes prêts, personnalisation, import depuis OBS) */
 'use strict';
 
 boutonAffichage($('#place-affichage'));

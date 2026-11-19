@@ -1,4 +1,4 @@
-/* Scène 1920x1080 du OBSeb (sortie OBS, aperçus) */
+/* Scène 1920x1080 de MESA (sortie OBS, aperçus) */
 html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
 body.sortie { background: #000; }
 #scale { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }

@@ -1,4 +1,4 @@
-/* OBSeb : fonctions communes (sessions, thèmes, liens vdo.ninja) */
+/* MESA : fonctions communes (sessions, thèmes, liens vdo.ninja) */
 'use strict';
 
 const VDO = 'https://vdo.ninja/';
@@ -325,7 +325,7 @@ function telechargerAgenda(session, lien) {
   const echap = s => String(s).replace(/([\;,])/g, '\\$1').replace(/\n/g, '\\n');
   const plier = l => l.match(/.{1,72}/g).join('\r\n ');          // une ligne d'agenda ne dépasse pas 75 caractères
   const fin = session.debut + Math.min(session.limite || 120, 240) * 60000;
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//OBSeb//Live//FR', 'BEGIN:VEVENT', `UID:${session.room}@obseb`, `DTSTAMP:${z(Date.now())}`,
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MESA//Live//FR', 'BEGIN:VEVENT', `UID:${session.room}@obseb`, `DTSTAMP:${z(Date.now())}`,
     `DTSTART:${z(session.debut)}`, `DTEND:${z(fin)}`, `SUMMARY:${echap('Live : ' + session.titre)}`,
     `DESCRIPTION:${echap('Avec ' + session.hote + (lien ? '\nTon lien : ' + lien : ''))}`, lien ? `URL:${lien}` : '',
     'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Le live commence dans 15 minutes', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR']
@@ -373,7 +373,7 @@ function liens(session, cle) {
   return {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
     invite: `${baseUrl()}invite.html#s=${sInvite}`,
-    // la sortie (OBS) porte la clé : avec le serveur OBSeb, seul l'animateur peut regarder les coulisses sans être vu
+    // la sortie (OBS) porte la clé : avec le serveur MESA, seul l'animateur peut regarder les coulisses sans être vu
     sortie: `${baseUrl()}sortie.html#s=${s}&k=${cle}`,
     vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}&k=${cle}`,
     // « Je garde mon OBS » : les caméras seules, sur fond transparent
@@ -445,8 +445,8 @@ function chargerPolices(liste) {
   document.head.appendChild(l);
 }
 
-/* ---------- Transport vidéo : serveur OBSeb (LiveKit) ou vdo.ninja ----------
-   Avec un serveur OBSeb dans la session (session.serveur), les fenêtres vidéo passent par lk.html,
+/* ---------- Transport vidéo : serveur MESA (LiveKit) ou vdo.ninja ----------
+   Avec un serveur MESA dans la session (session.serveur), les fenêtres vidéo passent par lk.html,
    qui parle le même langage que vdo.ninja et y bascule tout seul si le serveur ne répond pas. */
 function transportSession() {
   const s = (typeof lireSession === 'function' && location.hash.includes('s=')) ? lireSession() : null;

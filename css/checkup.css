@@ -1,4 +1,4 @@
-/* OBSeb : check-up avant le direct, état de l'envoi depuis le navigateur */
+/* MESA : check-up avant le direct, état de l'envoi depuis le navigateur */
 #checkup { position: fixed; inset: 0; z-index: 400; display: grid; place-items: center; padding: 16px;
   background: color-mix(in srgb, #000 62%, transparent); backdrop-filter: blur(6px); }
 #checkup[hidden] { display: none; }

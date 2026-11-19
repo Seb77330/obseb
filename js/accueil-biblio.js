@@ -1,4 +1,4 @@
-/* OBSeb : accueil, « Mes lives » et « Mes enregistrements ».
+/* MESA : accueil, « Mes lives » et « Mes enregistrements ».
    L'accueil a deux onglets : Mes lives (les cartes, dans accueil.js) et Mes enregistrements, ici.
    Mes enregistrements : les vidéos tournées avec le bouton « Enregistrer » de la régie, affichées comme des vidéos
    (une image tirée de la vidéo, la durée, horizontal ou vertical), rangées par date, à lire sur place ou télécharger.

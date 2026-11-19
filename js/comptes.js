@@ -1,4 +1,4 @@
-/* OBSeb : les comptes (connexion Google ou code par e-mail, formule du compte).
+/* MESA : les comptes (connexion Google ou code par e-mail, formule du compte).
    Partagé par l'accueil et la page de connexion. Les invités n'ont jamais besoin de compte.
    Tant que COMPTES_CONFIG est vide (js/comptes-config.js), Comptes.actif vaut false et le studio marche sans compte. */
 'use strict';

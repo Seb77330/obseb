@@ -1,4 +1,4 @@
-/* OBSeb : guide « Pour bien démarrer » en haut de la régie.
+/* MESA : guide « Pour bien démarrer » en haut de la régie.
    Quatre étapes qui se cochent toutes seules ; un clic sur une étape la fait. Disparaît quand tout est fait. */
 'use strict';
 (() => {

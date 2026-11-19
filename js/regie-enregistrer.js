@@ -1,4 +1,4 @@
-/* OBSeb : régie, bouton « Enregistrer ».
+/* MESA : régie, bouton « Enregistrer ».
    Tourner une vidéo sans être en direct (ou pendant un direct) et récupérer le fichier.
    L'image enregistrée est exactement celle du live : c'est la fenêtre de diffusion (sortie.html?diffuser=1)
    qui l'enregistre, en horizontal, en vertical, ou les deux à la fois (deux fichiers, une fenêtre par format).
@@ -18,7 +18,7 @@
   const duree = ms => { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
   const nomParDefaut = () => {
     const d = new Date(), z = n => String(n).padStart(2, '0');
-    return `${(session.titre || 'OBSeb').slice(0, 40)} ${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}h${z(d.getMinutes())}`;
+    return `${(session.titre || 'MESA').slice(0, 40)} ${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}h${z(d.getMinutes())}`;
   };
   let nomChoisi = '';
   const derniers = {};   // format -> dernier enregistrement terminé (déjà signalé)

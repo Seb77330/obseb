@@ -1,4 +1,4 @@
-/* OBSeb : le quiz sur l'écran de l'invité. De gros boutons de couleur, un chrono, un verdict net.
+/* MESA : le quiz sur l'écran de l'invité. De gros boutons de couleur, un chrono, un verdict net.
    La carte reprend l'ambiance choisie en régie (data-style). */
 #quiz {
   --qa: #3b82f6; --qb: #f59e0b; --qc: #22c55e; --qd: #ec4899;

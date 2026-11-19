@@ -1,4 +1,4 @@
-/* OBSeb : régie, partie Sources (4 max) et Bandeaux (la musique est dans regie-musique.js) */
+/* MESA : régie, partie Sources (4 max) et Bandeaux (la musique est dans regie-musique.js) */
 'use strict';
 
 /* Ce qu'on peut montrer à côté des caméras (toutes les scènes sauf l'intro et l'outro) (4 choses au plus à la fois). Un clic et c'est parti :

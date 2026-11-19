@@ -1,4 +1,4 @@
-/* OBSeb : régie, modes du studio (Plateau, Réaction, Jeu) et bouton Enregistrer */
+/* MESA : régie, modes du studio (Plateau, Réaction, Jeu) et bouton Enregistrer */
 
 /* ----- Modes ----- */
 .modes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 3px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-input); }

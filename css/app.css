@@ -1,4 +1,4 @@
-/* Interface du OBSeb (accueil, régie, coulisses invité) */
+/* Interface de MESA (accueil, régie, coulisses invité) */
 :root {
   --ui-bg: #08090b; --ui-panel: #101216; --ui-panel2: #171a20; --ui-line: #23272f;
   --ui-text: #eceef2; --ui-muted: #8a92a0; --ui-accent: #FFD21F; --ui-sur-accent: #111;
@@ -61,8 +61,10 @@ label.champ { display: block; font-size: 13px; font-weight: 500; letter-spacing:
   background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 600; padding: 10px 18px; border-radius: 10px; transition: .25s; z-index: 99; pointer-events: none;
 }
 .toast.vu { opacity: 1; transform: translateX(-50%); }
-.marque { font-family: Inter, system-ui, sans-serif; font-weight: 700; letter-spacing: -.02em; font-size: 21px; }
-.marque b { color: var(--ui-accent); font-weight: 400; }
+.marque { font-family: Inter, system-ui, sans-serif; font-weight: 600; letter-spacing: .16em; font-size: 21px;
+  display: inline-flex; align-items: center; gap: .5em; line-height: 1; white-space: nowrap; }
+.marque-ic { width: 1.35em; height: 1.35em; flex: none; }   /* logo MESA : M au sommet plat, aux couleurs des boutons */
+.marque span { margin-right: -.16em; }
 .cadre169 { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; overflow: hidden; }
 .cadre169 iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 

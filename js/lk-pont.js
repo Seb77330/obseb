@@ -1,6 +1,6 @@
-/* OBSeb : pont LiveKit.
+/* MESA : pont LiveKit.
    Cette page remplace une fenêtre vdo.ninja : mêmes paramètres d'adresse, mêmes messages (postMessage),
-   mais la vidéo passe par le serveur LiveKit d'OBSeb. Si le serveur ne répond pas, elle bascule
+   mais la vidéo passe par le serveur LiveKit de MESA. Si le serveur ne répond pas, elle bascule
    toute seule sur vdo.ninja (roue de secours), avec exactement les mêmes paramètres. */
 'use strict';
 const LK = window.LivekitClient;
@@ -22,7 +22,7 @@ document.body.classList.toggle('cover', has('cover'));
 document.body.classList.toggle('fond', !has('transparent') && !PUSH);
 
 function secours(raison) {
-  console.warn('OBSeb : bascule sur vdo.ninja', raison);
+  console.warn('MESA : bascule sur vdo.ninja', raison);
   const q = new URLSearchParams(location.search);
   ['lk', 'cle'].forEach(k => q.delete(k));
   location.replace('https://vdo.ninja/?' + q.toString().replace(/=(?=&|$)/g, ''));
@@ -68,7 +68,7 @@ async function demarrer() {
   catch (e) {
     // aperçu d'un invité pas encore admis : on réessaie tout seul jusqu'à ce que l'animateur le fasse entrer
     if (e.attente) { etat('En salle d\'attente…'); setTimeout(demarrer, 4000); return; }
-    if (e.refus) { etat(e.message && !/^jeton/.test(e.message) ? e.message : 'Accès refusé par le serveur OBSeb (lien incomplet ?)'); dire({ obsebRefus: e.message }); return; }
+    if (e.refus) { etat(e.message && !/^jeton/.test(e.message) ? e.message : 'Accès refusé par le serveur MESA (lien incomplet ?)'); dire({ obsebRefus: e.message }); return; }
     return secours(e.message);
   }
 

@@ -1,4 +1,4 @@
-/* OBSeb : page de confidentialité (adresse de contact = celle de l'aide) */
+/* MESA : page de confidentialité (adresse de contact = celle de l'aide) */
 'use strict';
 if (typeof boutonAffichage === 'function') boutonAffichage(document.getElementById('place-affichage'));
 if (typeof AIDE_EMAIL === 'string' && AIDE_EMAIL) {

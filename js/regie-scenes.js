@@ -1,4 +1,4 @@
-/* OBSeb : régie, scènes et cadrages.
+/* MESA : régie, scènes et cadrages.
    Les scènes de caméras (« Solo », « Duo », « Plateau », et celles que tu ajoutes) retiennent chacune leur cadrage
    et qui elles montrent : etat.plans = [{ id, nom, layout, qui }], qui = 'tous', un nombre (les N premières personnes
    à l'antenne) ou une liste de personnes. Celles qu'une scène ne montre pas restent à l'antenne : on les entend. */

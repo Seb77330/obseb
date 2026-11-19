@@ -1,4 +1,4 @@
-/* OBSeb : régie, chat réuni (YouTube + Twitch), message choisi ou chat entier affiché à l'écran.
+/* MESA : régie, chat réuni (YouTube + Twitch), message choisi ou chat entier affiché à l'écran.
    Tu donnes ta chaîne une seule fois : elle est retenue pour tous tes lives et le chat se reconnecte tout seul.
    Twitch : lecture anonyme, aucune clé.
    YouTube : clé d'API Google gratuite, gardée seulement dans ce navigateur (jamais dans les liens). */

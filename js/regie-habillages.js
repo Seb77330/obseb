@@ -1,4 +1,4 @@
-/* OBSeb : régie, choix du visuel de l'intro et de l'outro (onglet Titres) et temps qui reste.
+/* MESA : régie, choix du visuel de l'intro et de l'outro (onglet Titres) et temps qui reste.
    etat.introStyle et etat.outroStyle partent vers la sortie ; la liste et les formules sont dans js/habillages.js. */
 'use strict';
 

@@ -1,4 +1,4 @@
-/* OBSeb : régie, les trois modes du studio.
+/* MESA : régie, les trois modes du studio.
    Plateau : le live comme avant (caméras, et ce qui est partagé à côté).
    Réaction : ce qui est partagé (une bande-annonce dans un onglet YouTube, un lien) prend tout l'écran,
               ta caméra se pose dans un coin (horizontal) ou dans la moitié de l'écran (vertical).

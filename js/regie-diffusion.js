@@ -1,11 +1,11 @@
-/* OBSeb : check-up avant le direct, et aiguillage automatique de l'envoi (version sans OBS).
+/* MESA : check-up avant le direct, et aiguillage automatique de l'envoi (version sans OBS).
    Le check-up regarde le navigateur, l'appareil, la puissance (vrai essai d'encodage) et le débit montant,
    puis choisit tout seul le meilleur chemin pour chaque plateforme :
      - « direct »  : le navigateur monte le live et l'envoie tout droit (Twitch accepte le WebRTC : rien ne passe par nos serveurs) ;
-     - « relais »  : le navigateur monte le live une seule fois et l'envoie au relais OBSeb, qui le recopie sans le réencoder
+     - « relais »  : le navigateur monte le live une seule fois et l'envoie au relais MESA, qui le recopie sans le réencoder
                      vers YouTube et les autres (le serveur ne fait que le facteur, donc il coûte très peu) ;
      - « serveur » : l'ordinateur ou le navigateur ne suivent pas (téléphone, Safari, vieux PC, petite connexion),
-                     le serveur OBSeb monte tout (ancien mode, le plus cher, gardé en secours).
+                     le serveur MESA monte tout (ancien mode, le plus cher, gardé en secours).
    Le client ne voit qu'un verdict simple ; le détail des chemins est replié sous « Détails ». */
 'use strict';
 
@@ -82,7 +82,7 @@ async function bancEncodage(w, h, n = 90) {
     const g = cx.createLinearGradient(0, 0, w, h); g.addColorStop(0, `hsl(${i * 4},70%,40%)`); g.addColorStop(1, `hsl(${i * 4 + 120},70%,20%)`);
     cx.fillStyle = g; cx.fillRect(0, 0, w, h);
     for (let k = 0; k < 24; k++) { cx.fillStyle = `hsla(${(k * 37 + i * 9) % 360},80%,60%,.7)`; cx.fillRect((k * 173 + i * 11) % w, (k * 97 + i * 7) % h, w / 9, h / 9); }
-    cx.fillStyle = '#fff'; cx.font = `${h / 12}px sans-serif`; cx.fillText('OBSeb ' + i, w / 3, h / 2);
+    cx.fillStyle = '#fff'; cx.font = `${h / 12}px sans-serif`; cx.fillText('MESA ' + i, w / 3, h / 2);
     const f = new VideoFrame(cv, { timestamp: i * 33333 });
     enc.encode(f, { keyFrame: i % 60 === 0 }); f.close();
     while (enc.encodeQueueSize > 4) await new Promise(r => setTimeout(r, 1));
@@ -123,7 +123,7 @@ async function mesureDebit() {
   const tache = async () => {
     while (performance.now() < fin) {
       try {
-        // sans serveur OBSeb : envoi « opaque » (on ne lit pas la réponse, on chronomètre seulement)
+        // sans serveur MESA : envoi « opaque » (on ne lit pas la réponse, on chronomètre seulement)
         await fetch(url, srv ? { method: 'POST', body: bloc, cache: 'no-store' } : { method: 'POST', body: bloc, mode: 'no-cors', cache: 'no-store', headers: { 'Content-Type': 'text/plain' } });
         octets += bloc.length;
       } catch (e) { if (++rate > 2) return; }
@@ -191,7 +191,7 @@ function aiguiller(ck, dests) {
     for (const d of ds) plan.routes[d.cle] = parRelais ? 'relais' : d.whip ? 'direct' : 'impossible';
   }
   plan.envois = compter(hauteur).n;
-  if (Object.values(plan.routes).includes('impossible')) plan.raisons.push('YouTube et les autres passent par le relais OBSeb, pas encore branché');
+  if (Object.values(plan.routes).includes('impossible')) plan.raisons.push('YouTube et les autres passent par le relais MESA, pas encore branché');
   return plan;
 }
 
@@ -302,10 +302,10 @@ function phraseVerdict(plan) {
     const imp = Object.values(plan.routes).includes('impossible');
     return { ton: imp ? 'moyen' : 'ok', titre: imp ? 'Presque prêt' : 'Tout est bon', texte: `Ton live partira en ${plan.hauteur}p, 30 images par seconde.` };
   }
-  if (plan.mode === 'serveur') return { ton: 'ok', titre: 'C\'est bon', texte: 'Le serveur OBSeb s\'occupe de l\'envoi pour garder la meilleure qualité.' };
+  if (plan.mode === 'serveur') return { ton: 'ok', titre: 'C\'est bon', texte: 'Le serveur MESA s\'occupe de l\'envoi pour garder la meilleure qualité.' };
   return { ton: 'moyen', titre: 'Direct sans OBS pas encore possible ici', texte: plan.raisons[0] || '' };
 }
-const NOM_ROUTE = { direct: 'en direct depuis ton navigateur', relais: 'par le relais OBSeb (le navigateur monte, le serveur recopie)', serveur: 'monté par le serveur OBSeb', impossible: 'pas encore possible' };
+const NOM_ROUTE = { direct: 'en direct depuis ton navigateur', relais: 'par le relais MESA (le navigateur monte, le serveur recopie)', serveur: 'monté par le serveur MESA', impossible: 'pas encore possible' };
 function afficherVerdict() {
   const v = ckFenetre && ckFenetre.querySelector('#ck-verdict'); if (!v) return;
   const dests = destinations(plateformesPretes().map(x => x.p.id));
@@ -365,7 +365,7 @@ function preparationEnvoi(ids) {
 function ciblesFormat(format, dests, plan, relais) {
   const ds = dests.filter(d => d.format === format && ['direct', 'relais'].includes(plan.routes[d.cle]));
   const cibles = ds.filter(d => plan.routes[d.cle] === 'direct').map(d => ({ id: d.cle, nom: d.plateforme.nom, url: d.whip.url, jeton: d.whip.jeton }));
-  if (relais[format]) cibles.push({ id: 'relais:' + format, nom: 'Relais OBSeb · ' + ds.filter(d => plan.routes[d.cle] === 'relais').map(d => d.plateforme.nom).join(', '), url: serveurOBSeb() + relais[format].whip, jeton: relais[format].jeton });
+  if (relais[format]) cibles.push({ id: 'relais:' + format, nom: 'Relais MESA · ' + ds.filter(d => plan.routes[d.cle] === 'relais').map(d => d.plateforme.nom).join(', '), url: serveurOBSeb() + relais[format].whip, jeton: relais[format].jeton });
   return cibles;
 }
 async function diffusionDemarrer(ids) {

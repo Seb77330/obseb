@@ -1,4 +1,4 @@
-/* OBSeb : ce qu'on pose en plus sur l'image. Ici : le code QR (onglet QR de la régie). */
+/* MESA : ce qu'on pose en plus sur l'image. Ici : le code QR (onglet QR de la régie). */
 #qr-ecran { position: absolute; z-index: 7; --t: 300px; transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
 #qr-ecran.cachee { opacity: 0; transform: scale(.8); }
 body.quiz-on #qr-ecran { opacity: 0; }

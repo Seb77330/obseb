@@ -1,4 +1,4 @@
-/* OBSeb : fenêtre de diffusion (sortie.html?diffuser=1). Le panneau n'est jamais à l'image : seule la scène est capturée. */
+/* MESA : fenêtre de diffusion (sortie.html?diffuser=1). Le panneau n'est jamais à l'image : seule la scène est capturée. */
 body.diffusion #stage { isolation: isolate; }   /* exigé pour capturer la scène seule */
 #diffusion-ui { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; pointer-events: none;
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #f2f2f5; }
