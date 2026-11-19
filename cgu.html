@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>MESA · Conditions d'utilisation</title>
+<link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/mesa-icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css?v=f441620e">
+<link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
+<style>
+  .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
+  .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
+  .barre .etiquette { padding-left: 14px; border-left: 1px solid var(--ui-line); }
+  @media (max-width: 600px) { .barre { padding: 10px 16px; } }
+</style>
+</head>
+<body class="zoom">
+<header class="barre">
+  <a class="marque" href="index.html" title="Accueil"><svg class="marque-ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ui-accent)"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="var(--ui-sur-accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>MESA</span></a>
+  <span class="etiquette">Conditions</span>
+  <span style="flex:1"></span>
+  <span id="place-affichage"></span>
+</header>
+<main class="texte-legal">
+  <h1>Conditions d'utilisation</h1>
+  <p class="doux">Version bêta, mise à jour le 19 novembre 2026. En utilisant MESA, tu acceptes ces règles. Elles sont courtes, promis.</p>
+
+  <h2>1. Le service</h2>
+  <p>MESA est un studio de live en ligne : tu crées un live, tu invites des gens avec un lien, tu choisis ce que voit ton public (caméras, quiz, chat, partage d'écran, habillage), et tu diffuses avec ton logiciel de direct (OBS, Streamlabs…) ou, plus tard, directement depuis le site.</p>
+
+  <h2>2. La bêta</h2>
+  <ul>
+    <li>Pendant la bêta, tout est gratuit jusqu'au 1er janvier 2027.</li>
+    <li>Le studio change souvent : une fonction peut bouger, s'améliorer ou disparaître.</li>
+    <li>Des bugs peuvent arriver. On fait au mieux, sans garantie que tout marche à chaque instant. Fais un essai avant un live important.</li>
+  </ul>
+
+  <h2>3. Ton compte</h2>
+  <ul>
+    <li>Tu peux utiliser le studio sans compte. Avec un compte, tu te connectes avec Google ou avec un code reçu par e-mail.</li>
+    <li>Tu dois avoir au moins 15 ans, ou l'accord d'un parent.</li>
+    <li>Les liens de ta régie sont secrets : ne les partage pas. Le lien invités, lui, est fait pour être envoyé.</li>
+    <li>Tu peux supprimer ton compte à tout moment, depuis le menu de ton compte.</li>
+  </ul>
+
+  <h2>4. Ce que tu diffuses</h2>
+  <p>Tu es responsable de ce qui passe dans ton live : images, sons, musiques, films, messages affichés. En particulier :</p>
+  <ul>
+    <li>tu ne diffuses que ce que tu as le droit de diffuser (droits d'auteur, musique, extraits de films ou de séries) ;</li>
+    <li>pas de contenu haineux, violent, sexuel, de harcèlement, ni de contenu qui met en danger un mineur ;</li>
+    <li>tu respectes les règles de la plateforme où tu diffuses (YouTube, Twitch, TikTok…) : c'est ton compte qu'elles sanctionnent.</li>
+  </ul>
+  <p>La Watch Party sert à réagir ensemble. Si le film ou la série ne t'appartient pas, chacun le regarde de son côté et le live ne montre que vos réactions.</p>
+
+  <h2>5. Tes invités</h2>
+  <p>Avant de mettre quelqu'un à l'écran, assure-toi qu'il est d'accord pour être filmé et diffusé. Tu peux retirer un invité à tout moment depuis ta régie.</p>
+
+  <h2>6. Ce qui t'appartient, ce qui nous appartient</h2>
+  <ul>
+    <li>Tes lives, tes images, ton logo et tes musiques restent à toi. On ne les enregistre pas et on ne les réutilise pas.</li>
+    <li>Le site, ses thèmes, ses intros, ses outros et le nom MESA appartiennent à MESA. Tu peux t'en servir dans tes lives et tes vidéos, pas les copier pour en faire un autre service.</li>
+  </ul>
+
+  <h2>7. Formules et paiement</h2>
+  <ul>
+    <li>Le paiement n'est pas encore ouvert. Quand il le sera, les prix seront affichés sur la page des formules, au mois, sans engagement.</li>
+    <li>Tu pourras arrêter quand tu veux : ta formule reste active jusqu'à la fin du mois payé.</li>
+    <li>Tu auras 14 jours pour changer d'avis après ton premier paiement, comme la loi le prévoit.</li>
+  </ul>
+
+  <h2>8. Services utilisés</h2>
+  <p>Pour fonctionner, le studio s'appuie sur d'autres services : vdo.ninja (pour relier les navigateurs), les plateformes où tu diffuses, Supabase et Brevo (pour les comptes). Si l'un d'eux tombe en panne, une partie du studio peut ne plus marcher. Le détail de tes données est sur la page <a href="confidentialite.html">Confidentialité</a>.</p>
+
+  <h2>9. Si les règles ne sont pas respectées</h2>
+  <p>On peut suspendre ou fermer un compte qui enfreint ces règles ou la loi, après t'avoir prévenu quand c'est possible.</p>
+
+  <h2>10. Changements</h2>
+  <p>Ces conditions peuvent évoluer, surtout pendant la bêta. La date en haut de la page dit quand. Pour un changement important, on te prévient avant.</p>
+
+  <h2>11. Droit applicable</h2>
+  <p>Ces conditions suivent le droit français. En cas de souci, on cherche d'abord une solution à l'amiable : écris-nous depuis la page <a href="contact.html">Contact</a>.</p>
+
+  <p style="margin-top:36px"><a href="index.html">Retour à l'accueil</a></p>
+</main>
+<script src="js/common.js?v=21c31c91"></script>
+<script src="js/aide-config.js?v=85ddffac"></script>
+<script src="js/confidentialite.js?v=cc2ebb28"></script>
+</body>
+</html>

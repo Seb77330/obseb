@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <!-- Image de la question de démo : une table de poker sous un projecteur (cartes, jetons) -->
+  <defs>
+    <radialGradient id="tapis" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#1f7a52"/><stop offset=".55" stop-color="#0f4a33"/><stop offset="1" stop-color="#05140f"/></radialGradient>
+    <radialGradient id="spot" cx=".5" cy=".4" r=".5"><stop offset="0" stop-color="#fff3c4" stop-opacity=".28"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient>
+    <linearGradient id="carte" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9e4da"/></linearGradient>
+    <filter id="ombre" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".55"/></filter>
+    <g id="jeton">
+      <circle r="56" fill="currentColor"/>
+      <circle r="56" fill="none" stroke="#fff" stroke-width="12" stroke-dasharray="22 22" opacity=".9"/>
+      <circle r="38" fill="none" stroke="#fff" stroke-width="2.5" opacity=".7"/>
+    </g>
+  </defs>
+  <rect width="1600" height="900" fill="url(#tapis)"/>
+  <ellipse cx="800" cy="380" rx="760" ry="520" fill="url(#spot)"/>
+  <!-- liseré de la table -->
+  <ellipse cx="800" cy="470" rx="700" ry="330" fill="none" stroke="#e8c76a" stroke-opacity=".35" stroke-width="3"/>
+  <!-- pile de jetons -->
+  <g filter="url(#ombre)">
+    <g color="#c8283a"><use href="#jeton" x="330" y="560"/><use href="#jeton" x="330" y="540"/><use href="#jeton" x="330" y="520"/><use href="#jeton" x="330" y="500"/></g>
+    <g color="#111"><use href="#jeton" x="450" y="620"/><use href="#jeton" x="450" y="600"/></g>
+    <g color="#1e5bd6"><use href="#jeton" x="1250" y="600"/><use href="#jeton" x="1250" y="580"/><use href="#jeton" x="1250" y="560"/></g>
+    <g color="#c8283a"><use href="#jeton" x="1150" y="660"/></g>
+  </g>
+  <!-- les cartes : une paire d'as -->
+  <g filter="url(#ombre)" font-family="Georgia, 'Times New Roman', serif" font-weight="700">
+    <g transform="translate(700 420) rotate(-12)">
+      <rect x="-120" y="-170" width="240" height="340" rx="18" fill="url(#carte)"/>
+      <text x="-92" y="-118" font-size="54" fill="#111">A</text>
+      <path d="M0 -40 C 40 -10 70 20 50 52 C 36 72 12 66 6 50 L 14 90 H -14 L -6 50 C -12 66 -36 72 -50 52 C -70 20 -40 -10 0 -40z" fill="#111"/>
+    </g>
+    <g transform="translate(900 410) rotate(10)">
+      <rect x="-120" y="-170" width="240" height="340" rx="18" fill="url(#carte)"/>
+      <text x="-92" y="-118" font-size="54" fill="#c8283a">A</text>
+      <path d="M0 70 C -40 40 -70 10 -70 -24 C -70 -54 -30 -64 0 -30 C 30 -64 70 -54 70 -24 C 70 10 40 40 0 70z" fill="#c8283a"/>
+    </g>
+  </g>
+  <!-- un verre et un reflet, pour l'ambiance -->
+  <g opacity=".85">
+    <path d="M1360 250 h90 l-14 120 h-62z" fill="#ffffff" fill-opacity=".12" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+    <rect x="1376" y="320" width="58" height="46" fill="#e8a43a" opacity=".55"/>
+  </g>
+  <rect width="1600" height="900" fill="#000" opacity=".08"/>
+</svg>

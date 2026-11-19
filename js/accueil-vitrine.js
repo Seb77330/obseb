@@ -31,9 +31,9 @@
   /* ----- L'aperçu : quelques plans du vrai rendu ----- */
   const PLANS = [
     { nom: 'Tes invités', theme: 'plateau3d', q: 'demo=4&sources=0&vivant=1' },
-    { nom: 'Le quiz', theme: 'pop', q: 'demo=3&sources=0&quiz=1&qecoule=6&vivant=1' },
+    { nom: 'Le quiz', theme: 'studio', q: 'demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg&vivant=1' },
     { nom: 'Le chat à l\'écran', theme: 'neon', q: 'demo=3&sources=0&chat=youtube&vivant=1' },
-    { nom: 'Soirée film', theme: 'bond', q: 'demo=3&watch=1&srcnom=Le%20film&vivant=1' },
+    { nom: 'Soirée film', theme: 'bond', q: 'demo=3&watch=1&srcimg=img/demo/film-horizon.svg&wtitre=Horizon%20Rouge&vivant=1' },
     { nom: 'Le générique', theme: 'cinema', q: 'demo=3&scene=intro' }
   ];
   const DUREE = 5200;
@@ -77,15 +77,18 @@
   });
 
   /* ----- Les thèmes qui défilent ----- */
-  const IDS = ['cinema', 'arcade', 'jt', 'neon', 'bond', 'stade', 'manga', 'plateau3d', 'retro', 'horreur', 'pastel', 'ceremonie', 'western', 'cosmos'];
+  // chaque look avec sa soirée : une vraie image du rendu (img/vitrine/<id>.webp)
+  const LOOKS = [['cinema', 'Soirée ciné'], ['arcade', 'Spécial jeux vidéo'], ['jt', 'Le JT de la semaine'], ['neon', 'L\'after du vendredi'],
+    ['bond', 'Nuit des espions'], ['stade', 'Soir de match'], ['manga', 'Spécial anime'], ['plateau3d', 'Le grand débat'], ['retro', 'Soirée années 80'],
+    ['horreur', 'Nuit d\'Halloween'], ['pastel', 'Le talk du dimanche'], ['ceremonie', 'La remise des prix'], ['western', 'Soirée western'], ['cosmos', 'Soirée SF']];
   const rail = document.createElement('div'); rail.className = 'v-rail';
-  const carte = (id, double) => {
+  const carte = ([id, soiree], double) => {
     const t = THEMES[id]; if (!t) return '';
     const nom = String(t.nom || id).replace(/\s*\(.*\)$/, '');
-    return `<figure class="v-theme"${double ? ' aria-hidden="true"' : ''}><img src="img/themes/${id}-live.webp" alt="${double ? '' : 'Thème ' + esc(nom)}" loading="lazy" width="640" height="360"><figcaption>${esc(nom)}</figcaption></figure>`;
+    return `<figure class="v-theme"${double ? ' aria-hidden="true"' : ''}><img src="img/vitrine/${id}.webp" alt="${double ? '' : esc(soiree) + ', look ' + esc(nom)}" loading="lazy" width="800" height="450"><figcaption><b>${esc(soiree)}</b><span>${esc(nom)}</span></figcaption></figure>`;
   };
   // la liste deux fois de suite : le défilement boucle sans à-coup
-  rail.innerHTML = IDS.map(id => carte(id, false)).join('') + IDS.map(id => carte(id, true)).join('');
+  rail.innerHTML = LOOKS.map(l => carte(l, false)).join('') + LOOKS.map(l => carte(l, true)).join('');
   $('#v-defile').appendChild(rail);
 
   page();

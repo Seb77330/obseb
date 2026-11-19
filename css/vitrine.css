@@ -8,7 +8,8 @@ body:not([data-page="vitrine"]) #formules,
 body:not([data-page="vitrine"]) #btn-mes-lives,
 body[data-page="vitrine"] .accueil-onglets,
 body[data-page="vitrine"] .vue-accueil,
-body[data-page="vitrine"] #astuces,
+body[data-page="vitrine"] .espace-tete,
+body:not([data-page="vitrine"]) .site-pied,
 body[data-page="vitrine"] #btn-decouvrir { display: none !important; }
 body[data-page="vitrine"] #vue-liste { padding-top: 0; }
 body[data-page="vitrine"] #formules { margin-top: 40px; }
@@ -71,9 +72,15 @@ body[data-page="vitrine"] #formules { margin-top: 40px; }
 .v-rail { display: flex; gap: 14px; width: max-content; animation: v-glisse 70s linear infinite; }
 .v-defile:hover .v-rail { animation-play-state: paused; }
 @keyframes v-glisse { to { transform: translateX(calc(-50% - 7px)); } }
-.v-theme { margin: 0; width: 248px; flex: none; }
-.v-theme img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; border: 1px solid var(--ui-line); background: #000; }
-.v-theme figcaption { margin-top: 8px; font-size: 13px; color: var(--ui-muted); }
+.v-rail { padding: 14px 0 6px; }
+.v-theme { margin: 0; width: 340px; flex: none; transition: transform .35s cubic-bezier(.2, .7, .2, 1); }
+.v-theme img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #000;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-text) 10%, transparent), 0 24px 50px -30px rgba(0, 0, 0, .8); transition: box-shadow .35s; }
+.v-theme:hover { transform: translateY(-6px) scale(1.02); }
+.v-theme:hover img { box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-accent) 55%, transparent), 0 30px 60px -28px rgba(0, 0, 0, .9); }
+.v-theme figcaption { display: flex; align-items: baseline; gap: 8px; margin-top: 12px; padding: 0 2px; }
+.v-theme figcaption b { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.v-theme figcaption span { font: 500 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
 
 .v-pas { margin-top: 28px; }
 
@@ -99,7 +106,7 @@ body[data-page="vitrine"] #formules { margin-top: 40px; }
   .v-lien { width: 100%; padding: 10px; }
   .v-atouts { grid-template-columns: 1fr; }
   .v-bloc { padding-top: 56px; }
-  .v-theme { width: 200px; }
+  .v-theme { width: 240px; }
   .v-defile { margin: 0 -16px; }
   .v-appel { margin-top: 56px; padding: 36px 18px; }
   .v-plans button { padding: 7px 11px; font-size: 12.5px; }
@@ -110,4 +117,65 @@ body[data-page="vitrine"] #formules { margin-top: 40px; }
   .v-atouts article { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; padding: 18px 16px; }
   .v-atouts .v-ic { grid-row: span 2; }
   .v-atouts h3 { margin: 2px 0 4px; }
+}
+
+/* ----- L'ambiance : deux halos de lumière derrière tout l'accueil, comme un plateau éclairé ----- */
+body:not(.embed):not(.en-creation) { background: transparent; }
+body:not(.embed):not(.en-creation)::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(900px 520px at 12% -8%, color-mix(in srgb, var(--ui-accent) 12%, transparent), transparent 70%),
+              radial-gradient(800px 600px at 105% 105%, color-mix(in srgb, #8a5cff 14%, transparent), transparent 70%); }
+:root[data-contraste] body::before { display: none; }
+
+/* ----- L'accueil perso (Mes lives) : une page fixe, sans défilement inutile ----- */
+.espace-tete { display: flex; align-items: flex-end; gap: 20px; margin: 4px 0 22px; }
+.espace-tete h1 { font-size: clamp(26px, 3vw, 34px); font-weight: 650; letter-spacing: -.03em; }
+.espace-tete p { margin: 6px 0 0; color: var(--ui-muted); font-size: 15px; }
+body[data-page="espace"] .accueil-onglets { margin-bottom: 22px; }
+/* la carte « Nouveau live », toujours la première */
+.session-nouveau { display: grid; place-content: center; justify-items: center; gap: 6px; min-height: 280px; padding: 24px; border-radius: 14px; text-align: center;
+  border: 1.5px dashed color-mix(in srgb, var(--ui-accent) 45%, var(--ui-line2)); color: var(--ui-text); font-weight: 400;
+  background: radial-gradient(70% 60% at 50% 40%, color-mix(in srgb, var(--ui-accent) 9%, transparent), transparent 75%), color-mix(in srgb, var(--ui-panel) 60%, transparent);
+  transition: border-color .2s, transform .2s, background .2s; }
+.session-nouveau:hover { border-color: var(--ui-accent); transform: translateY(-3px); background: radial-gradient(70% 60% at 50% 40%, color-mix(in srgb, var(--ui-accent) 16%, transparent), transparent 75%), var(--ui-panel); }
+.session-nouveau .sn-plus { display: grid; place-items: center; width: 54px; height: 54px; margin-bottom: 8px; border-radius: 16px; background: var(--ui-accent); color: var(--ui-sur-accent);
+  box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--ui-accent) 85%, transparent); transition: transform .2s; }
+.session-nouveau:hover .sn-plus { transform: rotate(90deg); }
+.session-nouveau svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.session-nouveau b { font-size: 17px; font-weight: 600; }
+.session-nouveau small { color: var(--ui-muted); font-size: 13px; }
+/* chaque carte prend la couleur de son thème au survol */
+body[data-page="espace"] .cartes { align-items: start; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 16px; }
+.session { --c: var(--ui-accent); transition: border-color .2s, transform .2s, box-shadow .2s; }
+.session:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--ui-line)); transform: translateY(-3px); box-shadow: 0 26px 50px -32px color-mix(in srgb, var(--c) 70%, transparent); }
+@media (prefers-reduced-motion: reduce) { .session:hover, .session-nouveau:hover, .v-theme:hover { transform: none; } }
+/* sur ordinateur : tout tient dans l'écran, seules les cartes défilent s'il y en a beaucoup */
+@media (min-width: 900px) and (min-height: 620px) {
+  body[data-page="espace"]:not(.en-creation) { height: calc(100dvh / var(--z, 1)); overflow: hidden; display: flex; flex-direction: column; }
+  body[data-page="espace"] #vue-liste:not([hidden]) { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding-top: 30px; padding-bottom: 0; }
+  body[data-page="espace"] .vue-accueil:not([hidden]) { flex: 1; min-height: 0; overflow-y: auto; margin: 0 -12px; padding: 4px 12px 32px; scrollbar-width: thin; }
+}
+
+/* ----- Le pied de page de la vitrine ----- */
+.site-pied { margin-top: 90px; padding: 28px 0 0; border-top: 1px solid var(--ui-line); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px 32px; font-size: 14px; }
+.sp-marque { display: flex; align-items: center; gap: 10px; }
+.sp-marque .marque-ic { width: 26px; height: 26px; }
+.sp-marque span { font-weight: 700; letter-spacing: .16em; }
+.sp-marque small { color: var(--ui-muted); font-size: 13px; padding-left: 12px; border-left: 1px solid var(--ui-line); }
+.sp-liens { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; }
+.sp-liens a { color: var(--ui-muted); text-decoration: none; }
+.sp-liens a:hover { color: var(--ui-text); }
+.sp-copy { margin: 0; color: var(--ui-muted); font-size: 12.5px; }
+@media (max-width: 860px) { .site-pied { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+body[data-page="espace"] #vue-liste { max-width: 1320px; }
+body[data-page="espace"] .session .actions .primaire { white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+body[data-page="espace"] .prog-badge b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body[data-page="espace"] .vide-accueil { padding: 40px 20px 20px; }
+body[data-page="espace"] #bloc-vide .trois-pas { margin-top: 36px; }
+/* téléphone : la case « Nouveau live » devient une ligne, les onglets restent sur une ligne */
+@media (max-width: 700px) {
+  .session-nouveau { min-height: 0; grid-auto-flow: column; grid-template-rows: auto auto; justify-content: start; justify-items: start; column-gap: 14px; row-gap: 0; padding: 14px 16px; text-align: left; }
+  .session-nouveau .sn-plus { grid-row: span 2; width: 44px; height: 44px; margin: 0; border-radius: 13px; }
+  .session-nouveau b { font-size: 16px; align-self: end; } .session-nouveau small { align-self: start; }
+  .accueil-onglets { overflow-x: auto; } .accueil-onglets button { white-space: nowrap; font-size: 15px; }
+  .espace-tete { margin-bottom: 14px; }
 }

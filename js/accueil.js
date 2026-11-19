@@ -202,7 +202,15 @@ function afficherSessions() {
   box.innerHTML = '';
   const l = lire();
   $('#bloc-lives').hidden = !l.length; $('#bloc-vide').hidden = !!l.length;
-  $('#nb-lives').textContent = l.length > 1 ? `${l.length} lives` : '';
+  majBonjour(l);
+  // la première case : créer un live (le même que le bouton du haut)
+  if (l.length) {
+    const n = document.createElement('button');
+    n.type = 'button'; n.className = 'session-nouveau';
+    n.innerHTML = '<span class="sn-plus" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><b>Nouveau live</b><small>Un clic, et tu es dans la régie</small>';
+    n.onclick = () => $('#btn-nouveau').click();
+    box.appendChild(n);
+  }
   // les lives programmés d'abord, le plus proche en premier ; les autres gardent leur ordre
   const proche = s => (s.debut && s.debut > Date.now() - 6 * 3600e3 ? s.debut : Infinity);
   l.map((x, i) => [x, i]).sort((a, b) => (proche(a[0].session) - proche(b[0].session)) || (a[1] - b[1])).forEach(([{ session, cle }]) => {
@@ -210,6 +218,7 @@ function afficherSessions() {
     const t = themeComplet(session);
     const el = document.createElement('div');
     el.className = 'session'; el.dataset.room = session.room;
+    if (/^#[0-9a-f]{3,8}$/i.test(t.accent || '')) el.style.setProperty('--c', t.accent);
     const prog = session.debut && session.debut > Date.now();
     el.innerHTML = `
       <a class="mini" href="${esc(L.regie)}" title="Ouvrir la régie"><iframe loading="lazy" tabindex="-1" src="${esc(urlApercu(session, 'intro'))}"></iframe>
@@ -255,6 +264,18 @@ function afficherSessions() {
     box.appendChild(el);
     if (typeof garnirProg === 'function') garnirProg(el, session);
   });
+}
+
+/* Le haut de l'accueil perso : bonjour, et ce qui arrive */
+function majBonjour(l) {
+  $('#espace-tete').hidden = !l.length;   // sans live, le bloc « Ton studio est prêt » suffit
+  const h = new Date().getHours();
+  const nom = (l[0] && l[0].session.hote) || '';
+  $('#espace-bonjour').textContent = (h >= 18 || h < 5 ? 'Bonsoir' : 'Bonjour') + (nom ? ' ' + nom : '');
+  const prochain = l.map(x => x.session).filter(s => s.debut && s.debut > Date.now()).sort((a, b) => a.debut - b.debut)[0];
+  const heure = d => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
+  $('#espace-resume').textContent = prochain ? `Prochain direct : « ${prochain.titre} », ${dansTexte(prochain.debut)} à ${heure(prochain.debut)}.`
+    : l.length ? 'Tes lives sont prêts. Tu passes en direct quand tu veux.' : 'Ton studio est prêt.';
 }
 
 /* ----- Mes lives (sessions terminées) ----- */

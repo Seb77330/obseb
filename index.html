@@ -11,12 +11,12 @@
 <link rel="apple-touch-icon" href="img/mesa-icone-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/app.css?v=b7513691">
+<link rel="stylesheet" href="css/app.css?v=f441620e">
 <link rel="stylesheet" href="css/biblio.css?v=f983b373">
-<link rel="stylesheet" href="css/comptes.css?v=f26f4388">
-<link rel="stylesheet" href="css/aide.css?v=7b8e54d6">
-<link rel="stylesheet" href="css/visuel-etapes.css?v=7346cbec">
-<link rel="stylesheet" href="css/vitrine.css?v=765c93ff">
+<link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
+<link rel="stylesheet" href="css/aide.css?v=3ec4d2bc">
+<link rel="stylesheet" href="css/visuel-etapes.css?v=7d1d418f">
+<link rel="stylesheet" href="css/vitrine.css?v=29b48d80">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -129,6 +129,7 @@
   .choix-obs button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 22px; border: 0; border-radius: 99px; background: none; color: var(--ui-muted); font-size: 15px; font-weight: 600; white-space: nowrap; }
   .choix-obs button:hover { color: var(--ui-text); }
   .choix-obs button[aria-pressed="true"] { background: var(--t-essentiel, var(--ui-accent)); color: var(--ui-sur-accent, #111); }
+  :root[data-mode="clair"] .choix-obs button[aria-pressed="true"] { background: var(--ui-text); color: var(--ui-bg); }
   .choix-obs button i { font: 600 10px var(--mono); font-style: normal; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 99px; border: 1px solid currentColor; opacity: .85; }
   .formules-tete p.obs-dit { font-size: 14px; max-width: 520px; margin: 0 auto; text-wrap: balance; }
   @keyframes prix-change { from { opacity: 0; transform: translateY(8px); } }
@@ -196,9 +197,13 @@
   .ent-prix button { padding: 11px 18px; font-size: 14px; border-radius: 12px; color: var(--ui-muted); white-space: nowrap; }
   @media (max-width: 1080px) { .entreprises { grid-template-columns: 1fr; gap: 18px; margin-top: 22px; } .ent-prix { justify-content: space-between; } .ent-prix p { justify-items: start; } }
   @media (max-width: 620px) { .entreprises { max-width: 420px; margin-left: auto; margin-right: auto; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
-  .formules-pied { margin: 30px auto 0; text-align: center; color: var(--ui-muted); font-size: 13px; }
-  .formules-pied.obs-note { margin-bottom: -18px; font-size: 12px; }
-  .formules-pied b { margin-right: 9px; padding: 2px 8px; border: 1px solid var(--ui-line2); border-radius: 99px; color: var(--ui-text); font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+  /* sous les formules : la bêta, puis les petites précisions, bien rangées */
+  .formules-notes { max-width: 1080px; margin: 34px auto 0; display: grid; justify-items: center; gap: 18px; }
+  .note-beta { display: inline-flex; align-items: center; gap: 12px; margin: 0; padding: 10px 18px 10px 10px; border-radius: 99px; font-size: 14px; background: color-mix(in srgb, var(--ui-accent) 9%, var(--ui-panel)); border: 1px solid color-mix(in srgb, var(--ui-accent) 32%, var(--ui-line)); text-wrap: balance; }
+  .note-beta b { flex: none; padding: 4px 10px; border-radius: 99px; background: var(--ui-accent); color: var(--ui-sur-accent); font: 600 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+  .notes-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 26px; color: var(--ui-muted); font-size: 12.5px; }
+  .notes-liste li b { margin-right: 6px; color: var(--ui-text); font-weight: 600; }
+  @media (max-width: 620px) { .note-beta { border-radius: 16px; align-items: flex-start; } .notes-liste { flex-direction: column; align-items: center; text-align: center; } }
   .entreprises { max-width: 1080px; margin-left: auto; margin-right: auto; }
   @media (min-width: 1081px) { .entreprises { grid-template-columns: minmax(0, 1fr) max-content auto; gap: 18px 32px; } .entreprises ul { grid-template-columns: repeat(2, max-content); } .entreprises h3 { text-wrap: balance; } }
   @media (max-width: 900px) { .offres { grid-template-columns: 1fr; gap: 24px; max-width: 420px; } .entreprises { max-width: 420px; padding: 22px; } .entreprises ul { grid-template-columns: 1fr; } }
@@ -250,7 +255,7 @@
   .plus .menu .danger, .plus .menu .danger .ic { color: var(--ui-ko); }
 
   /* Création d'un live : l'aperçu à gauche (horizontal et vertical), ce qu'on choisit à droite. Tout tient dans l'écran. */
-  body.en-creation { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  body.en-creation { height: calc(100dvh / var(--z, 1)); display: flex; flex-direction: column; overflow: hidden; }
   #vue-creation { padding: 0; flex: 1; min-height: 0; }
   .creation { display: grid; grid-template-columns: minmax(0, 1fr) 440px; height: 100%; }
   .scene-apercu { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 24px 16px; background: var(--ui-bg); }
@@ -418,7 +423,7 @@
   .pied-form .primaire { padding: 12px 22px; font-size: 16px; }
 </style>
 </head>
-<body>
+<body class="zoom">
 <header class="barre">
   <a class="marque" href="index.html" title="Accueil"><svg class="marque-ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ui-accent)"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="var(--ui-sur-accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>MESA</span></a>
   <span class="etiquette">Studio live</span>
@@ -490,13 +495,19 @@
     </section>
   </div>
 
+  <div class="espace-tete" id="espace-tete">
+    <div>
+      <h1 id="espace-bonjour">Bonjour</h1>
+      <p id="espace-resume"></p>
+    </div>
+  </div>
   <nav class="biblio-onglets accueil-onglets" role="tablist" aria-label="Ma bibliothèque">
     <button type="button" role="tab" data-onglet-accueil="lives" class="actif">Mes lives <small data-nb="lives"></small></button>
     <button type="button" role="tab" data-onglet-accueil="recs">Mes enregistrements <small data-nb="recs"></small></button>
   </nav>
   <div class="vue-accueil" data-vue-accueil="lives">
   <div id="bloc-lives">
-    <div class="tete-section"><h1 class="sr">Mes lives</h1><p class="aide" id="nb-lives" hidden></p></div>
+
     <div class="cartes" id="sessions"></div>
   </div>
   <div id="bloc-vide" hidden>
@@ -579,18 +590,27 @@
         <button type="button" data-formule="entreprise">En préparation</button>
       </div>
     </aside>
-    <p class="formules-pied obs-note">Personnes à l'écran : toi compris. « Tous les textes » : titre, phrases et pseudo de l'intro et de l'outro.<span data-si="avec"> Avec OBS, le maximum dépend de ton ordinateur et de la connexion de chacun. 4K : sur YouTube, avec un ordinateur récent.</span></p>
-    <p class="formules-pied"><b>Bêta</b>Tout est gratuit jusqu'au 1er janvier 2027, avec OBS. Le direct depuis le site arrive avec les formules.</p>
+    <div class="formules-notes">
+      <p class="note-beta"><b>Bêta</b><span>Tout est gratuit jusqu'au 1er janvier 2027, avec OBS. Le direct depuis le site arrive avec les formules.</span></p>
+      <ul class="notes-liste">
+        <li><b>À l'écran</b>toi compris</li>
+        <li><b>Tous les textes</b>titre, phrases et pseudo de l'intro et de l'outro</li>
+        <li data-si="avec"><b>Avec OBS</b>le maximum dépend de ton ordinateur et des connexions</li>
+        <li data-si="avec"><b>4K</b>sur YouTube, avec un ordinateur récent</li>
+      </ul>
+    </div>
   </section>
 
-  <details class="repli" id="astuces">
-    <summary>Astuces pour OBS</summary>
-    <ul class="astuces">
-      <li>Dans OBS, une seule source à ajouter : « Navigateur », avec le lien OBS de ton live, en 1920 × 1080 (1080 × 1920 pour le vertical).</li>
-      <li>Si OBS utilise déjà ta caméra, ferme-la dans OBS : c'est le studio qui la prend.</li>
-      <li>Pendant le live, les touches <kbd>1</kbd> à <kbd>6</kbd> changent de scène : Intro, Solo, Duo, Plateau, Watch Party, Outro. Ce que tu partages (écran, image, vidéo) s'affiche à côté des caméras dans toutes les scènes sauf l'intro et l'outro.</li>
-    </ul>
-  </details>
+  <footer class="site-pied">
+    <div class="sp-marque"><svg class="marque-ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ui-accent)"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="var(--ui-sur-accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>MESA</span><small>Ton live, comme à la télé.</small></div>
+    <nav class="sp-liens" aria-label="Informations">
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+      <a href="cgu.html">Conditions d'utilisation</a>
+      <a href="confidentialite.html">Confidentialité</a>
+    </nav>
+    <p class="sp-copy">© 2026 MESA · Fait en France</p>
+  </footer>
 </main>
 
 <!-- Vue 2 : créer ou modifier un live -->
@@ -764,23 +784,23 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=32f8b686"></script>
+<script src="js/common.js?v=21c31c91"></script>
 <script src="js/vendor/supabase-2.119.0.umd.js?v=4bc1644c"></script>
 <script src="js/comptes-config.js?v=014eeea5"></script>
 <script src="js/comptes.js?v=449b0824"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
-<script src="js/accueil.js?v=05961d15"></script>
+<script src="js/accueil.js?v=c8031fdd"></script>
 <script src="js/accueil-compte.js?v=c72cc41b"></script>
 <script src="js/accueil-prog.js?v=01a85935"></script>
 <script src="js/accueil-style.js?v=2bfb6b68"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 <script src="js/accueil-biblio.js?v=69aeaf7e"></script>
 <script src="js/accueil-nouveau.js?v=9568d336"></script>
-<script src="js/accueil-vitrine.js?v=baeca291"></script>
-<script src="js/visuel-etapes.js?v=42c5edfb"></script>
+<script src="js/accueil-vitrine.js?v=3605a03b"></script>
+<script src="js/visuel-etapes.js?v=d43b4ac7"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
 <script src="js/aide-faq.js?v=1af40e14"></script>
-<script src="js/aide.js?v=29af8856" data-place="droite"></script>
+<script src="js/aide.js?v=401ae0ec" data-place="droite"></script>
 </body>
 </html>

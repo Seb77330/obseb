@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>MESA · Contact</title>
+<link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/mesa-icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css?v=f441620e">
+<link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
+<style>
+  .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
+  .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
+  .barre .etiquette { padding-left: 14px; border-left: 1px solid var(--ui-line); }
+  @media (max-width: 600px) { .barre { padding: 10px 16px; } }
+</style>
+</head>
+<body class="zoom">
+<header class="barre">
+  <a class="marque" href="index.html" title="Accueil"><svg class="marque-ic" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--ui-accent)"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="var(--ui-sur-accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>MESA</span></a>
+  <span class="etiquette">Contact</span>
+  <span style="flex:1"></span>
+  <span id="place-affichage"></span>
+</header>
+<main class="texte-legal contact">
+  <h1>Nous écrire</h1>
+  <p class="doux">Une question, un bug, une idée ? On lit tout. Réponse en général sous 48 h.</p>
+  <form id="form-contact" class="contact-form" novalidate>
+    <div class="contact-sujets" role="radiogroup" aria-label="C'est à propos de quoi ?">
+      <label><input type="radio" name="sujet" value="Question" checked><span>Une question</span></label>
+      <label><input type="radio" name="sujet" value="Bug"><span>Un bug</span></label>
+      <label><input type="radio" name="sujet" value="Idée"><span>Une idée</span></label>
+      <label><input type="radio" name="sujet" value="Entreprises"><span>Entreprises</span></label>
+    </div>
+    <div class="contact-ligne">
+      <label>Ton prénom<input type="text" id="c-nom" maxlength="60" autocomplete="given-name"></label>
+      <label>Ton e-mail, pour te répondre<input type="email" id="c-email" maxlength="120" autocomplete="email" required></label>
+    </div>
+    <label>Ton message<textarea id="c-message" rows="7" maxlength="4000" required placeholder="Dis-nous tout. Pour un bug : ce que tu faisais, et ce qui s'est passé."></textarea></label>
+    <p class="contact-erreur" id="c-erreur" role="alert" hidden></p>
+    <div class="contact-pied">
+      <button type="submit" class="primaire" id="c-envoyer">Envoyer</button>
+      <span class="doux" id="c-note">Ton application d'e-mail s'ouvre avec le message prêt : tu n'as plus qu'à l'envoyer.</span>
+    </div>
+  </form>
+  <div class="contact-merci" id="c-merci" hidden>
+    <b>Ton message est prêt.</b>
+    <p id="c-merci-txt"></p>
+  </div>
+  <p style="margin-top:36px" class="doux">Avant d'écrire, la <a href="faq.html">FAQ</a> a peut-être déjà la réponse.</p>
+</main>
+<script src="js/common.js?v=21c31c91"></script>
+<script src="js/aide-config.js?v=85ddffac"></script>
+<script src="js/contact.js?v=f9122cfe"></script>
+</body>
+</html>

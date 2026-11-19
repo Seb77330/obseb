@@ -21,8 +21,8 @@ body.vp-etapes.page-visuel #f-quand-date:not([hidden]) { display: flex !importan
 .vp-fermer:hover { color: var(--ui-text); background: var(--ui-hover); }
 
 /* les étapes : une rangée de pastilles, la courante en jaune, les faites cochées */
-.vp-nav { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.vp-nav button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px 4px; border: 0; background: none; color: var(--ui-muted); font-size: 11px; line-height: 1.15; border-radius: 8px; }
+.vp-nav { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
+.vp-nav button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px 4px; border: 0; background: none; color: var(--ui-muted); font-size: 10.5px; line-height: 1.15; border-radius: 8px; overflow-wrap: anywhere; }
 .vp-nav button:hover { color: var(--ui-text); background: var(--ui-hover); }
 .vp-num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--mono, monospace); border: 1px solid var(--ui-line2); }
 .vp-nav button.fait .vp-num { border-color: var(--ui-accent); color: var(--ui-accent); }
@@ -46,7 +46,8 @@ body.vp-etapes.page-visuel #f-quand-date:not([hidden]) { display: flex !importan
 
 body.vp-etapes .pied-form { display: flex; gap: 8px; }
 body.vp-etapes #vp-prec { flex: none; }
-body.vp-etapes #vp-suiv, body.vp-etapes #btn-creer { flex: 1; }
+body.vp-etapes #vp-suiv, body.vp-etapes #btn-creer.primaire { flex: 1; }
+body.vp-etapes #btn-creer.vp-terminer { flex: none; order: 3; background: none; }
 
 @media (max-width: 520px) {
   .vp-nom { font-size: 10px; }
@@ -72,3 +73,10 @@ details.vp-plus summary:hover { color: var(--ui-text); }
 /* « Garder ce style » dans l'étape Thème */
 details.vp-style { margin-top: 18px; }
 .vp-pane details.vp-style .enregistrer-style { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* Nouveau live : le nom d'abord, en grand */
+.vp-nom-live { font-size: 20px !important; font-weight: 600; padding: 14px 16px !important; border-radius: 12px !important; margin-top: 6px; }
+.vp-idees-titre { margin: 22px 0 8px; font: 500 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ui-muted); }
+.vp-idees { display: flex; flex-wrap: wrap; gap: 8px; }
+.vp-idees button { padding: 7px 13px; border-radius: 99px; font-size: 13px; background: none; color: var(--ui-muted); }
+.vp-idees button:hover { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 8%, transparent); }

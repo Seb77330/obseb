@@ -132,7 +132,14 @@ function creerSource(src) {
   const cle = cleSource(src);
   if (src.type === 'ecran') {
     const t = creerTuile(src.ref, src.nom || 'Partage', { ecran: true, demo: !!src.demo });
-    if (src.demo) { t.el.querySelector('.attente').textContent = src.nom; t.el.classList.toggle('jeu', /jeu|console/i.test(src.nom)); }
+    if (src.demo) {
+      const att = t.el.querySelector('.attente');
+      // démo : une image de film inventée (img/demo/…) à la place du nom de la source
+      const im = Q.get('srcimg') || '';
+      if (/^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(im)) { att.textContent = ''; att.style.background = `#000 url("${im}") center/cover no-repeat`; t.el.classList.add('avec-image'); }
+      else att.textContent = src.nom;
+      t.el.classList.toggle('jeu', /jeu|console/i.test(src.nom));
+    }
     return t;
   }
   if (sourcesEl.has(cle)) return sourcesEl.get(cle);
@@ -945,10 +952,10 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));
-  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: Q.get('qimg') || null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: /^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(Q.get('qimg') || '') ? Q.get('qimg') : null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: 'Sebastian', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
-  if (Q.get('watch')) st.watch = { titre: 'Dune : Deuxième Partie', pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: Q.get('wsans') ? 0 : 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true, style: Q.get('wstyle') || 'bandeau', mode: Q.get('wmode') || 'ecoule', episode: Q.get('wep') || '' };
+  if (Q.get('watch')) st.watch = { titre: (Q.get('wtitre') || 'Dune : Deuxième Partie').slice(0, 60), pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: Q.get('wsans') ? 0 : 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true, style: Q.get('wstyle') || 'bandeau', mode: Q.get('wmode') || 'ecoule', episode: Q.get('wep') || '' };
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };

@@ -205,34 +205,41 @@ function appliquerAffichage(a = lireAffichage()) {
   if (/^(bleu|gris|blanc)$/.test(a.couleur)) r.dataset.couleur = a.couleur; else delete r.dataset.couleur;     // jaune : la couleur d'origine
   if (a.daltonien) r.dataset.daltonien = ''; else delete r.dataset.daltonien;
   if (a.contraste) r.dataset.contraste = ''; else delete r.dataset.contraste;
-  r.dataset.taille = a.taille;
+  r.dataset.taille = /^(grand|tresgrand)$/.test(a.taille) ? a.taille : 'normal';
 }
 /* Bouton « Affichage » : petit menu avec les réglages, mémorisés dans ce navigateur */
 function boutonAffichage(conteneur) {
   const box = document.createElement('div'); box.className = 'bouton-affichage';
   box.innerHTML = `<button type="button" title="Affichage : mode clair, sombre, daltonien…"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" fill="currentColor" stroke="none"/></svg><span>Affichage</span></button>
-    <div class="affichage-pop" hidden>
-      <div class="titre-pop">Thème de l'interface</div>
-      <div class="segment" data-r="mode"><button data-v="auto">Auto</button><button data-v="sombre">Sombre</button><button data-v="clair">Clair</button></div>
+    <div class="affichage-pop" hidden role="dialog" aria-label="Affichage">
+      <div class="titre-pop">Thème</div>
+      <div class="af-themes" data-r="mode">
+        <button type="button" data-v="auto"><i class="af-vue auto"><b></b><b></b></i>Auto</button>
+        <button type="button" data-v="sombre"><i class="af-vue sombre"><b></b><b></b></i>Sombre</button>
+        <button type="button" data-v="clair"><i class="af-vue clair"><b></b><b></b></i>Clair</button>
+      </div>
       <div class="titre-pop">Couleur des boutons</div>
-      <div class="couleurs" data-r="couleur"><button type="button" data-v="jaune" style="--c:#FFD21F"><i></i>Jaune</button><button type="button" data-v="bleu" style="--c:#4DA3FF"><i></i>Bleu</button><button type="button" data-v="gris" style="--c:#AEB6C2"><i></i>Gris</button><button type="button" data-v="blanc" style="--c:#ffffff"><i></i><span>Blanc</span></button></div>
-      <label><span>Mode daltonien<small>Bleu et orange au lieu de vert et rouge</small></span><input type="checkbox" data-r="daltonien"></label>
-      <label><span>Contraste élevé<small>Textes et contours plus marqués</small></span><input type="checkbox" data-r="contraste"></label>
+      <div class="couleurs" data-r="couleur"><button type="button" data-v="jaune" style="--c:#FFD21F" title="Jaune"><i></i>Jaune</button><button type="button" data-v="bleu" style="--c:#4DA3FF" title="Bleu"><i></i>Bleu</button><button type="button" data-v="gris" style="--c:#AEB6C2" title="Gris"><i></i>Gris</button><button type="button" data-v="blanc" style="--c:#ffffff"><i></i><span>Blanc</span></button></div>
       <div class="titre-pop">Taille du texte</div>
-      <div class="segment" data-r="taille"><button data-v="normal">Normale</button><button data-v="grand">Grande</button></div>
+      <div class="af-tailles" data-r="taille"><button type="button" data-v="normal" title="Normale"><span style="font-size:13px">Aa</span>Normale</button><button type="button" data-v="grand" title="Grande"><span style="font-size:17px">Aa</span>Grande</button><button type="button" data-v="tresgrand" title="Très grande"><span style="font-size:21px">Aa</span>Très grande</button></div>
+      <div class="af-options">
+        <label class="af-inter"><span>Mode daltonien<small>Bleu et orange à la place du vert et du rouge</small></span><input type="checkbox" role="switch" data-r="daltonien"><i aria-hidden="true"></i></label>
+        <label class="af-inter"><span>Contraste élevé<small>Textes plus nets, contours bien visibles</small></span><input type="checkbox" role="switch" data-r="contraste"><i aria-hidden="true"></i></label>
+      </div>
     </div>`;
   const pop = box.querySelector('.affichage-pop');
   const maj = () => {
     const a = lireAffichage();
-    pop.querySelectorAll('.segment, .couleurs').forEach(sg => sg.querySelectorAll('button').forEach(b => b.classList.toggle('actif', a[sg.dataset.r] === b.dataset.v)));
+    pop.querySelectorAll('div[data-r]').forEach(sg => sg.querySelectorAll('button').forEach(b => { const oui = a[sg.dataset.r] === b.dataset.v; b.classList.toggle('actif', oui); b.setAttribute('aria-pressed', String(oui)); }));
     pop.querySelectorAll('input[data-r]').forEach(i => { i.checked = !!a[i.dataset.r]; });
     pop.querySelector('.couleurs [data-v=blanc] span').textContent = document.documentElement.dataset.mode === 'clair' ? 'Noir' : 'Blanc';     // sur fond clair, le blanc devient noir
   };
   const changer = (k, v) => { const a = lireAffichage(); a[k] = v; try { localStorage.setItem(CLE_AFFICHAGE, JSON.stringify(a)); } catch (e) { /* rien */ } appliquerAffichage(a); maj(); };
-  pop.querySelectorAll('.segment button, .couleurs button').forEach(b => b.onclick = () => changer(b.parentElement.dataset.r, b.dataset.v));
+  pop.querySelectorAll('div[data-r] > button').forEach(b => b.onclick = () => changer(b.parentElement.dataset.r, b.dataset.v));
   pop.querySelectorAll('input[data-r]').forEach(i => i.onchange = () => changer(i.dataset.r, i.checked));
   box.firstElementChild.onclick = e => { e.stopPropagation(); pop.hidden = !pop.hidden; maj(); };
   document.addEventListener('click', e => { if (!box.contains(e.target)) pop.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { pop.hidden = true; box.firstElementChild.focus(); } });
   conteneur.appendChild(box);
   return box;
 }

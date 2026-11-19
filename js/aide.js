@@ -161,7 +161,40 @@ const AideRecherche = (() => {
     fil.appendChild(d);
     /* on montre le début de la réponse, pas sa fin */
     fil.scrollTop = classe === 'aide-bot' ? Math.max(0, d.offsetTop - 60) : fil.scrollHeight;
+    if (classe === 'aide-bot') frappe = taper(d);
     return d;
+  }
+  /* La réponse s'écrit sous tes yeux, comme un vrai chat : le texte apparaît petit à petit (en 2 secondes au plus),
+     puis les boutons (questions proches, contact) arrivent en fondu. */
+  let frappe = null;
+  const doux = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function taper(d) {
+    if (doux) return Promise.resolve();
+    const noeuds = [], w = document.createTreeWalker(d, NodeFilter.SHOW_TEXT, { acceptNode: n => !n.nodeValue.trim() || n.parentElement.closest('button, a, .aide-puces, .aide-cache') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    while (w.nextNode()) noeuds.push(w.currentNode);
+    const textes = noeuds.map(n => n.nodeValue), total = textes.reduce((t, x) => t + x.length, 0);
+    if (!total) return Promise.resolve();
+    const extras = [...d.querySelectorAll('button, a, .aide-puces, .aide-sous')];
+    extras.forEach(x => x.classList.add('aide-attend'));
+    noeuds.forEach(n => { n.nodeValue = ''; });
+    d.classList.add('aide-tape');
+    const curseur = document.createElement('i'); curseur.className = 'aide-curseur'; curseur.setAttribute('aria-hidden', 'true');
+    const parSeconde = Math.max(55, total / 2);         // les longues réponses vont plus vite : jamais plus de 2 s
+    return new Promise(fin => {
+      const t0 = performance.now();
+      const pas = now => {
+        if (!d.isConnected) return fin();
+        let reste = Math.min(total, Math.round((now - t0) / 1000 * parSeconde));
+        let ici = noeuds[0];
+        noeuds.forEach((n, i) => { const k = Math.min(textes[i].length, reste); n.nodeValue = textes[i].slice(0, k); if (k > 0) ici = n; reste -= k; });
+        if (curseur.previousSibling !== ici) ici.parentNode.insertBefore(curseur, ici.nextSibling);
+        if (Math.round((now - t0) / 1000 * parSeconde) < total) return requestAnimationFrame(pas);
+        d.classList.remove('aide-tape'); curseur.remove();
+        extras.forEach((x, i) => { x.style.animationDelay = (60 * i) + 'ms'; x.classList.add('aide-arrive'); x.classList.remove('aide-attend'); });
+        fin();
+      };
+      requestAnimationFrame(pas);
+    });
   }
   const puces = (liste) => `<div class="aide-puces">${liste.map(q => `<button type="button" class="aide-puce" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>`;
   function blocContact(intro) {
@@ -205,8 +238,9 @@ const AideRecherche = (() => {
     const points = ajouter('aide-bot aide-points', '<span></span><span></span><span></span><em class="aide-cache">L\'aide réfléchit…</em>');
     sonReflexion(secondes);
     setTimeout(() => {
-      points.remove(); sonReponse(); quand();
-      occupe = false; champ.disabled = false; racineEl.classList.remove('reflechit'); champ.focus();
+      points.remove(); sonReponse(); frappe = null; quand();
+      // on rend la main quand la réponse a fini de s'écrire
+      Promise.resolve(frappe).then(() => { occupe = false; champ.disabled = false; racineEl.classList.remove('reflechit'); champ.focus(); });
     }, secondes * 1000);
   }
   /* plus la réponse est longue, plus elle « réfléchit » : entre 1,2 et 2,6 secondes */

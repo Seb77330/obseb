@@ -85,3 +85,10 @@
 .aide-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .aide-racine.reflechit .aide-saisie input { opacity: .6; }
 .aide-son { font-size: 13px; }
+
+/* la réponse qui s'écrit : un petit curseur qui clignote au bout, les boutons arrivent après */
+.aide-curseur { display: inline-block; width: 7px; height: 1em; margin-left: 2px; vertical-align: -2px; border-radius: 2px; background: var(--ui-accent); animation: aide-curseur .8s steps(2) infinite; }
+@keyframes aide-curseur { 50% { opacity: 0; } }
+.aide-attend { display: none !important; }
+.aide-arrive { animation: aide-arrive .35s cubic-bezier(.2, .7, .2, 1) backwards; }
+@keyframes aide-arrive { from { opacity: 0; transform: translateY(5px); } }
