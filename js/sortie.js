@@ -64,11 +64,13 @@ if (document.fonts) document.fonts.ready.then(ajusterTitres);
 document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = session.hote);
 document.querySelectorAll('[data-texte]').forEach(e => e.textContent = texteDe(session, e.dataset.texte));
 document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
-$('#logo').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="">` : esc(theme.logoTexte || 'SEB');
+$('#logo').innerHTML = logoHTML(theme);
+$('#logo').classList.toggle('mesa', !theme.logo && !theme.logoTexte);
 $('#logo').classList.toggle('image', !!theme.logo);
 /* le même logo, pour les coins du haut : il sort alors du bandeau et se pose sur l'image, comme le logo d'une chaîne */
 $('#logo-coin').innerHTML = $('#logo').innerHTML;
 $('#logo-coin').classList.toggle('image', !!theme.logo);
+$('#logo-coin').classList.toggle('mesa', !theme.logo && !theme.logoTexte);
 document.title = `${session.titre} · Sortie`;
 
 /* ----- Tuiles ----- */

@@ -279,6 +279,11 @@ function jsonTrie(o) {
 }
 /* ----- Les textes de l'intro et de l'outro : modifiables dans le panneau Visuel (session.textes) -----
    Une case vide = le texte par défaut ci-dessous. */
+/* Le logo MESA (le M au sommet plat), dessiné à la couleur du texte : il prend les couleurs du thème.
+   C'est le logo par défaut d'un live tant qu'on n'a mis ni image ni texte de logo. */
+const MESA_M = '<svg class="mesa-m" viewBox="0 0 32 32" aria-label="MESA" role="img"><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+const logoHTML = t => t.logo ? `<img src="${esc(t.logo)}" alt="">` : (t.logoTexte ? esc(t.logoTexte) : MESA_M);
+
 const TEXTES_DEFAUT = {
   introSur: 'Le live commence dans un instant', introInfo: 'Installe-toi, on arrive', introCompte: 'Début du live dans',
   introAvec: 'avec', introParti: "C'est parti", introBandeau: 'À suivre',

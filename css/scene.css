@@ -117,6 +117,9 @@ body.sortie { background: #000; }
   padding: 0 14px; place-items: center; overflow: hidden; border-radius: 8px; background: var(--accent); color: var(--bg);
   font: 400 32px/0.95 var(--font-title); text-align: center; transition: opacity .5s ease;
 }
+/* le logo MESA par défaut : le M seul, à la couleur du fond du thème, dans la pastille aux couleurs du thème */
+#bandeau .logo.mesa, #logo-coin.mesa { padding: 0; }
+.logo.mesa .mesa-m, #logo-coin.mesa .mesa-m { width: 70%; height: 70%; display: block; }
 #logo-coin.image { padding: 0; min-width: 0; background: none; border-radius: 0; overflow: visible; filter: drop-shadow(0 4px 14px rgba(0,0,0,.45)); }
 #logo-coin img { height: var(--h); width: auto; max-width: calc(var(--h) * 3.2); object-fit: contain; display: block; }
 [data-logo="hg"] body:not(.vertical) #logo-coin { display: grid; left: 88px; }

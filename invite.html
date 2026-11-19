@@ -23,6 +23,7 @@
   .wrap { position: relative; max-width: 1280px; margin: 0 auto; padding: 28px 20px 40px; }
   .entete { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
   .entete .pastille { background: var(--accent); color: var(--bg); font: 400 22px var(--font-title); padding: 8px 12px; border-radius: 9px; }
+  .entete .pastille.mesa { padding: 6px; display: grid; place-items: center; } .entete .pastille .mesa-m { width: 26px; height: 26px; display: block; }
   .entete .chaine { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 13px; color: var(--muted); }
   #accueil { max-width: 620px; margin: 6vh auto 0; text-align: center; }
   #accueil .sur { font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--accent); font-size: 13px; }
@@ -66,7 +67,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="entete"><span class="pastille" id="pastille">SEB</span><span class="chaine" id="chaine"></span></div>
+  <div class="entete"><span class="pastille" id="pastille"></span><span class="chaine" id="chaine"></span></div>
 
   <section id="accueil">
     <div class="sur">Tu es invité(e) au live</div>
@@ -130,10 +131,10 @@
     </div>
   </section>
 </div>
-<script src="js/common.js?v=d50374ab"></script>
+<script src="js/common.js?v=79f6a31b"></script>
 <script src="js/reglages-media.js?v=150f2489"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=20cf2b7c"></script>
+<script src="js/invite.js?v=a3c6e139"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
 <script src="js/aide-faq.js?v=5d7f8b52"></script>
 <script src="js/aide.js?v=29af8856" data-place="droite"></script>

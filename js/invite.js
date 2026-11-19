@@ -22,7 +22,8 @@ if (session.debut && session.debut > Date.now() - 6 * 3600e3) {
 }
 $('#hote2').textContent = session.hote;
 $('#chaine').textContent = session.handle || HANDLE_DEFAUT;
-$('#pastille').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="" style="height:28px;display:block">` : esc(theme.logoTexte || 'SEB');
+$('#pastille').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="" style="height:28px;display:block">` : (theme.logoTexte ? esc(theme.logoTexte) : MESA_M);
+$('#pastille').classList.toggle('mesa', !theme.logo && !theme.logoTexte);
 
 /* Lien « caméra à distance » (invite.html?cam=1) : ce téléphone ou ce PC devient une caméra de l'animateur */
 const CAM_DISTANTE = new URLSearchParams(location.search).get('cam') === '1';
