@@ -30,17 +30,17 @@
 
   /* ----- L'aperçu : quelques plans du vrai rendu ----- */
   const PLANS = [
-    { nom: "L'intro", theme: 'cinema', q: 'demo=3&scene=intro' },
-    { nom: 'Le plateau', theme: 'plateau3d', q: 'demo=4&sources=0' },
-    { nom: 'Le quiz', theme: 'pop', q: 'demo=3&sources=0&quiz=1' },
-    { nom: 'Le chat', theme: 'neon', q: 'demo=3&sources=0&chat=youtube' },
-    { nom: 'La Watch Party', theme: 'bond', q: 'demo=3&watch=1&srcnom=Ton%20film' }
+    { nom: 'Tes invités', theme: 'plateau3d', q: 'demo=4&sources=0&vivant=1' },
+    { nom: 'Le quiz', theme: 'pop', q: 'demo=3&sources=0&quiz=1&qecoule=6&vivant=1' },
+    { nom: 'Le chat à l\'écran', theme: 'neon', q: 'demo=3&sources=0&chat=youtube&vivant=1' },
+    { nom: 'Soirée film', theme: 'bond', q: 'demo=3&watch=1&srcnom=Le%20film&vivant=1' },
+    { nom: 'Le générique', theme: 'cinema', q: 'demo=3&scene=intro' }
   ];
   const DUREE = 5200;
   const boite = $('#v-scenes'), barre = $('#v-plans');
   barre.style.setProperty('--v-duree', DUREE + 'ms');
   const url = p => {
-    const s = Object.assign(nouvelleSession('Le grand débat ciné', p.theme), { hote: 'Alex', handle: '@ta_chaine' });
+    const s = Object.assign(nouvelleSession('Le grand débat ciné', p.theme), { hote: 'Alex', handle: '@ta_chaine', theme: { preset: p.theme, logoTexte: 'MESA' } });
     return `sortie.html?${p.q}&musique=0#s=${b64e(s)}`;
   };
   let actuel = -1, minuteur = 0, fixe = doux, lance = false;
