@@ -415,7 +415,8 @@ addEventListener('message', e => {
       if (q.grand && hauteurCamera >= q.grand) hauteurCamera = q.h;   // mesure retenue avant le 18/11 sur le grand côté (téléphone debout)
       statsCamera = { h: q.h, kbps: q.kbps, n: typeof n === 'number' ? n : null, vu: Date.now() };
       if (typeof n === 'number' && n === 0) el.innerHTML = '<span class="voyant att"></span> Personne ne reçoit ta caméra pour l\'instant (ouvre la sortie ou vérifie la source OBS)';
-      else if (q.h || n) el.innerHTML = `<span class="voyant ok"></span> Caméra en marche${hauteurCamera || q.h ? ' · ' + (hauteurCamera || q.h) + 'p' + (q.debout ? ' debout' : '') : ''}`;
+      // pas de « 383p » ici : ce chiffre est souvent la taille de l'aperçu, pas celle de ta caméra (le détail est au survol)
+      else if (q.h || n) el.innerHTML = '<span class="voyant ok"></span> Caméra en marche';
       el.title = infoEnvoiCamera();
     }
     if (d.streamIDs) {

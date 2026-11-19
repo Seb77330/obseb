@@ -18,6 +18,10 @@ async function ecouterMicro() {
   try {
     microFlux = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: choix.mic ? { exact: choix.mic } : undefined, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     microCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // ouverte sans clic, l'écoute démarre « en pause » dans Chrome : elle n'entend alors que du silence (« aucun son »).
+    // On la relance tout de suite, puis au premier clic ou à la première touche.
+    const relancer = () => { if (microCtx && microCtx.state === 'suspended') microCtx.resume().catch(() => {}); };
+    relancer(); addEventListener('pointerdown', relancer); addEventListener('keydown', relancer);
     const an = microCtx.createAnalyser(); an.fftSize = 1024;
     microCtx.createMediaStreamSource(microFlux).connect(an);
     const d = new Float32Array(an.fftSize);
@@ -29,7 +33,7 @@ async function ecouterMicro() {
       const n = Math.max(0, Math.min(50, (db + 60) / 60 * 50));
       const c = cartes.get(ID_HOTE);
       if (c && !etat.muet[ID_HOTE]) c.niveau = Math.max(c.niveau, n);
-      if (db > -45) microVu = Date.now();
+      if (db > -52) microVu = Date.now();
     }, 80);
   } catch (e) { microEtat = 'ko'; }
 }
@@ -45,11 +49,21 @@ const cameraDemarree = () => !$('#cam-direct').hidden;
 const barre = $('#etat-studio');
 const VOYANTS = ['camera', 'micro', 'sortie', 'invites', 'chat', 'diffusion', 'serveur'];
 const NOMS_VOYANTS = { camera: 'Caméra', micro: 'Micro', sortie: 'Sortie OBS', invites: 'Invités', chat: 'Chat', diffusion: 'Diffusion', serveur: 'Serveur' };
+const IC_VOYANT = {
+  camera: '<path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M15 10.5l6-3.5v10l-6-3.5"/>',
+  micro: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+  sortie: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  invites: '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.8a3 3 0 0 1 0 5.4M17.5 14.2a5.5 5.5 0 0 1 3 4.8"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  diffusion: '<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>',
+  serveur: '<rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01"/>'
+};
 const elsVoyant = {};
 for (const id of VOYANTS) {
   const b = document.createElement('button');
   b.dataset.court = NOMS_VOYANTS[id];
-  b.innerHTML = '<span class="voyant"></span><span class="txt"></span>';
+  b.dataset.id = id;
+  b.innerHTML = `<span class="vy-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC_VOYANT[id]}</svg><span class="voyant"></span></span><span class="txt"></span>`;
   barre.appendChild(b); elsVoyant[id] = b;
 }
 const elDirect = document.createElement('button');
@@ -65,6 +79,7 @@ function poser(el, niveau, texte, aide) {
   const calme = niveau === 'ok' || niveau === 'off', court = el.dataset.court;
   el.querySelector('.txt').innerHTML = court && calme ? court : texte;
   el.title = [court && calme ? texte.replace(/<[^>]+>/g, '') : '', aide || ''].filter(Boolean).join('. ');
+  el.setAttribute('aria-label', el.title || texte.replace(/<[^>]+>/g, ''));
 }
 function majEtatStudio() {
   // le micro n'est écouté que quand ta caméra tourne (et relâché si tu changes d'appareil)
@@ -73,15 +88,15 @@ function majEtatStudio() {
   // Caméra
   if (!cameraDemarree()) poser(elsVoyant.camera, 'off', 'Caméra : pas démarrée', 'Démarre ta caméra dans la colonne de gauche');
   else if (!statsCamera || !frais(statsCamera.vu, 10000)) poser(elsVoyant.camera, 'att', 'Caméra : démarrage…', 'En attente des premières mesures');
-  else poser(elsVoyant.camera, 'ok', `<b>Caméra</b>${hauteurCamera || statsCamera.h ? ' ' + (hauteurCamera || statsCamera.h) + 'p' : ''}${statsCamera.kbps ? ' · ' + (statsCamera.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s' : ''}`,
-    infoEnvoiCamera());
+  else poser(elsVoyant.camera, 'ok', '<b>Caméra</b>', infoEnvoiCamera() + (statsCamera.kbps ? ' (' + (statsCamera.kbps / 1000).toFixed(1).replace('.', ',') + ' Mb/s)' : ''));
 
   // Micro
   if (!cameraDemarree()) poser(elsVoyant.micro, 'off', 'Micro : pas démarré');
   else if (etat.muet[ID_HOTE]) poser(elsVoyant.micro, 'ko', '<b>Micro coupé</b>', 'Tu es en muet : clique pour remettre le son');
   else if (microEtat === 'ko') poser(elsVoyant.micro, 'off', 'Micro : niveau non mesuré', 'Le micro part dans le live, mais je ne peux pas afficher son niveau ici');
   else if (frais(microVu, 15000)) poser(elsVoyant.micro, 'ok', '<b>Micro</b> · ça capte', 'Ton micro capte du son');
-  else poser(elsVoyant.micro, 'att', '<b>Micro</b> : aucun son', 'Rien entendu depuis 15 secondes : parle, ou vérifie le micro choisi');
+  else if (microCtx && microCtx.state === 'suspended') poser(elsVoyant.micro, 'att', '<b>Micro</b> : clique ici', 'Le navigateur attend un clic pour mesurer ton micro');
+  else poser(elsVoyant.micro, 'att', '<b>Micro</b> : aucun son', 'Rien entendu depuis 15 secondes. Parle un peu ; sinon clique sur « Changer » sous ta caméra et choisis le bon micro');
 
   // Sortie OBS
   const h = frais(sortieVue.horizontal, 10000), v = frais(sortieVue.vertical, 10000);

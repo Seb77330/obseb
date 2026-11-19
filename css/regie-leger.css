@@ -141,3 +141,41 @@ body.en-direct .scenes button.actif .sc-vue { box-shadow: 0 0 0 2px var(--ui-red
 .hb-pre button:not(.primaire):not(.actif) { background: transparent; }
 .hb-pre button.actif { background: var(--ui-panel2); color: var(--ui-text); border-color: var(--ui-accent); }
 .wp-actions button { white-space: nowrap; padding-left: 8px; padding-right: 8px; }
+
+/* ----- Barre d'état (19/11) : une icône par voyant, un point de couleur dessus.
+   Ce qui n'est pas utilisé : l'icône seule, en gris. Le nom s'affiche quand ça marche, le détail quand il y a un souci. ----- */
+#etat-studio { height: 34px; padding: 0 8px; gap: 2px; align-items: center; }
+#etat-studio button { height: 26px; gap: 6px; padding: 0 9px !important; border-radius: 7px !important; color: var(--ui-muted); }
+#etat-studio button:hover { background: var(--ui-hover); }
+#etat-studio button[data-niveau=ok] { opacity: 1; }
+#etat-studio button:not(.pousse)[data-niveau=off] { opacity: .45; padding: 0 6px !important; }
+#etat-studio button:not(.pousse)[data-niveau=off] .txt { display: none; }
+#etat-studio .pousse[data-niveau=off] { opacity: .6; }
+#etat-studio button[data-niveau=att] { color: var(--ui-ambre); background: color-mix(in srgb, var(--ui-ambre) 10%, transparent); }
+#etat-studio button[data-niveau=att] b { color: inherit; }
+#etat-studio button[data-niveau=ko] { color: var(--ui-red); background: color-mix(in srgb, var(--ui-red) 10%, transparent); }
+#etat-studio button[data-niveau=ko] b { color: inherit; }
+#etat-studio .vy-ic { position: relative; display: block; width: 16px; height: 16px; flex: none; }
+#etat-studio .vy-ic svg { width: 16px; height: 16px; display: block; }
+#etat-studio .vy-ic .voyant { position: absolute; right: -3px; bottom: -2px; width: 7px; height: 7px; border-radius: 50%; clip-path: none; box-shadow: 0 0 0 2px var(--ui-bg); }
+#etat-studio button[data-niveau=off] .vy-ic .voyant { display: none; }
+#etat-studio .pousse { margin-left: auto; }
+#etat-studio .pousse .voyant { width: 8px; height: 8px; border-radius: 50%; clip-path: none; }
+
+/* ----- Colonne Sources (19/11) : moins de lignes, moins de cadres ----- */
+.carte-moi { padding: 6px; }
+.carte-moi #etat-camera { display: flex; align-items: center; gap: 6px; margin: 6px 2px 0; font-size: 12px; }
+.cam-ligne { margin: 0 2px; }
+.cam-ligne #cam-appareils { font-size: 11.5px; opacity: .7; }
+.carte-moi .participant.hote { border: 0; background: none; padding: 6px 2px 0; }
+.carte-moi .participant.hote .nom { font-weight: 600; }
+.participant .reglages .pct { font-size: 11px; opacity: .6; min-width: 34px; text-align: right; }
+.participant .vu { margin-top: 2px; }
+.participant .actions { gap: 4px; }
+.participant .actions .antenne-btn { flex: 1; }
+/* Invités : la case « Antenne auto » devient un petit interrupteur */
+#auto-antenne { appearance: none; -webkit-appearance: none; width: 26px; height: 15px; border-radius: 99px; background: var(--ui-line2); position: relative; margin: 0 5px 0 0; cursor: pointer; transition: background .15s; vertical-align: -3px; }
+#auto-antenne::after { content: ''; position: absolute; left: 2px; top: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--ui-text); transition: transform .15s; }
+#auto-antenne:checked { background: var(--ui-accent); }
+#auto-antenne:checked::after { transform: translateX(11px); background: var(--ui-sur-accent); }
+#liste .vide { display: grid; justify-items: center; gap: 10px; padding: 18px 10px; border: 1px dashed var(--ui-line2); border-radius: 10px; color: var(--ui-muted); font-size: 12.5px; text-align: center; }
