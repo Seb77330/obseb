@@ -104,7 +104,7 @@ majQR();
   $('#inv-partager').onclick = () => navigator.share({ title: session.titre, text: message }).catch(() => {});
   $('#inv-essai').onclick = () => { pop.hidden = true; if (typeof ouvrirVueInvite === 'function' && $('#vue-invite').hidden) ouvrirVueInvite(); };
   $('#inv-lien').onfocus = e => e.target.select();
-  addEventListener('click', e => { if (!e.target.closest('#zone-invite') && Date.now() - ouvertA > 80) pop.hidden = true; });
+  addEventListener('click', e => { if (!e.target.isConnected) return; if (!e.target.closest('#zone-invite') && Date.now() - ouvertA > 80) pop.hidden = true; });
   addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
   addEventListener('blur', () => { pop.hidden = true; });      // un clic dans l'aperçu (une autre page) ne remonte pas jusqu'ici
 }

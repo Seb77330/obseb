@@ -40,7 +40,7 @@ ouvrirOnglet($(`.onglets [data-tab="${ongletDepart}"]`) ? ongletDepart : 'habill
   };
   plus.onclick = e => { e.stopPropagation(); ajouterAide(); pop.hidden = !pop.hidden; plus.setAttribute('aria-expanded', String(!pop.hidden)); maj(); };
   pop.querySelectorAll('[data-vers]').forEach(b => b.onclick = () => { fermer(); ouvrirOnglet(b.dataset.vers); window.scrollTo(0, 0); maj(); });
-  document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target) && !plus.contains(e.target)) fermer(); });
+  document.addEventListener('click', e => { if (!e.target.isConnected) return; if (!pop.hidden && !pop.contains(e.target) && !plus.contains(e.target)) fermer(); });
   function maj() {
     const actif = caches.find(b => b.classList.contains('actif'));
     plus.classList.toggle('actif', !!actif && !document.body.classList.contains('volet-plateau'));

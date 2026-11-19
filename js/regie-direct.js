@@ -151,6 +151,6 @@ btnDirect.onclick = e => {
   ouvrir();
 };
 pop.addEventListener('click', e => e.stopPropagation());   // les boutons du menu se redessinent : le clic ne doit pas le fermer
-document.addEventListener('click', e => { if (!pop.hidden && !e.target.closest('.direct-zone')) pop.hidden = true; });
+document.addEventListener('click', e => { if (!e.target.isConnected) return; if (!pop.hidden && !e.target.closest('.direct-zone')) pop.hidden = true; });
 setInterval(() => { majDirect(); if (!pop.hidden && etat.direct) { const h = pop.querySelector('h4'); if (h) h.textContent = `En direct depuis ${hms(Date.now() - etat.direct.debut)}`; } }, 1000);
 majDirect();

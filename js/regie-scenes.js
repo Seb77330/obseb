@@ -160,7 +160,7 @@ $('#se-suppr').onclick = () => {
   fermerEditionScene(); envoyer();
   toast(`Scène « ${p.nom} » supprimée`);
 };
-addEventListener('click', e => { if (planEdite && !e.target.closest('#scene-edit') && !e.target.closest('.sc-mod') && !e.target.closest('#sc-plus')) fermerEditionScene(); });
+addEventListener('click', e => { if (!e.target.isConnected) return; if (planEdite && !e.target.closest('#scene-edit') && !e.target.closest('.sc-mod') && !e.target.closest('#sc-plus')) fermerEditionScene(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && planEdite) fermerEditionScene(); });
 
 /* ----- Clavier : 1 à 9 pour les scènes (dans l'ordre des boutons), une lettre par cadrage ----- */

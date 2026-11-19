@@ -108,7 +108,7 @@
     pop.hidden = !pop.hidden;
     if (!pop.hidden) dessiner();
   };
-  addEventListener('click', e => { if (!pop.hidden && !e.target.closest('#rec-pop') && !e.target.closest('#btn-rec')) pop.hidden = true; });
+  addEventListener('click', e => { if (!e.target.isConnected) return; if (!pop.hidden && !e.target.closest('#rec-pop') && !e.target.closest('#btn-rec')) pop.hidden = true; });
   addEventListener('keydown', e => { if (e.key === 'Escape') pop.hidden = true; });
 
   function majBouton() {

@@ -38,7 +38,7 @@
     const bouton = place.querySelector('.compte-bouton'), volet = place.querySelector('.compte-volet');
     const ouvrir = oui => { volet.hidden = !oui; bouton.setAttribute('aria-expanded', oui); };
     bouton.onclick = e => { e.stopPropagation(); ouvrir(volet.hidden); };
-    document.addEventListener('click', e => { if (!place.contains(e.target)) ouvrir(false); });
+    document.addEventListener('click', e => { if (!e.target.isConnected) return; if (!place.contains(e.target)) ouvrir(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') ouvrir(false); });
     volet.onclick = async e => {
       const a = e.target.closest('[data-action]'); if (!a) return;
