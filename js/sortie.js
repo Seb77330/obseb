@@ -459,22 +459,52 @@ function gererChat() {
   const b = $('#chat-bulle .cb-boite'); b.classList.remove('entree'); void b.offsetWidth; b.classList.add('entree');
 }
 
-/* ----- Code QR posé dans un coin (onglet QR de la régie) ----- */
-let qrAffiche = '';
+/* ----- Codes QR posés dans les coins (onglet QR de la régie) : jusqu'à quatre, un par coin ----- */
+const qrDessines = new Map();      // coin -> élément affiché
 function gererQR() {
-  const q = etat && etat.qr, el = $('#qr-ecran');
-  const svg = q && q.lien ? (qrAffiche === q.lien + q.ts ? 'x' : svgQR(q.lien)) : '';
-  const coin = q && ['hg', 'hd', 'bg', 'bd'].includes(q.coin) ? q.coin : 'hd';
-  el.classList.toggle('cachee', !svg);
-  for (const c of ['hg', 'hd', 'bg', 'bd']) document.body.classList.toggle('qr-' + c, !!svg && c === coin);
-  if (!svg) { qrAffiche = ''; return; }
-  el.dataset.coin = coin;
-  el.dataset.taille = ['p', 'm', 'g'].includes(q.taille) ? q.taille : 'm';
-  el.querySelector('.qr-texte').textContent = String(q.titre || '').slice(0, 40);
-  if (svg === 'x') return;                        // même code : on ne le redessine pas
-  qrAffiche = q.lien + q.ts;
-  el.querySelector('.qr-code').innerHTML = svg;
-  const c = el.querySelector('.qr-carte'); c.classList.remove('entree'); void c.offsetWidth; c.classList.add('entree');
+  const brut = etat && (Array.isArray(etat.qrs) ? etat.qrs : etat.qr ? [etat.qr] : []);
+  const liste = [], pris = new Set();
+  for (const q of brut || []) {
+    if (!q || !q.lien) continue;
+    const coin = ['hg', 'hd', 'bg', 'bd'].includes(q.coin) ? q.coin : 'hd';
+    if (pris.has(coin)) continue;
+    pris.add(coin); liste.push([coin, q]);
+  }
+  for (const c of ['hg', 'hd', 'bg', 'bd']) document.body.classList.toggle('qr-' + c, pris.has(c));
+  // pendant le quiz, le code « Jouer avec nous » se range dans le panneau de la question (les coins sont cachés)
+  const jouer = liste.find(([, q]) => q.jouer), zj = $('#qz-jouer');
+  zj.hidden = !jouer;
+  if (jouer && zj.dataset.lien !== jouer[1].lien) { zj.dataset.lien = jouer[1].lien; $('#qzj-code').innerHTML = svgQR(jouer[1].lien); ajusterQuiz(); }
+  if (!jouer) zj.dataset.lien = '';
+  // les coins libérés : le code s'efface puis disparaît
+  for (const [coin, el] of qrDessines) if (!pris.has(coin)) {
+    qrDessines.delete(coin);
+    el.classList.add('cachee'); setTimeout(() => el.remove(), 400);
+  }
+  for (const [coin, q] of liste) {
+    let el = qrDessines.get(coin);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'qr-ecran cachee';
+      el.innerHTML = '<div class="qr-carte"><div class="qr-code"></div><div class="qr-texte"></div></div>';
+      $('#qr-zone').appendChild(el);
+      qrDessines.set(coin, el);
+      void el.offsetWidth;
+    }
+    el.dataset.coin = coin;
+    el.dataset.taille = ['p', 'm', 'g'].includes(q.taille) ? q.taille : 'm';
+    el.classList.toggle('jouer', !!q.jouer);
+    el.querySelector('.qr-texte').textContent = String(q.titre || '').slice(0, 40);
+    const cle = q.lien + '|' + q.ts;
+    if (el.dataset.cle !== cle) {                 // un autre code dans ce coin : on le dessine et il rejoue son arrivée
+      const svg = svgQR(q.lien);
+      if (!svg) continue;
+      el.dataset.cle = cle;
+      el.querySelector('.qr-code').innerHTML = svg;
+      const c = el.querySelector('.qr-carte'); c.classList.remove('entree'); void c.offsetWidth; c.classList.add('entree');
+    }
+    el.classList.remove('cachee');
+  }
 }
 
 /* ----- Tout le chat à l'écran : une colonne à côté des caméras ----- */
@@ -664,6 +694,28 @@ function gererQuiz() {
     } else res.textContent = '';
     ajusterQuiz();
   }
+  gererQuizPublic(a);
+}
+/* Les réponses du public (page « Jouer avec nous ») : rien tant que la régie ne les révèle pas,
+   puis « Le chat : 50 % de bonnes réponses (13 votes) » avec une barre qui se remplit */
+let publicAffiche = '';
+function gererQuizPublic(a) {
+  const p = a && a.public, box = $('#qz-public');
+  const cle = p && p.revele ? a.qid + '|' + p.n + '|' + p.pct : '';
+  if (cle === publicAffiche) return;
+  publicAffiche = cle;
+  box.hidden = !cle;
+  if (!cle) { $('#qzp-barre').style.width = '0%'; ajusterQuiz(); return; }
+  const pct = Math.max(0, Math.min(100, Math.round(+p.pct || 0))), n = Math.max(0, +p.n || 0);
+  $('#qzp-pct').textContent = n ? pct + ' %' : '';
+  box.querySelector('.qzp-txt').textContent = n ? 'de bonnes réponses' : 'n\'a pas encore voté';
+  $('#qzp-n').textContent = n ? `(${n.toLocaleString('fr-FR')} vote${n > 1 ? 's' : ''})` : '';
+  box.classList.toggle('bas', n > 0 && pct < 34);
+  box.classList.toggle('haut', pct >= 67);
+  $('#qzp-barre').style.width = '0%';
+  box.classList.remove('entree'); void box.offsetWidth; box.classList.add('entree');
+  setTimeout(() => { $('#qzp-barre').style.width = pct + '%'; }, 120);
+  ajusterQuiz();
 }
 let quizRevele = null, classementAffiche = null;
 const PERSONNE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5" r="3.2"/><path d="M1.5 15.5c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5z"/></svg>';
@@ -970,7 +1022,7 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));
-  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: /^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(Q.get('qimg') || '') ? Q.get('qimg') : null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: /^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(Q.get('qimg') || '') ? Q.get('qimg') : null, public: Q.get('qpub') ? { revele: true, pct: +Q.get('qpub').split(',')[0] || 0, n: +Q.get('qpub').split(',')[1] || 0 } : null }, style: Q.get('qstyle') || 'theme' };
   if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: (etat && etat.hote) || 'Alex', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('ststyle') === 'cinema') document.body.classList.add('st-cinema');   // démo : sous-titres façon film, sans boîte
@@ -978,7 +1030,7 @@ if (DEMO) {
   if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
   if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
-  if (Q.get('qr')) st.qr = { lien: 'https://seb77330.github.io/obseb/', titre: Q.get('qrtitre') ?? 'Abonne-toi à la chaîne', coin: Q.get('qr'), taille: Q.get('qrtaille') || 'm', ts: 1 };
+  if (Q.get('qr')) st.qr = { lien: 'https://seb77330.github.io/obseb/', titre: Q.get('qrtitre') ?? 'Abonne-toi à la chaîne', coin: Q.get('qr'), taille: Q.get('qrtaille') || 'm', ts: 1, jouer: Q.get('qrjouer') === '1' };
   if (Q.get('intro')) st.introStyle = Q.get('intro');
   if (Q.get('outro')) st.outroStyle = Q.get('outro');
   if (Q.get('compte')) { st.debutCompte = Date.now() - (+Q.get('ecoule') || 0) * 1000; st.fin = st.debutCompte + +Q.get('compte') * 1000; }

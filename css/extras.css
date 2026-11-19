@@ -1,36 +1,37 @@
-/* MESA : ce qu'on pose en plus sur l'image. Ici : le code QR (onglet QR de la régie). */
-#qr-ecran { position: absolute; z-index: 7; --t: 300px; transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
-#qr-ecran.cachee { opacity: 0; transform: scale(.8); }
-body.quiz-on #qr-ecran { opacity: 0; }
-#qr-ecran[data-taille="p"] { --t: 230px; } #qr-ecran[data-taille="g"] { --t: 390px; }
+/* MESA : ce qu'on pose en plus sur l'image. Ici : les codes QR (onglet QR de la régie), jusqu'à quatre. */
+.qr-ecran { position: absolute; z-index: 7; --t: 300px; transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
+.qr-ecran.cachee { opacity: 0; transform: scale(.8); }
+/* pendant le quiz, les codes des coins s'effacent ; « Jouer avec nous » passe dans le panneau de la question */
+body.quiz-on .qr-ecran { opacity: 0; }
+.qr-ecran[data-taille="p"] { --t: 230px; } .qr-ecran[data-taille="g"] { --t: 390px; }
 .qr-carte { position: relative; width: var(--t); box-sizing: border-box; padding: calc(var(--t) * .055) calc(var(--t) * .055) 0; background: #fff; border-radius: calc(var(--t) * .075); overflow: hidden; box-shadow: 0 0 0 5px var(--accent), 0 22px 54px rgba(0,0,0,.55); }
 .qr-code svg { display: block; width: 100%; height: auto; }
 .qr-texte { margin: calc(var(--t) * .045) calc(var(--t) * -.055) 0; padding: calc(var(--t) * .04) calc(var(--t) * .05) calc(var(--t) * .045); background: var(--accent); color: var(--bg); font: 700 calc(var(--t) * .088)/1.15 var(--font-body); text-align: center; overflow-wrap: anywhere; }
 .qr-texte:empty { padding: 0; height: calc(var(--t) * .055); background: #fff; margin-top: 0; }
-#qr-ecran .qr-carte.entree { animation: qr-pose .6s cubic-bezier(.2,1.4,.4,1) both; }
+.qr-ecran .qr-carte.entree { animation: qr-pose .6s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes qr-pose { 0% { opacity: 0; transform: scale(.4) rotate(-10deg); } 60% { opacity: 1; } 100% { transform: none; } }
 /* un trait de lumière passe sur le code toutes les quelques secondes : l'œil le remarque sans que ça clignote */
 .qr-carte::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.75) 50%, transparent 58%); transform: translateX(-120%); animation: qr-reflet 5s 1.2s ease-in-out infinite; }
 @keyframes qr-reflet { 0%, 72% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 
-#qr-ecran[data-coin="hg"] { left: 94px; top: 94px; transform-origin: 0 0; }
-#qr-ecran[data-coin="hd"] { right: 94px; top: 94px; transform-origin: 100% 0; }
-#qr-ecran[data-coin="bg"] { left: 94px; bottom: 208px; transform-origin: 0 100%; }
-#qr-ecran[data-coin="bd"] { right: 94px; bottom: 208px; transform-origin: 100% 100%; }
-body[data-scene="intro"] #qr-ecran[data-coin^="b"], body[data-scene="fin"] #qr-ecran[data-coin^="b"] { bottom: 94px; }
+.qr-ecran[data-coin="hg"] { left: 94px; top: 94px; transform-origin: 0 0; }
+.qr-ecran[data-coin="hd"] { right: 94px; top: 94px; transform-origin: 100% 0; }
+.qr-ecran[data-coin="bg"] { left: 94px; bottom: 208px; transform-origin: 0 100%; }
+.qr-ecran[data-coin="bd"] { right: 94px; bottom: 208px; transform-origin: 100% 100%; }
+body[data-scene="intro"] .qr-ecran[data-coin^="b"], body[data-scene="fin"] .qr-ecran[data-coin^="b"] { bottom: 94px; }
 /* intro et outro : le titre prend toute la largeur au milieu, le code du haut se fait plus petit pour ne pas le toucher */
-body[data-scene="intro"]:not(.vertical) #qr-ecran[data-coin^="h"]:not(.cachee), body[data-scene="fin"]:not(.vertical) #qr-ecran[data-coin^="h"]:not(.cachee) { top: 60px; transform: scale(.76); }
-body[data-scene="intro"]:not(.vertical) #qr-ecran[data-coin="hg"], body[data-scene="fin"]:not(.vertical) #qr-ecran[data-coin="hg"] { left: 60px; }
-body[data-scene="intro"]:not(.vertical) #qr-ecran[data-coin="hd"], body[data-scene="fin"]:not(.vertical) #qr-ecran[data-coin="hd"] { right: 60px; }
-body[data-scene="watch"]:not(.vertical) #qr-ecran[data-coin^="b"] { bottom: 290px; }
+body[data-scene="intro"]:not(.vertical) .qr-ecran[data-coin^="h"]:not(.cachee), body[data-scene="fin"]:not(.vertical) .qr-ecran[data-coin^="h"]:not(.cachee) { top: 60px; transform: scale(.76); }
+body[data-scene="intro"]:not(.vertical) .qr-ecran[data-coin="hg"], body[data-scene="fin"]:not(.vertical) .qr-ecran[data-coin="hg"] { left: 60px; }
+body[data-scene="intro"]:not(.vertical) .qr-ecran[data-coin="hd"], body[data-scene="fin"]:not(.vertical) .qr-ecran[data-coin="hd"] { right: 60px; }
+body[data-scene="watch"]:not(.vertical) .qr-ecran[data-coin^="b"] { bottom: 290px; }
 /* le logo de la chaîne laisse sa place si le code arrive dans son coin */
 [data-logo="hg"] body.qr-hg #logo-coin, [data-logo="hd"] body.qr-hd #logo-coin { opacity: 0; }
 
 /* vertical : dans la zone des caméras, loin des boutons et des commentaires de l'appli */
-body.vertical #qr-ecran { --t: 250px; }
-body.vertical #qr-ecran[data-taille="p"] { --t: 190px; } body.vertical #qr-ecran[data-taille="g"] { --t: 320px; }
-body.vertical #qr-ecran[data-coin="hg"] { left: 58px; top: 418px; }
-body.vertical #qr-ecran[data-coin="hd"] { right: 138px; top: 418px; }
-body.vertical #qr-ecran[data-coin="bg"] { left: 58px; bottom: 618px; }
-body.vertical #qr-ecran[data-coin="bd"] { right: 138px; bottom: 618px; }
-body.sans-decor #qr-ecran { display: none; }
+body.vertical .qr-ecran { --t: 250px; }
+body.vertical .qr-ecran[data-taille="p"] { --t: 190px; } body.vertical .qr-ecran[data-taille="g"] { --t: 320px; }
+body.vertical .qr-ecran[data-coin="hg"] { left: 58px; top: 418px; }
+body.vertical .qr-ecran[data-coin="hd"] { right: 138px; top: 418px; }
+body.vertical .qr-ecran[data-coin="bg"] { left: 58px; bottom: 618px; }
+body.vertical .qr-ecran[data-coin="bd"] { right: 138px; bottom: 618px; }
+body.sans-decor .qr-ecran { display: none; }

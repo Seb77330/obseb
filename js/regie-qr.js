@@ -1,6 +1,6 @@
 /* MESA : régie, onglet QR et fenêtre « Inviter ».
    Onglet QR : tes codes (un lien + un petit texte) sont gardés dans ce navigateur, pour tous tes lives.
-   Un clic en pose un à l'écran, dans le coin choisi ; la sortie du live redessine le code à partir du lien. */
+   Un clic en pose un à l'écran (jusqu'à quatre, un par coin) ; la sortie redessine chaque code à partir de son lien. */
 'use strict';
 
 const CLE_QR = 'studioSeb:qr';
@@ -8,7 +8,11 @@ let codesQR = [];
 try { const l = JSON.parse(localStorage.getItem(CLE_QR) || '[]'); if (Array.isArray(l)) codesQR = l.filter(c => c && typeof c.lien === 'string').slice(0, 30); } catch (e) { /* rien */ }
 const sauverQR = () => { try { localStorage.setItem(CLE_QR, JSON.stringify(codesQR)); } catch (e) { /* rien */ } };
 etat.qrPlace = Object.assign({ coin: 'hd', taille: 'm', duree: 30 }, etat.qrPlace || {});
-if (etat.qr && !codesQR.some(c => c.lien === etat.qr.lien)) etat.qr = null;      // un code resté affiché d'un ancien live
+/* Plusieurs codes à l'écran en même temps (un par coin). L'ancien format (un seul code) est repris. */
+if (!Array.isArray(etat.qrs)) etat.qrs = etat.qr ? [Object.assign({ id: 'ancien' }, etat.qr)] : [];
+etat.qr = undefined;
+etat.qrs = etat.qrs.filter(q => q && (q.jouer || codesQR.some(c => c.lien === q.lien)));      // codes restés affichés d'un ancien live
+const COINS = ['hd', 'hg', 'bd', 'bg'];
 
 /* « youtube.com/@moi » -> « https://youtube.com/@moi » ; un texte sans lien (numéro, mot) reste tel quel */
 function lienQR(t) {
@@ -42,42 +46,77 @@ for (const id of ['#qr-lien', '#qr-titre']) $(id).onkeydown = e => { if (e.key =
   $$('#qr-idees button').forEach(b => b.onclick = () => { const [, lien, titre] = idees[+b.dataset.i]; ajouterQR(lien, titre); });
 }
 
-function afficherQR(c) {
+/* Le code « Jouer avec nous » du quiz (voir regie-public.js) se range en tête de liste quand le public peut jouer */
+const codeJouer = () => (typeof lienJouer === 'function' && lienJouer()) ? { id: 'jouer', lien: lienJouer(), titre: 'Joue avec nous au quiz', jouer: true } : null;
+const codesListe = () => { const j = codeJouer(); return j ? [j, ...codesQR] : codesQR; };
+const qrActif = c => etat.qrs.find(q => (c.jouer ? q.jouer : !q.jouer && q.lien === c.lien));
+const minuteursQR = new Map();
+
+function afficherQR(c, coinVoulu) {
+  if (qrActif(c)) return;
   const p = etat.qrPlace;
-  etat.qr = { lien: c.lien, titre: c.titre, coin: p.coin, taille: p.taille, ts: Date.now() };
-  clearTimeout(afficherQR.t);
-  if (p.duree) afficherQR.t = setTimeout(masquerQR, p.duree * 1000);
+  // le coin choisi ; s'il est déjà pris, le premier coin libre ; tout est pris : on remplace celui du coin choisi
+  let coin = coinVoulu || p.coin;
+  if (etat.qrs.some(q => q.coin === coin)) coin = [coin, ...COINS].find(k => !etat.qrs.some(q => q.coin === k)) || coin;
+  etat.qrs = etat.qrs.filter(q => q.coin !== coin);
+  const q = { id: c.id, lien: c.lien, titre: c.titre, coin, taille: p.taille, ts: Date.now(), jouer: !!c.jouer };
+  etat.qrs.push(q);
+  // le code « Jouer » reste tant que tu ne le retires pas ; les autres se retirent après le temps choisi
+  if (p.duree && !c.jouer) minuteursQR.set(q.id, setTimeout(() => masquerQR(q), p.duree * 1000));
   envoyer(); majQR();
 }
-function masquerQR() { clearTimeout(afficherQR.t); if (!etat.qr) return; etat.qr = null; envoyer(); majQR(); }
-$('#qr-masquer').onclick = masquerQR;
+function masquerQR(q) {
+  if (!q) return;
+  clearTimeout(minuteursQR.get(q.id)); minuteursQR.delete(q.id);
+  const avant = etat.qrs.length;
+  etat.qrs = etat.qrs.filter(x => x !== q);
+  if (etat.qrs.length !== avant) { envoyer(); majQR(); }
+}
+function masquerTousQR() { for (const t of minuteursQR.values()) clearTimeout(t); minuteursQR.clear(); if (!etat.qrs.length) return; etat.qrs = []; envoyer(); majQR(); }
+$('#qr-masquer').onclick = masquerTousQR;
+/* pour le quiz : poser ou retirer le code « Jouer avec nous » */
+function qrJouer(montrer) { const j = codeJouer(); if (!j) return; const a = qrActif(j); if (montrer && !a) afficherQR(j); else if (!montrer && a) masquerQR(a); }
+const qrJouerVisible = () => etat.qrs.some(q => q.jouer);
 
+const COIN_NOM = { hg: 'en haut à gauche', hd: 'en haut à droite', bg: 'en bas à gauche', bd: 'en bas à droite' };
 function majQR() {
   const box = $('#qr-liste');
-  box.innerHTML = codesQR.length ? '' : '<div class="vide">Ajoute ton premier code : ta chaîne, un événement, une billetterie…</div>';
-  for (const c of codesQR) {
-    const actif = !!etat.qr && etat.qr.lien === c.lien;
+  const liste = codesListe();
+  box.innerHTML = liste.length ? '' : '<div class="vide">Ajoute ton premier code : ta chaîne, un événement, une billetterie…</div>';
+  for (const c of liste) {
+    const q = qrActif(c);
     const el = document.createElement('div');
-    el.className = 'qr-item' + (actif ? ' actif' : '');
+    el.className = 'qr-item' + (q ? ' actif' : '') + (c.jouer ? ' jouer' : '');
     el.innerHTML = `<div class="qr-mini">${svgQR(c.lien)}</div>
-      <div class="qr-info"><input type="text" class="qr-nom" maxlength="40" placeholder="Texte sous le code" value="${esc(c.titre)}" title="Le texte affiché sous le code"><span title="${esc(c.lien)}">${esc(courtQR(c.lien))}</span></div>
-      <button class="${actif ? '' : 'primaire '}petit qr-voir">${actif ? 'Masquer' : 'Afficher'}</button>
-      <button class="petit qr-oter" title="Retirer ce code de ta liste">✕</button>`;
-    el.querySelector('.qr-voir').onclick = () => actif ? masquerQR() : afficherQR(c);
-    el.querySelector('.qr-nom').onchange = e => { c.titre = e.target.value.trim().slice(0, 40); sauverQR(); if (actif) { etat.qr.titre = c.titre; envoyer(); } };
-    el.querySelector('.qr-oter').onclick = () => { if (actif) masquerQR(); codesQR = codesQR.filter(x => x !== c); sauverQR(); majQR(); };
+      <div class="qr-info">${c.jouer ? '<b class="qr-jouer-nom">Jouer avec nous (quiz)</b>' : `<input type="text" class="qr-nom" maxlength="40" placeholder="Texte sous le code" value="${esc(c.titre)}" title="Le texte affiché sous le code">`}<span title="${esc(c.lien)}">${c.jouer ? 'Le public répond depuis son téléphone' : esc(courtQR(c.lien))}</span>
+      ${q ? `<span class="qr-mini-coins" role="group" aria-label="Coin de ce code">${['hg', 'hd', 'bg', 'bd'].map(k => `<button data-k="${k}" class="${q.coin === k ? 'actif' : ''}" title="Mettre ce code ${COIN_NOM[k]}"></button>`).join('')}</span>` : ''}</div>
+      <button class="${q ? '' : 'primaire '}petit qr-voir">${q ? 'Masquer' : 'Afficher'}</button>
+      ${c.jouer ? '' : '<button class="petit qr-oter" title="Retirer ce code de ta liste">✕</button>'}`;
+    el.querySelector('.qr-voir').onclick = () => q ? masquerQR(q) : afficherQR(c);
+    const nomEl = el.querySelector('.qr-nom');
+    if (nomEl) nomEl.onchange = e => { c.titre = e.target.value.trim().slice(0, 40); sauverQR(); if (q) { q.titre = c.titre; envoyer(); } };
+    const oter = el.querySelector('.qr-oter');
+    if (oter) oter.onclick = () => { if (q) masquerQR(q); codesQR = codesQR.filter(x => x !== c); sauverQR(); majQR(); };
+    // changer le coin d'un code déjà à l'écran : s'il y en a un autre là, ils échangent leur place
+    el.querySelectorAll('.qr-mini-coins button').forEach(b => b.onclick = () => {
+      const k = b.dataset.k, autre = etat.qrs.find(x => x !== q && x.coin === k);
+      if (autre) autre.coin = q.coin;
+      q.coin = k; envoyer(); majQR();
+    });
     box.appendChild(el);
   }
-  $('#qr-masquer').disabled = !etat.qr;
-  $('#qr-point').hidden = !etat.qr;
+  $('#qr-masquer').disabled = !etat.qrs.length;
+  $('#qr-masquer').textContent = etat.qrs.length > 1 ? 'Tout masquer' : 'Masquer';
+  $('#qr-point').hidden = !etat.qrs.length;
   $$('#qr-coins button').forEach(b => b.classList.toggle('actif', b.dataset.coin === etat.qrPlace.coin));
   $$('#qr-tailles button').forEach(b => b.classList.toggle('actif', b.dataset.taille === etat.qrPlace.taille));
+  if (typeof majPublic === 'function') majPublic();
 }
-/* Changer de coin ou de taille déplace aussi le code déjà à l'écran */
-$$('#qr-coins button').forEach(b => b.onclick = () => { etat.qrPlace.coin = b.dataset.coin; if (etat.qr) etat.qr.coin = b.dataset.coin; envoyer(); majQR(); });
-$$('#qr-tailles button').forEach(b => b.onclick = () => { etat.qrPlace.taille = b.dataset.taille; if (etat.qr) etat.qr.taille = b.dataset.taille; envoyer(); majQR(); });
+/* Le coin choisi vaut pour le prochain code affiché ; la taille change tous les codes à l'écran */
+$$('#qr-coins button').forEach(b => b.onclick = () => { etat.qrPlace.coin = b.dataset.coin; majQR(); });
+$$('#qr-tailles button').forEach(b => b.onclick = () => { etat.qrPlace.taille = b.dataset.taille; etat.qrs.forEach(q => { q.taille = b.dataset.taille; }); envoyer(); majQR(); });
 $('#qr-duree').value = String(etat.qrPlace.duree);
-$('#qr-duree').onchange = e => { etat.qrPlace.duree = +e.target.value; if (etat.qr) { clearTimeout(afficherQR.t); if (etat.qrPlace.duree) afficherQR.t = setTimeout(masquerQR, etat.qrPlace.duree * 1000); } envoyer(); };
+$('#qr-duree').onchange = e => { etat.qrPlace.duree = +e.target.value; envoyer(); };
 majQR();
 
 /* ----- Inviter : le lien, un code à scanner, un message tout prêt ----- */

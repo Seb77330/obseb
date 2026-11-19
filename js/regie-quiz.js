@@ -91,7 +91,7 @@ function afficherQuiz() {
       banque = banque.filter(x => x.id !== q.id); sauverBanque();
       if (q.imgId) { imgSuppr(q.imgId); miniatures.delete(q.imgId); }
       // une question supprimée disparaît aussi de l'écran
-      if (qz.active && qz.active.qid === q.id) qz.active = null;
+      if (qz.active && qz.active.qid === q.id) { qz.active = null; if (typeof pubRetire === 'function') pubRetire(); }
       envoyer(); afficherQuiz();
     };
     box.appendChild(el);
@@ -106,6 +106,7 @@ async function lancerQuestion(q) {
   etat.quiz.active = { qid: q.id, q: q.q, choix: q.choix, duree: q.duree, debut: Date.now(), revele: false, bonne: null, resultats: [], img: img || null };
   etat.quiz.afficherScores = false;
   $('#qz-scores').textContent = 'Classement';
+  if (typeof pubQuestion === 'function') pubQuestion(etat.quiz.active);     // le public joue aussi (regie-public.js)
   envoyer(); afficherQuiz();
   toast('Question à l\'écran');
 }
@@ -187,9 +188,10 @@ $('#qz-reveler').onclick = () => {
   });
   a.votes = a.choix.map((_, i) => reps.filter(([, r]) => r.choix === i).length);
   a.revele = true; a.bonne = q.bonne;
+  if (typeof pubRevele === 'function') pubRevele();
   envoyer(); afficherQuiz();
 };
-$('#qz-fermer').onclick = () => { etat.quiz.active = null; envoyer(); afficherQuiz(); };
+$('#qz-fermer').onclick = () => { etat.quiz.active = null; if (typeof pubRetire === 'function') pubRetire(); envoyer(); afficherQuiz(); };
 $('#qz-scores').onclick = () => {
   etat.quiz.afficherScores = !etat.quiz.afficherScores;
   if (etat.quiz.afficherScores) etat.quiz.classement = Object.entries(etat.quiz.scores)

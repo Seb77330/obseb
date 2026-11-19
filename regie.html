@@ -372,6 +372,21 @@
   #vue-invite.glisse #vi-cadre { pointer-events: none; }
   .qz-direct { background: var(--ui-panel2); border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: grid; gap: 8px; }
   .qz-direct.actif { border-color: var(--ui-red); }
+  .qzp-bloc { border: 1px solid var(--ui-line); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: grid; gap: 6px; }
+  .qzp-bloc .aide { margin: 0; }
+  .qzp-titre { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .qzp-titre input { width: auto; margin: 0; }
+  #qzp-reglages { display: grid; gap: 8px; margin-top: 4px; }
+  #qzp-reglages[hidden] { display: none; }
+  .qzp-marge { display: flex; align-items: center; gap: 8px; }
+  .qzp-marge select { width: auto; margin-left: auto; }
+  .qzp-statut:empty { display: none; }
+  .qzp-statut { color: var(--ui-text); font-weight: 600; }
+  .qr-item.jouer { border-color: var(--ui-accent); }
+  .qr-jouer-nom { font-size: 13.5px; padding: 3px 7px 0; }
+  .qr-info .qr-mini-coins { padding: 0; margin-left: 7px; overflow: visible; display: inline-grid; grid-template-columns: 10px 10px; gap: 3px; margin-top: 4px; }
+  .qr-mini-coins button { width: 10px; height: 10px; min-height: 0; padding: 0; border-radius: 2px; border: 1px solid var(--ui-line); background: transparent; cursor: pointer; }
+  .qr-mini-coins button.actif { background: var(--ui-accent); border-color: var(--ui-accent); }
   .qz-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .qz-cats button { padding: 5px 11px; font-size: 13px; border-radius: 999px; }
   .qz-cats button.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
@@ -829,6 +844,22 @@
             <button class="petit" id="qz-reveler" title="Révéler la bonne réponse">Révéler</button>
             <button class="petit" id="qz-fermer" title="Retirer la question de l'écran">Retirer</button>
             <button class="petit" id="qz-scores" title="Afficher ou masquer le classement">Classement</button>
+            <button class="petit" id="qz-reveler-public" hidden title="Affiche à l'écran le pourcentage de bonnes réponses du chat et le nombre de votes">Révéler le chat</button>
+          </div>
+        </div>
+
+        <div class="qzp-bloc">
+          <label class="qzp-titre"><input type="checkbox" id="qzp-actif"> <b>Le public joue aussi</b></label>
+          <p class="aide">Un code QR « Jouer avec nous » : tes spectateurs répondent depuis leur téléphone, sans donner leur nom.</p>
+          <div id="qzp-reglages" hidden>
+            <div class="ligne-boutons">
+              <button class="petit primaire" id="qzp-qr">Afficher le QR</button>
+              <button class="petit" id="qzp-copier" title="Pour le coller dans le chat de ton live">Copier le lien</button>
+              <button class="petit" id="qzp-ouvrir" title="Ouvre la page que voient tes spectateurs">Essayer</button>
+            </div>
+            <label class="aide qzp-marge" title="Le direct arrive chez les spectateurs avec quelques secondes de retard (YouTube : 5 à 20 s). Le chat garde ce temps en plus pour répondre.">Temps en plus pour le chat
+              <select id="qzp-marge"><option value="0">aucun</option><option value="5">5 s</option><option value="10">10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label>
+            <div class="aide qzp-statut" id="qzp-statut"></div>
           </div>
         </div>
 
@@ -1127,9 +1158,10 @@
 <script src="js/regie-sources.js?v=4a48dd67"></script>
 <script src="js/regie-modes.js?v=19899f78"></script>
 <script src="js/regie-musique.js?v=56892513"></script>
-<script src="js/regie-quiz.js?v=0c5ee75f"></script>
+<script src="js/regie-quiz.js?v=500e57ff"></script>
 <script src="js/regie-essai.js?v=cc78e443"></script>
-<script src="js/regie-qr.js?v=fdb05af4"></script>
+<script src="js/regie-qr.js?v=2cc8d871"></script>
+<script src="js/regie-public.js?v=05e42570"></script>
 <script src="js/regie-chat.js?v=8c15b056"></script>
 <script src="js/regie-comptes.js?v=23f74648"></script>
 <script src="js/whip.js?v=92db7912"></script>

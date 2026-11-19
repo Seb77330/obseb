@@ -10,8 +10,8 @@
 <link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="img/mesa-icone-180.png">
 <link rel="stylesheet" href="css/scene.css?v=977d7214">
-<link rel="stylesheet" href="css/quiz.css?v=152fd9ca">
-<link rel="stylesheet" href="css/extras.css?v=db1ecadc">
+<link rel="stylesheet" href="css/quiz.css?v=36629313">
+<link rel="stylesheet" href="css/extras.css?v=cc70c5b3">
 <link rel="stylesheet" href="css/watch.css?v=46427282">
 <link rel="stylesheet" href="css/habillages.css?v=3b0b3d2a">
 <link rel="stylesheet" href="css/diffusion.css?v=3ea47f53">
@@ -45,7 +45,7 @@
 
     <section id="quiz" class="couche cachee">
       <div class="qz-panneau">
-        <div class="qz-tete"><span class="qz-tag">Quiz</span><span class="qz-rep" id="qz-rep"></span><span class="qz-chrono"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="fond" cx="22" cy="22" r="19"/><circle class="reste" id="qz-anneau" cx="22" cy="22" r="19"/></svg><b class="qz-temps" id="qz-temps"></b></span></div>
+        <div class="qz-tete"><span class="qz-tag">Quiz</span><span class="qz-rep" id="qz-rep"></span><span class="qz-jouer" id="qz-jouer" hidden><span class="qzj-txt"><b>Joue avec nous</b><small>Scanne avec ton téléphone</small></span><span class="qzj-code" id="qzj-code"></span></span><span class="qz-chrono"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="fond" cx="22" cy="22" r="19"/><circle class="reste" id="qz-anneau" cx="22" cy="22" r="19"/></svg><b class="qz-temps" id="qz-temps"></b></span></div>
         <div class="qz-corps">
           <img id="qz-img" alt="" hidden>
           <div class="qz-texte">
@@ -55,6 +55,7 @@
         </div>
         <div class="qz-barre"><i id="qz-barre"></i></div>
         <div class="qz-res" id="qz-res"></div>
+        <div class="qz-public" id="qz-public" hidden><div class="qzp-ligne"><span class="qzp-qui">Le chat</span><b class="qzp-pct" id="qzp-pct"></b><span class="qzp-txt">de bonnes réponses</span><em class="qzp-n" id="qzp-n"></em></div><div class="qzp-barre"><i id="qzp-barre"></i></div></div>
       </div>
     </section>
     <section id="classement" class="couche cachee">
@@ -74,7 +75,7 @@
     <div id="defilant" class="cachee"><div class="piste"></div></div>
     <div id="chat-fil" class="cachee"></div>
     <div id="chat-bulle" class="cachee"><div class="cb-boite"><div class="cb-tete"><i id="cb-p"></i><b id="cb-auteur"></b></div><div id="cb-texte"></div></div></div>
-    <div id="qr-ecran" class="cachee"><div class="qr-carte"><div class="qr-code"></div><div class="qr-texte"></div></div></div>
+    <div id="qr-zone"></div>
     <div id="logo-coin" class="cachee"></div>
     <div id="bandeau" class="cachee">
       <div class="logo" id="logo"></div>
@@ -90,7 +91,7 @@
 <script src="js/common.js?v=a896b6c9"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
 <script src="js/habillages.js?v=c066d580"></script>
-<script src="js/sortie.js?v=c53b45c1"></script>
+<script src="js/sortie.js?v=ba05f4a3"></script>
 <script src="js/whip.js?v=92db7912"></script>
 <script src="js/diffusion.js?v=4531c71d"></script>
 </body>
