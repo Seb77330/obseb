@@ -42,12 +42,22 @@ const CLE = 'studioSeb:' + (CAM_DISTANTE ? 'camdist:' : 'invite:') + session.roo
 let moi = null;
 try { moi = JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { /* rien */ }
 if (moi && moi.nom) $('#prenom').value = moi.nom;
+// les conditions d'utilisation : l'invité les accepte une fois (retenu pour ce live) ; inutile pour ta propre vue d'essai ou ton téléphone-caméra
+const caseCgu = $('#cgu-ok');
+if (ESSAI || CAM_DISTANTE) { $('#cgu-case').hidden = true; caseCgu.required = false; caseCgu.checked = true; }
+else if (moi && moi.cgu) caseCgu.checked = true;
+caseCgu.addEventListener('invalid', () => $('#cgu-case').classList.add('oubli'));
+const majCgu = () => caseCgu.setCustomValidity(caseCgu.checked ? '' : 'Coche la case pour accepter les conditions d\'utilisation.');
+majCgu();
+caseCgu.addEventListener('change', () => { $('#cgu-case').classList.remove('oubli'); majCgu(); });
 
 $('#form').onsubmit = e => {
   e.preventDefault();
   const nom = $('#prenom').value.trim();
   if (!nom) return;
+  if (caseCgu.required && !caseCgu.checked) { $('#cgu-case').classList.add('oubli'); return; }
   if (!moi || moi.nom !== nom) moi = { nom, id: CAM_DISTANTE ? `${session.room}_rc_${rnd(6)}` : `${session.room}_${slug(nom, 8)}${rnd(4)}` };
+  if (caseCgu.checked) moi.cgu = Date.now();
   try { localStorage.setItem(CLE, JSON.stringify(moi)); } catch (err) { /* rien */ }
   entrer();
 };

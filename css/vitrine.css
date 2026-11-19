@@ -6,6 +6,8 @@
 body:not([data-page="vitrine"]) #vitrine,
 body:not([data-page="vitrine"]) #formules,
 body:not([data-page="vitrine"]) #btn-mes-lives,
+body:not([data-page="vitrine"]) #btn-formules,
+body[data-page="espace"].a-des-lives #btn-nouveau,
 body[data-page="vitrine"] .accueil-onglets,
 body[data-page="vitrine"] .vue-accueil,
 body[data-page="vitrine"] .espace-tete,
@@ -144,7 +146,26 @@ body[data-page="espace"] .accueil-onglets { margin-bottom: 22px; }
 .session-nouveau b { font-size: 17px; font-weight: 600; }
 .session-nouveau small { color: var(--ui-muted); font-size: 13px; }
 /* chaque carte prend la couleur de son thème au survol */
-body[data-page="espace"] .cartes { align-items: start; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 16px; }
+/* les cartes sur une seule ligne, qui défilent vers la droite (souris, molette, doigt, flèches) */
+.rail-lives { position: relative; }
+body[data-page="espace"] .cartes { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding: 0 12px;
+  margin: 0 -12px; padding: 10px 12px 18px; scrollbar-width: thin; cursor: grab; overscroll-behavior-x: contain; }
+body[data-page="espace"] .cartes.glisse { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+body[data-page="espace"] .cartes.glisse * { pointer-events: none; }
+body[data-page="espace"] .cartes > * { flex: 0 0 312px; scroll-snap-align: start; }
+body[data-page="espace"] .cartes > .session-nouveau { flex-basis: 220px; align-self: stretch; min-height: 0; }
+.rail-fleche { position: absolute; top: 120px; z-index: 4; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%;
+  background: color-mix(in srgb, var(--ui-panel) 88%, transparent); border: 1px solid var(--ui-line2); color: var(--ui-text); box-shadow: 0 10px 30px -10px rgba(0,0,0,.6); backdrop-filter: blur(8px); transition: opacity .2s, transform .2s; }
+.rail-fleche:hover { transform: scale(1.06); border-color: var(--ui-accent); }
+.rail-fleche svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rail-fleche.g { left: 2px; } .rail-fleche.d { right: 2px; }
+.rail-fleche[hidden] { display: none; }
+@media (max-width: 700px) { .rail-fleche { display: none; } body[data-page="espace"] .cartes > * { flex-basis: 82%; } body[data-page="espace"] .cartes > .session-nouveau { flex-basis: 60%; } }
+/* le menu « ••• » s'ouvre par-dessus la carte, vers le haut : rien ne défile */
+body[data-page="espace"] .session { position: relative; }
+body[data-page="espace"] .session .plus { position: static; }
+body[data-page="espace"] .session .plus .menu { top: 10px; bottom: auto; left: 10px; right: 10px; width: auto; max-height: calc(100% - 76px); overflow-y: auto; box-shadow: 0 24px 60px -10px rgba(0,0,0,.7); animation: menu-pose .18s ease-out; }
+@keyframes menu-pose { from { opacity: 0; transform: translateY(6px) scale(.98); } }
 .session { --c: var(--ui-accent); transition: border-color .2s, transform .2s, box-shadow .2s; }
 .session:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--ui-line)); transform: translateY(-3px); box-shadow: 0 26px 50px -32px color-mix(in srgb, var(--c) 70%, transparent); }
 @media (prefers-reduced-motion: reduce) { .session:hover, .session-nouveau:hover, .v-theme:hover { transform: none; } }
@@ -179,3 +200,7 @@ body[data-page="espace"] #bloc-vide .trois-pas { margin-top: 36px; }
   .accueil-onglets { overflow-x: auto; } .accueil-onglets button { white-space: nowrap; font-size: 15px; }
   .espace-tete { margin-bottom: 14px; }
 }
+body[data-page="espace"] .session .plus .menu { padding: 5px; }
+body[data-page="espace"] .session .plus .menu .menu-titre { padding: 4px 10px 2px; }
+body[data-page="espace"] .session .plus .menu button { padding: 6px 10px; }
+body[data-page="espace"] .session .plus .menu hr { margin: 3px 4px; }

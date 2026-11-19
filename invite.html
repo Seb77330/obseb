@@ -63,6 +63,11 @@
 <style>
   .etapes { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
   .etapes li { margin: 4px 0; }
+  /* l'invité accepte les conditions d'utilisation avant d'entrer (pas de compte pour lui) */
+  .cgu-case { display: flex; justify-content: center; align-items: flex-start; gap: 10px; margin: 14px 0 0; font-size: 14px; color: var(--ui-muted); cursor: pointer; line-height: 1.4; }
+  .cgu-case input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--ui-accent); cursor: pointer; }
+  .cgu-case a { color: var(--ui-text); }
+  .cgu-case.oubli { color: var(--ui-ko, #ff6b6b); }
 </style>
 </head>
 <body>
@@ -78,6 +83,7 @@
       <input type="text" id="prenom" placeholder="Ton prénom ou ton pseudo" maxlength="28" required autocomplete="nickname">
       <button type="submit">Continuer</button>
     </form>
+    <label class="cgu-case" id="cgu-case"><input type="checkbox" id="cgu-ok" form="form" required><span>J'accepte les <a href="cgu.html" target="_blank" rel="noopener">conditions d'utilisation</a> de MESA.</span></label>
     <div class="conseils pas-cam">
       <div><b>🎧 Un casque</b>Ça évite l'écho pour tout le monde.</div>
       <div><b>💡 De la lumière</b>Face à une fenêtre ou une lampe, pas dans ton dos.</div>
@@ -134,9 +140,9 @@
 <script src="js/common.js?v=21c31c91"></script>
 <script src="js/reglages-media.js?v=150f2489"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=a3c6e139"></script>
+<script src="js/invite.js?v=7b421d4c"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=1af40e14"></script>
+<script src="js/aide-faq.js?v=657169ea"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="droite"></script>
 </body>
 </html>

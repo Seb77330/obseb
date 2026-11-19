@@ -209,3 +209,12 @@ header .limiteur { font-family: var(--mono, monospace); font-size: 12.5px; }
 .ecran-cam { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 .ecran-cam .segment { flex: 1; }
 .ecran-cam .segment .ic { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }
+
+/* Mon écran : une fois le partage arrivé, le cadre de vdo.ninja (en anglais, avec ses réglages) se fait oublier.
+   Il reste dans la page, tout petit, pour continuer d'envoyer l'image. */
+.slot.partage-ok .ecran-cadre { position: absolute; width: 2px; height: 2px; margin: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.slot.partage-ok .ecran-cadre iframe { width: 2px; height: 2px; }
+.slot { position: relative; }
+.src-partage-ok { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 9px; font-weight: 600; font-size: 14px;
+  background: color-mix(in srgb, var(--ui-green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--ui-green) 35%, var(--ui-line)); }
+.src-partage-attente { margin: 0; font-size: 12.5px; line-height: 1.45; }

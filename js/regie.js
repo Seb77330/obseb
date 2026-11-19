@@ -384,6 +384,7 @@ const renommesParMoi = new Set();   // invités que tu as renommés : leur propr
 function arrivee(id, label) {
   if (!id || id === ID_HOTE || camsLocales.has(id)) return;     // tes propres caméras sont déjà connues
   if (typeof enAttente === 'function' && enAttente(id, label)) return;   // serveur MESA : salle d'attente (js/regie-securite.js)
+  if (typeof ecranEnDirect === 'function') ecranEnDirect(id);      // ton propre partage d'écran est bien arrivé dans la salle
   const nouveau = !presents.has(id);
   presents.set(id, { vu: Date.now() });
   if (estEcran(id)) { if (label) nomsEcrans.set(id, label); if (nouveau && typeof majSources === 'function') majSources(); }
@@ -453,7 +454,7 @@ addEventListener('message', e => {
       if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');
     }
     if (d.action === 'push-connection' && d.streamID && d.value === false) {
-      presents.delete(d.streamID); envoyer();
+      presents.delete(d.streamID); if (typeof ecranCoupe === 'function') ecranCoupe(d.streamID); envoyer();
     }
     return;
   }

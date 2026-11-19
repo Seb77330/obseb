@@ -266,9 +266,48 @@ function afficherSessions() {
   });
 }
 
+/* Mes lives sur une ligne : on fait défiler à la molette, en glissant (souris ou doigt) ou avec les flèches */
+(function railLives() {
+  const rail = $('#sessions');
+  if (!rail) return;
+  const zone = document.createElement('div'); zone.className = 'rail-lives';
+  rail.replaceWith(zone); zone.appendChild(rail);
+  const fl = (c, d, t) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'rail-fleche ' + c; b.title = t; b.setAttribute('aria-label', t); b.innerHTML = `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`; zone.appendChild(b); return b; };
+  const g = fl('g', 'M15 5l-7 7 7 7', 'Lives précédents'), d = fl('d', 'M9 5l7 7-7 7', 'Lives suivants');
+  const pas = () => Math.max(320, rail.clientWidth * .8);
+  g.onclick = () => rail.scrollBy({ left: -pas(), behavior: 'smooth' });
+  d.onclick = () => rail.scrollBy({ left: pas(), behavior: 'smooth' });
+  const maj = () => { const max = rail.scrollWidth - rail.clientWidth; g.hidden = rail.scrollLeft < 8; d.hidden = rail.scrollLeft > max - 8 || max < 8; };
+  rail.addEventListener('scroll', maj, { passive: true });
+  new ResizeObserver(maj).observe(rail);
+  new MutationObserver(maj).observe(rail, { childList: true });
+  // la molette (haut / bas) fait défiler vers la droite / la gauche, sauf si un menu est ouvert
+  rail.addEventListener('wheel', e => {
+    if (document.body.dataset.page !== 'espace' || rail.querySelector('details.plus[open]')) return;
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX) || rail.scrollWidth <= rail.clientWidth) return;
+    e.preventDefault(); rail.scrollLeft += e.deltaY;
+  }, { passive: false });
+  // glisser avec la souris (le doigt, lui, défile tout seul) ; un vrai glissé n'ouvre pas la carte
+  let x0 = 0, s0 = 0, appui = false, bouge = false;
+  rail.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button, input, select, summary, .menu, .prog-zone')) return;
+    appui = true; bouge = false; x0 = e.clientX; s0 = rail.scrollLeft;
+  });
+  addEventListener('pointermove', e => {
+    if (!appui) return;
+    if (!bouge && Math.abs(e.clientX - x0) > 6) { bouge = true; rail.classList.add('glisse'); }
+    if (bouge) rail.scrollLeft = s0 - (e.clientX - x0);
+  });
+  addEventListener('pointerup', () => { if (!appui) return; appui = false; setTimeout(() => rail.classList.remove('glisse'), 0); });
+  rail.addEventListener('click', e => { if (bouge) { e.preventDefault(); e.stopPropagation(); bouge = false; } }, true);
+  rail.addEventListener('dragstart', e => e.preventDefault());
+  maj();
+})();
+
 /* Le haut de l'accueil perso : bonjour, et ce qui arrive */
 function majBonjour(l) {
-  $('#espace-tete').hidden = !l.length;   // sans live, le bloc « Ton studio est prêt » suffit
+  $('#espace-tete').hidden = !l.length;
+  document.body.classList.toggle('a-des-lives', !!l.length);   // la case « Nouveau live » remplace alors le bouton du haut   // sans live, le bloc « Ton studio est prêt » suffit
   const h = new Date().getHours();
   const nom = (l[0] && l[0].session.hote) || '';
   $('#espace-bonjour').textContent = (h >= 18 || h < 5 ? 'Bonsoir' : 'Bonjour') + (nom ? ' ' + nom : '');

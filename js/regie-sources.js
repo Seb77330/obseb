@@ -239,10 +239,14 @@ function remplirCorps(i) {
   el.querySelector('.src-ic').innerHTML = ICONE_SRC[src.ui] || '';
   if (src.ui === 'monecran') {
     const b = document.createElement('button');
-    b.className = 'petit choisir-ecran ' + (iframesEcran.has(i) ? '' : 'primaire'); b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
+    b.className = 'petit choisir-ecran ' + (iframesEcran.has(i) ? '' : 'primaire');
+    b.type = 'button'; b.textContent = iframesEcran.has(i) ? 'Arrêter ce partage' : 'Choisir l\'écran ou l\'onglet à partager';
     b.onclick = () => { if (iframesEcran.has(i)) { viderSource(i); envoyer(); majSlots(); } else demarrerMonEcran(i); };
+    const ok = el.classList.contains('partage-ok');
+    corps.insertAdjacentHTML('beforeend', ok
+      ? '<p class="src-partage-ok"><span class="voyant ok"></span>Ton écran est partagé</p>'
+      : iframesEcran.has(i) ? '<p class="aide src-partage-attente" title="Pour le son d\'une vidéo : partage l\'onglet et coche « Partager l\'audio ».">Choisis quoi partager dans la fenêtre du navigateur. Rien ne s\'ouvre ? Clique sur le bouton dans le cadre.</p>' : '');
     corps.appendChild(b);
-    corps.insertAdjacentHTML('beforeend', '<span class="aide">La fenêtre de choix s\'ouvre toute seule. Si rien ne s\'ouvre, clique sur le bouton du cadre. Pour un extrait vidéo, partage l\'onglet et coche « Partager l\'audio ».</span>');
   } else if (src.ui === 'console') {
     remplirConsole(i);
   } else if (src.ui === 'ecraninvite') {
@@ -407,7 +411,19 @@ function lancerMonEcran(i) {
   etat.sources[i].ref = id;
   etat.sources[i].actif = true;      // ce que tu choisis passe à l'écran tout de suite ; l'interrupteur « À l'écran » sert à le retirer
 }
+/* Le partage est vraiment arrivé dans la salle : on cache le cadre de vdo.ninja (il continue d'envoyer l'image)
+   et on ne garde qu'une ligne « Ton écran est partagé ». */
+function ecranEnDirect(id) {
+  iframesEcran.forEach((f, i) => {
+    if (idEcran(session, i + 1) !== id || !slotsEl[i] || slotsEl[i].classList.contains('partage-ok')) return;
+    slotsEl[i].classList.add('partage-ok'); remplirCorps(i);
+  });
+}
+function ecranCoupe(id) {
+  etat.sources.forEach((s, i) => { if (idEcran(session, i + 1) === id && slotsEl[i] && slotsEl[i].classList.contains('partage-ok')) { slotsEl[i].classList.remove('partage-ok'); remplirCorps(i); } });
+}
 function arreterMonEcran(i) {
+  if (slotsEl[i]) slotsEl[i].classList.remove('partage-ok');
   const f = iframesEcran.get(i);
   if (!f) return;
   f.src = 'about:blank'; f.remove();
