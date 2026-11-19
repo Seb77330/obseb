@@ -472,10 +472,10 @@ function gererQR() {
   }
   for (const c of ['hg', 'hd', 'bg', 'bd']) document.body.classList.toggle('qr-' + c, pris.has(c));
   // pendant le quiz, le code « Jouer avec nous » se range dans le panneau de la question (les coins sont cachés)
-  const jouer = liste.find(([, q]) => q.jouer), zj = $('#qz-jouer');
-  zj.hidden = !jouer;
-  if (jouer && zj.dataset.lien !== jouer[1].lien) { zj.dataset.lien = jouer[1].lien; $('#qzj-code').innerHTML = svgQR(jouer[1].lien); ajusterQuiz(); }
+  const jouer = liste.find(([, q]) => q.jouer), zj = $('#qzc-jeu');
+  if (jouer && zj.dataset.lien !== jouer[1].lien) { zj.dataset.lien = jouer[1].lien; $('#qzj-code').innerHTML = svgQR(jouer[1].lien); }
   if (!jouer) zj.dataset.lien = '';
+  majCote();
   // les coins libérés : le code s'efface puis disparaît
   for (const [coin, el] of qrDessines) if (!pris.has(coin)) {
     qrDessines.delete(coin);
@@ -705,17 +705,28 @@ function gererQuizPublic(a) {
   if (cle === publicAffiche) return;
   publicAffiche = cle;
   box.hidden = !cle;
-  if (!cle) { $('#qzp-barre').style.width = '0%'; ajusterQuiz(); return; }
+  majCote();
+  if (!cle) { $('#qzp-barre').style.width = '0%'; return; }
   const pct = Math.max(0, Math.min(100, Math.round(+p.pct || 0))), n = Math.max(0, +p.n || 0);
   $('#qzp-pct').textContent = n ? pct + ' %' : '';
   box.querySelector('.qzp-txt').textContent = n ? 'de bonnes réponses' : 'n\'a pas encore voté';
-  $('#qzp-n').textContent = n ? `(${n.toLocaleString('fr-FR')} vote${n > 1 ? 's' : ''})` : '';
+  $('#qzp-n').textContent = n ? `${n.toLocaleString('fr-FR')} vote${n > 1 ? 's' : ''}` : '';
   box.classList.toggle('bas', n > 0 && pct < 34);
   box.classList.toggle('haut', pct >= 67);
   $('#qzp-barre').style.width = '0%';
   box.classList.remove('entree'); void box.offsetWidth; box.classList.add('entree');
   setTimeout(() => { $('#qzp-barre').style.width = pct + '%'; }, 120);
   ajusterQuiz();
+}
+/* La colonne « Le chat » à droite de la question : le code pour jouer pendant la question, le résultat une fois révélé */
+function majCote() {
+  const jeu = !!$('#qzc-jeu').dataset.lien && document.body.classList.contains('quiz-on');
+  const res = !$('#qz-public').hidden;
+  const cote = $('#qz-cote'), avant = !cote.hidden;
+  cote.hidden = !jeu && !res;
+  $('#qzc-jeu').hidden = res || !jeu;
+  $('#quiz').classList.toggle('avec-cote', !cote.hidden);
+  if (avant !== !cote.hidden) ajusterQuiz();
 }
 let quizRevele = null, classementAffiche = null;
 const PERSONNE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5" r="3.2"/><path d="M1.5 15.5c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5z"/></svg>';
