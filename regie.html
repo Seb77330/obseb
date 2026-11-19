@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css?v=b7513691">
 <link rel="stylesheet" href="css/aide.css?v=7b8e54d6">
-<link rel="stylesheet" href="css/regie-habillages.css?v=182c9292">
+<link rel="stylesheet" href="css/regie-habillages.css?v=bde699a7">
 <link rel="stylesheet" href="css/checkup.css?v=838ba7db">
 <link rel="stylesheet" href="css/securite.css?v=a66a665e">
 <style>
@@ -760,28 +760,27 @@
           <div><label class="champ" for="bandeau">Titre du bandeau</label><input type="text" id="bandeau"></div>
           <div><label class="champ" for="message">Message sous le titre</label><input type="text" id="message" placeholder="Ex. Pose tes questions dans le chat"></div>
         </div>
-        <h3 class="sous-titre">Intro <span class="hb-formule" id="hb-formule"></span></h3>
-        <div class="hb-apercu" title="L'intro choisie, en vrai, avec ton titre et tes couleurs"><iframe id="hb-apercu" tabindex="-1" title="Aperçu de l'intro"></iframe><span class="hb-apercu-nom" id="hb-apercu-nom"></span></div>
-        <div class="hb-choix" id="hb-intro" role="group" aria-label="Visuel de l'intro"></div>
-        <div class="hb-compte">
-          <div class="hb-compte-tete"><span class="etiquette">Compte à rebours</span><b id="hb-reste" title="Temps qui reste avant le début du live">Aucun</b></div>
-          <div class="ligne-boutons hb-pre">
+        <div class="hb-tete">
+          <div class="segment hb-onglets" role="tablist" aria-label="Intro ou outro"><button type="button" data-hb="intro" class="actif">Intro</button><button type="button" data-hb="fin">Outro</button></div>
+          <span class="hb-formule" id="hb-formule"></span>
+        </div>
+        <div class="hb-apercu" title="Le visuel choisi, en vrai, avec ton titre et tes couleurs"><iframe id="hb-apercu" tabindex="-1" title="Aperçu de l'intro"></iframe><span class="hb-apercu-nom" id="hb-apercu-nom"></span></div>
+        <div class="hb-compte" data-hb-pour="intro">
+          <div class="hb-compte-tete"><span class="etiquette">Compte à rebours</span><b id="hb-reste" title="Temps qui reste avant le début du live">Aucun</b>
+            <span class="hb-ajuste"><button class="petit" data-ajout="-60" title="Enlever une minute">−1</button><button class="petit" data-ajout="60" title="Ajouter une minute">+1</button></span></div>
+          <div class="hb-puces">
+            <button class="petit" id="hb-heure-live" hidden title="Jusqu'à l'heure prévue du live"></button>
             <button class="petit" data-minutes="2" title="L'intro tourne en boucle pendant 2 minutes">2 min</button>
             <button class="petit" data-minutes="5" title="L'intro tourne en boucle pendant 5 minutes">5 min</button>
             <button class="petit" data-minutes="10" title="L'intro tourne en boucle pendant 10 minutes">10 min</button>
-            <span class="hb-sep"></span>
-            <button class="petit" data-ajout="-60" title="Enlever une minute">−1 min</button>
-            <button class="petit" data-ajout="30" title="Ajouter 30 secondes">+30 s</button>
-            <button class="petit primaire" data-ajout="60" title="Ajouter une minute">+1 min</button>
-          </div>
-          <div class="ligne-boutons" style="align-items:center;flex-wrap:nowrap;gap:6px;margin-top:6px">
-            <label class="aide hb-jusqua" for="heure-debut">Ou jusqu'à</label><input type="time" id="heure-debut" style="width:auto;min-width:0;flex:1;padding:5px 8px;font-size:13px" title="Ou jusqu'à une heure précise">
-            <button class="petit" id="btn-heure" hidden>Jusqu'à cette heure</button>
+            <label class="hb-autre" title="Jusqu'à une heure précise"><input type="time" id="heure-debut" aria-label="Jusqu'à une heure précise"></label>
             <button class="petit" id="btn-sans-compte" title="Sans compte à rebours">Aucun</button>
+            <button class="petit" id="btn-heure" hidden>Jusqu'à cette heure</button>
+            <button class="petit" data-ajout="30" hidden>+30 s</button>
           </div>
         </div>
-        <h3 class="sous-titre">Outro</h3>
-        <div class="hb-choix" id="hb-fin" role="group" aria-label="Visuel de l'outro"></div>
+        <div class="hb-choix" id="hb-intro" role="group" aria-label="Visuel de l'intro"></div>
+        <div class="hb-choix" id="hb-fin" role="group" aria-label="Visuel de l'outro" hidden></div>
 
       
         
@@ -1115,7 +1114,7 @@
 <script src="js/regie.js?v=a309e3bd"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
 <script src="js/habillages.js?v=c066d580"></script>
-<script src="js/regie-habillages.js?v=0d059389"></script>
+<script src="js/regie-habillages.js?v=04ad0c8c"></script>
 <script src="js/regie-scenes.js?v=de699dff"></script>
 <script src="js/regie-sources.js?v=f0901976"></script>
 <script src="js/regie-modes.js?v=92e37b54"></script>

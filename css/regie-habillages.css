@@ -35,3 +35,19 @@
 .hb-pre button { flex: 1 1 0; min-width: 0; padding: 5px 2px; white-space: nowrap; }
 .hb-sep { width: 1px; height: 22px; background: var(--ui-line); margin: 0 2px; }
 @media (max-width: 1000px) { .hb-choix { grid-template-columns: repeat(4, 1fr); } .hb-sep { display: none; } }
+
+/* 19/11 : un seul choix à la fois (Intro / Outro), le compte à rebours en une rangée de puces */
+.hb-tete { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
+.hb-onglets { width: 190px; flex: none; }
+.hb-tete .hb-formule { margin: 0; font-size: 12px; }
+.hb-compte { margin: 10px 0 12px; padding: 10px 12px; background: none; }
+.hb-compte-tete { gap: 8px; margin-bottom: 8px; }
+.hb-compte-tete #hb-reste { margin-left: auto; }
+.hb-ajuste { display: none; gap: 3px; }
+.hb-compte.en-cours .hb-ajuste { display: flex; }
+.hb-ajuste button { padding: 2px 8px; font: 600 12px var(--mono, monospace); }
+.hb-puces { display: flex; flex-wrap: wrap; gap: 5px; }
+.hb-puces button { padding: 5px 10px; border-radius: 99px; font-size: 12.5px; }
+.hb-puces button.actif { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-sur-accent); }
+#hb-heure-live { border-color: var(--ui-accent); color: var(--ui-text); }
+.hb-autre input { width: 98px; min-width: 0; padding: 4px 8px; font-size: 12.5px; border-radius: 99px; }
