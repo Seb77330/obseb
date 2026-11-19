@@ -328,7 +328,7 @@ function majCarte(id) {
   const enDirect = etat.onair.includes(id);
   c.el.classList.toggle('antenne', enDirect);
   c.el.classList.toggle('parti', id !== ID_HOTE && !presents.has(id));
-  c.el.querySelector('.temoin').textContent = enDirect ? (etat.direct ? 'À L\'ANTENNE' : 'SÉLECTIONNÉ') : (id === ID_HOTE || camsLocales.has(id) ? 'HORS ANTENNE' : 'EN COULISSES');
+  c.el.querySelector('.temoin').textContent = enDirect ? (etat.direct ? 'À L\'ANTENNE' : 'À L\'ÉCRAN') : (id === ID_HOTE || camsLocales.has(id) ? 'HORS ANTENNE' : 'EN COULISSES');
   const b = c.el.querySelector('.antenne-btn');
   b.textContent = enDirect ? 'Retirer' : 'Mettre à l\'antenne';
   b.title = enDirect ? 'Retirer de l\'antenne' : 'Afficher cette source à l\'écran';

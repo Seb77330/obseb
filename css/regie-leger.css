@@ -179,3 +179,11 @@ body.en-direct .scenes button.actif .sc-vue { box-shadow: 0 0 0 2px var(--ui-red
 #auto-antenne:checked { background: var(--ui-accent); }
 #auto-antenne:checked::after { transform: translateX(11px); background: var(--ui-sur-accent); }
 #liste .vide { display: grid; justify-items: center; gap: 10px; padding: 18px 10px; border: 1px dashed var(--ui-line2); border-radius: 10px; color: var(--ui-muted); font-size: 12.5px; text-align: center; }
+
+/* 19/11 : d'un coup d'œil, qui est à l'écran (couleur de tes boutons) et qui ne l'est pas (gris) */
+#liste .participant:not(.antenne) .vignette, #cams .participant:not(.antenne) .vignette { filter: grayscale(1); opacity: .5; transition: filter .2s, opacity .2s; }
+#liste .participant:not(.antenne) .vignette:hover, #cams .participant:not(.antenne) .vignette:hover { opacity: .8; }
+#liste .participant:not(.antenne) .nom, #cams .participant:not(.antenne) .nom { color: var(--ui-muted); }
+#liste .participant:not(.antenne) .temoin, #cams .participant:not(.antenne) .temoin { background: var(--ui-panel); color: var(--ui-muted); }
+#liste .participant.antenne, #cams .participant.antenne { background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-panel2)); border-color: color-mix(in srgb, var(--ui-accent) 45%, transparent); }
+body.en-direct #liste .participant.antenne .vignette, body.en-direct #cams .participant.antenne .vignette { box-shadow: 0 0 0 2px var(--ui-accent); }
