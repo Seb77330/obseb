@@ -1,0 +1,54 @@
+/* OBSeb : le visuel du live par étapes, dans le panneau de la régie (js/visuel-etapes.js) */
+body.vp-etapes, body.vp-etapes.en-creation { height: 100vh; overflow: hidden; display: block; }
+body.vp-etapes #vue-creation { height: 100vh; }
+body.vp-etapes .creation { display: block; height: 100%; }
+body.vp-etapes .scene-apercu { display: none; }
+body.vp-etapes .creation-choix { height: 100%; border-left: 0; display: flex; flex-direction: column; }
+body.vp-etapes .choix-corps { overflow-y: auto; padding: 16px 18px 24px; }
+body.vp-etapes .creation-choix .pied-form { position: static; }
+
+/* ce qui reste de l'ancienne page */
+body.vp-etapes #btn-retour, body.vp-etapes #titre-form, body.vp-etapes .choix-corps > .etape,
+body.vp-etapes .choix-corps > .options, body.vp-etapes #note-modif { display: none !important; }
+/* la date revient : on programme le live depuis la régie */
+body.vp-etapes.page-visuel #f-quand { display: flex !important; }
+body.vp-etapes.page-visuel #f-quand-resume { display: block !important; }
+body.vp-etapes.page-visuel #f-quand-date:not([hidden]) { display: flex !important; }
+
+.vp-tete { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.vp-tete h1 { margin: 0; font-size: 19px; flex: 1; }
+.vp-fermer { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--ui-line); background: none; color: var(--ui-muted); font-size: 15px; }
+.vp-fermer:hover { color: var(--ui-text); background: var(--ui-hover); }
+
+/* les étapes : une rangée de pastilles, la courante en jaune, les faites cochées */
+.vp-nav { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.vp-nav button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px 4px; border: 0; background: none; color: var(--ui-muted); font-size: 11px; line-height: 1.15; border-radius: 8px; }
+.vp-nav button:hover { color: var(--ui-text); background: var(--ui-hover); }
+.vp-num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--mono, monospace); border: 1px solid var(--ui-line2); }
+.vp-nav button.fait .vp-num { border-color: var(--ui-accent); color: var(--ui-accent); }
+.vp-nav button.actif { color: var(--ui-text); font-weight: 600; }
+.vp-nav button.actif .vp-num { background: var(--ui-accent); border-color: var(--ui-accent); color: #111; }
+.vp-nom { text-align: center; }
+
+.vp-pane h2 { margin: 0 0 4px; font-size: 17px; }
+.vp-pane > .aide { margin: 0 0 14px; }
+.vp-pane .bloc-titre { display: none; }           /* le titre de l'étape suffit */
+.vp-pane .bloc { margin: 0; padding: 0; border: 0; }
+.vp-pane #cats-themes { margin-bottom: 10px; }
+.vp-pane #opt-obs { margin-top: 16px; }
+.vp-pane .vp-a-plat { padding: 0 !important; margin-top: 18px; border: 0 !important; }
+.vp-pane .vp-a-plat .champ { margin-left: 0; }
+.vp-pane #f-quand { width: 100%; }
+.vp-pane #f-quand button { flex: 1; }
+.vp-pane .quand { margin-top: 10px; }
+.vp-pane .enregistrer-style { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--ui-line); }
+.vp-pane .enregistrer-style .bloc-titre { display: block; }
+
+body.vp-etapes .pied-form { display: flex; gap: 8px; }
+body.vp-etapes #vp-prec { flex: none; }
+body.vp-etapes #vp-suiv, body.vp-etapes #btn-creer { flex: 1; }
+
+@media (max-width: 520px) {
+  .vp-nom { font-size: 10px; }
+  .vp-nav { gap: 2px; }
+}

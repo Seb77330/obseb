@@ -226,7 +226,7 @@ function afficherSessions() {
               <button data-a="vertical">Copier le lien vertical<small>Source navigateur 1080 × 1920 (TikTok, Shorts, Reels)</small></button>
               <button data-a="programmer">Programmer<small>Le jour et l'heure, puis les miniatures</small></button>
               <button data-a="agenda" hidden>Ajouter à mon agenda<small>Un rappel 15 minutes avant</small></button>
-              <button data-a="modifier">Modifier<small>Titre, thème, durée maximale</small></button>
+              <button data-a="modifier">Modifier le visuel<small>Dans la régie : thème, couleurs, titre, date</small></button>
               <button data-a="dupliquer">Dupliquer<small>Nouveau live avec le même thème</small></button>
               <button data-a="suppr" class="danger">Supprimer</button>
             </div>
@@ -238,15 +238,9 @@ function afficherSessions() {
     el.querySelector('[data-a=vertical]').onclick = () => copier(L.vertical, 'Lien vertical copié (source 1080x1920)');
     el.querySelector('[data-a=programmer]').onclick = () => ouvrirProgrammation(session.room);
     el.querySelector('[data-a=agenda]').onclick = () => telechargerAgenda(session, baseUrl());
-    el.querySelector('[data-a=modifier]').onclick = () => {
-      enEdition = session.room; brouillon = JSON.parse(JSON.stringify(session));
-      ouvrirCreation('Modifier le live', 'Enregistrer', true);
-    };
-    el.querySelector('[data-a=dupliquer]').onclick = () => {
-      enEdition = null;
-      brouillon = Object.assign(nouvelleSession('', session.theme.preset), { theme: JSON.parse(JSON.stringify(session.theme)), hote: session.hote, handle: session.handle, limite: session.limite || 0 });
-      ouvrirCreation('Nouveau live (même thème)', 'Créer le live', false);
-    };
+    // Modifier : la régie s'ouvre sur son panneau « Visuel » (plus de page à part)
+    el.querySelector('[data-a=modifier]').onclick = () => { location.href = L.regie + '&visuel=1'; };
+    el.querySelector('[data-a=dupliquer]').onclick = () => { if (typeof creerEtOuvrir === 'function') creerEtOuvrir(session); };
     el.querySelector('[data-a=suppr]').onclick = async () => {
       if (!await confirmer(`Supprimer « ${session.titre} » ? Sa régie et ses liens ne seront plus dans ta liste.`, { oui: 'Oui, supprimer', non: 'Non' })) return;
       if (typeof oublierMinis === 'function') oublierMinis(session.room);

@@ -1,7 +1,9 @@
 /* OBSeb : régie, bouton « Visuel ».
-   Le visuel du live (thème, couleurs, police, logo, titre) se choisit ici, avant le direct, dans la page « Visuel du live »
-   ouverte par-dessus la régie (index.html?visuel=<salle>&embed=1). Après « Appliquer », la régie se recharge avec
-   le nouveau visuel, et la sortie OBS, les fenêtres d'envoi et les aperçus des invités le prennent tout seuls (etat.visuel).
+   Le visuel du live se règle ici, par étapes (thème, couleurs, police, logo et fond, musiques, titre et date),
+   dans un panneau sur le côté de la régie (index.html?visuel=<salle>&embed=1&panneau=1, js/visuel-etapes.js).
+   L'aperçu de la régie reste visible et suit chaque choix (message « apercu »). « Appliquer au live » enregistre :
+   la régie se recharge avec le nouveau visuel, et la sortie OBS, les fenêtres d'envoi et les aperçus des invités
+   le prennent tout seuls (etat.visuel). Fermer sans appliquer remet le visuel d'avant.
    Pendant le direct ou un enregistrement : le thème et les couleurs ne changent pas (tout le reste, oui). */
 'use strict';
 (() => {
@@ -31,30 +33,71 @@
   }
 
   let panneau = null;
-  function ouvrir() {
+  function ouvrir(etape) {
     const b = bloque();
     if (b) return toast(b === 'direct' ? 'Pendant le direct, le thème et les couleurs restent les mêmes. Tu peux toujours changer les titres, les scènes et la musique.' : 'Arrête d\'abord l\'enregistrement pour changer le thème');
     if (!assurerDansListe()) return toast('Ce navigateur refuse de garder les réglages : le visuel ne peut pas être changé ici');
     if (panneau) return;
     panneau = document.createElement('div');
     panneau.id = 'visuel-panneau';
-    panneau.innerHTML = `<div class="vp-charge">Chargement du visuel…</div><iframe title="Visuel du live" src="index.html?visuel=${encodeURIComponent(session.room)}&embed=1"></iframe>`;
+    panneau.innerHTML = `<div class="vp-charge">Chargement du visuel…</div><iframe title="Visuel du live" src="index.html?visuel=${encodeURIComponent(session.room)}&embed=1&panneau=1${typeof etape === 'string' ? '&etape=' + encodeURIComponent(etape) : ''}"></iframe>`;
     document.body.appendChild(panneau);
     document.body.classList.add('visuel-ouvert');
     panneau.querySelector('iframe').addEventListener('load', () => panneau && panneau.classList.add('pret'));
   }
-  function fermer() {
+  function fermer(applique) {
     if (!panneau) return;
     panneau.remove(); panneau = null;
     document.body.classList.remove('visuel-ouvert');
+    clearTimeout(essai.t);
+    if (!applique && essai.actif) revenir();
   }
-  btn.onclick = ouvrir;
+  btn.onclick = () => ouvrir();
+  // le titre du live, en haut à gauche : un clic ouvre l'étape « Titre et date »
+  const titreEl = $('#titre-session');
+  if (titreEl) { titreEl.classList.add('cliquable'); titreEl.title = 'Changer le titre ou programmer le live'; titreEl.onclick = () => ouvrir('titre'); }
+  // un live programmé : sa date sous le titre
+  if (session.debut && typeof quandTexte === 'function') { const ss = $('#sous-session'); if (ss) ss.textContent = 'Programmé : ' + quandTexte(session.debut); }
+
+  /* L'essai en direct dans l'aperçu : chaque choix du panneau est montré tout de suite (sortie, aperçus),
+     sans rien enregistrer. Les images du PC voyagent par la liste des lives de ce navigateur. */
+  const ORIGINAL = JSON.parse(JSON.stringify(session));
+  const essai = { actif: false, t: 0 };
+  function ecrireListe(s) {
+    try {
+      const l = JSON.parse(localStorage.getItem('studioSeb:sessions') || '[]');
+      const i = l.findIndex(x => x.session && x.session.room === session.room);
+      if (i >= 0) { l[i].session = s; localStorage.setItem('studioSeb:sessions', JSON.stringify(l)); }
+    } catch (e) { /* rien */ }
+  }
+  function montrer(s) {
+    const v = visuelDe(s);
+    if (v.v === etat.visuel.v) return;
+    ecrireListe(s);
+    etat.visuel = { v: v.v, o: v.o };
+    essai.actif = v.v !== visuelDe(ORIGINAL).v;
+    envoyer();
+  }
+  function revenir() {
+    essai.actif = false;
+    ecrireListe(ORIGINAL);
+    const v = visuelDe(ORIGINAL);
+    etat.visuel = { v: v.v, o: v.o };
+    envoyer();
+  }
   addEventListener('keydown', e => { if (e.key === 'Escape' && panneau) fermer(); });
 
   addEventListener('message', e => {
     if (e.origin !== location.origin || !e.data || !e.data.obsebVisuel) return;
     const m = e.data.obsebVisuel;
     if (m === 'fermer') return fermer();
+    if (m === 'apercu' && typeof e.data.s === 'string') {
+      if (bloque()) return;
+      let s; try { s = b64d(e.data.s); } catch (err) { return; }
+      if (!s || s.room !== session.room) return;
+      clearTimeout(essai.t); essai.t = setTimeout(() => montrer(s), 350);
+      return;
+    }
     if (m === 'introuvable') { fermer(); return toast('Ce live n\'est pas dans la liste de ce navigateur'); }
     if (m === 'applique' && typeof e.data.s === 'string') {
       if (bloque()) { fermer(); return toast('Le direct a commencé entre-temps : le visuel n\'a pas été changé'); }
@@ -62,9 +105,13 @@
       try { nouveau = b64d(e.data.s); } catch (err) { return fermer(); }
       if (!nouveau || nouveau.room !== session.room) return fermer();
       // on prévient tout de suite la sortie et les invités, puis la régie repart avec son nouveau lien
+      clearTimeout(essai.t); essai.actif = false;
+      // le bandeau du bas suivait l'ancien titre : il prend le nouveau
+      if (!etat.bandeau || etat.bandeau === ORIGINAL.titre) { etat.bandeau = nouveau.titre; const b = $('#bandeau'); if (b) b.value = nouveau.titre; }
       const v = visuelDe(nouveau);
       etat.visuel = { v: v.v, o: v.o };
       envoyer();
+      document.body.classList.remove('visuel-ouvert'); if (panneau) { panneau.remove(); panneau = null; }
       const h = hashParams(); h.set('s', b64e(nouveau));
       setTimeout(() => { location.replace(location.pathname + location.search + '#' + h.toString()); location.reload(); }, 600);
     }
@@ -74,5 +121,8 @@
   const CLE_VU = 'studioSeb:visuelVu:' + session.room;
   let vu = false;
   try { vu = !!localStorage.getItem(CLE_VU); localStorage.setItem(CLE_VU, '1'); } catch (e) { vu = true; }
-  if (session.choixVisuel && !vu && !etat.direct) setTimeout(ouvrir, 700);
+  // un live à modifier depuis l'accueil (« Modifier » sur sa carte) : la régie s'ouvre sur le visuel
+  const demande = hashParams().get('visuel');
+  if (demande) { const h = hashParams(); h.delete('visuel'); history.replaceState(null, '', location.pathname + location.search + '#' + h.toString()); }
+  if (((session.choixVisuel && !vu) || demande) && !etat.direct) setTimeout(() => ouvrir(demande && demande !== '1' ? demande : undefined), 700);
 })();

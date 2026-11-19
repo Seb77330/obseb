@@ -1,11 +1,10 @@
-/* OBSeb : accueil, créer un live en une étape, et la page « Visuel du live » ouverte depuis la régie.
-   Nouveau live : une petite fenêtre (le titre, tout de suite ou programmé), puis on part dans la régie.
-   Le visuel (thème, couleurs, police, logo) se choisit dans la régie, avant le direct : la régie ouvre
-   cette page en surimpression (index.html?visuel=<salle>&embed=1). « Appliquer » renvoie le live modifié à la régie. */
+/* OBSeb : accueil, créer un live en un clic, et la page « Visuel du live » ouverte depuis la régie.
+   Nouveau live : le live est créé tout de suite et on part dans la régie (titre, date et visuel s'y règlent).
+   Le visuel se règle par étapes dans un panneau de la régie, qui ouvre cette page
+   (index.html?visuel=<salle>&embed=1&panneau=1, voir js/visuel-etapes.js). « Appliquer » renvoie le live modifié à la régie. */
 'use strict';
 (() => {
   const Qs = new URLSearchParams(location.search);
-  const dlg = $('#nouveau-live');
 
   /* ----- Accueil : deux onglets ----- */
   const ongletsAccueil = $$('[data-onglet-accueil]');
@@ -17,46 +16,23 @@
   ongletsAccueil.forEach(b => b.onclick = () => ouvrirOngletAccueil(b.dataset.ongletAccueil));
   try { if (localStorage.getItem('studioSeb:ongletAccueil') === 'recs') ouvrirOngletAccueil('recs'); } catch (e) { /* rien */ }
 
-  /* ----- Nouveau live : la petite fenêtre ----- */
-  let quand = 'maintenant';
-  function ouvrirNouveau() {
-    $('#nl-nom').value = '';
-    quand = 'maintenant';
-    $$('#nl-quand button').forEach(b => b.classList.toggle('actif', b.dataset.q === quand));
-    $('#nl-date-bloc').hidden = true;
-    dlg.showModal();
-    setTimeout(() => $('#nl-nom').focus(), 30);
-  }
-  $$('#nl-quand button').forEach(b => b.onclick = () => {
-    quand = b.dataset.q;
-    $$('#nl-quand button').forEach(x => x.classList.toggle('actif', x === b));
-    $('#nl-date-bloc').hidden = quand !== 'plus-tard';
-    if (quand === 'plus-tard' && !$('#nl-date').value) {
-      const d = new Date(Date.now() + 864e5); d.setHours(20, 0, 0, 0);
-      const z = n => String(n).padStart(2, '0');
-      $('#nl-date').value = `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; $('#nl-heure').value = '20:00';
-    }
-  });
-  $('#nl-annuler').onclick = () => dlg.close();
-  $('#nl-form').onsubmit = async e => {
-    e.preventDefault();
-    const titre = $('#nl-nom').value.trim();
-    if (!titre) { $('#nl-nom').focus(); return; }
-    let debut = 0;
-    if (quand === 'plus-tard') {
-      debut = new Date(`${$('#nl-date').value}T${$('#nl-heure').value || '20:00'}`).getTime();
-      if (!(debut > Date.now())) return toast('Choisis un jour et une heure à venir');
-    }
-    $('#nl-ok').disabled = true;
-    const s = nouvelleSession(titre, 'minimal');
-    if (typeof appliquerStyleDefaut === 'function') appliquerStyleDefaut(s);   // ton style par défaut, s'il y en a un
-    if (debut) s.debut = debut;
-    s.choixVisuel = true;                       // la régie ouvre le choix du visuel à sa première ouverture
+  /* ----- Nouveau live : on le crée tout de suite et on part dans la régie -----
+     Le titre, la date, le thème, les couleurs : tout se règle ensuite dans la régie, bouton « Visuel », par étapes. */
+  let enCours = false;
+  async function creerEtOuvrir(modele) {
+    if (enCours) return;
+    enCours = true;
+    const s = nouvelleSession('Mon live', 'minimal');
+    if (modele) Object.assign(s, { theme: JSON.parse(JSON.stringify(modele.theme)), hote: modele.hote, handle: modele.handle, limite: modele.limite || 0 });
+    else if (typeof appliquerStyleDefaut === 'function') appliquerStyleDefaut(s);   // ton style par défaut, s'il y en a un
+    s.choixVisuel = true;                       // la régie ouvre le visuel, par étapes, à sa première ouverture
     const cle = rnd(20);
     s.room = await salleDepuisCle(cle);
     const l = lire(); l.unshift({ session: s, cle }); ecrire(l);
     location.href = liens(s, cle).regie;
-  };
+  }
+  const ouvrirNouveau = () => creerEtOuvrir();
+  window.creerEtOuvrir = creerEtOuvrir;
   // tous les boutons qui créaient un live ouvrent maintenant la petite fenêtre
   $('#btn-nouveau').onclick = ouvrirNouveau;
   $('#vide-creer').onclick = ouvrirNouveau;

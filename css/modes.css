@@ -88,3 +88,12 @@
 #visuel-panneau.pret .vp-charge { display: none; }
 @keyframes vp-entree { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { #visuel-panneau { animation: none; } }
+/* Sur ordinateur, le panneau se range à droite (à la place des onglets) : l'aperçu reste visible et suit chaque choix */
+@media (min-width: 901px) {
+  #visuel-panneau { inset: 0 0 0 auto; width: clamp(380px, 31vw, 470px); border-left: 1px solid var(--ui-line2); box-shadow: -18px 0 40px rgba(0, 0, 0, .35); animation-name: vp-cote; }
+}
+@keyframes vp-cote { from { opacity: 0; transform: translateX(24px); } }
+/* pendant le choix du visuel, le gros bouton caméra ne cache pas le titre dans l'aperçu */
+body.visuel-ouvert #cam-appel { display: none !important; }
+#titre-session.cliquable { cursor: pointer; border-radius: 6px; }
+#titre-session.cliquable:hover { text-decoration: underline; text-decoration-color: var(--ui-accent); text-underline-offset: 3px; }

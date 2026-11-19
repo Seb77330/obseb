@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="css/biblio.css?v=d2b1334b">
 <link rel="stylesheet" href="css/comptes.css?v=6c53bbfb">
 <link rel="stylesheet" href="css/aide.css?v=6e02ec6f">
+<link rel="stylesheet" href="css/visuel-etapes.css?v=f2b7661a">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -657,16 +658,6 @@
     </aside>
   </div>
 </main>
-<dialog class="nouveau-live" id="nouveau-live" aria-labelledby="nl-titre">
-  <form method="dialog" id="nl-form">
-    <h2 id="nl-titre">Nouveau live</h2>
-    <p class="aide">Donne-lui un titre. Le visuel (thème, couleurs, logo) se choisit ensuite dans la régie, avant le direct.</p>
-    <input type="text" id="nl-nom" maxlength="70" placeholder="Ex. Spécial Marvel : on refait la phase 6" autocomplete="off" required>
-    <div class="segment nl-quand" id="nl-quand"><button type="button" data-q="maintenant" class="actif">Tout de suite</button><button type="button" data-q="plus-tard">Programmer</button></div>
-    <div class="quand-date" id="nl-date-bloc" hidden><input type="date" id="nl-date" aria-label="Le jour"><input type="time" id="nl-heure" step="300" aria-label="L'heure"></div>
-    <div class="nl-boutons"><button type="button" id="nl-annuler">Annuler</button><button type="submit" class="primaire" id="nl-ok">Créer et ouvrir la régie</button></div>
-  </form>
-</dialog>
 <div class="toast" id="toast"></div>
 <dialog class="atelier" id="atelier-st">
   <div class="atelier-tete"><h2 id="at-titre">Sous-titres</h2><span class="aide" id="at-reste" style="margin:0"></span><button type="button" id="at-fermer">Fermer</button></div>
@@ -691,15 +682,16 @@
 <script src="js/comptes.js?v=9c891fe5"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/fonds3d.js?v=380fb846"></script>
-<script src="js/accueil.js?v=8bfb9d78"></script>
+<script src="js/accueil.js?v=02492f2c"></script>
 <script src="js/accueil-compte.js?v=f6b38e06"></script>
 <script src="js/accueil-prog.js?v=931882b1"></script>
 <script src="js/accueil-style.js?v=41260911"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 <script src="js/accueil-biblio.js?v=d57856fb"></script>
-<script src="js/accueil-nouveau.js?v=81345b62"></script>
+<script src="js/accueil-nouveau.js?v=d5e245ee"></script>
+<script src="js/visuel-etapes.js?v=06358f91"></script>
 <script src="js/aide-config.js?v=a60d146a"></script>
-<script src="js/aide-faq.js?v=c3a24aca"></script>
+<script src="js/aide-faq.js?v=8b346b7f"></script>
 <script src="js/aide.js?v=81192398" data-place="droite"></script>
 </body>
 </html>

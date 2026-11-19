@@ -29,7 +29,7 @@ const FAQ = [
     r: "Un studio de live dans ton navigateur. Tu crées ton live, tu invites des gens avec un simple lien, tu choisis qui est à l'écran, et le studio fabrique une belle image (thème, intro, bandeaux, quiz, chat…) que tu envoies sur tes plateformes.",
     m: "studio presentation c'est quoi ca sert a quoi a quoi sert le site explication concept" },
   { c: 'debut', q: "Comment je crée mon premier live ?",
-    r: "Sur l'accueil, clique sur « Créer mon premier live » (ou « Nouveau live »). Tu donnes un titre, tu choisis un thème, et c'est tout : les finitions (couleurs, logo, musiques) sont facultatives. Ensuite la régie s'ouvre.",
+    r: "Sur l'accueil, clique sur « Créer mon premier live » (ou « Nouveau live ») : tu arrives tout de suite dans la régie. Le panneau « Visuel » s'ouvre et te guide par étapes : thème, couleurs, police, logo et fond, musiques, puis titre et date. Seul le thème compte, le reste est facultatif.",
     m: "creer nouveau live commencer demarrer premiere fois premier pas debuter" },
   { c: 'debut', q: "Faut-il installer quelque chose ?",
     r: "Non. Le studio marche dans Chrome ou Edge, sans rien installer. Seuls deux outils sont en option : OBS (si tu veux envoyer le direct avec lui) et l'extension OBSeb Watch pour la Watch Party.",
