@@ -45,6 +45,19 @@ function coinSvg(c) {
 function coteSvg(c) {
   return `<svg viewBox="0 0 16 26" aria-hidden="true"><rect class="f" x="1" y="1" width="14" height="24" rx="2"/><rect class="${c === 'haut' ? 'p' : 'q'}" x="2.5" y="2.5" width="11" height="10" rx="1"/><rect class="${c === 'haut' ? 'q' : 'p'}" x="2.5" y="13.5" width="11" height="10" rx="1"/></svg>`;
 }
+/* Ce qui se pose en petit : ta caméra (sur la bande-annonce) ou l'inverse, la bande-annonce en petit sur ta caméra */
+function petitSvg(q) {
+  const cam = (x, y, s) => `<circle cx="${x}" cy="${y - s * .18}" r="${s * .2}"/><path d="M${x - s * .38} ${y + s * .42}a${s * .38} ${s * .32} 0 0 1 ${s * .76} 0z"/>`;
+  const play = (x, y, s) => `<path d="M${x - s * .22} ${y - s * .3}v${s * .6}l${s * .5}-${s * .3}z"/>`;
+  return `<svg viewBox="0 0 40 24" aria-hidden="true"><rect class="f" x="1" y="1" width="38" height="22" rx="2.5"/>
+    <g class="g">${q === 'camera' ? play(15, 11, 14) : cam(15, 12, 14)}</g>
+    <rect class="q" x="23" y="13" width="14" height="8" rx="1.5"/><g class="i">${q === 'camera' ? cam(30, 17, 7) : play(30, 17, 7)}</g></svg>`;
+}
+function inverserReaction() {
+  etat.reaction.petit = etat.reaction.petit === 'partage' ? 'camera' : 'partage';
+  envoyer(); dessinerReglagesMode();
+  toast(etat.reaction.petit === 'partage' ? 'Ta caméra en grand, le partage en petit dans le coin' : 'Le partage en grand, ta caméra en petit dans le coin');
+}
 function dessinerReglagesMode() {
   const box = $('#mode-reglages');
   const m = etat.mode, r = etat.reaction;
@@ -60,15 +73,24 @@ function dessinerReglagesMode() {
          ${TEL_SOURCES ? '' : '<button type="button" class="petit ' + (actives.length ? '' : 'primaire') + '" data-src="console" title="PS5, Xbox, Switch : avec un boîtier d\'acquisition (Cam Link, Elgato…)">Console</button>'}
          ${TEL_SOURCES ? '' : '<button type="button" class="petit" data-src="monecran" title="PS Remote Play, Xbox, GeForce Now, un jeu sur PC : choisis sa fenêtre">Fenêtre de jeu</button>'}
          <button type="button" class="petit" data-src="lien" title="Le flux d'un lien : une chaîne Twitch, une vidéo…">Lien</button></div>`;
+  const inv = r.petit === 'partage', nomPartage = m === 'jeu' ? 'Le jeu' : 'Le partage';
+  const quoi = inv ? (m === 'jeu' ? 'Jeu' : 'Partage') : 'Caméra';
   box.innerHTML = `
+    <div class="md-ligne md-petit">
+      <span class="md-tit">En petit</span>
+      <div class="md-qui" role="group" aria-label="Ce qui se met en petit dans le coin">${[['camera', 'Ma caméra', 'Ta caméra en petit dans le coin, ' + nomPartage.toLowerCase() + ' en grand'], ['partage', nomPartage, nomPartage + ' en petit dans le coin, ta caméra en grand']].map(([q, n, t]) => `<button type="button" data-petit="${q}" class="${r.petit === q ? 'actif' : ''}" aria-pressed="${r.petit === q}" title="${t}">${petitSvg(q)}<span>${n}</span></button>`).join('')}</div>
+      <button type="button" class="petit md-inverser" title="Échange d'un clic ce qui est en grand et ce qui est en petit">⇄ Inverser</button>
+    </div>
     <div class="md-ligne">
-      <span class="md-tit">Horizontal</span>
-      <div class="md-coins" role="group" aria-label="Coin de la caméra">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="Caméra ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
-      <div class="md-tailles" role="group" aria-label="Taille de la caméra">${[['p', 'Petite'], ['m', 'Moyenne'], ['g', 'Grande']].map(([t, n]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="Caméra ${n.toLowerCase()}${t === 'm' ? ' (environ un huitième de l\'écran)' : ''}">${n}</button>`).join('')}</div>
-      <span class="md-tit">Vertical</span>
-      <div class="md-cotes" role="group" aria-label="Où va la bande-annonce en vertical">${[['haut', 'en haut'], ['bas', 'en bas']].map(([c, n]) => `<button type="button" data-cote="${c}" class="${r.cote === c ? 'actif' : ''}" title="${m === 'jeu' ? 'Le jeu' : 'La bande-annonce'} ${n}, la caméra ${c === 'haut' ? 'en bas' : 'en haut'}">${coteSvg(c)}<span>${m === 'jeu' ? 'Jeu' : 'B.-A.'} ${n}</span></button>`).join('')}</div>
+      <span class="md-tit">${inv ? 'Coin' : 'Horizontal'}</span>
+      <div class="md-coins" role="group" aria-label="Coin de ce qui est en petit">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="${quoi} ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
+      <div class="md-tailles" role="group" aria-label="Taille de ce qui est en petit">${[['p', 'Petite'], ['m', 'Moyenne'], ['g', 'Grande']].map(([t, n]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="${quoi} : taille ${n.toLowerCase()}${t === 'm' && !inv ? ' (environ un huitième de l\'écran)' : ''}">${n}</button>`).join('')}</div>
+      ${inv ? '<span class="md-note">En vertical aussi : même coin, dans la zone que TikTok ne cache pas</span>' : `<span class="md-tit">Vertical</span>
+      <div class="md-cotes" role="group" aria-label="Où va la bande-annonce en vertical">${[['haut', 'en haut'], ['bas', 'en bas']].map(([c, n]) => `<button type="button" data-cote="${c}" class="${r.cote === c ? 'actif' : ''}" title="${m === 'jeu' ? 'Le jeu' : 'La bande-annonce'} ${n}, la caméra ${c === 'haut' ? 'en bas' : 'en haut'}">${coteSvg(c)}<span>${m === 'jeu' ? 'Jeu' : 'B.-A.'} ${n}</span></button>`).join('')}</div>`}
     </div>
     ${appel}`;
+  box.querySelectorAll('[data-petit]').forEach(b => b.onclick = () => { if (etat.reaction.petit !== b.dataset.petit) inverserReaction(); });
+  box.querySelector('.md-inverser').onclick = inverserReaction;
   box.querySelectorAll('[data-coin]').forEach(b => b.onclick = () => { etat.reaction.coin = b.dataset.coin; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-taille]').forEach(b => b.onclick = () => { etat.reaction.taille = b.dataset.taille; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-cote]').forEach(b => b.onclick = () => { etat.reaction.cote = b.dataset.cote; envoyer(); dessinerReglagesMode(); });

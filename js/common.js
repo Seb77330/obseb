@@ -782,7 +782,8 @@ function reglageReaction(st) {
   return {
     coin: ['hg', 'hd', 'bg', 'bd'].includes(r.coin) ? r.coin : 'bd',
     taille: TAILLES_REACTION[r.taille] ? r.taille : 'm',
-    cote: r.cote === 'bas' ? 'bas' : 'haut'
+    cote: r.cote === 'bas' ? 'bas' : 'haut',
+    petit: r.petit === 'partage' ? 'partage' : 'camera'   // ce qui se pose en petit dans le coin : la caméra (par défaut) ou ce qui est partagé
   };
 }
 function modeDe(st) { return st && MODES.includes(st.mode) ? st.mode : 'plateau'; }
@@ -799,8 +800,33 @@ function sourcesPlein(sources, z, gap) {
   }
   return r;
 }
+/* Des vignettes 16:9 posées dans un coin de la zone z, rangées côte à côte depuis ce coin (un peu plus petites à plusieurs) */
+function vignettesCoin(cles, coin, w0, z, e, r) {
+  const m = cles.length; if (!m) return;
+  const k = m === 1 ? 1 : m === 2 ? 0.78 : 0.62;
+  const w = Math.round(Math.min(w0 * k, (z.w - (m - 1) * e) / m)), h = Math.round(w * 9 / 16);
+  const droite = coin[1] === 'd', bas = coin[0] === 'b';
+  cles.forEach((id, i) => {
+    const x = droite ? z.x + z.w - (i + 1) * w - i * e : z.x + i * (w + e);
+    r[id] = { x, y: bas ? z.y + z.h - h : z.y, w, h, z: 2 };
+  });
+}
+/* Réaction inversée : les caméras prennent tout l'écran, ce qui est partagé (YouTube, un lien) se pose en petit dans un coin */
+const TAILLES_REACTION_V = { p: 0.46, m: 0.56, g: 0.68 };   // en vertical, part de la largeur de l'écran
+function dispositionReactionInverse(ids, sources, reg, vertical) {
+  const W = vertical ? SCENE_VW : SCENE_W, H = vertical ? SCENE_VH : SCENE_H, r = {};
+  const m = Math.min(ids.length, vertical ? 6 : 9);
+  if (!m) return sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12);   // personne à l'écran : le partage reprend toute la place
+  const g = vertical ? [m <= 2 ? 1 : 2, m <= 2 ? m : Math.ceil(m / 2)] : [m <= 1 ? 1 : m <= 4 ? 2 : 3, m <= 2 ? 1 : m <= 6 ? 2 : 3];
+  Object.assign(r, grilleCellules(ids.slice(0, m), 0, 0, W, H, m > 1 ? 8 : 0, g));
+  // en vertical, on reste dans la zone que TikTok / Instagram ne recouvrent pas (boutons à droite, texte en bas)
+  const z = vertical ? { x: 40, y: SURES_V.haut, w: W - 40 - SURES_V.droite, h: SURES_V.bas - SURES_V.haut } : { x: 36, y: 36, w: W - 72, h: H - 72 };
+  vignettesCoin(sources.slice(0, 3), reg.coin, W * (vertical ? TAILLES_REACTION_V : TAILLES_REACTION)[reg.taille], z, vertical ? 14 : 18, r);
+  return r;
+}
 function dispositionReaction(ids, sources, st, vertical = false) {
   const reg = reglageReaction(st), r = {};
+  if (reg.petit === 'partage') return dispositionReactionInverse(ids, sources, reg, vertical);
   if (vertical) {
     const W = SCENE_VW, H = SCENE_VH, moitie = H / 2;
     if (!ids.length) return sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12);
@@ -816,13 +842,7 @@ function dispositionReaction(ids, sources, st, vertical = false) {
   const m = Math.min(ids.length, 4);
   if (!m) return r;
   // à plusieurs, les caméras se rangent côte à côte depuis le coin, un peu plus petites
-  const k = m === 1 ? 1 : m === 2 ? 0.78 : 0.62;
-  const w = Math.round(W * TAILLES_REACTION[reg.taille] * k), h = Math.round(w * 9 / 16);
-  const droite = reg.coin[1] === 'd', bas = reg.coin[0] === 'b';
-  ids.slice(0, m).forEach((id, i) => {
-    const x = droite ? W - marge - (i + 1) * w - i * e : marge + i * (w + e);
-    r[id] = { x, y: bas ? H - marge - h : marge, w, h, z: 2 };
-  });
+  vignettesCoin(ids.slice(0, m), reg.coin, W * TAILLES_REACTION[reg.taille], { x: marge, y: marge, w: W - 2 * marge, h: H - 2 * marge }, e, r);
   return r;
 }
 

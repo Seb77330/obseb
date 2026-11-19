@@ -97,3 +97,25 @@
 body.visuel-ouvert #cam-appel { display: none !important; }
 #titre-session.cliquable { cursor: pointer; border-radius: 6px; }
 #titre-session.cliquable:hover { text-decoration: underline; text-decoration-color: var(--ui-accent); text-underline-offset: 3px; }
+
+/* ----- Ce qui se met en petit : ta caméra, ou l'inverse (le partage en petit sur ta caméra) ----- */
+.md-qui { display: flex; gap: 4px; padding: 2px; border: 1px solid var(--ui-line); border-radius: 8px; background: var(--ui-input); }
+.md-qui button { display: flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border: 1px solid transparent; border-radius: 6px; background: none; font-size: 12.5px; font-weight: 500; color: var(--ui-muted); }
+.md-qui svg { width: 34px; height: 20px; flex: none; display: block; }
+.md-qui .f { fill: none; stroke: var(--ui-muted); stroke-width: 1.5; }
+.md-qui .g { fill: color-mix(in srgb, var(--ui-muted) 55%, transparent); }
+.md-qui .q { fill: var(--ui-muted); }
+.md-qui .i { fill: var(--ui-input); }
+.md-qui button:hover { color: var(--ui-text); }
+.md-qui button.actif { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+.md-qui button.actif .q { fill: var(--ui-accent); }
+.md-qui button.actif .i { fill: var(--ui-sur-accent); }
+.md-inverser { font-weight: 600; }
+.md-note { font-size: 11.5px; color: var(--ui-muted); }
+@media (max-width: 1000px) {
+  .md-petit { gap: 6px; }
+  .md-qui { flex: 1; }
+  .md-qui button { flex: 1; justify-content: center; }
+  .md-note { flex-basis: 100%; }
+}
+@media (max-width: 1000px) { .md-inverser { display: none; } }   /* sur téléphone, les deux gros boutons « En petit » suffisent pour alterner */

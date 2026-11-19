@@ -652,3 +652,9 @@ body.vertical.plein-partage[data-mode="jeu"] #tuiles .tuile { box-shadow: inset 
 #ecran .tuile.demo .attente { background: radial-gradient(ellipse at 30% 40%, #3b2a1a, #0b0b0f 70%); color: rgba(255,255,255,.8); font: 600 44px var(--font-body); letter-spacing: .04em; text-transform: uppercase; }
 #ecran .tuile.demo.jeu .attente { background: radial-gradient(ellipse at 60% 45%, #123a2e, #05070a 70%); }
 body.vertical.plein-partage #tuiles .tuile .nom { display: none; }
+/* Réaction inversée (le partage en petit sur les caméras) : la vignette garde son cadre, même en vertical */
+body.vertical.plein-partage #tuiles .tuile.medaillon, body.vertical.plein-partage #ecran .tuile.medaillon { border-radius: 18px; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 18px 44px rgba(0,0,0,.6); }
+body.vertical.plein-partage[data-mode="jeu"] #tuiles .tuile.medaillon, body.vertical.plein-partage[data-mode="jeu"] #ecran .tuile.medaillon { border-radius: 10px; box-shadow: 0 0 0 4px var(--accent), 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent), 0 16px 40px rgba(0,0,0,.6); }
+body.partage-petit #ecran { z-index: 4; }
+body.plein-partage #ecran .tuile.medaillon { border-radius: 18px; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 18px 44px rgba(0,0,0,.6); }
+body.plein-partage[data-mode="jeu"] #ecran .tuile.medaillon { border-radius: 10px; box-shadow: 0 0 0 4px var(--accent), 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent), 0 16px 40px rgba(0,0,0,.6); }
