@@ -303,7 +303,7 @@ const FAQ = [
     r: "Clique sur « + Scène », donne-lui un nom, choisis un cadrage et les personnes à montrer. Chaque scène garde son cadrage et qui elle montre.",
     m: "creer scene ajouter scene personnalisee nouvelle scene" },
   { c: 'scenes', q: "Quels cadrages sont possibles ?",
-    r: "Tout le monde à la même taille, une seule personne en plein cadre, une personne en grand et les autres à côté ou en bande dessous, Vedette, Médaillon (les autres posés en médaillons) et Duel (face à face, séparés par une diagonale).",
+    r: "Tout le monde à la même taille, une seule personne en plein cadre, une personne en grand et les autres à côté (Interview), Médaillon (les autres posés en médaillons) et Duel (face à face, séparés par une diagonale).",
     m: "en grand plus gros taille cadrage mise en page disposition layout grille vedette medaillon duel" },
   { c: 'scenes', q: "Une scène montre seulement certaines personnes : les autres s'entendent-elles ?",
     r: "Oui. Les personnes qui ne sont pas à l'image restent entendues. Pour couper quelqu'un, coupe son son sur sa carte.",
