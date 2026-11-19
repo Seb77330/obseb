@@ -31,8 +31,13 @@
   /* ----- L'aperçu : quelques plans du vrai rendu ----- */
   const PLANS = [
     { nom: 'Tes invités', theme: 'plateau3d', q: 'demo=4&sources=0&vivant=1' },
+    { nom: 'Réaction', theme: 'cinema', q: 'demo=2&mode=reaction&srcimg=img/demo/film-neon.svg&srcnom=Bande-annonce&vivant=1' },
+    { nom: 'Jeu vidéo', theme: 'arcade', q: 'demo=1&mode=jeu&srcimg=img/demo/jeu-course.svg&srcnom=Jeu&vivant=1' },
     { nom: 'Le quiz', theme: 'studio', q: 'demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg&vivant=1' },
+    { nom: 'Le classement', theme: 'ceremonie', q: 'demo=3&sources=0&classement=5&vivant=1' },
     { nom: 'Le chat à l\'écran', theme: 'neon', q: 'demo=3&sources=0&chat=youtube&vivant=1' },
+    { nom: 'Sous-titres', theme: 'studio', q: 'demo=3&sources=0&st=1&vivant=1' },
+    { nom: 'QR code', theme: 'neon', q: 'demo=3&sources=0&qr=bd&qrtitre=Essaie%20MESA&vivant=1' },
     { nom: 'Soirée film', theme: 'bond', q: 'demo=3&watch=1&srcimg=img/demo/film-horizon.svg&wtitre=Horizon%20Rouge&vivant=1' },
     { nom: 'Le générique', theme: 'cinema', q: 'demo=3&scene=intro' }
   ];
