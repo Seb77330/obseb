@@ -28,27 +28,27 @@
   // « Essayer gratuitement » = Nouveau live (crée le live et ouvre la régie)
   $$('[data-v-essayer]').forEach(b => { b.onclick = () => $('#btn-nouveau').click(); });
 
-  /* ----- L'aperçu : quelques plans du vrai rendu ----- */
+  /* ----- L'aperçu : quelques plans du vrai rendu, en horizontal et en vertical côte à côte -----
+     Un plan peut avoir plusieurs étapes (ex. le quiz puis le classement) : elles s'enchaînent dans le même plan. */
+  const H = 'img/demo/film-horizon.svg', N = 'img/demo/film-neon.svg';
   const PLANS = [
-    { nom: 'Tes invités', theme: 'plateau3d', q: 'demo=4&sources=0&vivant=1' },
-    { nom: 'Réaction', theme: 'cinema', q: 'demo=2&mode=reaction&srcimg=img/demo/film-neon.svg&srcnom=Bande-annonce&vivant=1' },
-    { nom: 'Jeu vidéo', theme: 'arcade', q: 'demo=1&mode=jeu&srcimg=img/demo/jeu-course.svg&srcnom=Jeu&vivant=1' },
-    { nom: 'Le quiz', theme: 'studio', q: 'demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg&vivant=1' },
-    { nom: 'Le classement', theme: 'ceremonie', q: 'demo=3&sources=0&classement=5&vivant=1' },
-    { nom: 'Le chat à l\'écran', theme: 'neon', q: 'demo=3&sources=0&chat=youtube&vivant=1' },
-    { nom: 'Sous-titres', theme: 'studio', q: 'demo=3&sources=0&st=1&vivant=1' },
-    { nom: 'QR code', theme: 'neon', q: 'demo=3&sources=0&qr=bd&qrtitre=Essaie%20MESA&vivant=1' },
-    { nom: 'Soirée film', theme: 'bond', q: 'demo=3&watch=1&srcimg=img/demo/film-horizon.svg&wtitre=Horizon%20Rouge&vivant=1' },
-    { nom: 'Le générique', theme: 'cinema', q: 'demo=3&scene=intro' }
+    { nom: 'Tes invités', theme: 'plateau3d', q: ['demo=4&sources=0'] },
+    { nom: 'Réaction', theme: 'cinema', q: [`demo=1&mode=reaction&petit=partage&coin=bg&taille=m&vdispo=coin&srcimg=${N}&srcnom=Bande-annonce`] },
+    { nom: 'Jeu vidéo', theme: 'arcade', q: ['demo=1&mode=jeu&coin=mg&taille=p&vdispo=coin&srcimg=img/demo/jeu-course.svg&srcnom=Jeu'] },
+    { nom: 'Quiz et classement', theme: 'studio', q: ['demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg', 'demo=3&sources=0&classement=5&qstyle=plateau'] },
+    { nom: 'Le chat à l\'écran', theme: 'neon', q: ['demo=3&sources=0&chat=youtube&cstyle=bulle', 'demo=3&sources=0&chat=twitch&cstyle=affiche', 'demo=3&sources=0&chat=youtube&cstyle=notif', 'demo=3&sources=0&chat=twitch&cstyle=postit'] },
+    { nom: 'Sous-titres', theme: 'studio', q: ['demo=2&sources=0&st=1&ststyle=cinema'] },
+    { nom: 'Intros et outros', theme: 'cinema', q: ['demo=3&scene=intro&intro=pellicule', 'demo=3&scene=intro&intro=neon', 'demo=3&scene=fin&outro=rideau', 'demo=3&scene=fin&outro=generique'] },
+    { nom: 'Soirée film', theme: 'bond', q: [`demo=3&scene=watch&watch=1&wstyle=bandeau&wmode=double&srcimg=${H}&wtitre=Horizon%20Rouge`] }
   ];
-  const DUREE = 5200;
-  const boite = $('#v-scenes'), barre = $('#v-plans');
-  barre.style.setProperty('--v-duree', DUREE + 'ms');
-  const url = p => {
+  const ETAPE = 3400, DUREE = 5600;
+  const dureePlan = p => p.q.length > 1 ? p.q.length * ETAPE : DUREE;
+  const boites = [$('#v-scenes'), $('#v-scenes-v')], barre = $('#v-plans');
+  const url = (p, q, vertical) => {
     const s = Object.assign(nouvelleSession('Le grand débat ciné', p.theme), { hote: 'Alex', handle: '@ta_chaine', theme: { preset: p.theme, logoTexte: 'MESA' } });
-    return `sortie.html?${p.q}&musique=0#s=${b64e(s)}`;
+    return `sortie.html?${q}&vivant=1&musique=0${vertical ? '&format=vertical' : ''}#s=${b64e(s)}`;
   };
-  let actuel = -1, minuteur = 0, fixe = doux, lance = false;
+  let actuel = -1, etape = 0, minuteur = 0, fixe = doux, lance = false;
   const boutons = PLANS.map((p, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = p.nom; b.setAttribute('aria-selected', 'false');
@@ -56,29 +56,38 @@
     barre.appendChild(b); return b;
   });
   if (fixe) barre.classList.add('fixe');
-  function suivant() { if (!fixe) minuteur = setTimeout(() => montrer((actuel + 1) % PLANS.length), DUREE); }
-  function montrer(i) {
-    clearTimeout(minuteur);
-    actuel = i;
-    boutons.forEach((b, k) => b.setAttribute('aria-selected', String(k === i)));
+  function charger(boite, src, titre) {
     const f = document.createElement('iframe');
-    f.tabIndex = -1; f.title = 'Aperçu : ' + PLANS[i].nom; f.setAttribute('aria-hidden', 'true');
+    f.tabIndex = -1; f.title = 'Aperçu : ' + titre; f.setAttribute('aria-hidden', 'true');
     f.onload = () => setTimeout(() => {
       f.classList.add('vu');
       // l'ancien plan reste derrière le temps du fondu, puis on le retire
       Array.from(boite.children).forEach(x => { if (x !== f) setTimeout(() => { if (x.parentNode) boite.removeChild(x); }, 800); });
     }, 350);
-    f.src = url(PLANS[i]);
+    f.src = src;
     boite.appendChild(f);
-    suivant();
+  }
+  function montrer(i, k = 0) {
+    clearTimeout(minuteur);
+    const p = PLANS[i];
+    if (i !== actuel || k === 0) {
+      boutons.forEach((b, n) => b.setAttribute('aria-selected', String(n === i)));
+      const b = boutons[i]; b.style.setProperty('--v-duree', dureePlan(p) + 'ms');
+      b.classList.remove('relance'); void b.offsetWidth; b.classList.add('relance');
+    }
+    actuel = i; etape = k;
+    boites.forEach((boite, v) => charger(boite, url(p, p.q[k], !!v), p.nom));
+    if (k + 1 < p.q.length) minuteur = setTimeout(() => montrer(i, k + 1), ETAPE);
+    else if (!fixe) minuteur = setTimeout(() => montrer((i + 1) % PLANS.length), p.q.length > 1 ? ETAPE : DUREE);
+    else if (p.q.length > 1) minuteur = setTimeout(() => montrer(i, 0), ETAPE);
   }
   function demarrer() { if (lance) return; lance = true; montrer(actuel < 0 ? 0 : actuel); }
-  function arreter() { if (!lance) return; lance = false; clearTimeout(minuteur); boite.textContent = ''; }
+  function arreter() { if (!lance) return; lance = false; clearTimeout(minuteur); boites.forEach(b => { b.textContent = ''; }); }
   // onglet caché : on arrête de faire tourner
   document.addEventListener('visibilitychange', () => {
     if (!lance) return;
     clearTimeout(minuteur);
-    if (!document.hidden) suivant();
+    if (!document.hidden) montrer(actuel, etape);
   });
 
   /* ----- Les thèmes qui défilent ----- */

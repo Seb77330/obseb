@@ -811,7 +811,7 @@ const TAILLES_REACTION = { p: 0.29, m: 0.354, g: 0.43 };   // part de la largeur
 function reglageReaction(st) {
   const r = (st && st.reaction) || {};
   return {
-    coin: ['hg', 'hd', 'bg', 'bd'].includes(r.coin) ? r.coin : 'bd',
+    coin: ['hg', 'hd', 'bg', 'bd', 'mg', 'md'].includes(r.coin) ? r.coin : 'bd',   // mg / md : au milieu, à gauche ou à droite
     taille: TAILLES_REACTION[r.taille] ? r.taille : 'm',
     cote: r.cote === 'bas' ? 'bas' : 'haut',
     petit: r.petit === 'partage' ? 'partage' : 'camera',   // ce qui est en petit : la caméra (par défaut) ou ce qui est partagé
@@ -838,10 +838,10 @@ function vignettesCoin(cles, coin, w0, z, e, r) {
   const m = cles.length; if (!m) return;
   const k = m === 1 ? 1 : m === 2 ? 0.78 : 0.62;
   const w = Math.round(Math.min(w0 * k, (z.w - (m - 1) * e) / m)), h = Math.round(w * 9 / 16);
-  const droite = coin[1] === 'd', bas = coin[0] === 'b';
+  const droite = coin[1] === 'd', bas = coin[0] === 'b', milieu = coin[0] === 'm';
   cles.forEach((id, i) => {
     const x = droite ? z.x + z.w - (i + 1) * w - i * e : z.x + i * (w + e);
-    r[id] = { x, y: bas ? z.y + z.h - h : z.y, w, h, z: 2 };
+    r[id] = { x, y: milieu ? Math.round(z.y + (z.h - h) / 2) : bas ? z.y + z.h - h : z.y, w, h, z: 2 };
   });
 }
 /* Réaction inversée : les caméras prennent tout l'écran, ce qui est partagé (YouTube, un lien) se pose en petit dans un coin */
