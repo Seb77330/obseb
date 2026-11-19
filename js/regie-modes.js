@@ -43,7 +43,10 @@ function coinSvg(c) {
   return `<svg viewBox="0 0 40 24" aria-hidden="true"><rect class="f" x="1" y="1" width="38" height="22" rx="2.5"/><rect class="q" x="${x}" y="${y}" width="14" height="8" rx="1.5"/></svg>`;
 }
 function coteSvg(c) {
-  return `<svg viewBox="0 0 16 26" aria-hidden="true"><rect class="f" x="1" y="1" width="14" height="24" rx="2"/><rect class="${c === 'haut' ? 'p' : 'q'}" x="2.5" y="2.5" width="11" height="10" rx="1"/><rect class="${c === 'haut' ? 'q' : 'p'}" x="2.5" y="13.5" width="11" height="10" rx="1"/></svg>`;
+  if (c === 'coin') return `<svg viewBox="0 0 16 26" aria-hidden="true"><rect class="f" x="1" y="1" width="14" height="24" rx="2"/><rect class="p" x="2.5" y="2.5" width="11" height="21" rx="1"/><rect class="q" x="7.5" y="15" width="5.5" height="5" rx=".8"/></svg>`;
+  // la bande du haut reste libre (profil TikTok), la vidéo (pleine) et la caméra (claire) l'une sur l'autre
+  const v = c === 'haut' ? [5, 10] : [13.5, 10], k = c === 'haut' ? [16, 7.5] : [5, 7.5];
+  return `<svg viewBox="0 0 16 26" aria-hidden="true"><rect class="f" x="1" y="1" width="14" height="24" rx="2"/><rect class="q" x="2.5" y="${v[0]}" width="11" height="${v[1]}" rx="1"/><rect class="p" x="2.5" y="${k[0]}" width="11" height="${k[1]}" rx="1"/></svg>`;
 }
 /* Ce qui se pose en petit : ta caméra (sur la bande-annonce) ou l'inverse, la bande-annonce en petit sur ta caméra */
 function petitSvg(q) {
@@ -83,12 +86,16 @@ function dessinerReglagesMode() {
     <span class="md-sep" aria-hidden="true"></span>
     <div class="md-groupe md-coins" role="group" aria-label="Coin de ce qui est en petit" title="${quoi} en petit : choisis le coin">${['hg', 'hd', 'bg', 'bd'].map(c => `<button type="button" data-coin="${c}" class="${r.coin === c ? 'actif' : ''}" title="${quoi} ${NOMS_COINS[c]}">${coinSvg(c)}</button>`).join('')}</div>
     <div class="md-groupe md-tailles" role="group" aria-label="Taille de ce qui est en petit">${[['p', 'S', 'petite'], ['m', 'M', 'moyenne'], ['g', 'L', 'grande']].map(([t, n, l]) => `<button type="button" data-taille="${t}" class="${r.taille === t ? 'actif' : ''}" title="${quoi} : taille ${l}">${n}</button>`).join('')}</div>
-    ${inv ? '' : `<div class="md-groupe md-cotes" role="group" aria-label="En vertical">${[['haut', 'en haut'], ['bas', 'en bas']].map(([c, n]) => `<button type="button" data-cote="${c}" class="${r.cote === c ? 'actif' : ''}" title="En vertical : ${nomVideo.toLowerCase()} ${n}, ta caméra ${c === 'haut' ? 'en bas' : 'en haut'}">${coteSvg(c)}</button>`).join('')}</div>`}
-    <button type="button" class="md-inverser${inv ? ' actif' : ''}" aria-pressed="${inv}" title="${inv ? 'Ta caméra est en grand, ' + nomVideo.toLowerCase() + ' en petit' : nomVideo + ' est en grand, ta caméra en petit'}. Clique pour échanger${inv ? ' (en vertical aussi : même coin, dans la zone que TikTok ne cache pas)' : ''}">${petitSvg(r.petit === 'partage' ? 'partage' : 'camera')}<span>Inverser</span></button>`;
+    <div class="md-groupe md-cotes" role="group" aria-label="En vertical (TikTok, Reels, Shorts)">${[['haut', `En vertical : ${nomVideo.toLowerCase()} en haut, ta caméra en bas, sous la zone du profil TikTok`], ['bas', `En vertical : ta caméra en haut, ${nomVideo.toLowerCase()} en bas, au-dessus des commentaires`], ['coin', `En vertical : ${quoi.toLowerCase()} en petit dans le coin choisi`]].map(([c, t]) => `<button type="button" data-cote="${c}" class="${(c === 'coin' ? r.vdispo === 'coin' : r.vdispo !== 'coin' && r.cote === c) ? 'actif' : ''}" title="${t}">${coteSvg(c)}</button>`).join('')}</div>
+    <button type="button" class="md-inverser${inv ? ' actif' : ''}" aria-pressed="${inv}" title="${inv ? 'Ta caméra est en grand, ' + nomVideo.toLowerCase() + ' en petit' : nomVideo + ' est en grand, ta caméra en petit'}. Clique pour échanger (en vertical empilé : celui qui est en petit prend le bloc le plus petit)">${petitSvg(r.petit === 'partage' ? 'partage' : 'camera')}<span>Inverser</span></button>`;
   box.querySelector('.md-inverser').onclick = inverserReaction;
   box.querySelectorAll('[data-coin]').forEach(b => b.onclick = () => { etat.reaction.coin = b.dataset.coin; envoyer(); dessinerReglagesMode(); });
   box.querySelectorAll('[data-taille]').forEach(b => b.onclick = () => { etat.reaction.taille = b.dataset.taille; envoyer(); dessinerReglagesMode(); });
-  box.querySelectorAll('[data-cote]').forEach(b => b.onclick = () => { etat.reaction.cote = b.dataset.cote; envoyer(); dessinerReglagesMode(); });
+  box.querySelectorAll('[data-cote]').forEach(b => b.onclick = () => {
+    const c = b.dataset.cote;
+    if (c === 'coin') etat.reaction.vdispo = 'coin'; else { etat.reaction.vdispo = 'pile'; etat.reaction.cote = c; }
+    envoyer(); dessinerReglagesMode();
+  });
   box.querySelectorAll('[data-src]').forEach(b => b.onclick = () => b.dataset.src === 'change' ? ouvrirOnglet('sources') : choisirSourceMode(b.dataset.src));
 }
 /* Un raccourci vers l'onglet Partage : on l'ouvre et on choisit la bonne source, comme si tu avais cliqué dedans */

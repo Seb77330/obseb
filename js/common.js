@@ -801,7 +801,8 @@ function reglageReaction(st) {
     coin: ['hg', 'hd', 'bg', 'bd'].includes(r.coin) ? r.coin : 'bd',
     taille: TAILLES_REACTION[r.taille] ? r.taille : 'm',
     cote: r.cote === 'bas' ? 'bas' : 'haut',
-    petit: r.petit === 'partage' ? 'partage' : 'camera'   // ce qui se pose en petit dans le coin : la caméra (par défaut) ou ce qui est partagé
+    petit: r.petit === 'partage' ? 'partage' : 'camera',   // ce qui est en petit : la caméra (par défaut) ou ce qui est partagé
+    vdispo: r.vdispo === 'coin' ? 'coin' : 'pile'           // en vertical : l'un au-dessus de l'autre (par défaut), ou en petit dans un coin
   };
 }
 function modeDe(st) { return st && MODES.includes(st.mode) ? st.mode : 'plateau'; }
@@ -842,17 +843,33 @@ function dispositionReactionInverse(ids, sources, reg, vertical) {
   vignettesCoin(sources.slice(0, 3), reg.coin, W * (vertical ? TAILLES_REACTION_V : TAILLES_REACTION)[reg.taille], z, vertical ? 14 : 18, r);
   return r;
 }
+/* Vertical « empilé » : la vidéo au-dessus de la caméra (ou l'inverse), l'un plus grand que l'autre,
+   tout dans la bande que TikTok / Instagram / YouTube ne recouvrent pas (profil en haut, commentaires en bas).
+   Le petit bloc prend 34 / 40 / 46 % de la hauteur selon la taille S / M / L. */
+const PART_PILE = { p: 0.34, m: 0.40, g: 0.46 };
+function dispositionPile(ids, sources, reg) {
+  const W = SCENE_VW, y0 = SURES_V.haut, H = SURES_V.bas - SURES_V.haut, gap = 12, r = {};
+  if (!ids.length) {   // personne à l'écran : la vidéo seule, au milieu de la bande sûre
+    const h = Math.min(H, Math.round(W * 9 / 16) * (sources.length > 1 ? 2 : 1));
+    return sourcesPlein(sources, { x: 0, y: y0 + (H - h) / 2, w: W, h }, 8);
+  }
+  const hPetit = Math.round((H - gap) * PART_PILE[reg.taille]);
+  const hVideo = reg.petit === 'partage' ? hPetit : H - gap - hPetit, hCam = H - gap - hVideo;
+  const yVideo = reg.cote === 'haut' ? y0 : y0 + hCam + gap, yCam = reg.cote === 'haut' ? y0 + hVideo + gap : y0;
+  Object.assign(r, sourcesPlein(sources, { x: 0, y: yVideo, w: W, h: hVideo }, 8));
+  const m = Math.min(ids.length, 6), nc = m <= 1 ? 1 : m <= 4 ? 2 : 3;
+  Object.assign(r, grilleCellules(ids.slice(0, m), 0, yCam, W, hCam, 8, [nc, Math.ceil(m / nc)]));
+  return r;
+}
 function dispositionReaction(ids, sources, st, vertical = false) {
   const reg = reglageReaction(st), r = {};
+  if (vertical && reg.vdispo === 'pile') return dispositionPile(ids, sources, reg);
   if (reg.petit === 'partage') return dispositionReactionInverse(ids, sources, reg, vertical);
-  if (vertical) {
-    const W = SCENE_VW, H = SCENE_VH, moitie = H / 2;
-    if (!ids.length) return sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12);
-    const zp = { x: 0, y: reg.cote === 'haut' ? 0 : moitie, w: W, h: moitie };
-    const zc = { x: 0, y: reg.cote === 'haut' ? moitie : 0, w: W, h: moitie };
-    Object.assign(r, sourcesPlein(sources, zp, 12));
-    const m = Math.min(ids.length, 6), nc = m <= 1 ? 1 : m <= 4 ? 2 : 3;
-    Object.assign(r, grilleCellules(ids.slice(0, m), zc.x, zc.y, zc.w, zc.h, 8, [nc, Math.ceil(m / nc)]));
+  if (vertical) {   // vertical « coin » : la vidéo plein écran, la caméra en petit dans un coin de la bande sûre
+    const W = SCENE_VW, H = SCENE_VH;
+    Object.assign(r, sourcesPlein(sources, { x: 0, y: 0, w: W, h: H }, 12));
+    const z = { x: 40, y: SURES_V.haut, w: W - 40 - SURES_V.droite, h: SURES_V.bas - SURES_V.haut };
+    vignettesCoin(ids.slice(0, 3), reg.coin, W * TAILLES_REACTION_V[reg.taille], z, 14, r);
     return r;
   }
   const W = SCENE_W, H = SCENE_H, marge = 36, e = 18;

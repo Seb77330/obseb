@@ -957,7 +957,7 @@ if (DEMO) {
   for (let i = 0; i < Math.min(DEMO, 18); i++) { const id = 'demo' + i; st.noms[id] = noms[i]; st.onair.push(id); creerTuile(id, noms[i], { demo: true }); }
   const nSrc = Math.min(4, parseInt(Q.get('sources') || '1', 10));
   st.sources = Array.from({ length: nSrc }, (_, i) => ({ type: 'ecran', ref: 'demoecran' + i, nom: Q.get('srcnom') || 'Source ' + (i + 1), actif: true, demo: true }));
-  if (Q.get('mode')) { st.mode = Q.get('mode'); st.reaction = { coin: Q.get('coin') || 'bd', taille: Q.get('taille') || 'm', cote: Q.get('cote') || 'haut', petit: Q.get('petit') || 'camera' }; }
+  if (Q.get('mode')) { st.mode = Q.get('mode'); st.reaction = { coin: Q.get('coin') || 'bd', taille: Q.get('taille') || 'm', cote: Q.get('cote') || 'haut', petit: Q.get('petit') || 'camera', vdispo: Q.get('vdispo') || 'pile' }; }
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));
