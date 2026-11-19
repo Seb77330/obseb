@@ -187,3 +187,12 @@ body.en-direct .scenes button.actif .sc-vue { box-shadow: 0 0 0 2px var(--ui-red
 #liste .participant:not(.antenne) .temoin, #cams .participant:not(.antenne) .temoin { background: var(--ui-panel); color: var(--ui-muted); }
 #liste .participant.antenne, #cams .participant.antenne { background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-panel2)); border-color: color-mix(in srgb, var(--ui-accent) 45%, transparent); }
 body.en-direct #liste .participant.antenne .vignette, body.en-direct #cams .participant.antenne .vignette { box-shadow: 0 0 0 2px var(--ui-accent); }
+
+/* ----- Barre du haut (19/11) : l'essentiel à droite, les petits outils regroupés ----- */
+body:not(.en-direct) header .horloge { display: none; }          /* l'heure ne sert que pendant le direct */
+header .outils-haut { display: flex; align-items: center; gap: 0; padding: 2px; border-radius: 10px; background: var(--ui-input); border: 1px solid var(--ui-line); margin-right: 6px; }
+header .outils-haut > button, header .outils-haut .bouton-affichage > button { border: 0 !important; background: none; padding: 6px 8px !important; border-radius: 7px; color: var(--ui-muted); }
+header .outils-haut > button:hover, header .outils-haut .bouton-affichage > button:hover { color: var(--ui-text); background: var(--ui-hover); }
+header .outils-haut #place-affichage { display: contents; }
+header #btn-visuel, header #btn-liens, header #btn-invite, header #btn-rec { border-color: var(--ui-line); }
+header .limiteur { font-family: var(--mono, monospace); font-size: 12.5px; }

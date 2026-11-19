@@ -161,7 +161,8 @@ const hms = ms => { const t = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(
 const dureeTexte = min => (min >= 60 ? Math.floor(min / 60) + ' h' : '') + (min % 60 ? ' ' + (min % 60) + (min >= 60 ? '' : ' min') : '');
 function majLimiteur() {
   const el = $('#limiteur');
-  if (!LIMITE_MS) { el.hidden = true; return; }
+  // hors direct, la durée maximale se règle dans Visuel › Quand : rien à afficher ici
+  if (!LIMITE_MS || !etat.direct) { el.hidden = true; limiteAtteinte = false; return; }
   el.hidden = false;
   // le compte suit le direct (bouton « Démarrer le direct »), pas les scènes
   if (!etat.direct) { limiteAtteinte = false; el.className = 'limiteur'; el.textContent = `Limite ${dureeTexte(+session.limite).trim()}`; el.dataset.court = dureeTexte(+session.limite).trim(); el.title = 'Le décompte démarre avec le direct'; return; }
