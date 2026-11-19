@@ -140,7 +140,7 @@ function majDirect() {
   btnDirect.title = d ? 'Couper une plateforme ou arrêter le direct' : 'Rien ne part tant que tu ne cliques pas ici';
   const badge = $('#badge-scene');
   badge.classList.toggle('rouge-direct', !!d);
-  badge.textContent = (d ? 'En direct · ' : 'Hors direct · ') + ({ intro: 'Intro', live: (typeof planActif === 'function' && planActif().nom) || 'Plateau', watch: 'Watch Party', fin: 'Outro' }[etat.scene] || '');
+  badge.textContent = (d ? 'En direct · ' : 'Hors direct · ') + ({ intro: 'Intro', live: (typeof modeCourant === 'function' && modeCourant() !== 'plateau') ? SCENES_MODE[modeCourant()][0] : (typeof nomPlan === 'function' ? nomPlan(planActif()) : 'Plateau'), watch: 'Watch Party', fin: 'Outro' }[etat.scene] || '');
 }
 btnDirect.onclick = e => {
   e.stopPropagation();

@@ -117,7 +117,7 @@ function majModes() {
   $$('#modes [data-mode]').forEach(b => b.classList.toggle('actif', b.dataset.mode === etat.mode));
   document.body.dataset.modeStudio = etat.mode;
   // le cadrage ne sert qu'aux caméras seules : caché en Réaction et en Jeu, et pendant l'intro et l'outro
-  const rc = $('#rangee-cadrage'); if (rc) rc.hidden = !((etat.scene === 'live' && etat.mode === 'plateau') || etat.scene === 'watch');
+  const rc = $('#rangee-cadrage'); if (rc) rc.hidden = !(etat.scene === 'live' && etat.mode === 'plateau');
   const actives = (etat.sources || []).filter(s => s && s.actif && s.ref).length;
   const cle = JSON.stringify([etat.mode, etat.scene, etat.reaction, actives > 0]);
   if (cle !== cleModes) { cleModes = cle; dessinerReglagesMode(); }

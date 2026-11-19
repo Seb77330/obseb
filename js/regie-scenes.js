@@ -119,15 +119,18 @@ function dessinerScenes() {
 function majInfosScene() {
   const box = $('#scene-infos'); if (!box) return;
   const sc = etat.scene;
+  // le nom de la scène choisie, en tête du tiroir
+  const nomSc = sc === 'live' ? (modeCourant() === 'plateau' ? nomPlan(planActif()) : SCENES_MODE[modeCourant()][0]) : (NOMS_SCENES[sc] || [''])[0];
+  const stn = $('#st-nom'); if (stn && stn.textContent !== nomSc) stn.textContent = nomSc;
   const cle = JSON.stringify([sc, etat.introStyle, etat.outroStyle, !!etat.fin]);
   box.hidden = !['intro', 'fin', 'watch'].includes(sc);
   if (box.hidden || cle === majInfosScene.cle) return;
   majInfosScene.cle = cle;
   const nomHb = (scene, id) => { const h = (typeof HABILLAGES !== 'undefined' && HABILLAGES[scene] || []).find(x => x.id === id); return h ? h.nom : 'Classique'; };
   box.innerHTML = sc === 'watch'
-    ? '<span class="si-tit">Watch Party</span><button type="button" class="petit" data-si="watch" title="Le minuteur du film, la lecture, l\'habillage">Régler le film</button>'
-    : `<span class="si-tit">${sc === 'intro' ? 'Intro' : 'Outro'}</span><button type="button" class="petit" data-si="${sc}" title="Choisir un autre visuel">${esc(nomHb(sc, sc === 'intro' ? etat.introStyle : etat.outroStyle))} · Changer</button>`
-      + (sc === 'intro' ? `<span class="si-sep"></span><span class="si-tit">Compte à rebours</span>${[2, 5, 10].map(m => `<button type="button" class="petit" data-si-min="${m}" title="L'intro tourne ${m} minutes">${m} min</button>`).join('')}${etat.fin ? '<button type="button" class="petit" data-si="sans" title="Arrêter le compte à rebours">Aucun</button>' : ''}` : '');
+    ? '<button type="button" class="petit si-principal" data-si="watch" title="Le minuteur du film, la lecture, l\'habillage">▶ Régler le film</button><span class="si-aide">Le minuteur, la lecture et l\'habillage du film</span>'
+    : `<button type="button" class="petit si-principal" data-si="${sc}" title="Choisir un autre visuel">✦ ${esc(nomHb(sc, sc === 'intro' ? etat.introStyle : etat.outroStyle))}</button>`
+      + (sc === 'intro' ? `<span class="si-sep"></span><span class="si-tit">⏱</span>${[2, 5, 10].map(m => `<button type="button" class="petit" data-si-min="${m}" title="L'intro tourne ${m} minutes">${m} min</button>`).join('')}${etat.fin ? '<button type="button" class="petit" data-si="sans" title="Arrêter le compte à rebours">Aucun</button>' : ''}` : '');
   box.querySelectorAll('[data-si]').forEach(b => b.onclick = () => {
     const q = b.dataset.si;
     if (q === 'watch') ouvrirOnglet('watch');

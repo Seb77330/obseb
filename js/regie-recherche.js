@@ -182,7 +182,7 @@ addEventListener('keydown', e => {
 boutonAffichage($('#place-affichage'));
 /* Téléphone : le cadrage se range avec le plateau ; pendant qu'on écrit, l'aperçu ne reste plus collé en haut (le clavier prend la place) */
 (() => {
-  const placer = () => { const r = $('#rangee-cadrage'); if (!r) return; if (PETIT_ECRAN.matches) $('.carte-moi').after(r); else $('#col-programme .colonne-corps').append(r); };
+  const placer = () => { const r = $('#rangee-cadrage'); if (!r) return; if (PETIT_ECRAN.matches) $('.carte-moi').after(r); else $('#scene-tiroir').append(r); };
   placer(); PETIT_ECRAN.addEventListener('change', placer);
   const ecrit = el => el && el.matches && el.matches('input[type=text], input[type=url], input[type=password], input[type=time], input:not([type]), textarea');
   document.addEventListener('focusin', e => { if (PETIT_ECRAN.matches && ecrit(e.target)) document.body.classList.add('saisie'); });
