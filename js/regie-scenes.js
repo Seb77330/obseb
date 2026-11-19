@@ -21,6 +21,9 @@ etat.plans = etat.plans.filter(p => p && p.id).slice(0, MAX_PLANS).map(p => ({
 if (etat.scene === 'partage') etat.scene = 'live';   // l'ancienne scène « Partage » : ce qui est partagé s'affiche maintenant dans les scènes de caméras
 const planActif = () => etat.plans.find(p => p.id === etat.plan) || etat.plans[0];
 if (!etat.plans.some(p => p.id === etat.plan)) etat.plan = etat.plans[0].id;
+// « Vedette » n'est plus proposé (19/11) : ceux qui l'avaient passent en Interview
+for (const p of etat.plans) if (p.layout === 'vedette') p.layout = 'interview';
+if (etat.layout === 'vedette') etat.layout = 'interview';
 if (!CADRAGES.includes(etat.layout)) etat.layout = planActif().layout;
 
 /* Qui la scène montre, parmi les personnes à l'antenne (null : tout le monde) */
@@ -146,7 +149,7 @@ function descriptionPlan(p) {
 /* ----- Cadrages ----- */
 const LISTE_CADRAGES = [
   ['grille', 'Grille', 'Tout le monde à la même taille', 'G', 3], ['solo', 'Solo', 'Une seule personne, en plein cadre', 'S', 1],
-  ['interview', 'Interview', 'Une personne en grand, les autres à côté', 'I', 3], ['vedette', 'Vedette', 'Une personne en grand, les autres en bande dessous', 'V', 4],
+  ['interview', 'Interview', 'Une personne en grand, les autres à côté', 'I', 3],
   ['incrust', 'Médaillon', 'Une personne en plein cadre, les autres en médaillons posés dessus', 'M', 3], ['duel', 'Duel', 'Deux personnes face à face, séparées par une diagonale', 'D', 2]
 ];
 $('#cadrages').innerHTML = LISTE_CADRAGES.map(([l, nom, aide, t, n]) => `<button data-layout="${l}" title="${aide} (touche ${t})"><span class="sc-vue">${vignetteCadrage(l, n, false)}</span><b>${nom}</b></button>`).join('');
@@ -156,7 +159,7 @@ $$('#cadrages button').forEach(b => b.onclick = () => changerLayout(b.dataset.la
 function ajouterScene() {
   if (etat.plans.length >= MAX_PLANS) return;
   let n = 2; while (etat.plans.some(p => p.nom === 'Scène ' + n)) n++;
-  const p = { id: 'p' + rnd(5), nom: 'Scène ' + n, layout: 'vedette', qui: 'tous' };
+  const p = { id: 'p' + rnd(5), nom: 'Scène ' + n, layout: 'interview', qui: 'tous' };
   etat.plans.push(p);
   allerPlan(p.id);
   ouvrirEditionScene(p.id, $(`#scenes [data-plan="${p.id}"]`), true);
