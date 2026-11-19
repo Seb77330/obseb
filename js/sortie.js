@@ -230,6 +230,11 @@ function placer(t, r) {
     zIndex: r.z || '', clipPath: r.pts ? `polygon(${r.pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(',')})` : '' });
   t.el.classList.toggle('decoupee', !!r.pts); t.el.classList.toggle('medaillon', !!r.z);
   t.el.classList.toggle('petite', r.w < 560);
+  t.el.classList.toggle('au-bas', r.y + r.h >= HAUT - 4);   // touche le bas de l'écran (caméra plein écran) : le nom remonte au-dessus du bandeau
+  // sous-titres posés sur l'image : le nom d'une caméra qui descend jusqu'à eux remonte juste au-dessus
+  const ligneST = VERTICAL ? 1180 : document.body.classList.contains('sans-bandeau') ? 850 : 720;
+  t.el.classList.toggle('sous-st', r.y + r.h > ligneST + 10);
+  t.el.style.setProperty('--st', Math.max(0, r.y + r.h - ligneST) + 'px');
   t.el.classList.remove('horsantenne');
 }
 
@@ -319,11 +324,16 @@ function appliquerEtat(st) {
   $('#logo-coin').classList.toggle('cachee', !sceneCameras(scene));
   const avecPartage = partageVisible(scene);
   $('#ecran').classList.toggle('cachee', !avecPartage);
-  $('#bandeau').classList.toggle('cachee', scene !== 'live');
   document.body.dataset.scene = scene;
   // bandeau : celui de la bibliothèque s'il y en a un d'affiché, sinon le titre du live
   const ba = st.bandeauActif;
   const titre = ba ? ba.titre : (st.bandeau || session.titre), sous = ba ? (ba.sous || '') : (st.message || '');
+  // ce que la régie a choisi d'enlever de l'écran (nom des personnes, titre, logo, « En direct », message)
+  const masque = st.masquer || {};
+  for (const k of ['noms', 'titre', 'logo', 'direct', 'message']) document.body.classList.toggle('sans-' + k, !!masque[k]);
+  const bandeauVide = masque.titre && masque.logo && masque.direct && (masque.message || !sous);
+  document.body.classList.toggle('sans-bandeau', !!bandeauVide);
+  $('#bandeau').classList.toggle('cachee', scene !== 'live' || !!bandeauVide);
   const bt = $('#bandeau-titre');
   if (bt.textContent !== titre) { bt.textContent = titre; bt.classList.remove('entree'); void bt.offsetWidth; bt.classList.add('entree'); }
   $('#bandeau-msg').textContent = sous;
@@ -347,14 +357,22 @@ function appliquerEtat(st) {
   // une scène peut ne montrer qu'une partie des personnes à l'antenne (Solo, Duo…) : les autres restent entendues
   if (scene === 'live' && !quizEnCours && Array.isArray(st.visibles)) { const v = ids.filter(id => st.visibles.includes(id)); if (v.length) ids = v; }
   document.body.classList.toggle('quiz-on', !!quizEnCours);
-  // sous-titres à l'écran : les caméras laissent une bande libre en dessous, les sous-titres ne passent jamais sur une image
+  // sous-titres à l'écran : posés sur le bas de l'image, comme à la télé (avant, les caméras rétrécissaient
+  // pour leur laisser une bande, et l'écran restait à moitié vide quand personne ne parlait)
   const bandeST = !!(st.st && st.st.actif && st.st.ecran) && !quizEnCours && sceneCameras(scene);
   document.body.classList.toggle('st-on', bandeST);
-  const retrait = (z, bas) => bandeST ? Object.assign({}, z, { h: Math.min(z.h, bas - z.y) }) : z;
+  const retrait = z => z;
   // tout le chat à l'écran : les caméras lui laissent une colonne (ou une bande en vertical), il ne passe jamais sur une image
   const filChat = !!(st.chatFil && st.chatFil.actif) && !quizEnCours && sceneCameras(scene);
   const cote = z => !filChat ? z : VERTICAL ? Object.assign({}, z, { h: z.h - 300 }) : Object.assign({}, z, { w: z.w - 400 });
-  const zone = cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(MUR ? ZONE_MUR : ZONE, 720));
+  // caméra plein écran : bord à bord, sans cadre ; le titre et le logo se posent sur l'image, comme à la télé
+  // (seulement quand on ne montre que des caméras : un partage, un quiz ou la Watch Party gardent leur mise en page)
+  const camPlein = !!st.camPlein && !quizEnCours && !avecPartage && scene === 'live';
+  document.body.classList.toggle('cam-plein', camPlein);
+  // sans bandeau, les caméras descendent jusqu'en bas
+  const sansBas = z => bandeauVide && !VERTICAL ? Object.assign({}, z, { h: HAUT - 70 - z.y }) : z;
+  const zone = camPlein ? cote({ x: 0, y: 0, w: LARG, h: HAUT })
+    : cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(sansBas(MUR ? ZONE_MUR : ZONE), 720));
   const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
   const zoneScene = scene === 'watch' ? zoneWatch : zone;
   // modes Réaction et Jeu : ce qui est partagé prend tout l'écran, les caméras se posent dans un coin (ou dessous en vertical)
@@ -366,8 +384,8 @@ function appliquerEtat(st) {
   const disp = quizEnCours ? dispositionQuiz(ids, VERTICAL, st.quiz.dispo || 'centre')
     : pleinEcran ? dispositionReaction(ids, clesActives, st, VERTICAL)
     : avecPartage ? (VERTICAL ? dispositionPartageV(ids, clesActives, zoneScene) : dispositionPartage(ids, clesActives, zoneScene))
-    : VERTICAL ? dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR })
-    : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR });
+    : VERTICAL ? dispositionCadrage(st.layout, ids, st.focus, zone, { vertical: true, mur: MUR || camPlein })
+    : dispositionCadrage(st.layout, ids, st.focus, zone, { mur: MUR || camPlein });
   if (scene === 'watch' && !quizEnCours && !avecPartage) Object.assign(disp, dispositionCadrage(st.layout, ids, st.focus, zoneWatch, { vertical: VERTICAL }));
   const partageAffiche = avecPartage && !quizEnCours;
   for (const t of tuiles.values()) {
@@ -964,6 +982,8 @@ if (DEMO) {
   if (Q.get('outro')) st.outroStyle = Q.get('outro');
   if (Q.get('compte')) { st.debutCompte = Date.now() - (+Q.get('ecoule') || 0) * 1000; st.fin = st.debutCompte + +Q.get('compte') * 1000; }
   st.message = Q.get('msg') || 'Pose tes questions dans le chat';
+  if (Q.get('masquer')) st.masquer = Object.fromEntries(Q.get('masquer').split(',').map(k => [k, true]));
+  if (Q.get('plein')) st.camPlein = true;
   appliquerEtat(st);
   if (Q.get('vivant')) demoVivante(st);
 } else {

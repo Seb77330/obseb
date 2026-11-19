@@ -623,7 +623,7 @@
   }
 </style>
 <link rel="stylesheet" href="css/modes.css?v=188e2dc4">
-<link rel="stylesheet" href="css/regie-leger.css?v=0f5b3c67">
+<link rel="stylesheet" href="css/regie-leger.css?v=19ef9e66">
 <link rel="stylesheet" href="css/faux.css?v=e2d3aac6">
 </head>
 <body>
@@ -737,7 +737,8 @@
           <div class="rangee" id="rangee-cadrage">
           <span class="etiquette">Cadrage</span>
           <div class="cadrages" id="cadrages" role="group" aria-label="Cadrage des caméras"></div>
-          <label class="aide coche" style="margin-left:auto" title="Un cadre de couleur entoure la personne qui parle"><input type="checkbox" id="surbrillance" checked> Qui parle</label>
+          <label class="aide coche" style="margin-left:auto" title="Les caméras bord à bord sur tout l'écran, sans cadre"><input type="checkbox" id="cam-plein"> Plein écran</label>
+          <label class="aide coche" title="Un cadre de couleur entoure la personne qui parle"><input type="checkbox" id="surbrillance" checked> Qui parle</label>
         </div>
         </div>
       </div>
@@ -759,7 +760,10 @@
       </nav>
       <div class="plus-pop" id="plus-pop" hidden></div>
       <section class="onglet" data-onglet="habillage" hidden>
-        <h3 class="sous-titre" style="margin-top:0">Bandeau du bas</h3>
+        <h3 class="sous-titre" style="margin-top:0">À l'écran</h3>
+        <div class="ecran-elements" id="ecran-elements" role="group" aria-label="Ce qui s'affiche à l'écran"><button type="button" data-el="noms" aria-pressed="true" title="Le nom de chaque personne sur sa caméra : clique pour l'enlever ou le remettre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="oeil" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="oeil" cx="12" cy="12" r="2.6"/><path class="barre" d="M4 4l16 16"/></svg><span>Noms</span></button><button type="button" data-el="titre" aria-pressed="true" title="Le titre du bandeau (ex. Soirée ciné) : clique pour l'enlever ou le remettre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="oeil" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="oeil" cx="12" cy="12" r="2.6"/><path class="barre" d="M4 4l16 16"/></svg><span>Titre</span></button><button type="button" data-el="logo" aria-pressed="true" title="Ton logo, dans le bandeau ou dans le coin : clique pour l'enlever ou le remettre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="oeil" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="oeil" cx="12" cy="12" r="2.6"/><path class="barre" d="M4 4l16 16"/></svg><span>Logo</span></button><button type="button" data-el="direct" aria-pressed="true" title="Le badge rouge « En direct » : clique pour l'enlever ou le remettre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="oeil" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="oeil" cx="12" cy="12" r="2.6"/><path class="barre" d="M4 4l16 16"/></svg><span>En direct</span></button><button type="button" data-el="message" aria-pressed="true" title="La petite phrase sous le titre : clique pour l'enlever ou le remettre"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="oeil" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="oeil" cx="12" cy="12" r="2.6"/><path class="barre" d="M4 4l16 16"/></svg><span>Message</span></button></div>
+        <div class="ecran-cam"><span class="etiquette">Caméras</span><div class="segment" id="cam-mode" role="group" aria-label="Caméras avec cadre ou plein écran"><button type="button" data-plein="0" title="Les caméras dans leur cadre, avec le décor autour"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2"/><rect x="6" y="7.5" width="12" height="7" rx="1.2"/></svg>Dans un cadre</button><button type="button" data-plein="1" title="Les caméras bord à bord sur tout l'écran, le titre et le logo posés dessus"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9V4h5M21 9V4h-5M3 15v5h5M21 15v5h-5"/></svg>Plein écran</button></div></div>
+        <h3 class="sous-titre">Bandeau du bas</h3>
         <div class="grille2">
           <div><label class="champ" for="bandeau">Titre du bandeau</label><input type="text" id="bandeau"></div>
           <div><label class="champ" for="message">Message sous le titre</label><input type="text" id="message" placeholder="Ex. Pose tes questions dans le chat"></div>
@@ -1132,7 +1136,7 @@
 <script src="js/regie-diffusion.js?v=e157c263"></script>
 <script src="js/regie-enregistrer.js?v=dcdcb43f"></script>
 <script src="js/regie-visuel.js?v=94b0cd37"></script>
-<script src="js/regie-recherche.js?v=9c912dec"></script>
+<script src="js/regie-recherche.js?v=72d02606"></script>
 <script src="js/regie-direct.js?v=465e8a1b"></script>
 <script src="js/regie-guide.js?v=ed556d71"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
@@ -1140,6 +1144,7 @@
 <script src="js/regie-watch.js?v=2f3c6da8"></script>
 <script src="js/regie-etat.js?v=ed91ae08"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
+<script src="js/regie-ecran.js?v=f0ff8b7d"></script>
 <script src="js/regie-securite.js?v=75e654dd"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
 <script src="js/aide-faq.js?v=1af40e14"></script>

@@ -661,3 +661,26 @@ body.vertical.plein-partage[data-mode="jeu"] #tuiles .tuile.medaillon, body.vert
 body.partage-petit #ecran { z-index: 4; }
 body.plein-partage #ecran .tuile.medaillon { border-radius: 18px; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 18px 44px rgba(0,0,0,.6); }
 body.plein-partage[data-mode="jeu"] #ecran .tuile.medaillon { border-radius: 10px; box-shadow: 0 0 0 4px var(--accent), 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent), 0 16px 40px rgba(0,0,0,.6); }
+
+/* ----- Éléments enlevés depuis la régie (bouton « À l'écran ») ----- */
+body.sans-noms .tuile:not(.ecran) .nom { display: none; }
+body.sans-titre #bandeau .titre { display: none; }
+body.sans-logo #bandeau .logo, body.sans-logo #logo-coin { display: none; }
+body.sans-direct #bandeau .direct { display: none; }
+body.sans-message #bandeau .message { display: none; }
+body.sans-titre.sans-direct #bandeau .sous:has(.message:empty), body.sans-titre.sans-direct.sans-message #bandeau .sous { display: none; }
+body.sans-titre #bandeau .sous { margin-top: 0; }
+body.sans-bandeau:not(.vertical) #sous-titres { top: 860px; }
+
+/* ----- Caméra plein écran : bord à bord, sans cadre ni ombre ----- */
+body.cam-plein .tuile { border-radius: 0 !important; box-shadow: none !important; border: 0 !important; }
+body.cam-plein .tuile::before { display: none !important; }
+body.cam-plein .tuile::after { border-radius: 0 !important; }
+/* le nom ne passe pas sous le bandeau du bas (ni sous les boutons de TikTok en vertical) */
+body.cam-plein:not(.vertical):not(.sans-bandeau) .tuile.au-bas .nom { bottom: 206px; }
+body.cam-plein.vertical .tuile.au-bas .nom { bottom: 500px; }
+/* en vertical plein écran, le titre descend en bas (en haut, il passerait sur le visage) */
+body.cam-plein.vertical #bandeau { top: 1440px !important; }
+/* sous-titres allumés : le nom remonte au-dessus d'eux, il n'est jamais caché */
+body.st-on .tuile.sous-st:not(.ecran) .nom { bottom: calc(var(--st, 0px) + 14px) !important; }
+.tuile.silhouette .attente { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }

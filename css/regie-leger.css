@@ -196,3 +196,16 @@ header .outils-haut > button:hover, header .outils-haut .bouton-affichage > butt
 header .outils-haut #place-affichage { display: contents; }
 header #btn-visuel, header #btn-liens, header #btn-invite, header #btn-rec { border-color: var(--ui-line); }
 header .limiteur { font-family: var(--mono, monospace); font-size: 12.5px; }
+
+/* « À l'écran » (onglet Titres) : un bouton par élément, barré quand il est enlevé */
+.ecran-elements { display: flex; flex-wrap: wrap; gap: 6px; }
+.ecran-elements button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 500;
+  border: 1px solid var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 16%, transparent); color: var(--ui-text); }
+.ecran-elements button .ic { width: 15px; height: 15px; }
+.ecran-elements button .barre { display: none; }
+.ecran-elements button.masque { border-color: var(--ui-line); background: none; color: var(--ui-muted); }
+.ecran-elements button.masque span { text-decoration: line-through; }
+.ecran-elements button.masque .barre { display: inline; }
+.ecran-cam { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.ecran-cam .segment { flex: 1; }
+.ecran-cam .segment .ic { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }

@@ -108,6 +108,8 @@ function actions() {
   add('Bandeaux', 'Créer un bandeau', champ('bandeaux', '#bd-titre'), 'ajouter lower third');
   $$('#bd-liste .elt').forEach(el => add('Bandeaux', `Bandeau : ${el.querySelector('.txt').textContent.trim()}`, cliquer(el.querySelector('button')), 'afficher'));
   add('Bandeaux', 'Texte défilant', champ('bandeaux', '#defilant-txt'), 'ticker bas');
+  add('Bandeaux', 'À l\'écran : enlever ou remettre le nom, le titre, le logo, « En direct »', champ('bandeaux', '#ecran-elements button'), 'masquer cacher habillage noms logo direct');
+  add('Bandeaux', 'Caméras plein écran', champ('bandeaux', '#cam-mode button'), 'bord à bord sans cadre plein écran');
   // Sources
   add('Sources', 'Gérer les sources (écrans, images, vidéos)', () => ouvrirOnglet('sources'), 'partage ecran image video web');
   // Quiz
