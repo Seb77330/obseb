@@ -905,7 +905,7 @@ function dispositionReaction(ids, sources, st, vertical = false) {
    « bas »    : les caméras en grand, la question en bandeau en bas.
    Renvoie la place de chaque caméra, plus `__panneau` : la place de la question (absente en « bas » et en vertical). */
 const ZONE_QUIZ = { x: 70, y: 40, w: 1780, h: 620 };   // disposition « bas »
-const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 560 };
+const ZONE_QUIZ_V = { x: 40, y: 240, w: 1080 - 40 - SURES_V.droite, h: 420 };
 function rangeeCentree(ids, y, w, h, gap, r) {
   const total = ids.length * w + (ids.length - 1) * gap, x0 = (SCENE_W - total) / 2;
   ids.forEach((id, i) => { r[id] = { x: x0 + i * (w + gap), y, w, h }; });
