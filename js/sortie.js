@@ -82,50 +82,23 @@ function silhouette(i) {
     + `<rect width="1600" height="900" fill="url(#g)"/><g fill="hsl(${h},24%,43%)" transform="translate(${dx} 0)"><circle cx="800" cy="392" r="122"/><path d="M470 900c0-196 134-326 330-326s330 130 330 326z"/></g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
-/* Démo vivante (vitrine) : de petits personnages dessinés dans leur pièce, plutôt que des silhouettes grises */
-function personnage(i) {
-  const P = [
-    { mur: '#2c3e57', mur2: '#1a2433', peau: '#e7b48f', cheveux: '#2a1b12', coupe: 'court', haut: '#e8a33d', deco: 'affiche', casque: false },
-    { mur: '#4a2f3f', mur2: '#271a24', peau: '#8d5a3b', cheveux: '#14100e', coupe: 'boucles', haut: '#3fa7a0', deco: 'lampe', casque: true },
-    { mur: '#2f4a3b', mur2: '#18271f', peau: '#f1c7a5', cheveux: '#b5652e', coupe: 'long', haut: '#d9534f', deco: 'plante', casque: false },
-    { mur: '#3d3557', mur2: '#211c33', peau: '#c98d64', cheveux: '#1e1a17', coupe: 'casquette', haut: '#f2f2f2', deco: 'etagere', casque: false },
-    { mur: '#55402a', mur2: '#2e2216', peau: '#a86b47', cheveux: '#2b1d16', coupe: 'chignon', haut: '#6c7ae0', deco: 'affiche', casque: true },
-    { mur: '#2a4752', mur2: '#16262c', peau: '#f0c09a', cheveux: '#d8b25a', coupe: 'court', haut: '#2e2e33', deco: 'lampe', casque: false }
-  ][i % 6];
-  const deco = {
-    affiche: '<rect x="1130" y="120" width="250" height="340" rx="10" fill="#0f0f14" opacity=".55"/><rect x="1150" y="140" width="210" height="300" rx="6" fill="' + P.haut + '" opacity=".55"/><circle cx="1255" cy="250" r="55" fill="#fff" opacity=".18"/>',
-    lampe: '<circle cx="1300" cy="230" r="230" fill="#ffd27a" opacity=".16"/><rect x="1280" y="250" width="14" height="330" fill="#111" opacity=".5"/><path d="M1220 260h140l-40-110h-60z" fill="#ffcf6a" opacity=".85"/>',
-    plante: '<rect x="1190" y="560" width="150" height="140" rx="12" fill="#5a3b28"/><path d="M1265 570c-80-90-120-210-60-300 30 110 50 190 60 300zm0 0c40-120 120-190 200-200-60 80-110 140-200 200zm0 0c-60-60-170-90-240-60 80 10 160 30 240 60z" fill="#3f8f55"/>',
-    etagere: '<rect x="1080" y="300" width="380" height="16" fill="#0d0d12" opacity=".6"/><rect x="1100" y="200" width="40" height="100" fill="#e0b24b"/><rect x="1145" y="215" width="34" height="85" fill="#c4473f"/><rect x="1185" y="190" width="44" height="110" fill="#4d8ac9"/><circle cx="1330" cy="262" r="38" fill="#9ad0c2"/>'
-  }[P.deco];
-  const tete = 'cx="800" cy="400" r="150"';
-  const cheveux = {
-    court: '<path d="M650 395c0-110 70-175 150-175s150 65 150 175c-30-60-80-90-150-90s-120 30-150 90z" fill="' + P.cheveux + '"/>',
-    boucles: '<g fill="' + P.cheveux + '"><circle cx="680" cy="320" r="70"/><circle cx="760" cy="265" r="75"/><circle cx="850" cy="265" r="75"/><circle cx="925" cy="325" r="70"/></g>',
-    long: '<path d="M640 420c-10-150 60-210 160-210s170 60 160 210l10 260h-70l-20-250c-20-50-50-70-80-80-40 30-90 40-140 40l-20 290h-60z" fill="' + P.cheveux + '"/>',
-    casquette: '<path d="M648 360c0-100 70-150 152-150s152 50 152 150z" fill="#d9534f"/><path d="M930 350h130c10 0 10 30-5 32l-125 8z" fill="#b8403c"/>',
-    chignon: '<circle cx="800" cy="215" r="62" fill="' + P.cheveux + '"/><path d="M650 400c0-115 70-175 150-175s150 60 150 175c-40-55-90-80-150-80s-110 25-150 80z" fill="' + P.cheveux + '"/>'
-  }[P.coupe];
-  const casque = P.casque ? '<path d="M630 420c0-140 75-215 170-215s170 75 170 215" fill="none" stroke="#1b1b20" stroke-width="26"/><rect x="608" y="390" width="54" height="110" rx="22" fill="#1b1b20"/><rect x="938" y="390" width="54" height="110" rx="22" fill="#1b1b20"/>' : '';
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><radialGradient id="m" cx=".35" cy=".3" r="1"><stop offset="0" stop-color="' + P.mur + '"/><stop offset="1" stop-color="' + P.mur2 + '"/></radialGradient></defs>'
-    + '<rect width="1600" height="900" fill="url(#m)"/>' + deco
-    + '<path d="M470 900c0-190 140-310 330-310s330 120 330 310z" fill="' + P.haut + '"/>'
-    + '<rect x="750" y="520" width="100" height="110" rx="40" fill="' + P.peau + '"/>'
-    + '<circle ' + tete + ' fill="' + P.peau + '"/>' + cheveux
-    + '<g fill="#1d1410"><circle cx="745" cy="420" r="13"/><circle cx="855" cy="420" r="13"/></g>'
-    + '<path d="M752 478q48 38 96 0" fill="none" stroke="#7a3b2e" stroke-width="10" stroke-linecap="round"/>'
-    + '<g fill="#e46b6b" opacity=".25"><circle cx="715" cy="465" r="22"/><circle cx="885" cy="465" r="22"/></g>' + casque + '</svg>';
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-}
 function creerTuile(id, nom, { ecran = false, demo = false } = {}) {
   if (tuiles.has(id)) return tuiles.get(id);
   const el = document.createElement('div');
   el.className = 'tuile horsantenne' + (demo ? ' demo' : '');
   el.innerHTML = `<div class="attente">${demo ? (ecran ? '' : '') : 'Connexion…'}</div><div class="nom"></div>`;
   if (demo && !ecran) { el.classList.add('silhouette'); el.querySelector('.attente').style.backgroundImage = Q.get('vivant') ? personnage(tuiles.size) : silhouette(tuiles.size); }
+  // invité de test : fausse caméra dessinée et animée, toujours marquée « TEST » (même dans le vrai live)
+  const faux = !ecran && estFaux(id);
+  if (faux) {
+    el.classList.add('demo', 'silhouette', 'faux');
+    el.querySelector('.attente').textContent = '';
+    el.querySelector('.attente').style.backgroundImage = imageFaux(id);
+    el.insertAdjacentHTML('beforeend', '<div class="badge-test" title="Invité de test, ajouté depuis la régie">TEST</div>');
+  }
   el.querySelector('.nom').textContent = nom || '';
   let iframe = null;
-  if (!demo) {
+  if (!demo && !faux) {
     iframe = document.createElement('iframe');
     iframe.allow = IFRAME_ALLOW;
     const nb = etat ? etat.onair.length : 1;
@@ -217,6 +190,7 @@ const CSS_VOIR = ':root{--fit-style:contain!important}video{object-fit:contain!i
 const CSS_REMPLIR = ':root{--fit-style:cover!important}video{object-fit:cover!important}';
 function modeCadre(id) { const m = etat && etat.cadre && etat.cadre[id]; return m === 'voir' || m === 'remplir' ? m : 'auto'; }
 function appliquerCadre(t) {
+  if (t && !t.ecran && estFaux(t.id)) { t.el.dataset.cadre = modeCadre(t.id); return; }
   if (!t || t.ecran || !t.iframe) return;
   const m = modeCadre(t.id);
   const voir = m === 'voir' || (m === 'auto' && !!t.res && t.res.h > t.res.w * 1.05);
@@ -882,9 +856,19 @@ function compteARebours() {
 }
 setInterval(compteARebours, 250);
 
+/* ----- Invités de test : ils « parlent » chacun leur tour, pour voir le cadre de la personne qui parle ----- */
+let tourFaux = 0;
+setInterval(() => { tourFaux++; }, 2600);
+setInterval(() => {
+  if (!etat) return;
+  const f = [...tuiles.values()].filter(t => !t.ecran && estFaux(t.id) && (etat.onair || []).includes(t.id) && !(etat.muet || {})[t.id]);
+  if (f.length) f[tourFaux % f.length].niveau = Math.max(f[tourFaux % f.length].niveau, 30);
+}, 150);
+
 /* ----- Qui parle : cadre de couleur sur la personne qui parle ----- */
 setInterval(() => {
-  if (!etat || PREVIEW) return;
+  // dans un aperçu (sans son), seuls les invités de test « parlent » : on montre quand même le cadre
+  if (!etat || (PREVIEW && ![...tuiles.keys()].some(estFaux))) return;
   let max = null;
   for (const t of tuiles.values()) {
     t.niveau *= 0.6;

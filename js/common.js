@@ -408,6 +408,12 @@ const estMaCamera = id => /_seb$/.test(id) || estCamLocale(id) || estCamDistante
 const sceneCameras = sc => sc === 'live' || sc === 'partage' || sc === 'watch';
 const idEcran = (s, n = 1) => s.room + '_ecran' + n;   // tes partages d'écran : 1 à 4
 const estEcran = id => /_ecran\d$|ecr$/.test(id);
+/* Invités de test : de faux invités avec une fausse caméra dessinée, pour voir les scènes quand on est seul (1 à 4) */
+const idFaux = (s, n) => s.room + '_test' + n;
+const estFaux = id => /_test[1-4]$/.test(id);
+const NOMS_FAUX = ['Camille', 'Antho', 'Inès', 'Yanis'];
+const fauxNumero = id => +String(id).slice(-1);
+const imageFaux = id => personnage([2, 0, 4, 1][(fauxNumero(id) - 1) % 4], true);   // un personnage différent par invité de test
 
 /* ---------- Thème -> page ---------- */
 function appliquerTheme(theme, el = document.documentElement) {
@@ -1079,4 +1085,50 @@ function garderEcranAllume() {
   document.addEventListener('visibilitychange', demander);
   document.addEventListener('pointerdown', demander);
   demander();
+}
+
+/* Petits personnages dessinés dans leur pièce (vitrine, invités de test). Aucune vraie photo de personne.
+   anime : la personne bouge un peu, cligne des yeux et parle par moments (fausse caméra des invités de test) */
+function personnage(i, anime = false) {
+  const P = [
+    { mur: '#2c3e57', mur2: '#1a2433', peau: '#e7b48f', cheveux: '#2a1b12', coupe: 'court', haut: '#e8a33d', deco: 'affiche', casque: false },
+    { mur: '#4a2f3f', mur2: '#271a24', peau: '#8d5a3b', cheveux: '#14100e', coupe: 'boucles', haut: '#3fa7a0', deco: 'lampe', casque: true },
+    { mur: '#2f4a3b', mur2: '#18271f', peau: '#f1c7a5', cheveux: '#b5652e', coupe: 'long', haut: '#d9534f', deco: 'plante', casque: false },
+    { mur: '#3d3557', mur2: '#211c33', peau: '#c98d64', cheveux: '#1e1a17', coupe: 'casquette', haut: '#f2f2f2', deco: 'etagere', casque: false },
+    { mur: '#55402a', mur2: '#2e2216', peau: '#a86b47', cheveux: '#2b1d16', coupe: 'chignon', haut: '#6c7ae0', deco: 'affiche', casque: true },
+    { mur: '#2a4752', mur2: '#16262c', peau: '#f0c09a', cheveux: '#d8b25a', coupe: 'court', haut: '#2e2e33', deco: 'lampe', casque: false }
+  ][i % 6];
+  const deco = {
+    affiche: '<rect x="1130" y="120" width="250" height="340" rx="10" fill="#0f0f14" opacity=".55"/><rect x="1150" y="140" width="210" height="300" rx="6" fill="' + P.haut + '" opacity=".55"/><circle cx="1255" cy="250" r="55" fill="#fff" opacity=".18"/>',
+    lampe: '<circle cx="1300" cy="230" r="230" fill="#ffd27a" opacity=".16"/><rect x="1280" y="250" width="14" height="330" fill="#111" opacity=".5"/><path d="M1220 260h140l-40-110h-60z" fill="#ffcf6a" opacity=".85"/>',
+    plante: '<rect x="1190" y="560" width="150" height="140" rx="12" fill="#5a3b28"/><path d="M1265 570c-80-90-120-210-60-300 30 110 50 190 60 300zm0 0c40-120 120-190 200-200-60 80-110 140-200 200zm0 0c-60-60-170-90-240-60 80 10 160 30 240 60z" fill="#3f8f55"/>',
+    etagere: '<rect x="1080" y="300" width="380" height="16" fill="#0d0d12" opacity=".6"/><rect x="1100" y="200" width="40" height="100" fill="#e0b24b"/><rect x="1145" y="215" width="34" height="85" fill="#c4473f"/><rect x="1185" y="190" width="44" height="110" fill="#4d8ac9"/><circle cx="1330" cy="262" r="38" fill="#9ad0c2"/>'
+  }[P.deco];
+  const tete = 'cx="800" cy="400" r="150"';
+  const cheveux = {
+    court: '<path d="M650 395c0-110 70-175 150-175s150 65 150 175c-30-60-80-90-150-90s-120 30-150 90z" fill="' + P.cheveux + '"/>',
+    boucles: '<g fill="' + P.cheveux + '"><circle cx="680" cy="320" r="70"/><circle cx="760" cy="265" r="75"/><circle cx="850" cy="265" r="75"/><circle cx="925" cy="325" r="70"/></g>',
+    long: '<path d="M640 420c-10-150 60-210 160-210s170 60 160 210l10 260h-70l-20-250c-20-50-50-70-80-80-40 30-90 40-140 40l-20 290h-60z" fill="' + P.cheveux + '"/>',
+    casquette: '<path d="M648 360c0-100 70-150 152-150s152 50 152 150z" fill="#d9534f"/><path d="M930 350h130c10 0 10 30-5 32l-125 8z" fill="#b8403c"/>',
+    chignon: '<circle cx="800" cy="215" r="62" fill="' + P.cheveux + '"/><path d="M650 400c0-115 70-175 150-175s150 60 150 175c-40-55-90-80-150-80s-110 25-150 80z" fill="' + P.cheveux + '"/>'
+  }[P.coupe];
+  const casque = P.casque ? '<path d="M630 420c0-140 75-215 170-215s170 75 170 215" fill="none" stroke="#1b1b20" stroke-width="26"/><rect x="608" y="390" width="54" height="110" rx="22" fill="#1b1b20"/><rect x="938" y="390" width="54" height="110" rx="22" fill="#1b1b20"/>' : '';
+  // fausse caméra : balancement lent, clignement, bouche qui parle par moments (chacun à son rythme)
+  const dec = (i * 1.7) % 6, bal = (7 + i * 1.3).toFixed(1);
+  const yeux = anime
+    ? '<g fill="#1d1410"><ellipse cx="745" cy="420" rx="13" ry="13"><animate attributeName="ry" values="13;13;1;13" keyTimes="0;.94;.97;1" dur="' + (4.2 + i * .6).toFixed(1) + 's" repeatCount="indefinite"/></ellipse>'
+      + '<ellipse cx="855" cy="420" rx="13" ry="13"><animate attributeName="ry" values="13;13;1;13" keyTimes="0;.94;.97;1" dur="' + (4.2 + i * .6).toFixed(1) + 's" repeatCount="indefinite"/></ellipse></g>'
+    : '<g fill="#1d1410"><circle cx="745" cy="420" r="13"/><circle cx="855" cy="420" r="13"/></g>';
+  const bouche = anime
+    ? '<ellipse cx="800" cy="484" rx="34" ry="6" fill="#5a2620"><animate attributeName="ry" values="6;20;8;24;10;18;6;6" keyTimes="0;.06;.12;.18;.24;.3;.36;1" dur="6s" begin="-' + dec + 's" repeatCount="indefinite"/></ellipse>'
+    : '<path d="M752 478q48 38 96 0" fill="none" stroke="#7a3b2e" stroke-width="10" stroke-linecap="round"/>';
+  const corps = '<path d="M470 900c0-190 140-310 330-310s330 120 330 310z" fill="' + P.haut + '"/>'
+    + '<rect x="750" y="520" width="100" height="110" rx="40" fill="' + P.peau + '"/>'
+    + '<circle ' + tete + ' fill="' + P.peau + '"/>' + cheveux + yeux + bouche
+    + '<g fill="#e46b6b" opacity=".25"><circle cx="715" cy="465" r="22"/><circle cx="885" cy="465" r="22"/></g>' + casque;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><radialGradient id="m" cx=".35" cy=".3" r="1"><stop offset="0" stop-color="' + P.mur + '"/><stop offset="1" stop-color="' + P.mur2 + '"/></radialGradient></defs>'
+    + '<rect width="1600" height="900" fill="url(#m)"/>' + deco
+    + (anime ? '<g>' + corps + '<animateTransform attributeName="transform" type="rotate" values="-1.6 800 900;1.6 800 900;-1.6 800 900" dur="' + bal + 's" repeatCount="indefinite"/></g>' : corps)
+    + '</svg>';
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }

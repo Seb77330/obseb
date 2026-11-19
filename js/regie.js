@@ -250,15 +250,15 @@ function majCadreBtn(id) {
   b.classList.toggle('actif-doux', m !== 'auto');
 }
 function creerCarte(id) {
-  const estHote = id === ID_HOTE, cam = camsLocales.get(id);
+  const estHote = id === ID_HOTE, cam = camsLocales.get(id), faux = estFaux(id);   // faux : invité de test (js/regie-faux.js)
   const el = document.createElement('div');
-  el.className = 'participant' + (cam ? ' camera' : '');
+  el.className = 'participant' + (cam ? ' camera' : '') + (faux ? ' faux' : '');
   el.innerHTML = `
     <div class="vignette"><span class="temoin"></span></div>
     <input type="text" class="nom" title="Nom affiché à l'écran" ${cam ? 'placeholder="Sans nom à l\'écran"' : ''}>
     ${cam ? '' : `<div class="reglages" title="Volume dans le live">${IC_SON}<input type="range" min="0" max="100" step="1" class="vol"><span class="pct"></span></div>
     <div class="vu"><i></i></div>`}
-    ${estHote || cam ? '' : '<div class="qualite aide"></div>'}
+    ${estHote || cam || faux ? '' : '<div class="qualite aide"></div>'}
     <div class="actions">
       <button class="petit antenne-btn"></button>
       ${cam ? '' : '<button class="petit muet-btn ic-btn"></button>'}
@@ -266,9 +266,11 @@ function creerCarte(id) {
       <button class="petit cadre-btn ic-btn"></button>
       ${estHote || cam ? '' : '<button class="petit haut-btn" title="Monter dans l\'ordre d\'affichage">▲</button>'}
       ${cam ? '<button class="petit retirer-btn" title="Débrancher cette caméra">✕</button>' : ''}
+      ${faux ? '<button class="petit retirer-btn" title="Retirer cet invité de test">✕</button>' : ''}
     </div>`;
   let iframe = null;
   if (cam) el.querySelector('.vignette').appendChild(cam.iframe);      // la fenêtre qui publie la caméra sert aussi d'aperçu
+  else if (faux) { const v = el.querySelector('.vignette'); v.style.backgroundImage = imageFaux(id); v.title = 'Invité de test : fausse caméra, pour voir le rendu des scènes'; }
   else if (!estHote) {
     iframe = document.createElement('iframe');
     iframe.allow = IFRAME_ALLOW;
@@ -307,7 +309,7 @@ function creerCarte(id) {
     if (i > 0) { [etat.onair[i - 1], etat.onair[i]] = [etat.onair[i], etat.onair[i - 1]]; envoyer(); }
   };
   const retirer = el.querySelector('.retirer-btn');
-  if (retirer) retirer.onclick = () => { if (typeof retirerCam === 'function') retirerCam(id); };
+  if (retirer) retirer.onclick = () => { if (faux) { if (typeof retirerFaux === 'function') retirerFaux(id); } else if (typeof retirerCam === 'function') retirerCam(id); };
   const c = { el, iframe, niveau: 0 };
   cartes.set(id, c);
   majCadreBtn(id);
