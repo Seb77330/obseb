@@ -26,6 +26,7 @@ try {
 } catch (e) { /* stockage indisponible */ }
 etat.muet = etat.muet || {};
 delete etat.debutLive;          // ancien minuteur lié aux scènes
+delete etat.enrCams;            // un enregistrement des caméras ne survit pas à un rechargement (pas de relance surprise chez les invités)
 etat.noms[ID_HOTE] = etat.noms[ID_HOTE] || session.hote;
 
 const presents = new Map();   // id -> { vu: timestamp } (connectés en ce moment)
@@ -44,6 +45,7 @@ function infoEnvoiCamera() {
 }
 let statsCamera = null;        // dernière mesure de ta caméra { h, kbps, n, vu }
 const sortieVue = {};          // dernière fois que la sortie OBS a dit « je suis là » : { horizontal, vertical }
+const enrInvites = new Map();      // id -> état de l'enregistrement local de l'invité (pistes séparées)
 const coupesInvites = new Map();   // id -> { mic, cam } : ce que l'invité a coupé lui-même depuis ses coulisses
 const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
 
@@ -74,7 +76,10 @@ const maCamera = $('#ma-camera');
 const CLE_CAM = 'studioSeb:appareils:hote';
 // effets aussi pour l'animateur ; anti-bruit décoché d'office (micro et casque de qualité : son brut, voir proaudio)
 const reglageCam = ReglagesMedia({ boite: $('#cam-reglage'), cle: CLE_CAM, texteBouton: 'Démarrer ma caméra', surDemarrer: demarrerCamera, effets: true, antibruitDefaut: false });
+let appHote = null;
+const enrHote = EnregistreurCamera();   // ta caméra enregistrée chez toi pendant « Enregistrer » (pistes séparées)
 function demarrerCamera(app) {
+  appHote = app;
   hauteurCamera = app.h || 0;
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.antibruit ? 'anti-bruit' : ''].filter(Boolean).join(' · ');
@@ -356,6 +361,8 @@ function majCarte(id) {
     const cp = coupesInvites.get(id);
     const txt = cp ? [cp.mic ? 'micro' : '', cp.cam ? 'caméra' : ''].filter(Boolean).join(' et ') : '';
     if (txt) qe.innerHTML += ` <b class="coupe-invite">· ${txt} coupé${cp.mic && cp.cam ? 's' : cp.cam ? 'e' : ''} par l'invité</b>`;
+    const en = id === ID_HOTE ? enrHote.etat() : enrInvites.get(id);
+    if (en && etat.enrCams && (en.actif || en.erreur)) qe.innerHTML += en.actif ? ` <b class="enr-invite">· ⏺ enregistre sa caméra</b>` : ` <b class="coupe-invite">· enregistrement impossible</b>`;
   }
   const pct = c.el.querySelector('.pct');
   if (pct) pct.textContent = (etat.muet[id] ? 0 : Math.round((etat.vol[id] ?? 1) * 100)) + '%';
@@ -460,6 +467,11 @@ addEventListener('message', e => {
         const avant = coupesInvites.get(salut.id) || {}, c = { mic: !!salut.coupe.mic, cam: !!salut.coupe.cam };
         coupesInvites.set(salut.id, c);
         if (c.mic !== !!avant.mic || c.cam !== !!avant.cam) majCarte(salut.id);
+      }
+      if (salut.enr === null || (salut.enr && typeof salut.enr === 'object')) {
+        const avant = JSON.stringify(enrInvites.get(salut.id) || null);
+        if (salut.enr) enrInvites.set(salut.id, { actif: !!salut.enr.actif, erreur: String(salut.enr.erreur || '').slice(0, 120), octets: +salut.enr.octets || 0 }); else enrInvites.delete(salut.id);
+        if (avant !== JSON.stringify(enrInvites.get(salut.id) || null)) majCarte(salut.id);
       }
       if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
       if (salut.st && typeof sousTitreRecu === 'function') sousTitreRecu(salut.id, salut.st);

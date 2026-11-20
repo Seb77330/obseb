@@ -21,6 +21,19 @@
     return `${(session.titre || 'MESA').slice(0, 40)} ${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}h${z(d.getMinutes())}`;
   };
   let nomChoisi = '';
+  const CLE_CAMS = 'studioSeb:recCams';
+  let camsAPart = false;
+  try { camsAPart = localStorage.getItem(CLE_CAMS) === '1'; } catch (e) { /* rien */ }
+  const camsEnCours = () => !!(etat.enrCams && etat.enrCams.debut);
+  const occupe = () => enCours().length > 0 || camsEnCours();
+  // pistes séparées : qui enregistre sa caméra chez lui en ce moment
+  function lignesCams() {
+    if (!camsEnCours()) return '';
+    const l = [['Toi', enrHote.etat()], ...[...enrInvites.entries()].filter(([id]) => presents.has(id)).map(([id, e]) => [etat.noms[id] || 'Invité', e])];
+    const ok = l.filter(([, e]) => e && e.actif), ko = l.filter(([, e]) => e && !e.actif && e.erreur);
+    return `<div class="rec-ligne"><i class="rec-pt"></i><b>Caméras à part</b><small>${ok.length} en cours${ok.length ? ' : ' + ok.map(([n]) => esc(n)).join(', ') : ''}</small></div>`
+      + ko.map(([n, e]) => `<p class="rec-err">${esc(n)} : ${esc(e.erreur)}</p>`).join('');
+  }
   const derniers = {};   // format -> dernier enregistrement terminé (déjà signalé)
 
   /* ----- Mes enregistrements : les fichiers gardés par ce navigateur ----- */
@@ -42,10 +55,11 @@
   let cleVue = '';
   async function dessiner() {
     const a0 = enCours();
-    cleVue = a0.length ? 'rec' + Math.floor(Date.now() / 1000) : JSON.stringify([formatRec, formatsVoulus().map(fenetrePrete)]);
+    cleVue = occupe() ? 'rec' + Math.floor(Date.now() / 1000) : JSON.stringify([formatRec, formatsVoulus().map(fenetrePrete)]);
     const actifs = enCours();
-    if (actifs.length) {
+    if (actifs.length || camsEnCours()) {
       pop.innerHTML = `<h4>Enregistrement en cours</h4>
+        ${lignesCams()}
         ${actifs.map(f => { const e = etatRec(f); return `<div class="rec-ligne"><i class="rec-pt"></i><b>${f === 'vertical' ? 'Vertical' : 'Horizontal'}</b><small>${duree(Date.now() - e.rec.debut)} · ${taille(e.rec.octets)}</small></div>${e.rec.erreur ? `<p class="rec-err">${esc(e.rec.erreur)}</p>` : ''}`; }).join('')}
         <p class="aide">Change de scène, de mode, de caméra comme tu veux : tout ce qui passe à l'écran est enregistré.</p>
         <div class="menu-bas"><button class="primaire rec-stop" id="rec-stop">■ Arrêter et récupérer le fichier</button></div>`;
@@ -59,11 +73,13 @@
       <div class="rec-formats" role="group" aria-label="Format">${[['horizontal', 'Horizontal'], ['vertical', 'Vertical'], ['deux', 'Les deux']].map(([f, n]) => `<button type="button" data-f="${f}" class="${formatRec === f ? 'actif' : ''}">${n}</button>`).join('')}</div>
       <label class="rec-nom"><span class="aide">Nom du fichier</span><input type="text" id="rec-nom" maxlength="60" value="${esc(nomChoisi || nomParDefaut())}"></label>
       ${voulus.map(f => `<div class="rec-ligne">${fenetrePrete(f) ? '<i class="rec-ok"></i>' : '<i class="rec-att"></i>'}<b>Fenêtre ${f === 'vertical' ? 'verticale' : 'horizontale'}</b><small>${fenetrePrete(f) ? 'prête' : 'pas encore ouverte'}</small></div>`).join('')}
+      <label class="rec-cams"><input type="checkbox" id="rec-cams" ${camsAPart ? 'checked' : ''}> <span>Aussi chaque caméra à part <small class="aide">Chacun enregistre sa caméra et son micro chez lui, en pleine qualité, pour le montage. Le fichier reste sur son ordinateur.</small></span></label>
       ${prets.length < voulus.length ? '<p class="aide">La fenêtre s\'ouvre à côté : clique sur « Autoriser cette fenêtre », choisis <b>cet onglet</b> et laisse le son coché. Garde-la ouverte pendant l\'enregistrement.</p>' : ''}
       <div class="menu-bas">${prets.length < voulus.length ? `<button class="primaire" id="rec-ouvrir">Ouvrir ${voulus.length - prets.length > 1 ? 'les fenêtres' : 'la fenêtre'} d'enregistrement</button>` : '<button class="primaire" id="rec-go">⏺ Démarrer l\'enregistrement</button>'}</div>
       <details class="rec-liste" id="rec-liste"><summary>Mes enregistrements</summary><div class="rec-fichiers"><p class="aide">Chargement…</p></div></details>`;
     pop.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { formatRec = b.dataset.f; try { localStorage.setItem(CLE, formatRec); } catch (e) { /* rien */ } dessiner(); });
     if (pop.querySelector('#rec-ouvrir')) pop.querySelector('#rec-ouvrir').onclick = () => voulus.filter(f => !fenetrePrete(f)).forEach(ouvrirFenetreDiffusion);
+    pop.querySelector('#rec-cams').onchange = e => { camsAPart = e.target.checked; try { localStorage.setItem(CLE_CAMS, camsAPart ? '1' : '0'); } catch (err) { /* rien */ } };
     pop.querySelector('#rec-nom').oninput = e => { nomChoisi = e.target.value; };
     if (pop.querySelector('#rec-go')) pop.querySelector('#rec-go').onclick = demarrer;
     remplirListe();
@@ -95,11 +111,17 @@
     const nom = (nomChoisi || nomParDefaut()).trim();
     for (const f of voulus) canalDiff(f).postMessage({ type: 'rec', action: 'start', nom });
     nomChoisi = '';
-    toast('Enregistrement lancé');
+    if (camsAPart) {
+      etat.enrCams = { debut: Date.now(), nom: nom.slice(0, 40) };
+      envoyer();   // les coulisses de chaque invité lancent leur enregistrement
+      if (appHote) enrHote.demarrer({ app: appHote, nom: `${nom.slice(0, 40)} - ${session.hote}`, sansSon: false });
+    }
+    toast(camsAPart ? 'Enregistrement lancé (le live et chaque caméra)' : 'Enregistrement lancé');
     setTimeout(majBouton, 400);
   }
   function arreter() {
     for (const f of enCours()) canalDiff(f).postMessage({ type: 'rec', action: 'stop' });
+    if (camsEnCours()) { etat.enrCams = null; envoyer(); enrHote.arreter(); }
     toast('Enregistrement arrêté : le fichier arrive dans tes Téléchargements');
   }
 
@@ -113,9 +135,9 @@
 
   function majBouton() {
     const actifs = enCours();
-    btn.classList.toggle('on', actifs.length > 0);
+    btn.classList.toggle('on', occupe());
     const e = actifs.length ? etatRec(actifs[0]) : null;
-    btn.querySelector('span').textContent = e ? duree(Date.now() - e.rec.debut) : 'Enregistrer';
+    btn.querySelector('span').textContent = e ? duree(Date.now() - e.rec.debut) : camsEnCours() ? duree(Date.now() - etat.enrCams.debut) : 'Enregistrer';
     // un enregistrement vient de se terminer : on le dit (une seule fois)
     for (const f of ['horizontal', 'vertical']) {
       const d = (etatRec(f) || {}).dernierRec;
@@ -124,7 +146,7 @@
       if (premier && Date.now() - d.fin > 10000) continue;   // ancien : déjà signalé avant le rechargement de la régie
       toast(d.erreur ? `Enregistrement ${f} : ${d.erreur}` : `Vidéo ${f} enregistrée (${duree(d.duree)}, ${taille(d.octets)}) : elle est dans tes Téléchargements`);
     }
-    const cle = actifs.length ? 'rec' + Math.floor(Date.now() / 1000) : JSON.stringify([formatRec, formatsVoulus().map(fenetrePrete)]);
+    const cle = occupe() ? 'rec' + Math.floor(Date.now() / 1000) : JSON.stringify([formatRec, formatsVoulus().map(fenetrePrete)]);
     if (!pop.hidden && cle !== cleVue && !pop.contains(document.activeElement)) dessiner();
   }
   setInterval(majBouton, 1000);

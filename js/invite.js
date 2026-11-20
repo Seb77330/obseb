@@ -62,7 +62,7 @@ $('#form').onsubmit = e => {
   entrer();
 };
 
-let maCamera, apercu;
+let maCamera, apercu, monApp = null;
 function entrer() {
   $('#accueil').hidden = true;
   $('#coulisses').hidden = false;
@@ -82,6 +82,7 @@ function entrer() {
   const cle = 'studioSeb:appareils:invite';
   const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Entrer en coulisses', surDemarrer: demarrer, effets: !CAM_DISTANTE });
   function demarrer(app) {
+    monApp = app;
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
     $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.antibruit ? 'anti-bruit' : ''].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
@@ -89,7 +90,7 @@ function entrer() {
     maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, antibruit: !!app.antibruit });
   }
   $('#btn-cam-changer').onclick = () => {
-    $('#ma-camera').src = 'about:blank'; maCamera = null; majCoupe({ mic: false, cam: false });
+    $('#ma-camera').src = 'about:blank'; maCamera = null; enrLocal.arreter(); majCoupe({ mic: false, cam: false });
     $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false; reglage.ouvrir();
   };
   reglage.ouvrir();
@@ -104,6 +105,7 @@ function entrer() {
 let coupe = { mic: false, cam: false };
 function majCoupe(c) {
   coupe = Object.assign({}, coupe, c);
+  enrLocal.couper(coupe);
   const bm = $('#btn-mon-micro'), bc = $('#btn-ma-cam');
   bm.setAttribute('aria-pressed', String(coupe.mic)); bm.textContent = coupe.mic ? '🔇 Micro coupé' : '🎤 Couper mon micro'; bm.title = coupe.mic ? 'Clique pour remettre ton micro' : '';
   bc.setAttribute('aria-pressed', String(coupe.cam)); bc.textContent = coupe.cam ? '🚫 Caméra coupée' : '📷 Couper ma caméra'; bc.title = coupe.cam ? 'Clique pour remettre ta caméra' : '';
@@ -120,7 +122,7 @@ $('#btn-ma-cam').onclick = () => {
 $('#btn-quitter').onclick = () => {
   if (!confirm('Quitter le live ? Ta caméra et ton micro s\'éteignent tout de suite.')) return;
   if (maCamera) { ordre(maCamera, { close: true }); maCamera.src = 'about:blank'; }
-  maCamera = null;
+  maCamera = null; enrLocal.arreter();
   const f = $('#mon-ecran'); f.src = 'about:blank'; f.hidden = true; ecranActif = false; $('#btn-mon-ecran').textContent = '🖥️ Partager mon écran';
   if (apercu) apercu.src = 'about:blank';
   monEcoute.arreter();
@@ -155,7 +157,7 @@ document.getElementById('btn-mon-ecran').onclick = () => {
 let maQualite = null;
 function direBonjour() {
   if (!maCamera) return;
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe } }, type: 'rpcs' });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe, enr: enrLocal.etat() } }, type: 'rpcs' });
   besoinApercu = '';
 }
 setInterval(() => {
@@ -192,6 +194,7 @@ addEventListener('message', e => {
   ordre(apercu, { [CANAL]: st });
   calerHorloge(st.ts);
   gererQuiz(st.quiz);
+  gererEnr(st.enrCams);
   filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || (st.watch.pastille && st.watch.pos > 0) || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
   majWatchInvite();
   const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
@@ -317,3 +320,31 @@ setInterval(() => {
 }, 250);
 garderEcranAllume();
 if (ESSAI) { moi = { nom: 'Invité d\'essai', id: session.room + '_essai' }; entrer(); }
+
+/* ----- Enregistrement local : l'animateur lance l'enregistrement, ma caméra et mon micro s'enregistrent ICI,
+   en pleine qualité, et le fichier reste sur mon ordinateur (il se télécharge tout seul à la fin). ----- */
+const enrLocal = EnregistreurCamera();
+let enrVu = 0;   // le début de l'enregistrement déjà lancé (un ordre répété toutes les 2 s ne relance rien)
+function gererEnr(e) {
+  if (ESSAI || !maCamera || !monApp) return;
+  const debut = e && typeof e.debut === 'number' ? e.debut : 0;
+  if (debut && !enrLocal.actif && enrVu !== debut) {
+    enrVu = debut;
+    const nom = `${String(e.nom || session.titre || 'MESA').slice(0, 40)} - ${moi.nom}`;
+    enrLocal.demarrer({ app: monApp, nom, coupe }).then(() => { majEnr(); direBonjour(); });
+  } else if (!debut && enrLocal.actif) { enrLocal.arreter(); setTimeout(() => { majEnr(); direBonjour(); }, 1500); }
+  majEnr();
+}
+function majEnr() {
+  const box = $('#enr-local'), e = enrLocal.etat();
+  box.hidden = !e;
+  if (!e) return;
+  box.classList.toggle('fini', !e.actif && !e.erreur);
+  $('#btn-enr-encore').hidden = e.actif || !!e.erreur || !e.octets;
+  box.querySelector('span').textContent = e.actif
+    ? `⏺ L'animateur enregistre : ta caméra et ton micro s'enregistrent aussi sur ton ordinateur, en pleine qualité (${dureeEnr(Date.now() - e.debut)} · ${tailleEnr(e.octets)}). Garde cette page ouverte. Le fichier se télécharge tout seul à la fin et ne part nulle part ailleurs.`
+    : e.erreur ? `Enregistrement local : ${e.erreur}`
+    : `✓ Ton enregistrement (${tailleEnr(e.octets)}) est dans ton dossier Téléchargements. Tu peux l'envoyer à l'animateur pour le montage.`;
+}
+$('#btn-enr-encore').onclick = () => enrLocal.telecharger();
+setInterval(() => { if (enrLocal.actif) majEnr(); }, 1000);

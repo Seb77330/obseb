@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="img/mesa-icone-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/app.css?v=3cf1aaaa">
+<link rel="stylesheet" href="css/app.css?v=2dd90096">
 <link rel="stylesheet" href="css/aide.css?v=3ec4d2bc">
 <style>
   body {
@@ -67,6 +67,9 @@
   .mes-boutons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
   .mes-boutons button { padding: 8px 10px; font-size: 14px; }
   .mes-boutons button[aria-pressed="true"] { background: var(--ui-red, #d33); border-color: var(--ui-red, #d33); color: #fff; }
+  #enr-local { margin-top: 10px; padding: 8px 10px; border-radius: 8px; font-size: 13px; background: rgba(211,51,51,.12); border: 1px solid rgba(211,51,51,.45); }
+  #enr-local.fini { background: rgba(60,170,90,.12); border-color: rgba(60,170,90,.45); }
+  #enr-local button { margin-top: 6px; padding: 4px 10px; font-size: 13px; }
   .mes-boutons .quitter { grid-column: 1 / -1; background: transparent; color: var(--ui-muted); }
   .cgu-case { display: flex; justify-content: center; align-items: flex-start; gap: 10px; margin: 14px 0 0; font-size: 14px; color: var(--ui-muted); cursor: pointer; line-height: 1.4; }
   .cgu-case input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--ui-accent); cursor: pointer; }
@@ -132,6 +135,7 @@
           <button type="button" id="btn-quitter" class="quitter">Quitter le live</button>
         </div>
       </div>
+      <div id="enr-local" hidden><span></span> <button type="button" id="btn-enr-encore" hidden>Télécharger encore</button></div>
       <div id="parti" hidden>
         <p style="margin:0 0 10px">Tu as quitté le live. Ta caméra et ton micro sont éteints.</p>
         <button type="button" id="btn-revenir" class="primaire" style="width:100%">Revenir dans le live</button>
@@ -152,10 +156,11 @@
 </div>
 <script src="js/common.js?v=b34846ce"></script>
 <script src="js/reglages-media.js?v=a0c05680"></script>
+<script src="js/enregistrement-local.js?v=f82433d0"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=f07e7ed8"></script>
+<script src="js/invite.js?v=8450b6da"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=252a6afa"></script>
+<script src="js/aide-faq.js?v=3886ff9e"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="droite"></script>
 </body>
 </html>
