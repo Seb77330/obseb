@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
 <link rel="stylesheet" href="css/aide.css?v=aa6fa467">
 <link rel="stylesheet" href="css/visuel-etapes.css?v=527fc39f">
-<link rel="stylesheet" href="css/vitrine.css?v=693e27ac">
+<link rel="stylesheet" href="css/vitrine.css?v=db734505">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -473,28 +473,16 @@
       </figure>
     </section>
 
-    <section class="v-bloc" aria-labelledby="v-quoi">
-      <h2 id="v-quoi">Tout ce qu'il faut pour un bon live</h2>
-      <div class="v-atouts">
-        <article><span class="v-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 6M17.5 14.2a5.2 5.2 0 0 1 3.2 5.3"/></svg></span>
-          <h3>Invite qui tu veux</h3><p>Tu envoies un lien, ils cliquent, ils sont là. Rien à installer.</p></article>
-        <article><span class="v-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.6-1-2.7 0-1 .8-1.6 1.8-1.6h2.2a3.7 3.7 0 0 0 3.7-3.7C20.5 6.9 16.7 3.5 12 3.5z"/><circle cx="7.6" cy="11" r="1.1"/><circle cx="10.5" cy="7.4" r="1.1"/><circle cx="15" cy="7.6" r="1.1"/></svg></span>
-          <h3>À ton image</h3><p>Plus de 30 looks, ton logo, ton générique de début et de fin.</p></article>
-        <article><span class="v-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v10h-8l-4.5 3.5v-3.5H4.5z"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.2 2.3c-.5.2-.8.6-.8 1.1"/><path d="M12 14.3v.1"/></svg></span>
-          <h3>Ton public joue avec toi</h3><p>Un quiz en direct, les meilleurs messages du chat à l'écran.</p></article>
-        <article><span class="v-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10.2 8.6v4.8l4-2.4z"/><path d="M8 20h8"/></svg></span>
-          <h3>Regardez ensemble</h3><p>Un film, une bande-annonce, une partie : tout le monde réagit en direct.</p></article>
-      </div>
-    </section>
-
     <section class="v-bloc" aria-labelledby="v-plus-titre">
-      <h2 id="v-plus-titre">Les petits plus de MESA</h2>
-      <p class="v-sous">Ce qui change tout le jour du live.</p>
+      <h2 id="v-plus-titre">Tout ce qu'il faut pour un bon live</h2>
       <ul class="v-plus">
+        <li><b>Invite qui tu veux</b><span>Tu envoies un lien, ils cliquent, ils sont là. Rien à installer.</span></li>
+        <li><b>À ton image</b><span>Plus de 30 looks, ton logo, ton générique de début et de fin.</span></li>
+        <li><b>Ton public joue avec toi</b><span>Un quiz par QR, sans appli ni compte, et les meilleurs messages du chat à l'écran.</span></li>
+        <li><b>Regardez ensemble</b><span>Un film, une bande-annonce, une partie : tout le monde réagit en direct.</span></li>
         <li><b>Revoir l'action</b><span>Un clic, et les 15 dernières secondes repassent à l'écran.</span></li>
         <li><b>Tes meilleurs moments en clips</b><span>Tu marques un moment pendant le live, tu récupères la vidéo à la fin.</span></li>
         <li><b>Chaque caméra enregistrée à part</b><span>En pleine qualité, chez chacun, pour un montage propre après.</span></li>
-        <li><b>Ton public joue avec un QR</b><span>Ils scannent et répondent au quiz. Pas d'appli, pas de compte.</span></li>
         <li><b>Sous-titres en direct</b><span>Ce que chacun dit s'écrit à l'écran, avec son nom.</span></li>
         <li><b>Personne ne prend ta place</b><span>Tes ordres sont signés : même avec le lien invité, on ne pilote pas ton live.</span></li>
       </ul>
@@ -593,6 +581,7 @@
         <button type="button" data-formule="pro">Préviens-moi au lancement</button>
       </article>
     </div>
+    <button type="button" class="offres-detail" id="offres-detail" aria-expanded="false">Voir tout le détail des formules</button>
     <aside class="entreprises" data-teinte="ent" aria-labelledby="entreprises-titre">
       <div class="ent-tete">
         <span class="embleme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 20.5v-15a1.5 1.5 0 0 1 1.5-1.5h7a1.5 1.5 0 0 1 1.5 1.5v15M14.5 10h4a1.5 1.5 0 0 1 1.5 1.5v9M3 20.5h18M8 8h3M8 11.5h3M8 15h3"/></svg></span>
@@ -814,7 +803,7 @@
 <script src="js/comptes.js?v=449b0824"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
-<script src="js/accueil.js?v=8a71e840"></script>
+<script src="js/accueil.js?v=4144358a"></script>
 <script src="js/accueil-compte.js?v=564099e5"></script>
 <script src="js/accueil-prog.js?v=01a85935"></script>
 <script src="js/accueil-style.js?v=2bfb6b68"></script>
