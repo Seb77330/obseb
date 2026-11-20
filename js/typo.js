@@ -40,6 +40,9 @@
     });
   }
   window.typoFr = typo;
+  window.typoPasser = passer;
+  // data-auto="non" (régie) : rien d'automatique, seuls les blocs qui le demandent (l'aide) sont passés
+  if (document.currentScript && document.currentScript.dataset.auto === 'non') return;
   const tout = () => passer(document.body);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tout); else tout();
   // ce qui arrive après coup (l'aide, les listes) : repassé par petits lots

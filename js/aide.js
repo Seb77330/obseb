@@ -158,6 +158,7 @@ const AideRecherche = (() => {
     const d = document.createElement('div');
     d.className = 'aide-msg ' + classe;
     d.innerHTML = html;
+    if (typeof window.typoPasser === 'function') window.typoPasser(d);   // typographie française (js/typo.js)
     fil.appendChild(d);
     /* on montre le début de la réponse, pas sa fin */
     fil.scrollTop = classe === 'aide-bot' ? Math.max(0, d.offsetTop - 60) : fil.scrollHeight;
