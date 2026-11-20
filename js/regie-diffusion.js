@@ -11,6 +11,7 @@
 
 const WHIP_PLATEFORMES = { twitch: 'https://g.webrtc.live-video.net:4443/v2/offer' };   // ingestion WebRTC officielle de Twitch
 const DEBIT = { 1080: 6000000, 720: 3500000 };          // débit vidéo envoyé (Twitch plafonne à 6 Mb/s)
+const DEBIT60 = { 1080: 6000000, 720: 4500000 };        // en 60 images/s (mode Jeu) : 720p a besoin de plus ; 1080p reste au plafond de Twitch
 const RESERVE_CAMERA = 3;                                 // Mb/s gardés pour ta propre caméra (elle part aussi vers la salle)
 const CLE_CHECKUP = 'obseb:checkup';
 const serveurOBSeb = () => (session.serveur || '').replace(/\/+$/, '');
@@ -154,7 +155,7 @@ function destinations(ids) {
 function aiguiller(ck, dests) {
   const srv = !!serveurOBSeb();
   const formats = [...new Set(dests.map(d => d.format))];
-  const plan = { mode: 'navigateur', hauteur: 1080, debit: DEBIT[1080], routes: {}, formats, raisons: [], envois: 0 };
+  const plan = { mode: 'navigateur', hauteur: 1080, debit: DEBIT[1080], fps: 30, routes: {}, formats, raisons: [], envois: 0 };
   const navOk = ck && ck.navigateur.ok && ck.appareil.ordinateur;
   let hauteur = ck ? (formats.length > 1 ? ck.puissance.hauteur2 : ck.puissance.hauteur1) : 0;
   if (!ck) plan.raisons.push('Check-up pas encore fait');
@@ -184,6 +185,14 @@ function aiguiller(ck, dests) {
     return plan;
   }
   plan.hauteur = hauteur; plan.debit = DEBIT[hauteur];
+  /* Mode Jeu : 60 images par seconde, si l'ordinateur encode assez vite (le double du 30 i/s, avec la même marge)
+     et si la connexion suit. Sinon on reste en 30 i/s, toujours fluide pour les caméras. */
+  if (etat.mode === 'jeu') {
+    const vitesse = hauteur === 1080 ? ck.puissance.fps1080 : ck.puissance.fps720;
+    const up = ck.debit.mbps, besoin60 = compter(hauteur).besoin - compter(hauteur).n * DEBIT[hauteur] / 1e6 * 1.3 + compter(hauteur).n * DEBIT60[hauteur] / 1e6 * 1.3;
+    if (vitesse >= 150 * formats.length && up != null && besoin60 <= up) { plan.fps = 60; plan.debit = DEBIT60[hauteur]; }
+    else plan.note60 = vitesse < 150 * formats.length ? 'ordinateur trop juste pour 60 images/s' : 'connexion trop juste pour 60 images/s';
+  }
   for (const f of formats) {
     const ds = dests.filter(d => d.format === f);
     // dès qu'une plateforme a besoin du relais, tout ce format passe par lui : une seule vidéo encodée, un seul envoi depuis l'ordinateur
@@ -300,7 +309,7 @@ async function lancerCheckup(suite) {
 function phraseVerdict(plan) {
   if (plan.mode === 'navigateur') {
     const imp = Object.values(plan.routes).includes('impossible');
-    return { ton: imp ? 'moyen' : 'ok', titre: imp ? 'Presque prêt' : 'Tout est bon', texte: `Ton live partira en ${plan.hauteur}p, 30 images par seconde.` };
+    return { ton: imp ? 'moyen' : 'ok', titre: imp ? 'Presque prêt' : 'Tout est bon', texte: `Ton live partira en ${plan.hauteur}p, ${plan.fps || 30} images par seconde${plan.fps === 60 ? ' (mode Jeu)' : plan.note60 ? ` (mode Jeu : ${plan.note60}, on reste à 30)` : ''}.` };
   }
   if (plan.mode === 'serveur') return { ton: 'ok', titre: 'C\'est bon', texte: 'Le serveur MESA s\'occupe de l\'envoi pour garder la meilleure qualité.' };
   return { ton: 'moyen', titre: 'Direct sans OBS pas encore possible ici', texte: plan.raisons[0] || '' };
@@ -378,7 +387,7 @@ async function diffusionDemarrer(ids) {
     if (rtmp.length) relais[f] = Object.assign(await appelRelais('ouvrir', { destinations: rtmp, format: f }), { rtmp });
   }
   envoiActif = { plan: prep.plan, dests: prep.dests, relais, ids: ids.slice() };
-  for (const f of prep.formatsNav) canalDiff(f).postMessage({ type: 'go', hauteur: prep.plan.hauteur, debit: prep.plan.debit, cibles: ciblesFormat(f, prep.dests, prep.plan, relais) });
+  for (const f of prep.formatsNav) canalDiff(f).postMessage({ type: 'go', hauteur: prep.plan.hauteur, debit: prep.plan.debit, fps: prep.plan.fps || 30, cibles: ciblesFormat(f, prep.dests, prep.plan, relais) });
   return envoiActif;
 }
 /* Couper ou relancer une plateforme pendant le direct */
@@ -393,7 +402,7 @@ async function diffusionMaj(actifs) {
       relais[f].coupe = !rtmp.length;
     }
     const r = Object.fromEntries(Object.entries(relais).filter(([, x]) => !x.coupe));
-    canalDiff(f).postMessage({ type: 'go', hauteur: plan.hauteur, debit: plan.debit, cibles: ciblesFormat(f, garde, plan, r) });
+    canalDiff(f).postMessage({ type: 'go', hauteur: plan.hauteur, debit: plan.debit, fps: plan.fps || 30, cibles: ciblesFormat(f, garde, plan, r) });
   }
 }
 async function diffusionArreter() {
@@ -402,9 +411,15 @@ async function diffusionArreter() {
   for (const f of plan.formats) { try { canalDiff(f).postMessage({ type: 'stop' }); } catch (e) { /* rien */ } }
   for (const r of Object.values(relais)) { try { await appelRelais('fermer', { chemin: r.chemin }); } catch (e) { /* déjà fermé */ } }
 }
+function passerEn30() {
+  if (!envoiActif) return;
+  envoiActif.plan.fps = 30; envoiActif.plan.debit = DEBIT[envoiActif.plan.hauteur];
+  diffusionMaj(envoiActif.ids.filter(id => !(etat.direct && etat.direct.coupees.includes(id))));
+  toast('Le live passe en 30 images par seconde');
+}
 function passerEn720() {
   if (!envoiActif) return;
-  envoiActif.plan.hauteur = 720; envoiActif.plan.debit = DEBIT[720];
+  envoiActif.plan.hauteur = 720; envoiActif.plan.debit = (envoiActif.plan.fps === 60 ? DEBIT60 : DEBIT)[720];
   diffusionMaj(envoiActif.ids.filter(id => !(etat.direct && etat.direct.coupees.includes(id))));
   toast('Le live passe en 720p');
 }
@@ -419,6 +434,7 @@ function surveiller() {
     if (!x || !x.vu || Date.now() - x.vu > 7000 || (x.etat && x.etat.phase === 'fermee')) return montrerAlerte(`La fenêtre de diffusion${formats.length > 1 ? ' (' + f + ')' : ''} est fermée : le live ne part plus.`, 'rouvrir:' + f);
     if (x.etat && x.etat.phase === 'prete') return montrerAlerte('La fenêtre de diffusion n\'envoie plus (capture arrêtée ?). Relance l\'envoi.', 'relancer');
     const frein = (x.etat.cibles || []).map(c => c.mesure && c.mesure.frein).find(Boolean);
+    if (frein && envoiActif.plan.fps === 60) return montrerAlerte(frein === 'cpu' ? 'Ton ordinateur peine à suivre en 60 images/s.' : 'Ta connexion peine à suivre en 60 images/s.', '30');
     if (frein && envoiActif.plan.hauteur === 1080) return montrerAlerte(frein === 'cpu' ? 'Ton ordinateur peine à suivre en 1080p.' : 'Ta connexion peine à suivre en 1080p.', '720');
   }
   montrerAlerte('');
@@ -429,13 +445,14 @@ function montrerAlerte(texte, action) {
   if (!a) { a = document.createElement('div'); a.id = 'envoi-alerte'; a.setAttribute('role', 'alert'); document.body.appendChild(a); }
   if (alerteVue === texte + action && !a.hidden) return;
   alerteVue = texte + action;
-  const bouton = action === '720' ? '<button data-a="720">Passer en 720p</button>' : action && action.startsWith('rouvrir') ? '<button data-a="rouvrir">Rouvrir la fenêtre</button>' : action === 'relancer' ? '<button data-a="relancer">Relancer l\'envoi</button>' : '';
+  const bouton = action === '30' ? '<button data-a="30">Passer en 30 images/s</button>' : action === '720' ? '<button data-a="720">Passer en 720p</button>' : action && action.startsWith('rouvrir') ? '<button data-a="rouvrir">Rouvrir la fenêtre</button>' : action === 'relancer' ? '<button data-a="relancer">Relancer l\'envoi</button>' : '';
   a.innerHTML = `<span>${esc(texte)}</span>${bouton}<button data-a="x" aria-label="Masquer">✕</button>`;
   a.hidden = false;
   a.onclick = e => {
     const k = e.target.dataset.a; if (!k) return;
     if (k === 'x') { a.hidden = true; return; }
     if (k === '720') passerEn720();
+    if (k === '30') passerEn30();
     if (k === 'rouvrir') ouvrirFenetreDiffusion(action.split(':')[1]);
     if (k === 'relancer') diffusionMaj(envoiActif.ids.filter(id => !(etat.direct && etat.direct.coupees.includes(id))));
   };

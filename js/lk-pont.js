@@ -160,7 +160,7 @@ async function publier() {
   const lp = room.localParticipant;
   if (ECRAN) {
     try {
-      await lp.setScreenShareEnabled(true, { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2 }, resolution: { width: 1920, height: 1080, frameRate: 30 }, contentHint: 'detail' });
+      await lp.setScreenShareEnabled(true, { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2 }, resolution: { width: 1920, height: 1080, frameRate: Math.min(60, +P.get('screensharefps') || 30) }, contentHint: 'detail' });
     } catch (e) { etat('Partage d\'écran annulé'); return; }
     const pub = [...lp.trackPublications.values()].find(x => x.source === LK.Track.Source.ScreenShare);
     if (pub && pub.track) { pub.track.attach(video); video.classList.remove('miroir'); }
