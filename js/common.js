@@ -2,12 +2,15 @@
 'use strict';
 
 const VDO = 'https://vdo.ninja/';
-const HANDLE_DEFAUT = '@sebastian_cineserie';
+const HANDLE_DEFAUT = '';   // plus de compte par défaut : chacun met le sien
+/* Ton nom et ton compte, retenus dans ce navigateur pour tes prochains lives */
+function identiteRetenue() { try { const m = JSON.parse(localStorage.getItem('studioSeb:moi') || '{}'); return { hote: typeof m.hote === 'string' ? m.hote.slice(0, 28) : '', handle: typeof m.handle === 'string' ? m.handle.slice(0, 40) : '' }; } catch (e) { return { hote: '', handle: '' }; } }
+function retenirIdentite(champ, v) { try { const m = identiteRetenue(); m[champ] = String(v || '').trim(); localStorage.setItem('studioSeb:moi', JSON.stringify(m)); } catch (e) { /* rien */ } }
 
 /* ---------- Thèmes prêts à l'emploi ---------- */
 const THEMES = {
   minimal: {
-    nom: 'Sebastian', desc: 'Ta signature : noir et jaune, net et lisible.',
+    nom: 'Signature', desc: 'Noir et jaune, net et lisible : le look MESA.',
     bg: '#0b0b0d', bg2: '#1a1a1f', accent: '#FFD21F', text: '#ffffff', muted: '#a8a8b0',
     fontTitle: 'Outfit', fontBody: 'Inter', deco: 'minimal'
   },
@@ -440,7 +443,7 @@ async function salleDepuisCle(cle) {
 }
 function nouvelleSession(titre, preset = 'minimal') {
   return {
-    v: 1, titre: titre ?? 'Mon live', hote: 'Sebastian', handle: HANDLE_DEFAUT, limite: 135,
+    v: 1, titre: titre ?? 'Mon live', hote: identiteRetenue().hote, handle: identiteRetenue().handle, limite: 135,
     room: 'sebcs' + rnd(10), theme: { preset }, cree: Date.now()
   };
 }

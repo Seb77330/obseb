@@ -14,9 +14,9 @@
 <link rel="stylesheet" href="css/app.css?v=2dd90096">
 <link rel="stylesheet" href="css/biblio.css?v=f983b373">
 <link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
-<link rel="stylesheet" href="css/aide.css?v=3ec4d2bc">
-<link rel="stylesheet" href="css/visuel-etapes.css?v=9f87238b">
-<link rel="stylesheet" href="css/vitrine.css?v=4c2988f3">
+<link rel="stylesheet" href="css/aide.css?v=aa6fa467">
+<link rel="stylesheet" href="css/visuel-etapes.css?v=527fc39f">
+<link rel="stylesheet" href="css/vitrine.css?v=693e27ac">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -449,7 +449,7 @@
           <button type="button" class="primaire v-essayer" data-v-essayer>Créer mon live gratuit</button>
           <button type="button" class="v-lien" data-v-formules>Voir les prix</button>
         </div>
-        <p class="v-rassure">Pas de carte bancaire. Ton adresse e-mail suffit pour créer ton compte.</p>
+        <p class="v-rassure">Sans compte, sans carte bancaire, rien à installer.</p>
       </div>
       <figure class="v-ecran" aria-label="Aperçu du rendu d'un live, en horizontal et en vertical">
         <div class="v-duo">
@@ -472,6 +472,19 @@
         <article><span class="v-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10.2 8.6v4.8l4-2.4z"/><path d="M8 20h8"/></svg></span>
           <h3>Regardez ensemble</h3><p>Un film, une bande-annonce, une partie : vous réagissez en direct.</p></article>
       </div>
+    </section>
+
+    <section class="v-bloc" aria-labelledby="v-plus-titre">
+      <h2 id="v-plus-titre">Les petits plus de MESA</h2>
+      <p class="v-sous">Ce qui change tout le jour du live.</p>
+      <ul class="v-plus">
+        <li><b>Revoir l'action</b><span>Un clic, et les 15 dernières secondes repassent à l'écran.</span></li>
+        <li><b>Tes meilleurs moments en clips</b><span>Tu marques un moment pendant le live, tu récupères la vidéo à la fin.</span></li>
+        <li><b>Chaque caméra enregistrée à part</b><span>En pleine qualité, chez chacun, pour un montage propre après.</span></li>
+        <li><b>Ton public joue avec un QR</b><span>Ils scannent et répondent au quiz. Pas d'appli, pas de compte.</span></li>
+        <li><b>Sous-titres en direct</b><span>Ce que vous dites s'écrit à l'écran, avec le nom de chacun.</span></li>
+        <li><b>Personne ne prend ta place</b><span>Tes ordres sont signés : même avec le lien invité, on ne pilote pas ton live.</span></li>
+      </ul>
     </section>
 
     <section class="v-bloc v-themes" aria-labelledby="v-themes-titre">
@@ -556,7 +569,7 @@
         <p class="prix"><b data-si="sans">6</b><b data-si="avec">3</b><i>,99 €</i><span>par mois</span></p>
         <div class="chiffres-cles"><div><b data-si="sans">25 h</b><b data-si="avec">30 h</b><span>par mois</span></div><div><b>10</b><span>à l'écran</span></div><div><b>1080p</b><span>image</span></div></div>
         <ul><li class="base">Tout Gratuit, et en plus :</li><li data-si="sans">3 plateformes en même temps</li><li>Logo personnalisé</li><li>Tous les textes à toi</li><li>Sous-titres en direct</li><li>Tous les thèmes, tes styles gardés</li><li>3 intros et 3 outros</li><li>Enregistrer sans être en direct</li><li>Lives jusqu'à 4 h</li><li>Quiz : 15 questions</li></ul>
-        <button type="button" class="primaire" data-formule="essentiel">Bientôt disponible</button>
+        <button type="button" class="primaire" data-formule="essentiel">Préviens-moi au lancement</button>
       </article>
       <article data-teinte="pro" class="offre" data-vedette="avec">
         <span class="offre-badge" data-si="avec">Recommandée</span>
@@ -564,7 +577,7 @@
         <p class="prix"><b data-si="sans">11</b><b data-si="avec">6</b><i>,99 €</i><span>par mois</span></p>
         <div class="chiffres-cles"><div><b data-si="sans">40 h</b><b data-si="avec">60 h</b><span>par mois</span></div><div><b>12</b><span>à l'écran</span></div><div><b data-si="sans">1080p</b><b data-si="avec">4K</b><span>image</span></div></div>
         <ul><li class="base">Tout Essentiel, et en plus :</li><li data-si="sans">Toutes les plateformes</li><li>Horizontal et vertical ensemble</li><li>Watch Party</li><li>Plusieurs caméras</li><li data-si="sans">Replay 10 jours, sous-titres à corriger</li><li data-si="avec">Sous-titres à corriger après le live</li><li>Les 8 intros et les 8 outros</li><li>Lives jusqu'à 12 h</li><li>Quiz : 50 questions</li></ul>
-        <button type="button" data-formule="pro">Bientôt disponible</button>
+        <button type="button" data-formule="pro">Préviens-moi au lancement</button>
       </article>
     </div>
     <aside class="entreprises" data-teinte="ent" aria-labelledby="entreprises-titre">
@@ -583,11 +596,11 @@
       </ul>
       <div class="ent-prix">
         <p><span>à partir de</span><b data-si="sans">69,99 €</b><b data-si="avec">34,99 €</b><span>HT par mois</span></p>
-        <button type="button" data-formule="entreprise">En préparation</button>
+        <button type="button" data-formule="entreprise">Nous écrire</button>
       </div>
     </aside>
     <div class="formules-notes">
-      <p class="note-beta"><b>Bêta</b><span>Tout est gratuit jusqu'au 1er janvier 2027, avec OBS. Le direct depuis le site arrive avec les formules.</span></p>
+      <p class="note-beta"><b>Bêta</b><span>Tout le studio est gratuit jusqu'au 1er janvier 2027. Sans OBS, le direct part déjà vers Twitch ; YouTube et les autres plateformes passent par OBS en attendant les formules.</span></p>
       <ul class="notes-liste">
         <li><b>À l'écran</b>toi compris</li>
         <li><b>Tous les textes</b>titre, phrases et pseudo de l'intro et de l'outro</li>
@@ -780,23 +793,23 @@
     <button type="button" data-format="txt">Texte</button>
   </div>
 </dialog>
-<script src="js/common.js?v=e5462634"></script>
+<script src="js/common.js?v=62f44d23"></script>
 <script src="js/vendor/supabase-2.119.0.umd.js?v=4bc1644c"></script>
 <script src="js/comptes-config.js?v=014eeea5"></script>
 <script src="js/comptes.js?v=449b0824"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
-<script src="js/accueil.js?v=36c40481"></script>
-<script src="js/accueil-compte.js?v=c72cc41b"></script>
+<script src="js/accueil.js?v=8a71e840"></script>
+<script src="js/accueil-compte.js?v=564099e5"></script>
 <script src="js/accueil-prog.js?v=01a85935"></script>
 <script src="js/accueil-style.js?v=2bfb6b68"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
 <script src="js/accueil-biblio.js?v=69aeaf7e"></script>
 <script src="js/accueil-nouveau.js?v=9568d336"></script>
 <script src="js/accueil-vitrine.js?v=851be59f"></script>
-<script src="js/visuel-etapes.js?v=5b2d9d26"></script>
+<script src="js/visuel-etapes.js?v=69418a6e"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=46c76169"></script>
+<script src="js/aide-faq.js?v=c0fc0828"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="droite"></script>
 </body>
 </html>

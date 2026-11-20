@@ -232,3 +232,12 @@ body[data-page="espace"] .session .plus .menu hr { margin: 3px 4px; }
 .v-hero .v-chapo { margin-bottom: 34px; line-height: 1.6; }
 .v-hero .v-rassure { margin-top: 18px; }
 @media (max-width: 620px) { .v-hero { gap: 40px; padding-top: 36px; } .v-hero h1 { margin: 14px 0 20px; } .v-hero .v-chapo { margin-bottom: 26px; } }
+
+/* Les petits plus : une liste sobre, sans cartes (moins chargé que les atouts) */
+.v-plus { list-style: none; margin: 28px auto 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 32px; max-width: 1080px; }
+.v-plus li { position: relative; padding-left: 22px; }
+.v-plus li::before { content: ''; position: absolute; left: 0; top: .5em; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-accent); }
+.v-plus b { display: block; font-size: 16px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 4px; }
+.v-plus span { color: var(--ui-muted); font-size: 14.5px; line-height: 1.5; }
+@media (max-width: 900px) { .v-plus { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .v-plus { grid-template-columns: 1fr; gap: 16px; } }

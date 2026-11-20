@@ -35,7 +35,7 @@ const FAQ = [
     r: "Non. Le studio marche dans Chrome ou Edge, sans rien installer. Seuls deux outils sont en option : OBS (si tu veux envoyer le direct avec lui) et l'extension MESA Watch pour la Watch Party.",
     m: "installer telecharger logiciel application appli programme" },
   { c: 'debut', q: "Faut-il créer un compte ?",
-    r: "Oui, pour créer tes lives. Tu te connectes avec ton adresse Gmail (bouton « Continuer avec Google ») ou avec une autre adresse e-mail : tu reçois un code, pas de mot de passe. Tes invités, eux, n'ont pas besoin de compte.",
+    r: "Pas pendant la bêta : tu cliques sur « Créer mon live gratuit » et tu es dans la régie. Tes lives sont gardés dans ce navigateur. Quand les comptes ouvriront, tu te connecteras avec ton adresse Gmail (bouton « Continuer avec Google ») ou une autre adresse e-mail : tu recevras un code, pas de mot de passe. Tes invités, eux, n'auront jamais besoin de compte.",
     m: "compte inscription inscrire identifiant login connexion se connecter mot de passe" },
   { c: 'debut', q: "Où sont gardés mes lives ?",
     r: "Dans le navigateur où tu les as créés (sur cet ordinateur). Si tu changes d'ordinateur ou de navigateur, ou si tu effaces les données du site, tu ne les retrouveras pas. Garde le même navigateur pour tes lives.",

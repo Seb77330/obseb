@@ -61,9 +61,10 @@ function ajusterTitres() {
 }
 addEventListener('load', ajusterTitres);
 if (document.fonts) document.fonts.ready.then(ajusterTitres);
-document.querySelectorAll('[data-champ="hote"]').forEach(e => e.textContent = session.hote);
+// sans nom, la ligne « avec … » de l'intro disparaît (au lieu d'un « avec » tout seul)
+document.querySelectorAll('[data-champ="hote"]').forEach(e => { e.textContent = session.hote || ''; if (e.parentElement.classList.contains('hote')) e.parentElement.style.display = session.hote ? '' : 'none'; });
 document.querySelectorAll('[data-texte]').forEach(e => e.textContent = texteDe(session, e.dataset.texte));
-document.querySelectorAll('[data-champ="handle"]').forEach(e => e.textContent = session.handle || HANDLE_DEFAUT);
+document.querySelectorAll('[data-champ="handle"]').forEach(e => { e.textContent = session.handle || ''; e.style.display = session.handle ? '' : 'none'; });
 $('#logo').innerHTML = logoHTML(theme);
 $('#logo').classList.toggle('mesa', !theme.logo && !theme.logoTexte);
 $('#logo').classList.toggle('image', !!theme.logo);

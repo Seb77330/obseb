@@ -4,6 +4,8 @@
 (function () {
   if (typeof Comptes === 'undefined' || !Comptes.actif) return;
   const place = document.getElementById('place-compte');
+  // avec les comptes ouverts, la phrase sous le bouton de l'accueil le dit
+  document.querySelectorAll('.v-rassure').forEach(p => { p.textContent = 'Pas de carte bancaire. Ton adresse e-mail suffit pour créer ton compte.'; });
   let maSession, sessionConnue = false;
 
   // « Nouveau live » (et tout ce qui le déclenche) : sans compte, on passe d'abord par la connexion

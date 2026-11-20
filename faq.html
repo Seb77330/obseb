@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="css/app.css?v=2dd90096">
-<link rel="stylesheet" href="css/aide.css?v=3ec4d2bc">
+<link rel="stylesheet" href="css/aide.css?v=aa6fa467">
 <style>
   .barre { display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--ui-line); background: var(--ui-header); position: sticky; top: 0; z-index: 10; }
   .barre .marque { font-size: 22px; text-decoration: none; color: var(--ui-text); }
@@ -27,7 +27,17 @@
   <span id="place-affichage"></span>
 </header>
 <main class="faq-wrap">
-  <h1>Questions fréquentes</h1>
+  <section class="faq-guide" aria-labelledby="guide-titre">
+    <h1 id="guide-titre">Ton premier live en 3 minutes</h1>
+    <ol>
+      <li><b>Crée ton live</b><span>Sur l'accueil, « Créer mon live gratuit ». Donne-lui un nom et ton prénom : c'est tout, le reste peut attendre.</span></li>
+      <li><b>Allume ta caméra</b><span>La régie s'ouvre. Choisis ta caméra et ton micro, puis valide : tu te vois dans l'aperçu.</span></li>
+      <li><b>Invite tes potes</b><span>Bouton « Inviter », puis « Copier le lien ». Ils cliquent, entrent leur prénom, et arrivent en coulisses.</span></li>
+      <li><b>Choisis ta scène</b><span>Sous l'aperçu : Intro pendant que les gens arrivent, puis Solo, Jeu ou Réaction. Un clic, c'est à l'écran.</span></li>
+      <li><b>Lance le direct</b><span>« Démarrer le direct » en haut à droite. Le check-up vérifie tout, puis c'est parti.</span></li>
+    </ol>
+  </section>
+  <h2 class="faq-titre2">Questions fréquentes</h2>
   <p class="faq-intro">Tape ta question avec tes mots : les réponses les plus proches remontent tout de suite.</p>
   <input type="search" class="faq-cherche" id="faq-cherche" placeholder="Ex. : ma caméra est noire, c'est combien, inviter un ami…" aria-label="Chercher dans l'aide" autocomplete="off">
   <nav class="faq-cats" id="faq-cats" aria-label="Catégories"></nav>
@@ -38,9 +48,9 @@
     <div id="faq-mail"></div>
   </section>
 </main>
-<script src="js/common.js?v=e5462634"></script>
+<script src="js/common.js?v=62f44d23"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=46c76169"></script>
+<script src="js/aide-faq.js?v=c0fc0828"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="aucune"></script>
 <script src="js/faq-page.js?v=a22f5da8"></script>
 </body>

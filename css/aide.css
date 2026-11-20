@@ -92,3 +92,14 @@
 .aide-attend { display: none !important; }
 .aide-arrive { animation: aide-arrive .35s cubic-bezier(.2, .7, .2, 1) backwards; }
 @keyframes aide-arrive { from { opacity: 0; transform: translateY(5px); } }
+
+/* Le guide express, en haut de l'aide */
+.faq-guide { margin: 0 0 40px; padding: 26px 28px; border-radius: 16px; background: var(--ui-panel); border: 1px solid color-mix(in srgb, var(--ui-accent) 35%, var(--ui-line)); }
+.faq-guide h1 { margin: 0 0 18px; font-size: 26px; }
+.faq-guide ol { list-style: none; counter-reset: g; margin: 0; padding: 0; display: grid; gap: 14px; }
+.faq-guide li { counter-increment: g; position: relative; padding-left: 44px; min-height: 30px; }
+.faq-guide li::before { content: counter(g); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--ui-accent); color: var(--ui-sur-accent); font-weight: 700; font-size: 14px; }
+.faq-guide b { display: block; font-size: 15.5px; margin-bottom: 2px; }
+.faq-guide span { color: var(--ui-muted); font-size: 14.5px; line-height: 1.5; }
+.faq-titre2 { margin: 0 0 6px; font-size: 26px; }
+@media (max-width: 560px) { .faq-guide { padding: 20px 18px; } .faq-guide h1, .faq-titre2 { font-size: 22px; } }
