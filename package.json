@@ -1,0 +1,7 @@
+{
+  "name": "mesa",
+  "private": true,
+  "description": "MESA : construction de la version publiée (code brouillé) dans dist/",
+  "scripts": { "build": "node outils/construire.mjs" },
+  "devDependencies": { "esbuild": "0.28.2" }
+}
