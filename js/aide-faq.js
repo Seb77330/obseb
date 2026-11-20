@@ -220,7 +220,7 @@ const FAQ = [
   { c: 'camera', q: "Mon propre micro est trop faible ou trop fort",
     r: "Règle le niveau du micro dans les réglages de son de ton ordinateur, et choisis le bon micro avec « Changer ». Pour tes invités, utilise le curseur de volume de leur carte.",
     m: "micro faible fort volume micro grésille sature son micro" },
-  { c: 'camera', q: "Quel matériel me conseillez-vous ?",
+  { c: 'camera', q: "Quel matériel acheter pour mes lives ?",
     r: "Un casque (contre l'écho), une source de lumière devant toi, et une connexion stable (câble si possible). N'importe quelle webcam fait l'affaire pour commencer. Un appareil photo ou une GoPro marche aussi s'il est reconnu comme webcam par l'ordinateur (avec un boîtier HDMI ou le logiciel « webcam » de la marque).",
     m: "gopro appareil photo reflex hybride camescope materiel conseil equipement webcam micro casque lumiere setup" },
 

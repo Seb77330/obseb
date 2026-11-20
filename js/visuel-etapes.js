@@ -74,7 +74,7 @@
     const poser = v => { brouillon.titre = v.trim() ? v : 'Mon live'; const f = $('#f-titre'); if (f) f.value = brouillon.titre; apercu(); };
     champ.oninput = () => poser(champ.value);
     champ.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); aller(cur + 1); } };
-    pane.querySelectorAll('.vp-idees button').forEach(b => b.onclick = () => { champ.value = b.textContent; poser(champ.value); champ.focus(); });
+    pane.querySelectorAll('.vp-idees button').forEach(b => b.onclick = () => { champ.value = b.textContent.replace(/[\u00A0\u202F]/g, ' '); poser(champ.value); champ.focus(); });
     setTimeout(() => champ.focus(), 300);
     /* ton nom (à l'écran : « avec … ») et ton compte (à la fin), retenus pour tes prochains lives */
     pane.insertAdjacentHTML('beforeend', `<h3 class="vp-sous">Et toi ?</h3>
