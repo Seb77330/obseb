@@ -227,3 +227,9 @@ sup { line-height: 0; font-size: .68em; }
 [data-tab] .badge-formule b, .btn-rec .badge-formule b { display: none; }
 [data-tab][data-formule], .btn-rec[data-formule] { position: relative; }
 #cam-ajouter { white-space: nowrap; display: inline-flex; align-items: center; }
+/* Régie ouverte dans un autre onglet (regie-onglet.js) */
+.onglet-double { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; background: var(--ui-bg, #0b0b0d); color: var(--ui-text); text-align: center; }
+.onglet-double > div { max-width: 460px; }
+.onglet-double h1 { font-size: 24px; margin: 0 0 12px; }
+.onglet-double p { color: var(--ui-muted); line-height: 1.55; margin: 0 0 22px; }
+.onglet-double button { padding: 12px 20px; border-radius: 12px; font-weight: 600; }
