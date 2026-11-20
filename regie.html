@@ -641,7 +641,7 @@
   }
 </style>
 <link rel="stylesheet" href="css/modes.css?v=dd2ee5f7">
-<link rel="stylesheet" href="css/regie-leger.css?v=7eb32cfc">
+<link rel="stylesheet" href="css/regie-leger.css?v=ed49e104">
 <link rel="stylesheet" href="css/faux.css?v=e2d3aac6">
 </head>
 <body>
@@ -806,12 +806,14 @@
             <button class="petit" data-ajout="30" hidden>+30 s</button>
           </div>
         </div>
+        <details class="pli pli-simple" id="pli-hb-style" open><summary>Style de l'intro et de l'outro</summary>
         <div class="hb-choix" id="hb-intro" role="group" aria-label="Visuel de l'intro"></div>
         <div class="hb-choix" id="hb-fin" role="group" aria-label="Visuel de l'outro" hidden></div>
+        </details>
 
       
         
-        <details class="pli" id="pli-bandeaux" open>
+        <details class="pli pli-simple" id="pli-bandeaux" open>
         <summary>Bandeaux prêts</summary>
         <div class="ligne-boutons" style="flex-wrap:nowrap">
           <input type="text" id="bd-titre" placeholder="Nom ou titre">
@@ -896,6 +898,7 @@
           <button class="primaire" id="qz-ajouter" style="width:100%;margin-top:10px">Ajouter la question</button>
         </details>
 
+        <details class="pli pli-simple" id="pli-qz-look" open><summary>Apparence du quiz</summary>
         <h3 class="sous-titre">Place à l'écran</h3>
         <div class="qz-dispos" id="qz-dispos">
           <button data-qdispo="centre" title="Jusqu'à 4 personnes : caméras au-dessus, question dessous. À partir de 5 : question au milieu, caméras autour.">
@@ -915,6 +918,7 @@
           <button data-qstyle="arcade"><i style="background:#0b1026;border:2px solid #ffd319;border-radius:0"></i>Arcade</button>
           <button data-qstyle="bd"><i style="background:#ffdf2b;border:2px solid #111"></i>BD</button>
         </div>
+        </details>
         <button class="petit" id="qz-zero" style="margin-top:14px">Remettre les scores à zéro</button>
       </section>
       <section class="onglet" data-onglet="watch" hidden>
@@ -1103,7 +1107,7 @@
         <label class="champ" for="vol-effets">Volume des effets</label>
         <input type="range" id="vol-effets" min="0" max="100" step="1">
 
-        <h3 class="sous-titre">Réglages</h3>
+        <details class="pli pli-simple" id="pli-mu-reglages" open><summary>Réglages</summary>
         <label class="champ" id="mu-ecoute-titre" style="margin-top:0">Qui entend la musique et les effets</label>
         <div class="segment mu-ecoute" id="mu-ecoute" role="group" aria-labelledby="mu-ecoute-titre">
           <button type="button" data-v="studio" title="Toi et tes invités l'entendez, en plus des spectateurs. Mets un casque : sinon ton micro la reprend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></svg>Tout le monde</button>
@@ -1114,6 +1118,7 @@
           <button type="button" data-v="direct" title="Une seconde après ton clic sur « Démarrer le direct ». Avant, l'intro reste sans musique.">Avec le direct</button>
           <button type="button" data-v="auto" title="Dès que la scène Intro est à l'écran, même avant le direct.">Dès l'intro</button>
         </div>
+        </details>
         <details class="aide mu-par-lien">
           <summary>Ajouter par un lien</summary>
           <div class="ligne-boutons" style="flex-wrap:nowrap;margin-top:8px">
@@ -1182,7 +1187,7 @@
 <script src="js/regie-chat.js?v=072c0463"></script>
 <script src="js/regie-comptes.js?v=23f74648"></script>
 <script src="js/whip.js?v=92db7912"></script>
-<script src="js/regie-diffusion.js?v=debedf9c"></script>
+<script src="js/regie-diffusion.js?v=5cd7e423"></script>
 <script src="js/regie-enregistrer.js?v=559d94e9"></script>
 <script src="js/regie-visuel.js?v=2a0579a6"></script>
 <script src="js/regie-recherche.js?v=72d02606"></script>
@@ -1194,8 +1199,8 @@
 <script src="js/regie-etat.js?v=ed91ae08"></script>
 <script src="js/regie-st.js?v=211f6618"></script>
 <script src="js/regie-ecran.js?v=50522a44"></script>
-<script src="js/regie-simple.js?v=f620db06"></script>
-<script src="js/regie-securite.js?v=75e654dd"></script>
+<script src="js/regie-simple.js?v=3f363f58"></script>
+<script src="js/regie-securite.js?v=13ef7dd8"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
 <script src="js/aide-faq.js?v=417570f3"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="regie"></script>
