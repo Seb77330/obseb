@@ -112,3 +112,8 @@ p, li { text-wrap: pretty; }
 
 @media (max-width: 860px) { .e-grille, .e-etapes { grid-template-columns: 1fr; } .e-prix { grid-template-columns: 1fr; } .e-prix h2 { text-align: center; } .e-montant { text-align: left; } }
 @media (max-width: 600px) { .e-nav a:not(.e-btn) { display: none; } .e-marque span { display: none; } .e-ligne, .e-looks { grid-template-columns: 1fr; } }
+.e-prix[data-obs="sans"] [data-si="avec"], .e-prix[data-obs="avec"] [data-si="sans"] { display: none; }
+.e-bascule { display: inline-flex; gap: 4px; padding: 4px; margin: 14px 0 4px; border: 1px solid var(--e-ligne); border-radius: 12px; background: var(--e-fond); }
+.e-bascule button { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 9px; padding: 9px 16px; background: transparent; color: var(--e-doux); font: 600 14px/1 Inter, system-ui, sans-serif; cursor: pointer; }
+.e-bascule button[aria-pressed="true"] { background: var(--e-bleu); color: #fff; }
+.e-bascule i { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 6px; border-radius: 99px; border: 1px solid currentColor; opacity: .8; }
