@@ -89,8 +89,8 @@ $('#f-logo').onchange = e => surcharge('logo', e.target.value.trim());
 $('#f-mintro').onchange = e => surcharge('musiqueIntro', e.target.value.trim());
 $('#f-mfin').onchange = e => surcharge('musiqueFin', e.target.value.trim());
 $('#f-logotexte').oninput = e => surcharge('logoTexte', e.target.value.trim());
-$('#f-hote').oninput = e => { brouillon.hote = e.target.value || 'Sebastian'; apercu(); };
-$('#f-handle').oninput = e => { brouillon.handle = e.target.value || HANDLE_DEFAUT; apercu(); };
+$('#f-hote').oninput = e => { brouillon.hote = e.target.value.trim() ? e.target.value : ''; retenirIdentite('hote', brouillon.hote); apercu(); };
+$('#f-handle').oninput = e => { brouillon.handle = e.target.value.trim() ? e.target.value : ''; retenirIdentite('handle', brouillon.handle); apercu(); };
 $('#f-limite').onchange = e => { brouillon.limite = +e.target.value || 0; };
 $$('[data-apercu]').forEach(b => b.onclick = () => {
   modeApercu = b.dataset.apercu;
@@ -375,9 +375,10 @@ document.addEventListener('click', e => {
 $('#btn-formules').onclick = () => { if ($('#vue-liste').hidden) montrerVue('liste'); $('#formules').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   if (b.dataset.formule === 'gratuit') { $('#btn-nouveau').click(); return; }
-  if (b.dataset.formule === 'entreprise') { toast("L'offre Entreprises est en préparation. Elle n'est pas encore ouverte."); return; }
-  // le paiement n'est pas encore branché : on le dit, et on ne bloque rien
-  toast("Cette formule n'est pas encore ouverte. Pendant la bêta, tout le studio est gratuit.");
+  // le paiement n'est pas encore branché : on garde le contact des gens intéressés (page Contact, sans serveur)
+  const nom = { essentiel: 'Essentiel', pro: 'Pro', entreprise: 'Entreprises' }[b.dataset.formule] || '';
+  const msg = b.dataset.formule === 'entreprise' ? 'Bonjour, l\'offre Entreprises m\'intéresse. Mon équipe : ' : `Préviens-moi quand la formule ${nom} ouvre, s'il te plaît.`;
+  location.href = `contact.html?sujet=${b.dataset.formule === 'entreprise' ? 'Entreprises' : 'Formules'}&msg=${encodeURIComponent(msg)}`;
 });
 /* Avec OBS ou sans OBS : les prix et quelques lignes changent ; le choix est gardé dans ce navigateur */
 (function () {

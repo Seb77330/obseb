@@ -92,3 +92,5 @@ details.vp-style { margin-top: 18px; }
 .vp-pli > :not(summary) { padding: 12px 14px; }
 .vp-nav button { font-size: 12px; overflow-wrap: normal; }
 @media (max-width: 520px) { .vp-suiv-nom { display: none; } body.vp-etapes .pied-form button { white-space: nowrap; } }
+.vp-qui { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 640px) { .vp-qui { grid-template-columns: 1fr; } }

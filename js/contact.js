@@ -9,6 +9,8 @@
   const qs = new URLSearchParams(location.search);
   const sujetDemande = qs.get('sujet');
   if (sujetDemande) { const r = document.querySelector(`input[name=sujet][value="${CSS.escape(sujetDemande)}"]`); if (r) r.checked = true; }
+  const msgDemande = (qs.get('msg') || '').slice(0, 300);
+  if (msgDemande && !$('#c-message').value) $('#c-message').value = msgDemande;
   const erreur = t => { const e = $('#c-erreur'); e.textContent = t; e.hidden = !t; };
   $('#form-contact').addEventListener('submit', async ev => {
     ev.preventDefault();

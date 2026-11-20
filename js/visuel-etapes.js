@@ -76,6 +76,17 @@
     champ.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); aller(cur + 1); } };
     pane.querySelectorAll('.vp-idees button').forEach(b => b.onclick = () => { champ.value = b.textContent; poser(champ.value); champ.focus(); });
     setTimeout(() => champ.focus(), 300);
+    /* ton nom (à l'écran : « avec … ») et ton compte (à la fin), retenus pour tes prochains lives */
+    pane.insertAdjacentHTML('beforeend', `<h3 class="vp-sous">Et toi ?</h3>
+      <div class="vp-qui"><label class="vp-champ"><span>Ton prénom ou pseudo</span><input type="text" class="vp-hote" maxlength="28" placeholder="Ex. Alex"></label>
+      <label class="vp-champ"><span>Ton compte (facultatif)</span><input type="text" class="vp-handle" maxlength="40" placeholder="Ex. @ta_chaine"></label></div>`);
+    const relier = (sel, cible) => {
+      const a = pane.querySelector(sel), b = $(cible); if (!a || !b) return;
+      a.value = b.value;
+      a.oninput = () => { b.value = a.value; b.dispatchEvent(new Event('input')); };
+      b.addEventListener('input', () => { if (a.value !== b.value) a.value = b.value; });
+    };
+    relier('.vp-hote', '#f-hote'); relier('.vp-handle', '#f-handle');
   }
   /* L'étape « Textes » : un champ par texte affiché, rangé comme à l'écran (intro, puis outro) */
   const champTexte = (k, label) => `<label class="vp-champ"><span>${esc(label)}</span><input type="text" maxlength="60" data-texte="${k}" placeholder="${esc(TEXTES_DEFAUT[k])}"></label>`;
