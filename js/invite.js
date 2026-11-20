@@ -80,12 +80,13 @@ function entrer() {
   }
   // réglage caméra + micro avec aperçu, puis la caméra rejoint le live avec ces appareils
   const cle = 'studioSeb:appareils:invite';
-  const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Entrer en coulisses', surDemarrer: demarrer });
+  const reglage = ReglagesMedia({ boite: $('#cam-reglage'), cle, texteBouton: 'Entrer en coulisses', surDemarrer: demarrer, effets: !CAM_DISTANTE });
   function demarrer(app) {
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
-    $('#cam-appareils').textContent = [app.nomCam, app.nomMic].filter(Boolean).join(' · ');
+    $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.antibruit ? 'anti-bruit' : ''].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
-    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true });   // l'invité entend tout le monde ici
+    // l'invité entend tout le monde ici ; flou et anti-bruit sont traduits pour le transport du live (voir vdo() dans common.js)
+    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, antibruit: !!app.antibruit });
   }
   $('#btn-cam-changer').onclick = () => {
     $('#ma-camera').src = 'about:blank'; maCamera = null;

@@ -25,6 +25,10 @@ function secours(raison) {
   console.warn('MESA : bascule sur vdo.ninja', raison);
   const q = new URLSearchParams(location.search);
   ['lk', 'cle'].forEach(k => q.delete(k));
+  // les effets de l'invité, dans les mots de vdo.ninja (même traduction que vdo() dans common.js)
+  const flou = q.get('flou'); q.delete('flou');
+  if (flou === 'leger' || flou === 'fort') q.set('effects', flou === 'fort' ? '3a' : '3');
+  if (q.has('antibruit')) { q.delete('antibruit'); q.set('denoise', '1'); q.set('isolation', '1'); }
   location.replace('https://vdo.ninja/?' + q.toString().replace(/=(?=&|$)/g, ''));
 }
 
@@ -166,7 +170,10 @@ async function publier() {
     await lp.setCameraEnabled(true, { deviceId, resolution: LK.VideoPresets.h1080.resolution, frameRate: 30 })
       .catch(e => etat(e.name === 'NotReadableError' ? 'Caméra déjà utilisée par un autre logiciel' : 'Caméra indisponible'));
     const pub = lp.getTrackPublication(LK.Track.Source.Camera);
-    if (pub && pub.track) { pub.track.attach(video); video.classList.add('miroir'); }
+    if (pub && pub.track) {
+      await appliquerFlou(pub.track);
+      pub.track.attach(video); video.classList.add('miroir');
+    }
   }
   if (P.get('ad') === '0') return;        // caméra supplémentaire : image seule, pas de micro
   const pro = has('proaudio');
@@ -174,7 +181,28 @@ async function publier() {
   await lp.setMicrophoneEnabled(true, {
     deviceId, channelCount: pro ? 2 : 1,
     echoCancellation: !pro, noiseSuppression: !pro, autoGainControl: !pro,   // casque + bon micro : aucun traitement
+    voiceIsolation: !pro && has('antibruit'),   // anti-bruit renforcé choisi en coulisses : Chrome/Edge isolent la voix
   }).catch(() => etat('Micro indisponible'));
+}
+
+/* Flou d'arrière-plan choisi en coulisses (&flou=leger|fort) : la personne est découpée dans son navigateur (MediaPipe),
+   l'image envoyée est déjà floutée. Fichiers gardés sur le site (js/vendor/mediapipe), aucun CDN.
+   Si l'ordinateur ou le navigateur ne suit pas, la caméra part nette : jamais d'image noire à cause d'un effet. */
+const RAYON_FLOU = { leger: 8, fort: 22 };
+async function appliquerFlou(track) {
+  const rayon = RAYON_FLOU[P.get('flou')];
+  const TP = window.LivekitTrackProcessors;
+  if (!rayon || !TP || !TP.supportsBackgroundProcessors()) return;
+  const dossier = new URL('js/vendor/mediapipe', location.href).href;
+  try {
+    await track.setProcessor(TP.BackgroundProcessor({
+      mode: 'background-blur', blurRadius: rayon,
+      assetPaths: { tasksVisionFileSet: dossier, modelAssetPath: dossier + '/selfie_segmenter.tflite' }
+    }));
+  } catch (e) {
+    console.warn('MESA : flou indisponible, caméra envoyée nette', e);
+    track.stopProcessor().catch(() => {});
+  }
 }
 
 /* ----- Messages de la page parente (mêmes noms que vdo.ninja) ----- */
