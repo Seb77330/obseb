@@ -74,7 +74,7 @@
     if (Date.now() < verrou) { e.preventDefault(); return; }
     const i = actuelle(), r = parties[i].el.getBoundingClientRect();
     if (e.deltaY > 0) {
-      if (r.bottom > innerHeight + 4 || i === parties.length - 1) return;   // il reste à lire dans cette partie (ou c'est la dernière : le pied de page)
+      if (r.bottom > innerHeight + 4 || i >= parties.length - 2) return;   // il reste à lire dans cette partie, ou on arrive aux formules : défilement libre jusqu'en bas
       e.preventDefault(); cumul += e.deltaY; if (cumul > 30) aller(i + 1);
     } else {
       if (r.top < BARRE - 4) {                                                 // le haut de la partie n'est pas encore à l'écran
