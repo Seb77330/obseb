@@ -1211,7 +1211,11 @@ const fichiers = (() => {
 /* ----- Ce que chaque formule permet.
    « beta » : la formule de Sebastian et des bêta-testeurs, tout au maximum. Tant que les comptes n'existent pas,
    c'est celle de tout le monde (demande de Sebastian, 17/11). ----- */
-const LIMITES = { beta: { musiques: 50 }, gratuit: { musiques: 3 }, essentiel: { musiques: 10 }, pro: { musiques: 50 }, regie: { musiques: 50 }, entreprise: { musiques: 50 } };
+/* antenne : personnes à l'écran en même temps, toi compris ; heures : heures de live par mois (affichées, pas encore bloquantes) */
+const LIMITES = {
+  beta: { musiques: 50, antenne: 18, heures: 0 }, gratuit: { musiques: 3, antenne: 6, heures: 15 }, essentiel: { musiques: 10, antenne: 10, heures: 25 },
+  pro: { musiques: 50, antenne: 12, heures: 40 }, regie: { musiques: 50, antenne: 18, heures: 0 }, entreprise: { musiques: 50, antenne: 18, heures: 80 }
+};
 /* Pendant la bêta (jusqu'au 1er janvier 2027), tout le monde a tout, quelle que soit la formule choisie ou affichée */
 const FIN_BETA = Date.UTC(2027, 0, 1);
 function enBeta() { return Date.now() < FIN_BETA; }
@@ -1219,6 +1223,16 @@ function formuleActuelle() {
   if (enBeta()) return 'beta';
   try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'beta'; } catch (e) { return 'beta'; }
 }
+
+/* ---------- Heures de direct du mois (compteur affiché dans « Mes lives ») ---------- */
+const CLE_HEURES = 'studioSeb:heures';
+const moisCle = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+function ajouterTempsLive(ms) {
+  if (!(ms > 0)) return;
+  try { const o = JSON.parse(localStorage.getItem(CLE_HEURES) || '{}') || {}; const k = moisCle(); o[k] = (o[k] || 0) + ms; localStorage.setItem(CLE_HEURES, JSON.stringify(o)); } catch (e) { /* rien */ }
+}
+function tempsLiveMois() { try { return (JSON.parse(localStorage.getItem(CLE_HEURES) || '{}') || {})[moisCle()] || 0; } catch (e) { return 0; } }
+function dureeHeures(ms) { const m = Math.floor(ms / 60000), h = Math.floor(m / 60); return h ? `${h}\u00A0h${m % 60 ? '\u00A0' + String(m % 60).padStart(2, '0') : ''}` : `${m}\u00A0min`; }
 
 /* ---------- Téléphone et tablette : l'écran ne se met pas en veille pendant le live ---------- */
 function garderEcranAllume() {

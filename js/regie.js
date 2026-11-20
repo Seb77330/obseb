@@ -5,7 +5,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const session = lireSession();
 const cle = hashParams().get('k');
-const MAX_ANTENNE = 11;          // toi + 10 invités
+const MAX_ANTENNE = (LIMITES[formuleActuelle()] || {}).antenne || 11;   // toi compris : 18 pendant la bêta et en Entreprises
 
 if (!session || !cle) {
   $('#bloque').hidden = false;
