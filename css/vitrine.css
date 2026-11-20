@@ -250,3 +250,50 @@ body[data-page="espace"] .session .plus .menu hr { margin: 3px 4px; }
 .formules:not(.detail) .offre ul > li:nth-child(n+6) { display: none; }
 .offres-detail { display: block; margin: 18px auto 0; padding: 8px 14px; border: 0; background: none; color: var(--ui-muted); font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .offres-detail:hover { color: var(--ui-text); }
+
+/* ----- Accueil en « une seule page » (js/accueil-onepage.js) -----
+   Un écran par partie, la molette passe à la suivante (js), la couleur d'ambiance suit la partie. */
+@property --amb-a { syntax: '<color>'; inherits: true; initial-value: #FFD21F; }
+@property --amb-b { syntax: '<color>'; inherits: true; initial-value: #FF8A00; }
+html.onepage:has(body[data-page="vitrine"]) { scroll-padding-top: 68px; }
+body[data-page="vitrine"] {
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 10%, color-mix(in srgb, var(--amb-a) 24%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 95%, color-mix(in srgb, var(--amb-b) 20%, transparent), transparent 70%),
+    var(--ui-bg);
+  background-attachment: fixed;
+  transition: --amb-a .9s ease, --amb-b .9s ease;
+}
+:root[data-mode="clair"] body[data-page="vitrine"] { background:
+    radial-gradient(ellipse 70% 55% at 15% 10%, color-mix(in srgb, var(--amb-a) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 95%, color-mix(in srgb, var(--amb-b) 10%, transparent), transparent 70%),
+    var(--ui-bg); background-attachment: fixed; }
+body[data-page="vitrine"] .chapitre { min-height: calc(100svh - 68px); box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+body[data-page="vitrine"] .v-hero.chapitre { display: grid; align-content: center; gap: 20px; padding-top: 14px; padding-bottom: 10px; }
+body[data-page="vitrine"] .v-hero.chapitre .v-chapo { margin-bottom: 16px; }
+body[data-page="vitrine"] .v-bloc.chapitre { padding: 56px 0; margin: 0; }
+body[data-page="vitrine"] #formules.chapitre { margin-top: 0; padding: 64px 0 40px; }
+/* apparition douce */
+body[data-page="vitrine"] .chapitre-cache > * { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+body[data-page="vitrine"] .chapitre-cache.chapitre-vu > * { opacity: 1; transform: none; }
+body[data-page="vitrine"] .chapitre-cache.chapitre-vu > *:nth-child(2) { transition-delay: .12s; }
+body[data-page="vitrine"] .chapitre-cache.chapitre-vu > *:nth-child(3) { transition-delay: .24s; }
+/* les points sur le côté */
+.chapitres-nav { display: none; }
+body[data-page="vitrine"] .chapitres-nav { display: flex; flex-direction: column; gap: 14px; position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 20; }
+.chapitres-nav button { position: relative; width: 11px; height: 11px; padding: 0; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ui-text) 45%, transparent); background: transparent; cursor: pointer; transition: background .3s, border-color .3s, transform .3s; }
+.chapitres-nav button[aria-current="true"] { background: var(--amb-a); border-color: var(--amb-a); transform: scale(1.25); }
+.chapitres-nav span { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 13px; font-weight: 500; color: var(--ui-text); background: var(--ui-panel); border: 1px solid var(--ui-line); padding: 4px 10px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.chapitres-nav button:hover span, .chapitres-nav button:focus-visible span { opacity: 1; }
+@media (max-width: 760px), (max-height: 560px) {
+  body[data-page="vitrine"] .chapitres-nav { display: none; }
+  body[data-page="vitrine"] .chapitre { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) { body[data-page="vitrine"] { transition: none; } }
+/* « Comment ça marche » prend tout l'écran : en plus grand */
+@media (min-width: 761px) and (min-height: 561px) {
+  body[data-page="vitrine"] .chapitre .trois-pas b { font-size: 21px; }
+  body[data-page="vitrine"] .chapitre .trois-pas p { font-size: 16px; }
+  body[data-page="vitrine"] .chapitre .trois-pas span { transform: scale(1.3); }
+  body[data-page="vitrine"] .chapitre .trois-pas { margin-top: 44px; gap: 40px; }
+}
