@@ -124,18 +124,21 @@ $('#qz-reveler-public').onclick = () => {
 
 /* ----- Réglages dans l'onglet Quiz ----- */
 $('#qzp-actif').checked = !!etat.quiz.public.actif;
-$('#qzp-actif').onchange = async e => {
-  etat.quiz.public.actif = e.target.checked;
-  if (etat.quiz.public.actif) {
-    if (!(await preparerPublic())) { etat.quiz.public.actif = false; e.target.checked = false; return; }
-    const a = etat.quiz.active;
-    if (a && !a.revele) pubQuestion(a); else envoyerPublic();
-    toast('Le public peut jouer : affiche le code « Jouer avec nous »');
+/* Le public joue pendant toute la partie (appelé par « Lancer la partie » / « Arrêter la partie ») */
+async function activerPublic(on) {
+  if (!!etat.quiz.public.actif === on) { majPublic(); return true; }
+  etat.quiz.public.actif = on;
+  if (on) {
+    if (!(await preparerPublic())) { etat.quiz.public.actif = false; return false; }
+    envoyerPublic();
   } else {
     qrJouer(false); ecouterVotes(null);
   }
+  $('#qzp-actif').checked = on;
   envoyer(); majQR(); majPublic();
-};
+  return true;
+}
+$('#qzp-actif').onchange = e => activerPublic(e.target.checked);
 $('#qzp-marge').value = String(etat.quiz.public.marge);
 $('#qzp-marge').onchange = e => { etat.quiz.public.marge = +e.target.value; envoyer(); if (etat.quiz.active) envoyerPublic(); };
 $('#qzp-qr').onclick = () => { qrJouer(!qrJouerVisible()); majPublic(); };
@@ -148,7 +151,6 @@ function majPublic() {
   $('#qzp-qr').textContent = qrJouerVisible() ? 'Masquer le QR' : 'Afficher le QR';
   $('#qzp-qr').classList.toggle('primaire', !qrJouerVisible());
   const btn = $('#qz-reveler-public');
-  btn.hidden = !p.actif;
   btn.disabled = !a || !!(a.public && a.public.revele);
   let txt = '';
   if (p.actif) {
@@ -156,10 +158,11 @@ function majPublic() {
     else if (a && a.public) {
       const n = (votesPublic.get(a.qid) || new Map()).size;
       const reste = Math.ceil((((a.public.fermeA) || finPublic(a)) - Date.now()) / 1000);
-      txt = `Chat : ${n} vote${n > 1 ? 's' : ''}` + (a.public.revele ? ' · révélé' : reste > 0 ? ` · encore ${reste} s` : ' · temps écoulé');
-    } else txt = 'Prêt : lance une question, les téléphones la reçoivent.';
+      txt = `Public : ${n} réponse${n > 1 ? 's' : ''}` + (a.public.revele ? ' · révélé' : reste > 0 ? ` · encore ${reste} s` : ' · temps écoulé');
+    } else txt = '';
   }
   $('#qzp-statut').textContent = txt;
+  if (typeof majStatutQuiz === 'function') majStatutQuiz();
 }
 setInterval(() => { if (etat.quiz.public.actif && etat.quiz.active) majPublic(); }, 1000);
 
