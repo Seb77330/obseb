@@ -241,3 +241,12 @@ body[data-page="espace"] .session .plus .menu hr { margin: 3px 4px; }
 .v-plus span { color: var(--ui-muted); font-size: 14.5px; line-height: 1.5; }
 @media (max-width: 900px) { .v-plus { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .v-plus { grid-template-columns: 1fr; gap: 16px; } }
+
+/* Accueil plus léger (20/11) : les plans de la démo en simples onglets, sans pastilles */
+.v-plans { gap: 2px 4px; }
+.v-plans button { border: 0; background: none; border-radius: 6px; padding: 6px 10px; }
+.v-plans button[aria-selected="true"] { background: none; }
+/* Formules : les 4 premières lignes, le reste avec « Voir tout le détail » (toutes les cartes ensemble) */
+.formules:not(.detail) .offre ul > li:nth-child(n+6) { display: none; }
+.offres-detail { display: block; margin: 18px auto 0; padding: 8px 14px; border: 0; background: none; color: var(--ui-muted); font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.offres-detail:hover { color: var(--ui-text); }

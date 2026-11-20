@@ -380,6 +380,11 @@ $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   const msg = b.dataset.formule === 'entreprise' ? 'Bonjour, l\'offre Entreprises m\'intéresse. Mon équipe : ' : `Préviens-moi quand la formule ${nom} ouvre, s'il te plaît.`;
   location.href = `contact.html?sujet=${b.dataset.formule === 'entreprise' ? 'Entreprises' : 'Formules'}&msg=${encodeURIComponent(msg)}`;
 });
+/* « Voir tout le détail » : les cartes montrent l'essentiel, le détail complet s'ouvre pour toutes à la fois */
+(function () {
+  const b = $('#offres-detail'), zone = $('#formules'); if (!b || !zone) return;
+  b.onclick = () => { const ouvert = zone.classList.toggle('detail'); b.setAttribute('aria-expanded', String(ouvert)); b.textContent = ouvert ? 'Voir moins' : 'Voir tout le détail des formules'; };
+})();
 /* Avec OBS ou sans OBS : les prix et quelques lignes changent ; le choix est gardé dans ce navigateur */
 (function () {
   const zone = $('#formules'), boutons = $$('#choix-obs button'); if (!zone || !boutons.length) return;
