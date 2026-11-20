@@ -27,6 +27,7 @@ async function lancerDirect(ids) {
 }
 function arreterDirect() {
   if (!etat.direct) return;
+  compterTemps(true);
   etat.direct = null;
   if (typeof diffusionArreter === 'function') diffusionArreter();
   noterLiveTermine();       // seul un vrai direct arrêté arrive dans « Lives terminés »
@@ -152,5 +153,13 @@ btnDirect.onclick = e => {
 };
 pop.addEventListener('click', e => e.stopPropagation());   // les boutons du menu se redessinent : le clic ne doit pas le fermer
 document.addEventListener('click', e => { if (!e.target.isConnected) return; if (!pop.hidden && !e.target.closest('.direct-zone')) pop.hidden = true; });
-setInterval(() => { majDirect(); if (!pop.hidden && etat.direct) { const h = pop.querySelector('h4'); if (h) h.textContent = `En direct depuis ${hms(Date.now() - etat.direct.debut)}`; } }, 1000);
+/* le temps de direct s'ajoute au compteur du mois (une coupure du navigateur ne fait perdre qu'une minute au plus) */
+let tempsCompte = 0, dernierTic = Date.now();
+function compterTemps(forcer) {
+  const t = Date.now(), d = Math.min(t - dernierTic, 70000); dernierTic = t;
+  if (etat.direct) tempsCompte += d;
+  if (tempsCompte >= 60000 || (forcer && tempsCompte)) { ajouterTempsLive(tempsCompte); tempsCompte = 0; }
+}
+addEventListener('pagehide', () => compterTemps(true));
+setInterval(() => { compterTemps(); if (!pop.hidden && etat.direct) { const h = pop.querySelector('h4'); if (h) h.textContent = `En direct depuis ${hms(Date.now() - etat.direct.debut)}`; } }, 1000);
 majDirect();

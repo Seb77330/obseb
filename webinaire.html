@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<!-- Sécurité : seuls les scripts du site tournent ; la vidéo vient de YouTube ou Twitch, les questions passent par le relais ntfy.sh -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://ntfy.sh; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.twitch.tv; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0b0d">
+<title>Webinaire · MESA</title>
+<link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/mesa-icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="css/webinaire.css?v=07c3b55f">
+</head>
+<body>
+<main id="web" hidden>
+  <header class="w-tete">
+    <img src="img/mesa-icone.svg" alt="" width="30" height="30">
+    <div class="w-tete-txt"><b id="w-titre">Webinaire</b><span id="w-hote"></span></div>
+    <span class="w-direct"><i></i>En direct</span>
+  </header>
+  <div class="w-corps">
+    <div class="w-video" id="w-video"></div>
+    <form class="w-question" id="w-form" autocomplete="off">
+      <h1>Pose ta question</h1>
+      <p class="w-doux">Elle arrive directement en régie. Si elle est choisie, elle s'affiche à l'écran pendant le direct.</p>
+      <label><span>Ton prénom <small>(facultatif)</small></span><input id="w-nom" maxlength="30" placeholder="Anonyme"></label>
+      <label><span>Ta question</span><textarea id="w-q" maxlength="280" rows="4" required placeholder="Écris ta question ici"></textarea></label>
+      <div class="w-envoi"><span id="w-reste" class="w-doux">280</span><button type="submit" id="w-btn">Envoyer</button></div>
+      <p class="w-retour" id="w-retour" role="status"></p>
+    </form>
+  </div>
+  <footer class="w-pied">Propulsé par <a href="index.html" target="_blank" rel="noopener">MESA</a>, le studio de live dans ton navigateur.</footer>
+</main>
+<section class="w-erreur" id="w-erreur" hidden>
+  <img src="img/mesa-icone.svg" alt="" width="48" height="48">
+  <h1>Ce lien est incomplet</h1>
+  <p>Redemande le lien du webinaire à la personne qui l'organise.</p>
+</section>
+<script src="js/typo.js?v=f3f2b542"></script>
+<script src="js/webinaire.js?v=73d262f9"></script>
+</body>
+</html>

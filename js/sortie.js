@@ -465,7 +465,7 @@ function gererMusique(scene) {
 }
 
 /* ----- Message du chat mis en avant ----- */
-const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'], test: ['#6b7280', 'Test'] };
+const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'], test: ['#6b7280', 'Test'], question: ['#D99A00', 'Question'] };
 const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif', 'sms', 'verre', 'terminal', 'post', 'karaoke', 'pixel'];
 let chatAfficheCle = '', chatFrappe = null;
 function gererChat() {

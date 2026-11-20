@@ -15,6 +15,7 @@ const PLATEFORMES = {
   youtube: { nom: 'YouTube', court: 'YT', couleur: '#FF0000' },
   twitch: { nom: 'Twitch', court: 'TW', couleur: '#9146FF' },
   test: { nom: 'Test', court: 'TEST', couleur: '#6b7280' },
+  question: { nom: 'Question', court: 'Q', couleur: '#D99A00' },   // webinaire : les questions du public (js/regie-webinaire.js)
 };
 const messagesChat = [];
 const MAX_MESSAGES = 200;

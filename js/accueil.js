@@ -315,6 +315,10 @@ function majBonjour(l) {
   const heure = d => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
   $('#espace-resume').textContent = prochain ? `Prochain direct : « ${prochain.titre} », ${dansTexte(prochain.debut)} à ${heure(prochain.debut)}.`
     : l.length ? 'Tes lives sont prêts. Tu passes en direct quand tu veux.' : 'Ton studio est prêt.';
+  // le compteur d'heures de direct du mois
+  const fait = tempsLiveMois(), lim = (LIMITES[formuleActuelle()] || {}).heures || 0;
+  const mois = new Date().toLocaleDateString('fr-FR', { month: 'long' });
+  $('#espace-heures').textContent = (window.typoFr || String)(`En ${mois} : ${fait ? dureeHeures(fait) : '0 h'} de direct` + (lim ? ` sur ${lim} h.` : enBeta() ? ', sans limite pendant la bêta.' : '.'));
 }
 
 /* ----- Mes lives (sessions terminées) ----- */

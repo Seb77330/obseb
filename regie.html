@@ -1010,6 +1010,16 @@
           <p style="margin:6px 0">YouTube demande une clé gratuite pour lire le chat. Elle reste dans ce navigateur, jamais dans les liens.</p>
           <input type="password" id="chat-cle-yt" placeholder="Colle ta clé d'API YouTube ici" autocomplete="off">
         </details>
+        <details class="webinaire" id="pli-webinaire">
+          <summary>Webinaire : les questions de ton public</summary>
+          <p class="aide" style="margin:6px 0">Ton public regarde le direct sur une page MESA et t'écrit ses questions. La vidéo passe par YouTube ou Twitch : elle tient des centaines de spectateurs. Les questions arrivent ici, dans le chat.</p>
+          <input type="text" id="web-video" placeholder="Lien de ton live YouTube, ou ta chaîne Twitch">
+          <div class="ligne-boutons" style="margin-top:6px">
+            <button class="petit" id="web-ouvrir">Ouvrir les questions</button>
+            <button class="petit" id="web-copier" disabled>Copier le lien du public</button>
+          </div>
+          <div class="aide chat-etat" id="web-etat"></div>
+        </details>
         <div id="chat-liste"><div class="vide">Clique sur un message pour l'afficher.</div></div>
         <h3 class="sous-titre" title="La façon dont le message sur lequel tu cliques arrive à l'écran. Tu peux changer pendant qu'un message est affiché.">Message à l'écran</h3>
         <div class="qz-dispos chat-styles" id="chat-styles">
@@ -1169,12 +1179,12 @@
 </div>
 <script src="js/vendor/qrcode.js?v=105f38a7"></script>
 <script src="js/effets.js?v=fd6c30a8"></script>
-<script src="js/common.js?v=62f44d23"></script>
+<script src="js/common.js?v=86bb77e1"></script>
 <script src="js/typo.js?v=f3f2b542" data-auto="non"></script>
 <script src="js/reglages-media.js?v=a0c05680"></script>
 <script src="js/enregistrement-local.js?v=f82433d0"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/regie.js?v=f5cc2840"></script>
+<script src="js/regie.js?v=1fd4ad56"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
 <script src="js/habillages.js?v=c066d580"></script>
 <script src="js/regie-habillages.js?v=04ad0c8c"></script>
@@ -1186,7 +1196,8 @@
 <script src="js/regie-essai.js?v=cc78e443"></script>
 <script src="js/regie-qr.js?v=2cc8d871"></script>
 <script src="js/regie-public.js?v=05e42570"></script>
-<script src="js/regie-chat.js?v=072c0463"></script>
+<script src="js/regie-chat.js?v=9844ef1b"></script>
+<script src="js/regie-webinaire.js?v=74e20958"></script>
 <script src="js/regie-comptes.js?v=23f74648"></script>
 <script src="js/whip.js?v=92db7912"></script>
 <script src="js/regie-diffusion.js?v=5cd7e423"></script>
@@ -1194,7 +1205,7 @@
 <script src="js/regie-enregistrer.js?v=559d94e9"></script>
 <script src="js/regie-visuel.js?v=2a0579a6"></script>
 <script src="js/regie-recherche.js?v=72d02606"></script>
-<script src="js/regie-direct.js?v=465e8a1b"></script>
+<script src="js/regie-direct.js?v=f0f4b5ba"></script>
 <script src="js/regie-guide.js?v=ed556d71"></script>
 <script src="js/regie-cams.js?v=55166cf2"></script>
 <script src="js/regie-faux.js?v=74fd5a18"></script>
@@ -1205,7 +1216,7 @@
 <script src="js/regie-simple.js?v=3f363f58"></script>
 <script src="js/regie-securite.js?v=13ef7dd8"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=db07a116"></script>
+<script src="js/aide-faq.js?v=078abe7b"></script>
 <script src="js/aide.js?v=d5159d99" data-place="regie"></script>
 </body>
 </html>
