@@ -11,7 +11,7 @@
      GET  /enregistrements/<nom>    téléchargement (lien signé, ou en-tête Authorization)
 
    Sans clé secrète (pour la régie, les invités, la sortie) :
-     POST /jeton                    {room, identite, nom, publier, cle?, pour?}  accès vidéo LiveKit (voir plus bas)
+     POST /jeton                    {room, identite, nom, publier, cle?, vue?, pour?}  accès vidéo LiveKit (voir plus bas)
      POST /salle/admettre           {room, cle, identite}   fait entrer un invité de la salle d'attente
      POST /salle/exclure            {room, cle, identite}   le met dehors (et l'empêche de revenir sous ce nom)
      POST /salle/verrouiller        {room, cle}             plus personne ne peut entrer (deverrouiller pour rouvrir)
@@ -199,6 +199,15 @@ function cleValide(room, cle) {
   if (!salles[room]) { salles[room] = emp; try { fs.writeFileSync(FICHIER_SALLES, JSON.stringify(salles), { mode: 0o600 }); } catch (e) { /* rien */ } }
   return egal(salles[room], emp);
 }
+/* Clé de lecture de la sortie OBS : sha256 de la clé de la régie (même calcul que cleSortie() dans js/common.js).
+   On ne peut pas en tirer la régie. Le serveur l'apprend quand l'animateur se connecte avec sa clé ;
+   avant ça, la sortie attend (elle réessaie toute seule). */
+const cleSortie = cle => 'v' + crypto.createHash('sha256').update('obseb-sortie-v1:' + cle).digest('hex').slice(0, 32);
+const sortiesConnues = new Map();   // room -> clé de lecture
+function vueValide(room, vue) {
+  const k = sortiesConnues.get(room);
+  return typeof vue === 'string' && vue.length === 33 && !!k && egal(k, vue);
+}
 /* État des salles (en mémoire : le serveur ne vit que le temps du live) */
 const regles = new Map();   // room -> { verrou: bool, exclus: Set }
 const regle = room => { if (!regles.has(room)) regles.set(room, { verrou: false, exclus: new Set() }); return regles.get(room); };
@@ -224,13 +233,14 @@ const PERM_ADMIS = { canSubscribe: true, canPublish: true, canPublishData: true,
 
 function refus(message, extra) { const e = new Error(message); e.refus = true; Object.assign(e, extra || {}); return e; }
 
-async function jeton({ room, identite, nom, publier, cle, pour }) {
+async function jeton({ room, identite, nom, publier, cle, vue, pour }) {
   if (!LK_CLE || !LK_SECRET || !LK_URL) throw new Error('LiveKit non configuré');
   if (typeof room !== 'string' || !/^[a-z0-9]{6,40}$/.test(room)) throw refus('Salle invalide');
   if (typeof identite !== 'string' || !identite.startsWith(room + '_') || identite.length > 80 || !/^[a-z0-9_-]+$/i.test(identite)) throw refus('Identité invalide');
   const animateur = /_(seb|ecran\d|cam\d)$/.test(identite);
   const hoteOk = cleValide(room, cle);
   if (animateur && !hoteOk) throw refus(cle ? 'Clé de régie incorrecte' : 'Clé de régie manquante');
+  if (hoteOk) { if (sortiesConnues.size > 2000) sortiesConnues.clear(); sortiesConnues.set(room, cleSortie(cle)); }
   const r = regle(room);
   let droits;
   if (hoteOk) {
@@ -244,8 +254,8 @@ async function jeton({ room, identite, nom, publier, cle, pour }) {
       ? { canSubscribe: true, canPublish: true, canPublishData: true, canUpdateOwnMetadata: true }
       : { canSubscribe: false, canPublish: false, canPublishData: true, canUpdateOwnMetadata: false };   // salle d'attente : peut seulement dire « je suis là »
   } else {
-    // regarder sans être vu : seulement l'animateur (clé) ou un invité déjà admis
-    if (!(await estAdmis(room, pour))) throw refus('Pas encore admis', { attente: true });
+    // regarder sans être vu : l'animateur (clé), sa sortie OBS (clé de lecture) ou un invité déjà admis
+    if (!vueValide(room, vue) && !(await estAdmis(room, pour))) throw refus(vue ? 'La régie n\'est pas encore ouverte' : 'Pas encore admis', { attente: true });
     droits = { canSubscribe: true, canPublish: false, canPublishData: false, canUpdateOwnMetadata: false, hidden: true };
   }
   const maintenant = Math.floor(Date.now() / 1000);

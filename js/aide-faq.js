@@ -257,7 +257,7 @@ const FAQ = [
     r: "Oui. La régie pilote ce qui passe à l'écran : garde son onglet ouvert (tu peux la mettre sur un deuxième écran). Si tu la fermes, l'image dans OBS ne change plus.",
     m: "garder regie ouverte fermer onglet deuxieme ecran" },
   { c: 'obs', q: "Je ne veux pas montrer mon lien OBS",
-    r: "Bonne idée : le lien OBS contient la clé de ta régie. Ne le montre jamais à l'écran et ne le donne à personne. Le lien à partager, c'est celui des invités.",
+    r: "Le lien OBS ne permet plus que de regarder ton live : on ne peut pas en tirer ta régie. Garde-le quand même pour toi, car il montre aussi tes coulisses. Si tu as collé un lien OBS avant le 20/11/2026, recopie-le depuis le bouton OBS : l'ancien contenait encore la clé de ta régie. Le lien à partager, c'est celui des invités.",
     m: "lien obs secret cle partager montrer danger" },
 
   /* ---------- Passer en direct ---------- */
@@ -460,7 +460,7 @@ const FAQ = [
     r: "Elles restent dans ton navigateur, sur ton ordinateur : jamais dans les liens que tu partages. Le bouton « Effacer mes clés de cet ordinateur » les supprime toutes d'un coup.",
     m: "cle de stream securite secret effacer stockee donnees" },
   { c: 'securite', q: "Quels liens puis-je partager ?",
-    r: "Le lien invités : oui, à tes invités. Le lien OBS et le lien de la régie : jamais, ils contiennent la clé de ta régie. Ne les montre pas à l'écran.",
+    r: "Le lien invités : oui, à tes invités. Le lien de la régie : jamais, il contient la clé de ta régie. Le lien OBS ne donne pas la régie, mais il montre tes coulisses : garde-le pour toi et ne le montre pas à l'écran.",
     m: "partager lien quel lien securite regie obs invite" },
   { c: 'securite', q: "Quelqu'un d'inconnu peut-il entrer dans mon live ?",
     r: "Seules les personnes qui ont le lien invités peuvent entrer, et elles arrivent en coulisses : rien ne passe à l'écran sans toi. Ne publie donc pas le lien invités en public.",

@@ -24,7 +24,7 @@ document.body.classList.toggle('fond', !has('transparent') && !PUSH);
 function secours(raison) {
   console.warn('MESA : bascule sur vdo.ninja', raison);
   const q = new URLSearchParams(location.search);
-  ['lk', 'cle'].forEach(k => q.delete(k));
+  ['lk', 'cle', 'vue'].forEach(k => q.delete(k));
   // les effets de l'invité, dans les mots de vdo.ninja (même traduction que vdo() dans common.js)
   const flou = q.get('flou'); q.delete('flou');
   if (flou === 'leger' || flou === 'fort') q.set('effects', flou === 'fort' ? '3a' : '3');
@@ -46,7 +46,7 @@ let room = null, volume = 1, envoiNiveau = null;
 async function jeton(identite) {
   const r = await fetch(SERVEUR + '/jeton', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ room: ROOM, identite, nom: LABEL, publier: !!PUSH, cle: P.get('cle') || undefined, pour: P.get('pour') || undefined })
+    body: JSON.stringify({ room: ROOM, identite, nom: LABEL, publier: !!PUSH, cle: P.get('cle') || undefined, vue: P.get('vue') || undefined, pour: P.get('pour') || undefined })
   });
   if (!r.ok) {
     const e = new Error('jeton ' + r.status); e.refus = r.status === 403;
@@ -71,7 +71,8 @@ async function demarrer() {
   try { acces = await jeton(identite); }
   catch (e) {
     // aperçu d'un invité pas encore admis : on réessaie tout seul jusqu'à ce que l'animateur le fasse entrer
-    if (e.attente) { etat('En salle d\'attente…'); setTimeout(demarrer, 4000); return; }
+    // la sortie OBS (clé de lecture) attend que la régie soit ouverte : sans texte, il passerait à l'antenne
+    if (e.attente) { etat(P.get('vue') ? '' : 'En salle d\'attente…'); setTimeout(demarrer, 4000); return; }
     if (e.refus) { etat(e.message && !/^jeton/.test(e.message) ? e.message : 'Accès refusé par le serveur MESA (lien incomplet ?)'); dire({ obsebRefus: e.message }); return; }
     return secours(e.message);
   }
