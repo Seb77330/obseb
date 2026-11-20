@@ -20,7 +20,7 @@
 <link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/entreprises.css?v=a0d5604c">
+<link rel="stylesheet" href="css/entreprises.css?v=a6cf5948">
 </head>
 <body class="page-ent">
 <header class="e-barre">
@@ -83,12 +83,18 @@
     </ol>
   </section>
 
-  <section class="e-bloc e-prix">
+  <section class="e-bloc e-prix" id="prix" data-obs="sans">
     <div>
-      <h2>Une seule formule</h2>
+      <h2>Une formule, deux versions</h2>
+      <div class="e-bascule" role="group" aria-label="Version">
+        <button type="button" data-obs="sans" aria-pressed="true">Sans OBS</button>
+        <button type="button" data-obs="avec" aria-pressed="false">Avec OBS<i>moins cher</i></button>
+      </div>
+      <p class="e-doux" data-si="sans">Rien à installer : le site envoie ton direct vers tes plateformes.</p>
+      <p class="e-doux" data-si="avec">Tu diffuses avec OBS, le logiciel gratuit, sur ton ordinateur.</p>
       <p class="e-doux">3 personnes sur le compte, 80 heures de direct par mois, paiement par virement.</p>
     </div>
-    <div class="e-montant"><small>à partir de</small><b>69,99 €</b><small>HT par mois</small></div>
+    <div class="e-montant"><small>à partir de</small><b data-si="sans">69,99 €</b><b data-si="avec">34,99 €</b><small>HT par mois</small></div>
     <p class="e-note">Pendant la bêta, MESA Entreprises est gratuit, sur invitation.</p>
   </section>
 
@@ -129,7 +135,7 @@
 
 <script src="js/common.js?v=dd840f07"></script>
 <script src="js/typo.js?v=f3f2b542"></script>
-<script src="js/entreprises.js?v=c51e84b8"></script>
+<script src="js/entreprises.js?v=37aacab6"></script>
 <script src="js/accueil-equipe.js?v=05a72ae9"></script>
 </body>
 </html>

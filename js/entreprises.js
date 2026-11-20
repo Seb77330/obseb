@@ -107,5 +107,11 @@
     location.href = liens(session, cle).regie;
   });
 
+  /* le prix : sans OBS ou avec OBS */
+  document.querySelectorAll('.e-bascule [data-obs]').forEach(b => b.addEventListener('click', () => {
+    $('#prix').dataset.obs = b.dataset.obs;
+    document.querySelectorAll('.e-bascule [data-obs]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
   afficher();
 })();
