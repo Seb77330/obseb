@@ -238,3 +238,16 @@ body.regie-simple .cam-ligne { justify-content: flex-end; margin-top: -26px; }
 body.regie-simple .faux-barre, body.regie-simple #btn-vue-invite, body.regie-simple label:has(#auto-antenne) { display: none !important; }
 /* barre du haut : recherche et horloge en Complète */
 body.regie-simple #btn-recherche, body.regie-simple .horloge { display: none !important; }
+
+/* ----- Régie « Simple » : moins de texte (les explications restent au survol) ----- */
+body.regie-simple #col-sources > .colonne-tete, body.regie-simple #col-programme .colonne-tete > .etiquette { display: none; }
+body.regie-simple #col-sources > .colonne-corps { padding-top: 4px; }
+body.regie-simple .intro-onglet, body.regie-simple .src-astuce, body.regie-simple .src-choix-grille small,
+body.regie-simple .ck-intro, body.regie-simple .cles-info, body.regie-simple .qzp-titre + p.aide { display: none !important; }
+body.regie-simple .hb-compte { display: none; }                 /* le compte à rebours est déjà sous les scènes (scène Intro) */
+body.regie-simple #chat-styles:not(.tout) button:nth-child(n+4):not(.actif) { display: none; }
+.voir-styles { margin-top: 8px; }
+body:not(.regie-simple) .voir-styles { display: none; }
+/* barre du bas : seulement quand quelque chose demande ton attention */
+body.regie-simple #etat-studio > button[data-niveau="ok"], body.regie-simple #etat-studio > button[data-niveau="off"], body.regie-simple #etat-studio > .pousse { display: none; }
+body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="ok"]):not([data-niveau="off"]))) { display: none; }

@@ -514,7 +514,7 @@ function majCarteEnvoi() {
   const el = document.getElementById('envoi-carte'); if (!el) return;
   const ph = checkup ? phraseVerdict(aiguiller(checkup, destinations(plateformesPretes().map(x => x.p.id)))) : null;
   el.innerHTML = `<div class="envoi-carte-tete"><b>Check-up du direct</b><span class="ck-beta">Bêta</span></div>
-    <p>${ph ? `${esc(ph.titre)} : ${esc(ph.texte)}` : 'Vérifie ton navigateur, ton ordinateur et ta connexion avant le live : le studio choisit tout seul le meilleur chemin.'}</p>
+    <p${ph ? '' : ' class="ck-intro"'}>${ph ? `${esc(ph.titre)} : ${esc(ph.texte)}` : 'Vérifie ton navigateur, ton ordinateur et ta connexion avant le live : le studio choisit tout seul le meilleur chemin.'}</p>
     <button class="petit" id="envoi-carte-go">${checkup ? 'Refaire le check-up' : 'Faire le check-up'}</button>`;
   el.querySelector('#envoi-carte-go').onclick = () => lancerCheckup();
 }

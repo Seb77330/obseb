@@ -104,10 +104,10 @@ boite.querySelector('.sa-verrou input').onchange = async e => {
   const zone = document.querySelector('[data-onglet="comptes"]');
   if (!zone) return;
   const bloc = document.createElement('div'); bloc.className = 'aide'; bloc.style.cssText = 'margin-top:14px;display:grid;gap:8px';
-  const txt = document.createElement('span');
+  const txt = document.createElement('span'); txt.className = 'cles-info';
   txt.textContent = '🔒 Tes clés restent sur cet ordinateur, dans ce navigateur. Ordinateur partagé ? Efface-les après le live.';
   const b = document.createElement('button'); b.type = 'button'; b.className = 'petit rouge'; b.textContent = 'Effacer mes clés de cet ordinateur';
-  b.style.justifySelf = 'start';
+  b.style.justifySelf = 'start'; b.title = 'Tes clés restent sur cet ordinateur, dans ce navigateur. Ordinateur partagé ? Efface-les après le live.';
   b.onclick = async () => {
     if (!(await confirmer('Effacer toutes tes clés de stream (et la clé YouTube du chat) de cet ordinateur ? Il faudra les recoller au prochain live.', { oui: 'Effacer' }))) return;
     try { localStorage.removeItem('studioSeb:comptes'); localStorage.removeItem('studioSeb:cleYoutube'); } catch (e) { /* rien */ }
