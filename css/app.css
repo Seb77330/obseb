@@ -203,3 +203,18 @@ h1, h2, h3 { text-wrap: balance; }
 /* petits téléphones : le bouton Affichage garde son icône seule (la barre ne dépasse plus de l'écran) */
 @media (max-width: 420px) { .barre .bouton-affichage > button > span { display: none; } .barre > .etiquette { display: none; } }
 sup { line-height: 0; font-size: .68em; }
+
+/* L'appli (js/appli.js) : le bouton « Installer l'appli » et l'aide pour iPhone */
+.btn-appli { display: inline-flex; align-items: center; gap: 6px; }
+.btn-appli[hidden] { display: none; }
+.btn-appli .ic { width: 17px; height: 17px; }
+@media (max-width: 900px) { .btn-appli span { display: none; } }
+.appli-dlg { border: 1px solid var(--ui-line); border-radius: 18px; padding: 0; width: min(420px, calc(100vw - 32px)); background: var(--ui-panel); color: var(--ui-text); }
+.appli-dlg::backdrop { background: rgba(0, 0, 0, .6); }
+.appli-boite { position: relative; padding: 26px 24px 22px; display: grid; gap: 12px; justify-items: start; }
+.appli-boite img { border-radius: 14px; }
+.appli-boite h2 { margin: 0; font-size: 21px; }
+.appli-boite ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.appli-boite p { margin: 0; color: var(--ui-muted); font-size: 14px; }
+.appli-x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: 0; background: none; color: var(--ui-muted); font-size: 22px; cursor: pointer; }
+.appli-ok { justify-self: end; border: 0; border-radius: 10px; padding: 10px 16px; background: var(--ui-accent); color: var(--ui-sur-accent); font: 600 14px/1 inherit; cursor: pointer; }

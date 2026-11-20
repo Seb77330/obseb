@@ -21,10 +21,9 @@
 <meta name="theme-color" content="#0b0b0d">
 <link rel="canonical" href="https://seb77330.github.io/obseb/">
 <link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="img/mesa-icone-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="css/app.css?v=21a91683">
+<link rel="stylesheet" href="css/app.css?v=e2811bc0">
 <link rel="stylesheet" href="css/biblio.css?v=f983b373">
 <link rel="stylesheet" href="css/comptes.css?v=1c68ac22">
 <link rel="stylesheet" href="css/aide.css?v=aa6fa467">
@@ -435,6 +434,11 @@
   .pied-form { display: flex; gap: 10px; }
   .pied-form .primaire { padding: 12px 22px; font-size: 16px; }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/mesa-icone-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MESA">
 </head>
 <body class="zoom">
 <header class="barre">
@@ -444,6 +448,7 @@
   <a class="lien-barre" id="btn-decouvrir" href="#decouvrir">Découvrir</a>
   <button type="button" class="lien-barre" id="btn-formules">Formules</button>
   <a class="lien-barre" id="btn-mes-lives" href="#mes-lives">Mes lives</a>
+  <button type="button" class="lien-barre btn-appli" id="btn-appli" hidden title="Installer MESA comme une application, sur ton ordinateur ou ton téléphone"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg><span>Installer l'appli</span></button>
   <span id="place-affichage"></span>
   <span id="place-compte"></span>
   <button class="primaire" id="btn-nouveau">Nouveau live</button>
@@ -815,9 +820,10 @@
 <script src="js/accueil-vitrine.js?v=04a55a92"></script>
 <script src="js/accueil-onepage.js?v=c08cec17"></script>
 <script src="js/accueil-equipe.js?v=05a72ae9"></script>
+<script src="js/appli.js?v=4103f983"></script>
 <script src="js/visuel-etapes.js?v=a1948e7b"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=c4c7019e"></script>
+<script src="js/aide-faq.js?v=8c5ced62"></script>
 <script src="js/aide.js?v=d5159d99" data-place="droite"></script>
 </body>
 </html>
