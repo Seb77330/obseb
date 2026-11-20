@@ -232,7 +232,7 @@ function placer(t, r) {
   t.el.classList.toggle('petite', r.w < 560);
   t.el.classList.toggle('au-bas', r.y + r.h >= HAUT - 4);   // touche le bas de l'écran (caméra plein écran) : le nom remonte au-dessus du bandeau
   // sous-titres posés sur l'image : le nom d'une caméra qui descend jusqu'à eux remonte juste au-dessus
-  const ligneST = VERTICAL ? 1180 : document.body.classList.contains('sans-bandeau') ? 850 : 720;
+  const ligneST = VERTICAL ? 1166 : document.body.classList.contains('sans-bandeau') ? 850 : 720;
   t.el.classList.toggle('sous-st', r.y + r.h > ligneST + 10);
   t.el.style.setProperty('--st', Math.max(0, r.y + r.h - ligneST) + 'px');
   t.el.classList.remove('horsantenne');
@@ -583,7 +583,7 @@ function afficherST(m) {
     box.innerHTML = l.map(x => {
       const c = /^#[0-9a-f]{6}$/i.test(x.c || '') ? x.c : '';
       const nom = String(x.nom || '').slice(0, 16);
-      return `<div${c ? ` style="color:${c}"` : ''}>${nom ? `<b${c ? '' : ' class="accent"'}>${esc(nom)}</b>` : ''}<span>${esc(finDeTexte(x.t, (VERTICAL ? 60 : 96) - nom.length))}</span></div>`;
+      return `<div${c ? ` style="color:${c}"` : ''}>${nom ? `<b${c ? '' : ' class="accent"'}>${esc(nom)}</b>` : ''}<span>${esc(finDeTexte(x.t, (VERTICAL ? 44 : 96) - nom.length))}</span></div>`;
     }).join('');
   }
 }
