@@ -283,6 +283,92 @@ function sha256Hex(texte) {
    Le lien OBS ne permet donc que de REGARDER le live : impossible d'en refaire un lien de régie.
    Même calcul que cleSortie() dans serveur/moteur.js. */
 function cleSortie(cle) { return 'v' + sha256Hex('obseb-sortie-v1:' + cle).slice(0, 32); }
+/* ---------- Signature des ordres de la régie ----------
+   La régie signe chaque état qu'elle envoie (ECDSA P-256). Sa clé privée est tirée de la clé de la régie (k), donc la même
+   sur tous tes ordinateurs, et ne quitte jamais la régie. Les liens invité et OBS portent la clé publique (&sg=…) :
+   ils n'acceptent que les états signés par TA régie. Quelqu'un qui aurait le lien invité ne peut donc pas se faire passer
+   pour l'animateur (même en prenant sa place dans la salle). Calcul de courbe fait ici en BigInt : aucun serveur, rien à payer. */
+const P256 = {
+  p: 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn,
+  n: 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n,
+  b: 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604bn,
+  gx: 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296n,
+  gy: 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5n
+};
+function p256Mod(a, m = P256.p) { const r = a % m; return r < 0n ? r + m : r; }
+function p256Pow(b, e, m = P256.p) { let r = 1n; b = p256Mod(b, m); while (e > 0n) { if (e & 1n) r = r * b % m; b = b * b % m; e >>= 1n; } return r; }
+function p256Fois(k) {
+  // double-and-add en coordonnées jacobiennes (a = -3), une seule inversion à la fin
+  const P = P256.p;
+  const dbl = ([X, Y, Z]) => {
+    if (Y === 0n) return [0n, 1n, 0n];
+    const Z2 = Z * Z % P, M = 3n * (X - Z2) * (X + Z2) % P, Y2 = Y * Y % P, S = 4n * X * Y2 % P;
+    const X3 = p256Mod(M * M - 2n * S), Y3 = p256Mod(M * (S - X3) - 8n * Y2 * Y2), Z3 = 2n * Y * Z % P;
+    return [X3, Y3, Z3];
+  };
+  const add = (A, B) => {
+    if (A[2] === 0n) return B; if (B[2] === 0n) return A;
+    const [X1, Y1, Z1] = A, [X2, Y2, Z2] = B;
+    const Z1s = Z1 * Z1 % P, Z2s = Z2 * Z2 % P, U1 = X1 * Z2s % P, U2 = X2 * Z1s % P, S1 = Y1 * Z2s * Z2 % P, S2 = Y2 * Z1s * Z1 % P;
+    if (U1 === U2) return S1 === S2 ? dbl(A) : [0n, 1n, 0n];
+    const H = p256Mod(U2 - U1), R = p256Mod(S2 - S1), H2 = H * H % P, H3 = H2 * H % P;
+    const X3 = p256Mod(R * R - H3 - 2n * U1 * H2), Y3 = p256Mod(R * (U1 * H2 - X3) - S1 * H3), Z3 = H * Z1 * Z2 % P;
+    return [X3, Y3, Z3];
+  };
+  let R = [0n, 1n, 0n], G = [P256.gx, P256.gy, 1n];
+  while (k > 0n) { if (k & 1n) R = add(R, G); G = dbl(G); k >>= 1n; }
+  const zi = p256Pow(R[2], P - 2n), zi2 = zi * zi % P;
+  return { x: R[0] * zi2 % P, y: R[1] * zi2 % P * zi % P };
+}
+const octetsDe = (n, l = 32) => { const o = new Uint8Array(l); for (let i = l - 1; i >= 0; i--) { o[i] = Number(n & 255n); n >>= 8n; } return o; };
+const nombreDe = o => o.reduce((a, x) => (a << 8n) | BigInt(x), 0n);
+const b64uOctets = o => btoa(String.fromCharCode(...o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const octetsB64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((t.length + 3) % 4)), c => c.charCodeAt(0));
+const cachesSig = new Map();
+function cleSignature(cle) {
+  if (!cle || typeof BigInt !== 'function') return null;
+  if (cachesSig.has(cle)) return cachesSig.get(cle);
+  const h = sha256Hex('obseb-signature-v1:' + cle);
+  const d = BigInt('0x' + h) % (P256.n - 1n) + 1n;
+  const { x, y } = p256Fois(d);
+  const pub = new Uint8Array(33); pub[0] = 2 + Number(y & 1n); pub.set(octetsDe(x), 1);   // point compressé : 44 caractères dans le lien
+  const r = { jwk: { kty: 'EC', crv: 'P-256', d: b64uOctets(octetsDe(d)), x: b64uOctets(octetsDe(x)), y: b64uOctets(octetsDe(y)), ext: false }, pub: b64uOctets(pub) };
+  cachesSig.set(cle, r);
+  return r;
+}
+let clePriveeSig = null;
+async function signerEtat(cle, texte) {
+  if (!crypto.subtle) return null;
+  if (!clePriveeSig) { const c = cleSignature(cle); if (!c) return null; clePriveeSig = crypto.subtle.importKey('jwk', c.jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']); }
+  const k = await clePriveeSig;
+  return b64uOctets(new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, new TextEncoder().encode(texte))));
+}
+/* Côté invité et OBS : la clé publique du lien (&sg=), ou null pour un ancien lien sans signature */
+const SIG_LIEN = (() => { try { const t = hashParams().get('sg'); return t && /^[\w-]{44}$/.test(t) ? t : null; } catch (e) { return null; } })();
+let clePubliqueSig = null;
+function importerPublique(t) {
+  const o = octetsB64u(t); if (o.length !== 33 || (o[0] !== 2 && o[0] !== 3)) return Promise.resolve(null);
+  const x = nombreDe(o.slice(1)), P = P256.p;
+  let y = p256Pow(p256Mod(x * x * x - 3n * x + P256.b), (P + 1n) / 4n);
+  if (Number(y & 1n) !== (o[0] & 1)) y = P - y;
+  const brut = new Uint8Array(65); brut[0] = 4; brut.set(octetsDe(x), 1); brut.set(octetsDe(y), 33);
+  return crypto.subtle.importKey('raw', brut, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']).catch(() => null);
+}
+/* Rend l'état si la signature est bonne (ou si le lien n'en demande pas), sinon null */
+async function etatVerifie(dataReceived, canal) {
+  const sg = dataReceived && dataReceived.studioSebSigne;
+  if (!SIG_LIEN) {
+    if (sg && typeof sg.d === 'string') { try { return JSON.parse(sg.d); } catch (e) { return null; } }
+    return dataReceived ? dataReceived[canal] || null : null;
+  }
+  if (!sg || typeof sg.d !== 'string' || typeof sg.s !== 'string' || sg.d.length > 2000000) return null;
+  if (!clePubliqueSig) clePubliqueSig = importerPublique(SIG_LIEN);
+  const k = await clePubliqueSig; if (!k) return null;
+  let ok = false;
+  try { ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, k, octetsB64u(sg.s), new TextEncoder().encode(sg.d)); } catch (e) { ok = false; }
+  if (!ok) return null;
+  try { return JSON.parse(sg.d); } catch (e) { return null; }
+}
 function slug(s, max = 12) {
   return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
     .replace(/[^a-z0-9]+/g, '').slice(0, max) || 'invite';
@@ -425,16 +511,17 @@ function liens(session, cle) {
   const s = b64e(session);
   const sInvite = b64e(sansImagesLocales(session));
   const kv = cleSortie(cle);
+  const sig = cleSignature(cle), sg = sig ? `&sg=${sig.pub}` : '';
   return {
     regie: `${baseUrl()}regie.html#s=${s}&k=${cle}`,
-    invite: `${baseUrl()}invite.html#s=${sInvite}`,
+    invite: `${baseUrl()}invite.html#s=${sInvite}${sg}`,
     // la sortie (OBS) porte seulement la clé de LECTURE (kv) : elle peut regarder les coulisses sans être vue,
     // mais quelqu'un qui voit ce lien à l'écran ne peut pas en tirer la régie
-    sortie: `${baseUrl()}sortie.html#s=${s}&kv=${kv}`,
-    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}&kv=${kv}`,
+    sortie: `${baseUrl()}sortie.html#s=${s}&kv=${kv}${sg}`,
+    vertical: `${baseUrl()}sortie.html?format=vertical#s=${s}&kv=${kv}${sg}`,
     // « Je garde mon OBS » : les caméras seules, sur fond transparent
-    cameras: `${baseUrl()}sortie.html?decor=0#s=${s}&kv=${kv}`,
-    camerasVertical: `${baseUrl()}sortie.html?decor=0&format=vertical#s=${s}&kv=${kv}`
+    cameras: `${baseUrl()}sortie.html?decor=0#s=${s}&kv=${kv}${sg}`,
+    camerasVertical: `${baseUrl()}sortie.html?decor=0&format=vertical#s=${s}&kv=${kv}${sg}`
   };
 }
 const idHote = s => s.room + '_seb';
