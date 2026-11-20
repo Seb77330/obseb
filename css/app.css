@@ -218,3 +218,12 @@ sup { line-height: 0; font-size: .68em; }
 .appli-boite p { margin: 0; color: var(--ui-muted); font-size: 14px; }
 .appli-x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: 0; background: none; color: var(--ui-muted); font-size: 22px; cursor: pointer; }
 .appli-ok { justify-self: end; border: 0; border-radius: 10px; padding: 10px 16px; background: var(--ui-accent); color: var(--ui-sur-accent); font: 600 14px/1 inherit; cursor: pointer; }
+/* Cadenas des formules payantes (common.js, marquerFormules) */
+.badge-formule { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 2px 6px 2px 5px; border-radius: 99px; background: color-mix(in srgb, var(--ui-accent) 14%, transparent); color: color-mix(in srgb, var(--ui-accent) 70%, var(--ui-text)); font-size: 10.5px; font-weight: 600; line-height: 1.3; letter-spacing: 0; text-transform: none; vertical-align: middle; white-space: nowrap; }
+.badge-formule svg { width: 10px; height: 10px; flex: none; }
+.verrouille { opacity: .55; filter: grayscale(.5); cursor: not-allowed; }
+.verrouille .badge-formule { opacity: 1; }
+[data-tab] .badge-formule, .btn-rec .badge-formule { position: absolute; top: 2px; right: 2px; margin: 0; padding: 2px; }
+[data-tab] .badge-formule b, .btn-rec .badge-formule b { display: none; }
+[data-tab][data-formule], .btn-rec[data-formule] { position: relative; }
+#cam-ajouter { white-space: nowrap; display: inline-flex; align-items: center; }

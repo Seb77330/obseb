@@ -89,7 +89,7 @@
     relier('.vp-hote', '#f-hote'); relier('.vp-handle', '#f-handle');
   }
   /* L'étape « Textes » : un champ par texte affiché, rangé comme à l'écran (intro, puis outro) */
-  const champTexte = (k, label) => `<label class="vp-champ"><span>${esc(label)}</span><input type="text" maxlength="60" data-texte="${k}" placeholder="${esc(TEXTES_DEFAUT[k])}"></label>`;
+  const champTexte = (k, label) => `<label class="vp-champ" data-formule="essentiel"><span>${esc(label)}</span><input type="text" maxlength="60" data-texte="${k}" placeholder="${esc(TEXTES_DEFAUT[k])}"></label>`;
   const paneTextes = places.textes;
   paneTextes.insertAdjacentHTML('beforeend', `
     <div class="vp-groupe"><h3>Intro</h3>
@@ -115,6 +115,7 @@
       ${champTexte('finRetrouve', 'Générique : avant ton compte')}
       ${champTexte('finAdieu', 'Générique : le mot de la fin')}
     </details>`);
+  if (typeof marquerFormules === 'function') marquerFormules(paneTextes);
   // le titre, ton nom et ton compte existent déjà dans la page : on les range à leur place, avec un intitulé
   const placer = (place, sel, label) => {
     const cible = paneTextes.querySelector(`[data-place="${place}"]`), el = $(sel);

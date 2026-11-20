@@ -1316,3 +1316,32 @@ function personnage(i, anime = false) {
     + '</svg>';
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
+
+/* ---------- Fonctions des formules payantes : un petit cadenas « Essentiel » ou « Pro » ----------
+   Mettre data-formule="essentiel" ou "pro" sur l'élément. Pendant la bêta, le cadenas informe seulement (tout reste ouvert).
+   Ensuite, en Gratuit : l'élément est grisé et un clic dit avec quelle formule il se débloque. */
+const RANG_FORMULE = { gratuit: 0, essentiel: 1, pro: 2, regie: 2, entreprise: 2, beta: 2 };
+function formuleSuffit(min) { return (RANG_FORMULE[formuleActuelle()] || 0) >= (RANG_FORMULE[min] || 0); }
+function marquerFormules(racine) {
+  if (formuleActuelle() === 'entreprise') return;
+  (racine || document).querySelectorAll('[data-formule]').forEach(el => {
+    if (el.dataset.formuleVu) return;
+    el.dataset.formuleVu = '1';
+    const min = el.dataset.formule, nom = min === 'pro' ? 'Pro' : 'Essentiel', ok = formuleSuffit(min), beta = enBeta();
+    if (ok && !beta) return;
+    const b = document.createElement('span');
+    b.className = 'badge-formule';
+    b.title = beta ? `Offert pendant la bêta, puis débloqué avec ${nom}` : `Débloqué avec ${nom}`;
+    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" fill="currentColor"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><b>${nom}</b>`;
+    (el.tagName === 'DETAILS' ? el.querySelector('summary') : el).appendChild(b);
+    if (!ok) {
+      el.classList.add('verrouille');
+      el.querySelectorAll('input, select, textarea').forEach(i => { i.disabled = true; });
+      el.addEventListener('click', e => {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (typeof toast === 'function') toast(`Débloqué avec la formule ${nom}`);
+      }, true);
+    }
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => marquerFormules()); else setTimeout(() => marquerFormules(), 0);
