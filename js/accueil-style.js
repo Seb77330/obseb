@@ -318,3 +318,38 @@ dessinerStyles();
 
 /* ----- Place du logo : un clic sur le coin voulu (en bas à gauche d'office) ----- */
 $$('.coins button').forEach(b => b.onclick = () => { surcharge('logoPlace', b.dataset.coin === 'bg' ? '' : b.dataset.coin); majVisuels(); });
+
+/* ----- « Revenir au modèle de base » : couleurs, police, thème ----- */
+{
+  const COULEURS = ['accent', 'bg', 'bg2', 'text'];
+  let departDe = null, departTheme = null;
+  const bouton = (parent, quoi, texte) => {
+    if (!parent) return null;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'lien-bouton retour-base'; b.dataset.retour = quoi; b.textContent = texte; b.hidden = true;
+    parent.appendChild(b); return b;
+  };
+  const bCouleurs = bouton($('#f-accent') && $('#f-accent').closest('.bloc'), 'couleurs', '↺ Revenir aux couleurs du thème');
+  const bPolice = bouton($('#polices') && $('#polices').closest('.bloc'), 'police', '↺ Revenir à la police du thème');
+  const gal = $('#galerie');
+  const bTheme = document.createElement('button');
+  bTheme.type = 'button'; bTheme.className = 'lien-bouton retour-base'; bTheme.textContent = '↺ Revenir au thème de départ'; bTheme.hidden = true;
+  if (gal) gal.before(bTheme);
+  function majRetours() {
+    const t = (brouillon && brouillon.theme) || {};
+    if (bCouleurs) bCouleurs.hidden = !COULEURS.some(k => k in t);
+    if (bPolice) bPolice.hidden = !('fontTitle' in t);
+    bTheme.hidden = !departTheme || JSON.stringify(t) === JSON.stringify(departTheme);
+  }
+  const remplirAvant = remplirForm;
+  remplirForm = function () {
+    if (departDe !== brouillon) { departDe = brouillon; departTheme = JSON.parse(JSON.stringify((brouillon && brouillon.theme) || {})); }
+    remplirAvant(); majRetours();
+  };
+  const remettre = champs => { champs.forEach(k => { delete brouillon.theme[k]; }); remplirForm(); apercu(); };
+  if (bCouleurs) bCouleurs.onclick = () => { remettre(COULEURS); toast('Couleurs du thème remises'); };
+  if (bPolice) bPolice.onclick = () => { remettre(['fontTitle']); toast('Police du thème remise'); };
+  bTheme.onclick = () => { brouillon.theme = JSON.parse(JSON.stringify(departTheme)); remplirForm(); apercu(); toast('Thème de départ remis'); };
+  ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, () => setTimeout(majRetours, 0)));
+  majRetours();
+}

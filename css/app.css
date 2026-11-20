@@ -237,3 +237,4 @@ sup { line-height: 0; font-size: .68em; }
 .son-lecteur { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; padding: 8px 10px; border: 1px solid var(--ui-line); border-radius: 10px; }
 .son-lecteur input[type=range] { flex: 1 1 160px; accent-color: var(--ui-accent); }
 .son-lecteur .son-temps { font-size: 12px; color: var(--ui-muted); font-variant-numeric: tabular-nums; min-width: 72px; }
+.retour-base { display: block; margin: 10px 0 0; font-size: 13px; } .retour-base[hidden] { display: none; } #galerie + .retour-base, .retour-base + #galerie { margin-bottom: 10px; }
