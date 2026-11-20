@@ -6,6 +6,7 @@
 (function () {
   const Qs = new URLSearchParams(location.search);
   if (Qs.get('visuel') || Qs.get('embed')) return;
+  const BARRE = 68;
   const doux = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const parties = [
     { el: document.querySelector('.v-hero'), nom: 'Accueil', a: '#FFD21F', b: '#FF8A00' },
@@ -23,7 +24,26 @@
   nav.className = 'chapitres-nav'; nav.setAttribute('aria-label', 'Parties de la page');
   nav.innerHTML = parties.map((p, i) => `<button type="button" data-i="${i}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}"><span>${esc(p.nom)}</span></button>`).join('');
   document.body.appendChild(nav);
-  nav.addEventListener('click', e => { const b = e.target.closest('button'); if (b) parties[+b.dataset.i].el.scrollIntoView({ behavior: doux ? 'auto' : 'smooth', block: 'start' }); });
+  nav.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    const i = +b.dataset.i;
+    if (i === parties.length - 1) scrollTo({ top: document.documentElement.scrollHeight, behavior: doux ? 'auto' : 'smooth' });   // le dernier point : tout en bas, mentions comprises
+    else parties[i].el.scrollIntoView({ behavior: doux ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  /* Sur un grand écran, le contenu de chaque partie grandit pour remplir l'écran (sinon tout paraît vide). */
+  const remplir = () => {
+    parties.slice(0, -1).forEach((p, k) => {
+      const enfants = [...p.el.children].filter(c => getComputedStyle(c).position !== 'absolute');
+      enfants.forEach(c => { c.style.zoom = ''; });
+      if (innerWidth < 1100 || innerHeight < 700) return;
+      const haut = enfants[0].getBoundingClientRect().top, bas = Math.max(...enfants.map(c => c.getBoundingClientRect().bottom));
+      const dispo = innerHeight - BARRE - (k === 0 ? 40 : 110);
+      const z = Math.min(k === 0 ? 1.3 : k === 1 ? 1.5 : 1.9, dispo / (bas - haut), innerWidth / (k === 0 ? 1250 : k === 1 ? 1150 : 900));
+      if (z > 1.03) enfants.forEach(c => { c.style.zoom = z.toFixed(3); });
+    });
+  };
+  let attente; addEventListener('resize', () => { clearTimeout(attente); attente = setTimeout(remplir, 150); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remplir); else remplir();
 
   /* la partie à l'écran donne sa couleur et allume son point */
   const poser = i => {
@@ -44,7 +64,6 @@
 
   /* La molette passe d'une partie à la suivante. Une partie plus haute que l'écran (les formules) se lit d'abord
      jusqu'au bout, puis la molette continue. Au clavier et au doigt, le défilement reste libre. */
-  const BARRE = 68;
   const grandEcran = () => innerWidth > 760 && innerHeight > 560;
   let verrou = 0, cumul = 0;
   const actuelle = () => { let k = 0; parties.forEach((p, i) => { if (p.el.getBoundingClientRect().top < innerHeight / 2) k = i; }); return k; };
