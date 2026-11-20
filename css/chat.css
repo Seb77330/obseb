@@ -164,3 +164,6 @@ body.chat-on[data-chat-style="notif"] #bandeau { right: auto; }
 body.vertical[data-chat-style="notif"] #chat-bulle { left: 40px; right: 120px; top: 244px; width: auto; margin-left: 0; }
 body.vertical[data-chat-style="notif"] #cb-p { width: 76px; height: 76px; border-radius: 20px; font-size: 13px; }
 body.vertical[data-chat-style="notif"] #cb-auteur { padding-right: 130px; }
+
+/* modes Réaction et Jeu : le message passe de l'autre côté s'il tombait sur une caméra (sortie.js, chat-flip) */
+body.chat-flip:not(.vertical):is([data-chat-style="bulle"], [data-chat-style="postit"], [data-chat-style="billet"], [data-chat-style="clap"], [data-chat-style="neon"]) #chat-bulle { right: auto; left: 70px; }

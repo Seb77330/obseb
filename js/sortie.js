@@ -371,9 +371,12 @@ function appliquerEtat(st) {
   document.body.classList.toggle('cam-plein', camPlein);
   // sans bandeau, les caméras descendent jusqu'en bas
   const sansBas = z => bandeauVide && !VERTICAL ? Object.assign({}, z, { h: HAUT - 70 - z.y }) : z;
-  const zone = camPlein ? cote({ x: 0, y: 0, w: LARG, h: HAUT })
-    : cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(sansBas(MUR ? ZONE_MUR : ZONE), 720));
-  const zoneWatch = cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690));
+  // un message du chat mis en avant ne passe jamais sur une caméra : les caméras lui laissent sa place
+  gererChat();
+  const bulle = quizEnCours ? null : rectChat();
+  const zone = eviterChat(camPlein ? cote({ x: 0, y: 0, w: LARG, h: HAUT })
+    : cote(VERTICAL ? retrait(ZONE_V, 1180) : retrait(sansBas(MUR ? ZONE_MUR : ZONE), 720)), bulle);
+  const zoneWatch = eviterChat(cote(VERTICAL ? retrait(ZONE_WATCH_V, 1180) : retrait(ZONE_WATCH, 690)), bulle);
   const zoneScene = scene === 'watch' ? zoneWatch : zone;
   // modes Réaction et Jeu : ce qui est partagé prend tout l'écran, les caméras se posent dans un coin (ou dessous en vertical)
   const pleinEcran = avecPartage && !quizEnCours && modeDe(st) !== 'plateau';
@@ -394,16 +397,45 @@ function appliquerEtat(st) {
   }
   for (const [cle, o] of sourcesEl) placer(o, partageAffiche ? disp[cle] : null);
   placerPanneauQuiz(quizEnCours ? disp.__panneau : null);
+  // modes Réaction et Jeu (caméras dans un coin) : si le message tombe sur une caméra, il passe de l'autre côté
+  document.body.classList.remove('chat-flip');
+  if (bulle && pleinEcran && touche(bulle, ids.map(id => disp[id]))) document.body.classList.add('chat-flip');
   gererPlaylist();
   gererEffet();
   gererQuiz();
-  gererChat();
   gererQR();
   gererFilChat(filChat, scene === 'watch' ? zoneWatch : zone);
   gererWatch();
   appliquerVolumes();
   compteARebours();
   gererMusique(scene);
+}
+
+/* ----- Le message du chat et les caméras ----- */
+// la place du message à l'écran (sans tenir compte de son animation d'arrivée) ; rien s'il est caché
+function rectChat() {
+  const box = $('#chat-bulle');
+  if (box.classList.contains('cachee')) return null;
+  const b = box.querySelector('.cb-boite') || box;
+  let x = 0, y = 0, el = b;
+  while (el && el.id !== 'stage' && el !== document.body) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; }
+  return b.offsetWidth ? { x, y, w: b.offsetWidth, h: b.offsetHeight } : null;
+}
+const seCroisent = (a, b) => !!a && !!b && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const touche = (b, rects) => rects.some(r => seCroisent(b, r));
+// la zone des caméras, coupée pour laisser la place au message : on garde le plus grand morceau (dessus, dessous, à gauche, à droite)
+function eviterChat(z, B, ecart = 24) {
+  if (!seCroisent(z, B)) return z;
+  const bas = B.y + B.h + ecart, droite = B.x + B.w + ecart;
+  const morceaux = [
+    Object.assign({}, z, { h: B.y - ecart - z.y }),
+    Object.assign({}, z, { y: bas, h: z.y + z.h - bas }),
+    Object.assign({}, z, { w: B.x - ecart - z.x }),
+    Object.assign({}, z, { x: droite, w: z.x + z.w - droite })
+  ].filter(o => o.w >= z.w * .3 && o.h >= z.h * .3);
+  // à surface égale, une zone trop étirée donne de petites caméras : on compte la place utile en 16/9
+  const utile = o => Math.min(o.w, o.h * 16 / 9) * Math.min(o.h, o.w * 9 / 16) + o.w * o.h * .25;
+  return morceaux.length ? morceaux.sort((a, b) => utile(b) - utile(a))[0] : z;
 }
 
 /* ----- Musiques d'intro et de fin (liens dans le thème, son seul) ----- */
@@ -453,9 +485,10 @@ function gererChat() {
   clearInterval(chatFrappe);
   if (style === 'depeche') {                        // tapé à la machine, en 2 à 3 secondes quelle que soit la longueur
     let n = 0; const pas = Math.max(1, Math.ceil(texte.length / 70));
+    t.style.minHeight = ''; t.textContent = texte; t.style.minHeight = t.offsetHeight + 'px';   // sa place finale est gardée dès le début
     t.textContent = '';
     chatFrappe = setInterval(() => { n = Math.min(texte.length, n + pas); t.textContent = texte.slice(0, n); if (n >= texte.length) clearInterval(chatFrappe); }, 35);
-  } else t.innerHTML = texte.split(/\s+/).map((m, i) => `<span style="--i:${i}">${esc(m)}</span>`).join(' ');
+  } else { t.style.minHeight = ''; t.innerHTML = texte.split(/\s+/).map((m, i) => `<span style="--i:${i}">${esc(m)}</span>`).join(' '); }
   const b = $('#chat-bulle .cb-boite'); b.classList.remove('entree'); void b.offsetWidth; b.classList.add('entree');
 }
 
