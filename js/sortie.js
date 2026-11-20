@@ -872,6 +872,7 @@ function jouerId(id, depuis) {
   const p = ((etat && etat.playlist) || []).find(x => x.id === id);
   const adresse = adressePiste(p);
   if (!adresse) return false;                    // fichier pas encore arrivé : on réessaie quand il est là
+  depuis = Math.max(+depuis || 0, debutPiste(p));         // « Démarrer la musique ici »
   const enchaine = !lecteur.paused && lecteur._gain > 0;
   if (enchaine) {
     const sortant = lecteur;
