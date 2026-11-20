@@ -465,7 +465,7 @@ function gererMusique(scene) {
 
 /* ----- Message du chat mis en avant ----- */
 const COULEURS_CHAT = { twitch: ['#9146FF', 'Twitch'], youtube: ['#FF0000', 'YouTube'], facebook: ['#1877F2', 'Facebook'], test: ['#6b7280', 'Test'] };
-const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif'];
+const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif', 'sms', 'verre', 'terminal', 'post', 'karaoke', 'pixel'];
 let chatAfficheCle = '', chatFrappe = null;
 function gererChat() {
   const c = etat && etat.chatAffiche;
@@ -480,10 +480,12 @@ function gererChat() {
   const [coul, nom] = COULEURS_CHAT[c.p] || ['#555', ''];
   $('#cb-p').style.background = coul; $('#cb-p').textContent = nom;
   $('#cb-auteur').textContent = c.auteur;
+  $('#chat-bulle .cb-boite').dataset.init = (String(c.auteur || '?').replace(/[^\p{L}\p{N}]/gu, '')[0] || '?').toUpperCase();   // la pastille ronde (Message, Post)
+  if (style === 'pixel') chargerPolices(['Press Start 2P']);
   const t = $('#cb-texte'), texte = String(c.texte || '');
   t.style.setProperty('--k', texte.length > 190 ? .68 : texte.length > 120 ? .8 : texte.length > 70 ? .9 : 1);   // un long message s'écrit plus petit
   clearInterval(chatFrappe);
-  if (style === 'depeche') {                        // tapé à la machine, en 2 à 3 secondes quelle que soit la longueur
+  if (style === 'depeche' || style === 'terminal' || style === 'pixel') {                        // tapé à la machine, en 2 à 3 secondes quelle que soit la longueur
     let n = 0; const pas = Math.max(1, Math.ceil(texte.length / 70));
     t.style.minHeight = ''; t.textContent = texte; t.style.minHeight = t.offsetHeight + 'px';   // sa place finale est gardée dès le début
     t.textContent = '';

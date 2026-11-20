@@ -80,7 +80,7 @@ $('#chat-test').onclick = () => {
 };
 
 /* Les quatre façons de mettre un message en avant */
-const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif'];
+const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif', 'sms', 'verre', 'terminal', 'post', 'karaoke', 'pixel'];
 if (!STYLES_CHAT.includes(etat.chatStyle)) etat.chatStyle = 'bulle';
 function majStylesChat() { $$('#chat-styles button').forEach(b => b.classList.toggle('actif', b.dataset.cstyle === etat.chatStyle)); }
 $$('#chat-styles button').forEach(b => b.onclick = () => { etat.chatStyle = b.dataset.cstyle; majStylesChat(); envoyer(); });
