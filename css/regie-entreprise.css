@@ -1,0 +1,11 @@
+/* MESA Entreprises : la régie d'un événement. Plus sobre : bleu au lieu du jaune, et seulement les outils utiles
+   à une entreprise (pas de quiz, Watch Party, modes Jeu et Réaction, musique, replay ni clips ; 2 styles de message). */
+body.regie-ent { --ui-accent: #3B82F6; --ui-sur-accent: #ffffff; }
+body.regie-ent .onglets [data-tab="quiz"],
+body.regie-ent .onglets [data-tab="watch"],
+body.regie-ent .onglets [data-tab="musique"],
+body.regie-ent #rangee-mode,
+body.regie-ent .replay-boutons,
+body.regie-ent .voir-styles,
+body.regie-ent #chat-styles button:not([data-cstyle="verre"]):not([data-cstyle="depeche"]) { display: none !important; }
+body.regie-ent .marque-ent { display: inline-flex; align-items: center; gap: 6px; font: 700 11px/1 Inter, system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--ui-accent); border: 1px solid color-mix(in srgb, var(--ui-accent) 45%, transparent); border-radius: 99px; padding: 5px 9px; white-space: nowrap; }

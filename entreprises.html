@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>MESA Entreprises · Tes événements en ligne, simplement</title>
+<meta name="description" content="Webinaires, présentations, formations : tes intervenants à l'écran, tes slides, ton logo et les questions de ton public, depuis le navigateur.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MESA">
+<meta property="og:title" content="MESA Entreprises">
+<meta property="og:description" content="Tes événements en ligne, simplement : intervenants, slides, logo, questions du public.">
+<meta property="og:url" content="https://seb77330.github.io/obseb/entreprises.html">
+<meta property="og:image" content="https://seb77330.github.io/obseb/img/apercu-partage.jpg">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f6f7f9">
+<link rel="canonical" href="https://seb77330.github.io/obseb/entreprises.html">
+<link rel="icon" href="img/mesa-icone.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="css/entreprises.css?v=a0d5604c">
+</head>
+<body class="page-ent">
+<header class="e-barre">
+  <a class="e-marque" href="entreprises.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="#1e40af"/><path d="M8 23.5V9.5h4.2L16 15.6l3.8-6.1H24v14" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><b>MESA</b><span>Entreprises</span></a>
+  <nav class="e-nav">
+    <a href="index.html">Le studio créateurs</a>
+    <a href="contact.html?sujet=Entreprises">Contact</a>
+    <a href="#acces" class="e-btn e-btn-plein" id="nav-acces">Accès</a>
+  </nav>
+</header>
+
+<!-- Avec un accès : mes événements -->
+<main class="e-espace" id="espace" hidden>
+  <div class="e-espace-tete">
+    <div>
+      <p class="e-sur" id="espace-entreprise"></p>
+      <h1>Mes événements</h1>
+      <p class="e-doux" id="espace-info"></p>
+    </div>
+    <div class="e-actions">
+      <button type="button" class="e-btn" id="btn-equipe">Mon équipe</button>
+      <button type="button" class="e-btn e-btn-plein" id="btn-nouvel">Nouvel événement</button>
+    </div>
+  </div>
+  <div class="e-evenements" id="evenements"></div>
+  <p class="e-vide" id="evenements-vide" hidden>Aucun événement pour l'instant. Crée le premier : un titre, ton logo, ta couleur, et c'est prêt.</p>
+  <p class="e-bas"><a href="#presentation" id="voir-presentation">Voir la présentation de MESA Entreprises</a> · <button type="button" class="e-lien" id="btn-quitter">Retirer l'accès de ce navigateur</button></p>
+</main>
+
+<!-- Sans accès : la présentation -->
+<div id="presentation">
+  <section class="e-hero">
+    <p class="e-sur">MESA Entreprises</p>
+    <h1>Tes événements en ligne, simplement.</h1>
+    <p class="e-chapo">Webinaires, présentations, formations, réunions publiques : tes intervenants à l'écran, tes slides, ton logo, et les questions de ton public. Tout se passe dans le navigateur, sans rien installer.</p>
+    <div class="e-actions">
+      <a href="#acces" class="e-btn e-btn-plein">J'ai un code d'accès</a>
+      <a href="contact.html?sujet=Entreprises&amp;msg=Bonjour, j'aimerais un accès à MESA Entreprises pour " class="e-btn">Demander un accès</a>
+    </div>
+  </section>
+
+  <section class="e-bloc">
+    <h2>L'essentiel, rien de plus</h2>
+    <ul class="e-grille">
+      <li><b>Jusqu'à 18 intervenants</b><span>Tu envoies un lien, ils arrivent en coulisses. Tu choisis qui passe à l'écran.</span></li>
+      <li><b>Tes slides à l'écran</b><span>Partage ton écran, une présentation ou une vidéo, à côté des intervenants.</span></li>
+      <li><b>Les questions du public</b><span>Ton public regarde sur une page à ton nom et t'écrit ses questions. Un clic, et la question passe à l'écran.</span></li>
+      <li><b>Ta marque</b><span>Ton logo, ta couleur, 3 looks sobres. Noms et fonctions des intervenants en bas de l'écran.</span></li>
+      <li><b>Sous-titres et enregistrement</b><span>Ce qui se dit s'écrit à l'écran. Chaque événement est enregistré, chaque intervenant aussi.</span></li>
+      <li><b>À 3 sur le compte</b><span>Tes collègues préparent et lancent les événements avec toi.</span></li>
+    </ul>
+  </section>
+
+  <section class="e-bloc">
+    <h2>Comment ça marche</h2>
+    <ol class="e-etapes">
+      <li><span>1</span><b>Crée ton événement</b><p>Un titre, ton logo, ta couleur.</p></li>
+      <li><span>2</span><b>Invite tes intervenants</b><p>Un lien suffit, sans compte ni installation.</p></li>
+      <li><span>3</span><b>Passe en direct</b><p>Sur YouTube, LinkedIn ou Twitch. Ton public pose ses questions.</p></li>
+    </ol>
+  </section>
+
+  <section class="e-bloc e-prix">
+    <div>
+      <h2>Une seule formule</h2>
+      <p class="e-doux">3 personnes sur le compte, 80 heures de direct par mois, paiement par virement.</p>
+    </div>
+    <div class="e-montant"><small>à partir de</small><b>69,99 €</b><small>HT par mois</small></div>
+    <p class="e-note">Pendant la bêta, MESA Entreprises est gratuit, sur invitation.</p>
+  </section>
+
+  <section class="e-bloc e-acces" id="acces">
+    <h2>Activer ton accès</h2>
+    <p class="e-doux">Colle le code que tu as reçu. Il reste dans ce navigateur.</p>
+    <form id="form-code" class="e-code" autocomplete="off">
+      <textarea id="code" rows="3" placeholder="Ton code d'accès" spellcheck="false" required></textarea>
+      <button type="submit" class="e-btn e-btn-plein">Activer</button>
+    </form>
+    <p class="e-retour" id="code-retour" role="status"></p>
+    <p class="e-doux">Pas encore de code ? <a href="contact.html?sujet=Entreprises&amp;msg=Bonjour, j'aimerais un accès à MESA Entreprises pour ">Demande un accès</a>.</p>
+  </section>
+</div>
+
+<footer class="e-pied">
+  <span>© 2026 MESA · Fait en France</span>
+  <nav><a href="faq.html">FAQ</a><a href="contact.html">Contact</a><a href="cgu.html">Conditions d'utilisation</a><a href="confidentialite.html">Confidentialité</a></nav>
+</footer>
+
+<dialog class="e-dlg" id="dlg-nouvel">
+  <form method="dialog" class="e-dlg-boite" id="form-nouvel">
+    <h2>Nouvel événement</h2>
+    <label>Titre<input id="n-titre" maxlength="70" required placeholder="Ex. : Webinaire de lancement"></label>
+    <label>Organisateur ou entreprise<input id="n-hote" maxlength="28" placeholder="Le nom affiché à l'écran"></label>
+    <div class="e-ligne">
+      <label>Couleur de ta marque<input type="color" id="n-couleur" value="#1e40af"></label>
+      <label>Logo <small>(facultatif)</small><input type="file" id="n-logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+    </div>
+    <fieldset class="e-looks"><legend>Look</legend>
+      <label><input type="radio" name="look" value="studio" checked><span>Studio<small>Sombre, touche de couleur</small></span></label>
+      <label><input type="radio" name="look" value="clair"><span>Clair<small>Lumineux, éditorial</small></span></label>
+      <label><input type="radio" name="look" value="minimal"><span>Signature<small>Noir, net et lisible</small></span></label>
+    </fieldset>
+    <div class="e-actions"><button type="button" class="e-btn" value="annuler" id="n-annuler">Annuler</button><button type="submit" class="e-btn e-btn-plein">Créer et ouvrir la régie</button></div>
+  </form>
+</dialog>
+
+<script src="js/common.js?v=dd840f07"></script>
+<script src="js/typo.js?v=f3f2b542"></script>
+<script src="js/entreprises.js?v=c51e84b8"></script>
+<script src="js/accueil-equipe.js?v=05a72ae9"></script>
+</body>
+</html>

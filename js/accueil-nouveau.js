@@ -50,6 +50,10 @@
   if (embed) document.body.classList.add('embed');
   enEdition = salle;
   brouillon = JSON.parse(JSON.stringify(e.session));
+  if (brouillon.ent) {   // MESA Entreprises : 3 looks sobres seulement
+    document.body.classList.add('visuel-ent');
+    document.querySelectorAll('#galerie .theme-carte').forEach(k => { k.hidden = !THEMES_ENTREPRISE.includes(k.dataset.preset); k.classList.toggle('ent', !k.hidden); });
+  }
   ouvrirCreation('Visuel du live', 'Appliquer au live', false);
   history.replaceState(null, '', location.pathname + location.search + '#nouveau');
   const retour = () => { if (embed) parler({ obsebVisuel: 'fermer' }); else location.href = liens(e.session, e.cle).regie; };

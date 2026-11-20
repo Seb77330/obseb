@@ -1,0 +1,114 @@
+/* MESA Entreprises : une page à part, claire et sobre (bleu marine, beaucoup de blanc), loin du plateau télé des créateurs. */
+:root { --e-fond: #f6f7f9; --e-carte: #ffffff; --e-ligne: #e3e6eb; --e-texte: #0f172a; --e-doux: #5b6576; --e-bleu: #1e40af; --e-bleu2: #2563eb; --e-ok: #15803d; --e-ko: #b91c1c; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--e-fond); color: var(--e-texte); font: 400 16px/1.55 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+a { color: var(--e-bleu); }
+h1, h2 { letter-spacing: -.025em; line-height: 1.15; text-wrap: balance; }
+p, li { text-wrap: pretty; }
+
+.e-barre { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 14px clamp(16px, 4vw, 48px); background: rgba(246, 247, 249, .9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--e-ligne); }
+.e-marque { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--e-texte); }
+.e-marque svg { width: 30px; height: 30px; }
+.e-marque b { font-size: 19px; letter-spacing: .14em; }
+.e-marque span { font-size: 13px; color: var(--e-doux); padding-left: 10px; border-left: 1px solid var(--e-ligne); }
+.e-nav { margin-left: auto; display: flex; align-items: center; gap: 22px; font-size: 15px; }
+.e-nav a:not(.e-btn) { color: var(--e-doux); text-decoration: none; }
+.e-nav a:not(.e-btn):hover { color: var(--e-texte); }
+
+.e-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: 10px; border: 1px solid var(--e-ligne); background: var(--e-carte); color: var(--e-texte); font: 600 15px/1.1 Inter, system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.e-btn:hover { border-color: #c5cbd5; }
+.e-btn-plein { background: var(--e-bleu); border-color: var(--e-bleu); color: #fff; }
+.e-btn-plein:hover { background: var(--e-bleu2); border-color: var(--e-bleu2); }
+.e-btn:disabled { opacity: .55; cursor: default; }
+.e-lien { background: none; border: 0; padding: 0; font: inherit; color: var(--e-doux); text-decoration: underline; cursor: pointer; }
+.e-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.e-hero { max-width: 860px; margin: 0 auto; padding: clamp(56px, 10vh, 110px) 24px 48px; text-align: center; }
+.e-hero .e-actions { justify-content: center; margin-top: 28px; }
+.e-sur { margin: 0 0 14px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--e-bleu); }
+.e-hero h1 { margin: 0; font-size: clamp(36px, 5.4vw, 60px); font-weight: 800; }
+.e-chapo { max-width: 660px; margin: 20px auto 0; font-size: 19px; color: var(--e-doux); }
+.e-doux { margin: 6px 0 0; color: var(--e-doux); }
+
+.e-bloc { max-width: 1040px; margin: 0 auto; padding: 48px 24px; }
+.e-bloc h2 { margin: 0 0 24px; font-size: clamp(26px, 3vw, 34px); font-weight: 750; text-align: center; }
+.e-grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.e-grille li { background: var(--e-carte); border: 1px solid var(--e-ligne); border-radius: 14px; padding: 22px; display: grid; gap: 6px; align-content: start; }
+.e-grille b { font-size: 17px; }
+.e-grille b::before { content: ''; display: block; width: 28px; height: 4px; border-radius: 2px; background: var(--e-bleu); margin-bottom: 14px; }
+.e-grille span { color: var(--e-doux); font-size: 15px; }
+.e-etapes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; text-align: center; }
+.e-etapes span { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #e8edfb; color: var(--e-bleu); font-weight: 800; }
+.e-etapes b { display: block; margin-top: 12px; font-size: 18px; }
+.e-etapes p { margin: 4px 0 0; color: var(--e-doux); }
+.e-prix { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 32px; background: var(--e-carte); border: 1px solid var(--e-ligne); border-radius: 18px; padding: 32px; margin-top: 24px; margin-bottom: 24px; max-width: 860px; }
+.e-prix h2 { text-align: left; margin: 0; }
+.e-montant { display: grid; text-align: right; line-height: 1.1; }
+.e-montant b { font-size: 40px; font-weight: 800; letter-spacing: -.03em; }
+.e-montant small { color: var(--e-doux); font-size: 13px; }
+.e-note { grid-column: 1 / -1; margin: 4px 0 0; padding: 10px 14px; border-radius: 10px; background: #eef3ff; color: var(--e-bleu); font-size: 14px; font-weight: 600; }
+.e-acces { max-width: 640px; text-align: center; }
+.e-code { display: grid; gap: 10px; margin-top: 18px; }
+.e-code textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--e-ligne); border-radius: 10px; background: var(--e-carte); font: 500 14px/1.4 ui-monospace, Menlo, monospace; resize: vertical; color: var(--e-texte); }
+.e-code textarea:focus, .e-dlg input:focus { outline: 2px solid var(--e-bleu2); outline-offset: 1px; }
+.e-retour { min-height: 1.5em; margin: 10px 0 0; font-weight: 600; }
+.e-retour.ok { color: var(--e-ok); } .e-retour.ko { color: var(--e-ko); }
+
+.e-espace { max-width: 1040px; margin: 0 auto; padding: 48px 24px 24px; }
+.e-espace-tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
+.e-espace-tete h1 { margin: 0; font-size: clamp(30px, 4vw, 40px); font-weight: 800; }
+.e-espace-tete .e-sur { margin-bottom: 8px; }
+.e-evenements { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+.e-carte { background: var(--e-carte); border: 1px solid var(--e-ligne); border-radius: 14px; padding: 20px; display: grid; gap: 12px; border-top: 4px solid var(--c, var(--e-bleu)); }
+.e-carte h3 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+.e-carte p { margin: 0; color: var(--e-doux); font-size: 14px; }
+.e-carte .e-actions .e-btn { padding: 9px 14px; font-size: 14px; }
+.e-vide { background: var(--e-carte); border: 1px dashed #c5cbd5; border-radius: 14px; padding: 32px; text-align: center; color: var(--e-doux); }
+.e-bas { margin-top: 32px; text-align: center; color: var(--e-doux); font-size: 14px; }
+
+.e-dlg { border: 1px solid var(--e-ligne); border-radius: 18px; padding: 0; width: min(520px, calc(100vw - 32px)); color: var(--e-texte); background: var(--e-carte); }
+.e-dlg::backdrop { background: rgba(15, 23, 42, .45); }
+.e-dlg-boite { padding: 26px; display: grid; gap: 14px; }
+.e-dlg h2 { margin: 0; font-size: 22px; }
+.e-dlg label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.e-dlg label small { color: var(--e-doux); font-weight: 500; }
+.e-dlg input:not([type=radio]):not([type=color]):not([type=file]) { padding: 10px 12px; border: 1px solid var(--e-ligne); border-radius: 10px; font: 500 15px Inter, system-ui, sans-serif; color: var(--e-texte); }
+.e-dlg input[type=color] { width: 100%; height: 42px; border: 1px solid var(--e-ligne); border-radius: 10px; padding: 3px; background: #fff; }
+.e-dlg input[type=file] { font-size: 13px; }
+.e-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.e-looks { border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.e-looks legend { font-size: 14px; font-weight: 600; margin-bottom: 6px; padding: 0; }
+.e-looks label { display: block; position: relative; cursor: pointer; }
+.e-looks input { position: absolute; opacity: 0; }
+.e-looks span { display: grid; gap: 2px; border: 1px solid var(--e-ligne); border-radius: 10px; padding: 10px; font-size: 14px; }
+.e-looks small { color: var(--e-doux); font-weight: 500; font-size: 12px; }
+.e-looks input:checked + span { border-color: var(--e-bleu); box-shadow: 0 0 0 1px var(--e-bleu); background: #f3f6ff; }
+.e-looks input:focus-visible + span { outline: 2px solid var(--e-bleu2); }
+.e-dlg .e-actions { justify-content: flex-end; }
+
+.e-pied { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; max-width: 1040px; margin: 32px auto 0; padding: 28px 24px 40px; border-top: 1px solid var(--e-ligne); color: var(--e-doux); font-size: 14px; }
+.e-pied nav { display: flex; flex-wrap: wrap; gap: 18px; }
+.e-pied a { color: var(--e-doux); text-decoration: none; }
+.e-pied a:hover { color: var(--e-texte); }
+
+/* « Mon équipe » (js/accueil-equipe.js), aux couleurs de la page */
+.equipe-dlg { border: 1px solid var(--e-ligne); border-radius: 18px; padding: 0; width: min(480px, calc(100vw - 32px)); background: var(--e-carte); color: var(--e-texte); }
+.equipe-dlg::backdrop { background: rgba(15, 23, 42, .45); }
+.equipe-boite { position: relative; padding: 24px; display: grid; gap: 12px; }
+.equipe-boite h2 { margin: 0; font-size: 22px; padding-right: 28px; }
+.equipe-boite p { margin: 0; color: var(--e-doux); font-size: 15px; }
+.equipe-x { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border: 0; background: none; font-size: 22px; color: var(--e-doux); cursor: pointer; }
+.equipe-contenu { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.equipe-contenu li { flex: 1; border: 1px solid var(--e-ligne); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--e-doux); }
+.equipe-contenu b { display: block; font-size: 22px; color: var(--e-texte); }
+.equipe-etapes { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.equipe-boite .equipe-note { font-size: 13px; }
+.equipe-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.equipe-actions button { border-radius: 10px; padding: 10px 16px; font: 600 14px/1 Inter, system-ui, sans-serif; cursor: pointer; border: 1px solid var(--e-ligne); background: #fff; color: var(--e-texte); }
+.equipe-actions .primaire { background: var(--e-bleu); border-color: var(--e-bleu); color: #fff; }
+.e-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--e-texte); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 100; }
+
+@media (max-width: 860px) { .e-grille, .e-etapes { grid-template-columns: 1fr; } .e-prix { grid-template-columns: 1fr; } .e-prix h2 { text-align: center; } .e-montant { text-align: left; } }
+@media (max-width: 600px) { .e-nav a:not(.e-btn) { display: none; } .e-marque span { display: none; } .e-ligne, .e-looks { grid-template-columns: 1fr; } }

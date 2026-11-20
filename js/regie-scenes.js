@@ -63,7 +63,7 @@ const VIGNETTES = {
   watch: '<svg viewBox="0 0 64 36" aria-hidden="true"><rect x="9" y="4" width="22" height="15" rx="1.5"/><rect x="33" y="4" width="22" height="15" rx="1.5"/><rect class="q" x="4" y="23" width="56" height="9" rx="2"/></svg>',
   fin: '<svg viewBox="0 0 64 36" aria-hidden="true"><rect x="14" y="10" width="36" height="5" rx="1.5"/><rect x="24" y="18" width="16" height="2.5" rx="1"/><rect class="q" x="20" y="24" width="24" height="4" rx="2"/></svg>'
 };
-const NOMS_SCENES = { intro: ['Intro', 'Intro : le compte à rebours avant le live'], partage: ['Partage', 'Écran partagé : écran, image, vidéo ou console'], watch: ['Watch', 'Watch Party : le minuteur du film'], fin: ['Outro', 'Outro : l\'écran de fin'] };
+const NOMS_SCENES = session.ent ? { intro: ['Accueil', 'Accueil : l\'écran d\'attente avant le début'], partage: ['Partage', 'Écran partagé : écran, image, vidéo ou slides'], watch: ['Watch', ''], fin: ['Fin', 'Fin : l\'écran de clôture'] } : { intro: ['Intro', 'Intro : le compte à rebours avant le live'], partage: ['Partage', 'Écran partagé : écran, image, vidéo ou console'], watch: ['Watch', 'Watch Party : le minuteur du film'], fin: ['Outro', 'Outro : l\'écran de fin'] };
 const nbAntenne = () => etat.onair.filter(id => id === ID_HOTE || presents.has(id)).length;
 const nbPlan = p => p.qui === 'tous' ? Math.max(1, Math.min(nbAntenne(), 8)) : typeof p.qui === 'number' ? p.qui : Math.max(1, p.qui.length);
 /* la scène de départ porte le nombre de personnes à l'antenne : Solo, Duo, À 3… */
@@ -93,7 +93,7 @@ function dessinerScenes() {
     const auto = p => p.id === 'plateau' && p.qui === 'tous';
     const plan = p => `<button data-plan="${esc(p.id)}" data-i="${i++}" title="${auto(p) ? 'Les caméras : tout le monde à l\'antenne. Clique sur la carte d\'un invité pour le mettre à l\'antenne, la mise en page suit toute seule' : esc(p.nom) + ' : ' + descriptionPlan(p)} (touche ${i})"><span class="sc-vue">${vignetteCadrage(p.layout, nbPlan(p))}</span><b>${esc(nomPlan(p))}</b><kbd>${i}</kbd>${auto(p) ? '' : '<span class="sc-mod" role="button" tabindex="0" title="Renommer cette scène, choisir qui elle montre, ou la supprimer">✎</span>'}</button>`;
     const sceneMode = m => `<button data-modescene="${m}" data-i="${i++}" title="${SCENES_MODE[m][1]} (touche ${i})"><span class="sc-vue">${SCENES_MODE[m][2]}</span><b>${SCENES_MODE[m][0]}</b><kbd>${i}</kbd></button>`;
-    $('#scenes').innerHTML = fixe('intro') + etat.plans.map(plan).join('') + sceneMode('reaction') + sceneMode('jeu') + fixe('watch') + fixe('fin')
+    $('#scenes').innerHTML = fixe('intro') + etat.plans.map(plan).join('') + (session.ent ? '' : sceneMode('reaction') + sceneMode('jeu') + fixe('watch')) + fixe('fin')   // MESA Entreprises : Accueil, intervenants, Fin
       + (etat.plans.length < MAX_PLANS ? '<button class="sc-plus" id="sc-plus" title="Ajouter une scène de caméras : son nom, son cadrage, qui elle montre"><span class="sc-vue">+</span><b>Scène</b></button>' : '');
     $$('#scenes [data-scene]').forEach(b => b.onclick = () => { if (b.dataset.scene === 'watch') etat.mode = 'plateau'; changerScene(b.dataset.scene); if (typeof majModes === 'function') majModes(); majInfosScene(); });
     $$('#scenes [data-modescene]').forEach(b => b.onclick = () => allerSceneMode(b.dataset.modescene));

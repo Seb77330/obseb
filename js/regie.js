@@ -4,8 +4,14 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const session = lireSession();
+/* un événement MESA Entreprises : régie simplifiée et sobre (css/regie-entreprise.css) */
+if (session && session.ent) {
+  document.body.classList.add('regie-ent');
+  const cs = document.getElementById('chat-styles'); if (cs) cs.classList.add('tout');   // ses 2 styles restent visibles en régie simple
+  const m = document.querySelector('a.marque'); if (m) { m.href = 'entreprises.html'; m.title = 'Retour à mes événements'; m.insertAdjacentHTML('afterend', '<span class="marque-ent">Entreprises</span>'); }
+}
 const cle = hashParams().get('k');
-const MAX_ANTENNE = (LIMITES[formuleActuelle()] || {}).antenne || 11;   // toi compris : 18 pendant la bêta et en Entreprises
+const MAX_ANTENNE = session && session.ent ? 18 : ((LIMITES[formuleActuelle()] || {}).antenne || 12);   // toi compris : 18 dans un événement MESA Entreprises
 
 if (!session || !cle) {
   $('#bloque').hidden = false;

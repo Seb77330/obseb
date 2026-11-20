@@ -5,6 +5,7 @@
    c'est elle qui garde les dernières secondes et les rejoue à l'image. Avec OBS, le « Replay Buffer » d'OBS fait la même chose. */
 'use strict';
 (() => {
+  if (session.ent) return;   // pas de replay ni de clips dans un événement MESA Entreprises
   const bandeau = document.getElementById('btn-bandeau'); if (!bandeau) return;
   const boite = document.createElement('span');
   boite.className = 'replay-boutons'; boite.hidden = true;
