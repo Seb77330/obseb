@@ -255,3 +255,4 @@ body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="
 .replay-boutons { display: inline-flex; gap: 6px; }
 .replay-boutons[hidden] { display: none; }
 .replay-boutons .btn-bandeau.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
+#cam-mode button { white-space: nowrap; }
