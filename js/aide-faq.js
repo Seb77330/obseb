@@ -206,7 +206,7 @@ const FAQ = [
     r: "Oui. Dans ses coulisses, sous sa caméra : « Couper mon micro », « Couper ma caméra » et « Quitter le live ». Le bouton devient rouge tant que c'est coupé, et tu vois « micro coupé par l'invité » sur sa carte dans la régie. S'il quitte, sa caméra et son micro s'éteignent tout de suite ; il peut revenir d'un clic.",
     m: "invite couper micro muet mute camera eteindre quitter partir sortir deconnecter raccrocher revenir" },
   { c: 'camera', q: "Peut-on flouter le décor derrière un invité ?",
-    r: "Oui. En arrivant en coulisses, l'invité choisit « Arrière-plan » : Net, Flou léger ou Flou fort (on ne voit plus la pièce). Le flou est calculé sur son ordinateur, rien ne passe par un serveur. Il se voit dans sa caméra dès qu'il entre. Sur un vieil ordinateur, mieux vaut garder « Net ». Pour l'instant, c'est seulement pour les invités, pas pour ta propre caméra.",
+    r: "Oui. En arrivant en coulisses, l'invité choisit « Arrière-plan » : Net, Flou léger ou Flou fort (on ne voit plus la pièce). Le flou est calculé sur son ordinateur, rien ne passe par un serveur. Il se voit dans sa caméra dès qu'il entre. Sur un vieil ordinateur, mieux vaut garder « Net ». Toi aussi, tu as le même choix dans le réglage de ta caméra, dans la régie (bouton « Changer » sous ta caméra).",
     m: "flou flouter arriere plan fond decor chambre bordel cacher piece background blur fond virtuel" },
   { c: 'camera', q: "Un invité a du bruit derrière lui (clavier, ventilateur…)",
     r: "En coulisses, l'invité garde « Anti-bruit renforcé » coché (c'est coché d'office). Chrome et Edge enlèvent alors les bruits de la pièce et isolent sa voix. Avec un bon micro et un casque, il peut le décocher pour un son plus naturel.",

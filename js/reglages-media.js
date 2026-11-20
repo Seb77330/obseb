@@ -14,7 +14,7 @@ function paramAppareil(label) { return nomAppareil(label).replace(/\s+/g, '_'); 
 
 /* effets = true : on propose aussi le flou d'arrière-plan et l'anti-bruit renforcé (coulisses des invités).
    Les deux sont calculés dans le navigateur de la personne : rien ne passe par un serveur, rien ne coûte. */
-function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer, effets = false }) {
+function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer, effets = false, antibruitDefaut = true }) {
   boite.innerHTML = `
     <div class="rm">
       <div class="rm-video"><video autoplay muted playsinline></video><div class="rm-vide">Autorise la caméra et le micro dans la fenêtre du navigateur</div><span class="rm-res"></span></div>
@@ -109,7 +109,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
   // effets : retenus d'une fois sur l'autre ; anti-bruit coché par défaut (la plupart des invités n'ont pas de casque)
   const selFlou = boite.querySelector('.rm-flou'), caseBruit = boite.querySelector('.rm-antibruit');
   if (selFlou) selFlou.value = ['leger', 'fort'].includes(choix.flou) ? choix.flou : '';
-  if (caseBruit) caseBruit.checked = choix.antibruit !== false;
+  if (caseBruit) caseBruit.checked = typeof choix.antibruit === 'boolean' ? choix.antibruit : antibruitDefaut;
   selCam.onchange = () => { choix.cam = selCam.value; ouvrir(); };
   selMic.onchange = () => { choix.mic = selMic.value; ouvrir(); };
   boite.querySelector('.rm-go').onclick = () => {
@@ -132,6 +132,7 @@ function appareilsRetenus(cle) {
   try {
     const c = JSON.parse(localStorage.getItem(cle) || '{}');
     if (!c.nomCam && !c.nomMic) return null;
-    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0 };
+    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0,
+      flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: c.antibruit === true };
   } catch (e) { return null; }
 }
