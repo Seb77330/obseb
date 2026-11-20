@@ -173,7 +173,7 @@ body.vertical #bandeau .logo { --h: 120px; }
 body.vertical #bandeau .logo img { max-width: calc(var(--h) * 2.4); }
 body.vertical.quiz-on #bandeau { opacity: 0; }
 body.vertical #bandeau .titre { white-space: normal; font-size: 46px; line-height: 1.05; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-body.vertical #bandeau .sous { flex-wrap: wrap; row-gap: 8px; font-size: 20px; }
+body.vertical #bandeau .sous { flex-wrap: wrap; row-gap: 8px; font-size: 26px; }
 body.vertical #defilant { top: 1336px; bottom: auto; height: 52px; }
 body.vertical #defilant.cachee { transform: none; opacity: 0; }
 body.vertical .plein { padding: 0 70px; }
@@ -181,8 +181,8 @@ body.vertical .plein .grand-titre { font-size: 104px; }
 body.vertical .plein .sur-titre { font-size: 22px; letter-spacing: .35em; }
 body.vertical .plein .info { font-size: 26px; letter-spacing: .2em; }
 body.vertical .plein .compte { font-size: 170px; }
-body.vertical .tuile .nom { font-size: 24px; }
-body.vertical .tuile.petite .nom { font-size: 20px; }
+body.vertical .tuile .nom { font-size: 32px; }
+body.vertical .tuile.petite .nom { font-size: 27px; }
 
 /* ----- Quiz ----- */
 #quiz, #classement { z-index: 7; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 48px; pointer-events: none; }
@@ -197,7 +197,9 @@ body.vertical .qz-panneau { width: 900px; padding: 18px 24px; }
 .qz-tag { background: var(--accent); color: var(--bg); font: 700 15px var(--font-body); letter-spacing: .25em; text-transform: uppercase; padding: 5px 11px; border-radius: 6px; }
 .qz-temps { font: 400 44px/1 var(--font-title); color: var(--accent); font-variant-numeric: tabular-nums; }
 .qz-q { font: 400 38px/1.12 var(--font-title); color: var(--text); margin-bottom: 14px; }
-body.vertical .qz-q { font-size: 36px; }
+body.vertical .qz-q { font-size: 44px; }
+body.vertical .qz-c { font-size: 30px; padding: 12px 18px; }
+body.vertical .qz-c b { width: 46px; height: 46px; font-size: 24px; }
 .qz-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 body.vertical .qz-choix { grid-template-columns: 1fr; }
 .qz-c { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 12px; background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.14); font: 500 24px var(--font-body); color: var(--text); transition: background .3s, border-color .3s, opacity .3s; }
@@ -292,8 +294,8 @@ body.vertical #watch .wp-icone { display: none; }
 body.vertical #watch .wp-titre { font-size: 38px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 body.vertical #watch .wp-temps { font-size: 76px; }
 body.vertical #watch.pastille { left: 40px; right: auto; top: 1262px; height: 60px; grid-template-columns: auto auto; }
-body.vertical #watch.pastille .wp-titre { font-size: 22px; max-width: 480px; -webkit-line-clamp: 1; }
-body.vertical #watch.pastille .wp-temps { font-size: 32px; }
+body.vertical #watch.pastille .wp-titre { font-size: 28px; max-width: 480px; -webkit-line-clamp: 1; }
+body.vertical #watch.pastille .wp-temps { font-size: 40px; }
 /* Top départ */
 #watch-top { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: color-mix(in srgb, var(--bg) 78%, transparent); transition: opacity .3s ease; }
 #watch-top .wt-sur { font: 600 30px var(--font-body); letter-spacing: .4em; text-transform: uppercase; color: var(--accent); }
@@ -487,8 +489,8 @@ body.vertical .plein .compte { font-size: calc(170px * var(--kt, 1)); }
 [data-plateau="mur"][data-etiquette="barre"] .tuile.petite .nom { left: 0; bottom: 0; font-size: 16px; padding: 7px 12px 6px 27px; background-position: 11px 50%, 0 0; background-size: 7px 7px, auto; }
 [data-plateau="mur"][data-etiquette="barre"] .tuile.parle .nom { background: linear-gradient(var(--sur-accent), var(--sur-accent)) 15px 50% / 9px 9px no-repeat, var(--accent); color: var(--sur-accent); }
 [data-plateau="mur"][data-etiquette="barre"] .tuile.petite.parle .nom { background-position: 11px 50%, 0 0; background-size: 7px 7px, auto; }
-[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile .nom { font-size: 24px; }
-[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile.petite .nom { font-size: 19px; }
+[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile .nom { font-size: 32px; }
+[data-plateau="mur"][data-etiquette="barre"] body.vertical .tuile.petite .nom { font-size: 26px; }
 /* le titre : un socle collé sous l'écran, sur une seule ligne (logo, titre, message, « En direct ») */
 [data-plateau="mur"][data-bandeau="classique"] #bandeau { gap: 0; border-radius: 6px; overflow: hidden; background: color-mix(in srgb, var(--text) 9%, var(--bg)); }
 [data-plateau="mur"][data-bandeau="classique"] #bandeau .logo { --h: 100px; height: 100%; border-radius: 0; font-size: 36px; }
@@ -552,9 +554,10 @@ body.sans-decor #intro, body.sans-decor #fin, body.sans-decor #bandeau, body.san
 #sous-titres b { font-weight: 700; font-size: 21px; letter-spacing: .09em; text-transform: uppercase; margin-right: 16px; vertical-align: 3px; opacity: .85; }
 #sous-titres b.accent { color: var(--accent); opacity: 1; }
 body[data-scene="watch"]:not(.vertical) #sous-titres { top: 698px; }
-body.vertical #sous-titres { left: 40px; right: 120px; top: 1192px; height: 150px; }
-body.vertical #sous-titres > div { font-size: 30px; padding: 9px 18px 10px; }
-body.vertical #sous-titres b { font-size: 19px; margin-right: 12px; }
+/* vertical : vu sur un téléphone, l'image est réduite à un tiers ; textes plus gros pour rester lisibles (minimum ~26 px) */
+body.vertical #sous-titres { left: 40px; right: 120px; top: 1176px; height: 176px; }
+body.vertical #sous-titres > div { font-size: 40px; padding: 9px 18px 10px; }
+body.vertical #sous-titres b { font-size: 25px; margin-right: 12px; }
 
 /* ----- Tout le chat à l'écran : une colonne à côté des caméras, les messages récents en bas ----- */
 #chat-fil {
@@ -568,7 +571,7 @@ body.vertical #sous-titres b { font-size: 19px; margin-right: 12px; }
 #chat-fil .cf-msg b { color: var(--accent); font-weight: 700; margin-right: 8px; }
 #chat-fil .cf-msg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; }
 #chat-fil .cf-vide { font: 500 20px var(--font-body); color: var(--muted); }
-body.vertical #chat-fil .cf-msg { font-size: 26px; -webkit-line-clamp: 2; }
+body.vertical #chat-fil .cf-msg { font-size: 32px; -webkit-line-clamp: 2; }
 
 /* ----- Cadrages « médaillon » et « duel » (voir dispositionCadrage) ----- */
 .tuile.medaillon { border-radius: 16px; box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--accent), 0 16px 36px rgba(0,0,0,.6); }
@@ -689,4 +692,4 @@ body.st-on .tuile.sous-st:not(.ecran) .nom { bottom: calc(var(--st, 0px) + 14px)
 body.st-cinema #sous-titres > div { background: none; padding: 2px 10px; font-weight: 700; font-size: 40px; text-shadow: 0 0 2px #000, 0 0 2px #000, 0 2px 4px #000, 0 0 18px rgba(0,0,0,.7); }
 body.st-cinema #sous-titres b { display: block; margin: 0 0 2px; font-size: 18px; text-align: center; }
 body.st-cinema #sous-titres > div { text-align: center; }
-body.vertical.st-cinema #sous-titres > div { font-size: 34px; white-space: normal; }
+body.vertical.st-cinema #sous-titres > div { font-size: 42px; white-space: normal; }
