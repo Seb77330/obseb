@@ -26,3 +26,13 @@ body.diffusion.en-cours #diffusion-ui .df-carte { opacity: 0; transition: opacit
 body.diffusion.en-cours #diffusion-ui:hover .df-carte { opacity: 1; }
 /* capture sans « scène seule » (navigateur plus ancien) : le panneau serait filmé, donc on le cache une fois prête */
 body.diffusion.df-discret.prete #diffusion-ui { display: none; }
+
+/* « Revoir l'action » : le replay passe par-dessus toute la scène (il est donc dans le live et dans le fichier) */
+#replay { position: absolute; inset: 0; z-index: 900; background: #000; opacity: 0; transition: opacity .25s ease; }
+#replay.vu { opacity: 1; }
+#replay.sortie { opacity: 0; }
+#replay video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+#replay video.vu { opacity: 1; }
+#replay .replay-badge { position: absolute; top: 4%; left: 3%; padding: .35em .8em; border-radius: .3em; background: var(--accent, #f5c518); color: #000; font: 800 40px/1 system-ui, sans-serif; letter-spacing: .12em; box-shadow: 0 4px 18px rgba(0,0,0,.4); }
+#replay .replay-badge::before { content: ''; display: inline-block; width: .55em; height: .55em; margin-right: .5em; border-radius: 50%; background: #c00; vertical-align: .05em; animation: replay-clign 1s steps(2) infinite; }
+@keyframes replay-clign { 50% { opacity: .2; } }

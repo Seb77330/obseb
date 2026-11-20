@@ -251,3 +251,7 @@ body:not(.regie-simple) .voir-styles { display: none; }
 /* barre du bas : seulement quand quelque chose demande ton attention */
 body.regie-simple #etat-studio > button[data-niveau="ok"], body.regie-simple #etat-studio > button[data-niveau="off"], body.regie-simple #etat-studio > .pousse { display: none; }
 body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="ok"]):not([data-niveau="off"]))) { display: none; }
+/* Revoir l'action */
+.replay-boutons { display: inline-flex; gap: 6px; }
+.replay-boutons[hidden] { display: none; }
+.replay-boutons .btn-bandeau.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
