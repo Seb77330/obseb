@@ -396,6 +396,7 @@ function majInterface() {
 const nomsInvites = new Map();      // dernier nom choisi par chaque invité
 const renommesParMoi = new Set();   // invités que tu as renommés : leur propre nom ne t'écrase plus
 function arrivee(id, label) {
+  label = String(label || '').trim().slice(0, 28);   // le nom vient de l'invité : longueur bornée
   if (!id || id === ID_HOTE || camsLocales.has(id)) return;     // tes propres caméras sont déjà connues
   if (typeof enAttente === 'function' && enAttente(id, label)) return;   // serveur MESA : salle d'attente (js/regie-securite.js)
   if (typeof ecranEnDirect === 'function') ecranEnDirect(id);      // ton propre partage d'écran est bien arrivé dans la salle
@@ -473,7 +474,11 @@ addEventListener('message', e => {
         if (salut.enr) enrInvites.set(salut.id, { actif: !!salut.enr.actif, erreur: String(salut.enr.erreur || '').slice(0, 120), octets: +salut.enr.octets || 0 }); else enrInvites.delete(salut.id);
         if (avant !== JSON.stringify(enrInvites.get(salut.id) || null)) majCarte(salut.id);
       }
-      if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
+      // la qualité vient de l'invité : on ne garde que des nombres (un invité malveillant ne peut rien glisser dans la régie)
+      if (salut.q && typeof salut.q === 'object') {
+        const n = (v, max) => Math.max(0, Math.min(max, Math.round(+v || 0)));
+        qualites.set(salut.id, { w: n(salut.q.w, 8000), h: n(salut.q.h, 8000), kbps: n(salut.q.kbps, 100000) }); majCarte(salut.id);
+      }
       if (salut.st && typeof sousTitreRecu === 'function') sousTitreRecu(salut.id, salut.st);
       if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');
     }
