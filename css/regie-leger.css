@@ -218,3 +218,23 @@ header .limiteur { font-family: var(--mono, monospace); font-size: 12.5px; }
 .src-partage-ok { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 9px; font-weight: 600; font-size: 14px;
   background: color-mix(in srgb, var(--ui-green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--ui-green) 35%, var(--ui-line)); }
 .src-partage-attente { margin: 0; font-size: 12.5px; line-height: 1.45; }
+
+/* ----- Moins de bruit (20/11) ----- */
+/* un élément enlevé de l'écran : pastille éteinte (œil barré), plus de texte barré qui fait penser à une erreur */
+.ecran-elements button.masque span { text-decoration: none; }
+.btn-bandeau.masque { text-decoration: none !important; border-style: solid !important; opacity: .6; }
+/* le tiroir sous les scènes : une ligne légère, pas une deuxième boîte */
+.scene-tiroir { background: transparent; border-color: transparent; padding-top: 2px; padding-bottom: 2px; }
+
+/* ----- Régie « Simple » (js/regie-simple.js) : rien n'est enlevé, ça se replie ----- */
+.regie-mode { display: inline-flex; padding: 2px; border: 1px solid var(--ui-line); border-radius: 9px; background: var(--ui-input); margin-right: 4px; }
+.regie-mode button { padding: 5px 10px !important; font-size: 13px; border: 0 !important; border-radius: 7px !important; background: none !important; color: var(--ui-muted) !important; }
+.regie-mode button.actif { background: var(--ui-accent) !important; color: #111 !important; font-weight: 600; }
+/* ta caméra est déjà en grand dans l'aperçu : la vignette disparaît (elle continue d'envoyer l'image) */
+body.regie-simple #ma-camera { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+body.regie-simple #cam-appareils { display: none; }
+body.regie-simple .cam-ligne { justify-content: flex-end; margin-top: -26px; }
+/* invités de test, « Vue invité », « Antenne auto » : en Complète */
+body.regie-simple .faux-barre, body.regie-simple #btn-vue-invite, body.regie-simple label:has(#auto-antenne) { display: none !important; }
+/* barre du haut : recherche et horloge en Complète */
+body.regie-simple #btn-recherche, body.regie-simple .horloge { display: none !important; }
