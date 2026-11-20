@@ -41,6 +41,17 @@
     { nom: 'Intros et outros', theme: 'cinema', q: ['demo=3&scene=intro&intro=pellicule', 'demo=3&scene=intro&intro=neon', 'demo=3&scene=fin&outro=rideau', 'demo=3&scene=fin&outro=generique'] },
     { nom: 'Soirée film', theme: 'bond', q: [`demo=3&scene=watch&watch=1&wstyle=bandeau&wmode=double&srcimg=${H}&wtitre=Horizon%20Rouge`] }
   ];
+  /* un picto par plan ; le nom ne s'affiche que sur le plan choisi */
+  const PICTOS = [
+    '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.2A4.5 4.5 0 0 1 21 18.5"/>',
+    '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.6-2.8z"/>',
+    '<path d="M7 8h10a5 5 0 0 1 4.9 4l.8 4a2.3 2.3 0 0 1-4 2l-1.7-2H7l-1.7 2a2.3 2.3 0 0 1-4-2l.8-4A5 5 0 0 1 7 8z"/><path d="M7.5 11v3M6 12.5h3M16 11.5h.01M18 13.5h.01"/>',
+    '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01"/>',
+    '<path d="M4 5h16v11H8l-4 4z"/><path d="M8 9.5h8M8 12.5h5"/>',
+    '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 15h4M13 15h4M7 11.5h10"/>',
+    '<path d="M4 10h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 10l1.2-4.2 14-1.8.6 3.9z"/><path d="M8.6 5.4l2 3.6M13.2 4.8l2 3.6"/>',
+    '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>'
+  ];
   const ETAPE = 3400, DUREE = 5600;
   const dureePlan = p => p.q.length > 1 ? p.q.length * ETAPE : DUREE;
   const boites = [$('#v-scenes'), $('#v-scenes-v')], barre = $('#v-plans');
@@ -51,7 +62,9 @@
   let actuel = -1, etape = 0, minuteur = 0, fixe = doux, lance = false;
   const boutons = PLANS.map((p, i) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = p.nom; b.setAttribute('aria-selected', 'false');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', 'false');
+    b.title = p.nom; b.setAttribute('aria-label', p.nom);
+    b.innerHTML = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PICTOS[i] || ''}</svg><span>${esc(p.nom)}</span>`;
     b.onclick = () => { fixe = true; barre.classList.add('fixe'); montrer(i); };
     barre.appendChild(b); return b;
   });

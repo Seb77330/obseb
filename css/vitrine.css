@@ -320,3 +320,14 @@ body[data-page="vitrine"] .chapitres-nav { display: flex; flex-direction: column
 @media (max-width: 560px) { .espace-tete { flex-wrap: wrap; } }
 body.visuel-ent #cats-themes { display: none; }
 body.visuel-ent #galerie .theme-carte:not(.ent) { display: none !important; }
+
+/* Les plans de l'aperçu : des pictos ; le nom s'ouvre seulement sur le plan choisi */
+body[data-page="vitrine"] .v-plans { gap: 6px; align-items: center; }
+body[data-page="vitrine"] .v-plans button { display: inline-flex; align-items: center; gap: 0; height: 38px; min-width: 38px; padding: 0 9px; border-radius: 99px; border: 1px solid transparent; background: none; box-shadow: none; color: var(--ui-muted); transition: color .2s, background .2s, gap .25s; }
+body[data-page="vitrine"] .v-plans button .ic { width: 19px; height: 19px; flex: none; }
+body[data-page="vitrine"] .v-plans button span { max-width: 0; overflow: hidden; white-space: nowrap; font-size: 13px; font-weight: 600; transition: max-width .3s ease; }
+body[data-page="vitrine"] .v-plans button:hover { color: var(--ui-text); background: color-mix(in srgb, var(--ui-text) 6%, transparent); }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"] { gap: 7px; padding: 0 14px 0 11px; color: var(--ui-text); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); border-color: color-mix(in srgb, var(--ui-accent) 40%, transparent); }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"] span { max-width: 180px; }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"]::after { left: 14px; right: 14px; width: auto; bottom: 4px; height: 2px; border-radius: 2px; }
+:root[data-mode="clair"] body[data-page="vitrine"] .v-plans button { box-shadow: none; }
