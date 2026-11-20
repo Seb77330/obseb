@@ -58,7 +58,7 @@ const FAQ = [
 
   /* ---------- Formules et prix ---------- */
   { c: 'formules', q: "Combien ça coûte ?",
-    r: "Il y a trois formules : Gratuit, puis Essentiel et Pro au mois.\nAvec OBS : 0 €, 3,99 €, 6,99 €.\nSans OBS : 0 €, 6,99 €, 11,99 €.\nPendant la bêta, tout est gratuit avec OBS jusqu'au 1er janvier 2027, et rien de payant n'est encore ouvert.",
+    r: "Il y a trois formules : Gratuit, puis Essentiel et Pro au mois.\nAvec OBS : 0 €, 3,99 €, 6,99 €.\nSans OBS : 0 €, 6,99 €, 11,99 €.\nPendant la bêta, tout est gratuit avec OBS jusqu'au 1ᵉʳ janvier 2027, et rien de payant n'est encore ouvert.",
     m: "moins chere moins cher prix tarif cout combien payer cher abonnement euros par mois grille tarifaire" },
   { c: 'formules', q: "Quelle différence entre « avec OBS » et « sans OBS » ?",
     r: "Avec OBS, c'est le logiciel OBS (gratuit, sur ton ordinateur) qui envoie le direct : c'est moins cher et tu as plus d'heures. Sans OBS, c'est le site qui enverra ton direct vers tes plateformes, rien à installer. Les fonctions et le nombre de personnes sont les mêmes des deux côtés.\nLe direct sans OBS arrive avec les formules : pendant la bêta, on passe par OBS.",
@@ -115,10 +115,10 @@ const FAQ = [
 
   /* ---------- Bêta, compte, paiement ---------- */
   { c: 'beta', q: "C'est quoi la bêta ?",
-    r: "C'est la période de test. Tout est gratuit avec OBS jusqu'au 1er janvier 2027, toutes les fonctions sont ouvertes au maximum, et tes retours aident à améliorer le studio. Certaines choses peuvent encore bouger ou mal marcher.",
+    r: "C'est la période de test. Tout est gratuit avec OBS jusqu'au 1ᵉʳ janvier 2027, toutes les fonctions sont ouvertes au maximum, et tes retours aident à améliorer le studio. Certaines choses peuvent encore bouger ou mal marcher.",
     m: "beta test version test testeur gratuit jusqu'a quand" },
   { c: 'beta', q: "Jusqu'à quand c'est gratuit ?",
-    r: "Avec OBS, tout est gratuit jusqu'au 1er janvier 2027. Ensuite, la formule Gratuite reste gratuite.",
+    r: "Avec OBS, tout est gratuit jusqu'au 1ᵉʳ janvier 2027. Ensuite, la formule Gratuite reste gratuite.",
     m: "payant apres la beta gratuit jusqu'a quand fin de la beta date 2027 janvier" },
   { c: 'beta', q: "Comment payer ?",
     r: "Il n'y a rien à payer pour l'instant : aucune formule payante n'est ouverte. Le paiement arrivera avec les comptes ; ce sera au mois.",
