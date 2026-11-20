@@ -19,12 +19,13 @@ const idsScene = s => { const v = etat.musiqueScenes[s] || []; return etat.playl
 etat.musiquesTheme = etat.musiquesTheme || {};
 for (const [scene, cle] of [['intro', 'musIntro'], ['fin', 'musFin']]) {
   const liste = [].concat(theme[cle] || []).filter(x => x && x.id);
-  const signature = liste.map(x => x.id).join(',');
+  const signature = liste.map(x => x.id + (x.deb ? '@' + x.deb : '')).join(',');
   if (!liste.length || etat.musiquesTheme[scene] === signature) continue;
   etat.musiquesTheme[scene] = signature;
   etat.musiqueScenes[scene] = etat.musiqueScenes[scene] || [];
   for (const x of liste) {
     if (!etat.playlist.some(y => y.id === x.id)) etat.playlist.push({ id: x.id, nom: x.nom || 'Musique', fichier: 1, type: x.type || 'audio/mpeg', taille: x.taille || 0, theme: 1 });
+    const y = etat.playlist.find(z => z.id === x.id); if (y) y.deb = +x.deb || 0;
     if (!etat.musiqueScenes[scene].includes(x.id)) etat.musiqueScenes[scene].push(x.id);
   }
 }
@@ -189,7 +190,24 @@ function majEtatMusique() {
   $('#mu-aleatoire').classList.toggle('actif', !!etat.musiqueAleatoire);
   $('#mu-aleatoire').setAttribute('aria-pressed', !!etat.musiqueAleatoire);
 }
-setInterval(majEtatMusique, 500);
+/* « Démarrer ce morceau ici » : le morceau partira toujours de cet endroit (pratique pour sauter une longue intro) */
+function majDepart() {
+  const { m, pos } = morceauCarte(), deb = debutPiste(m);
+  $('#mu-depart').disabled = !(m && m.d > 0 && pos && pos.connu);
+  $('#mu-depart-info').innerHTML = deb ? `Départ à ${mmss(deb)} · <button type="button" class="lien-bouton" id="mu-depart-zero">depuis le début</button>` : '';
+  const z = $('#mu-depart-zero'); if (z) z.onclick = () => { m.deb = 0; envoyer(); majDepart(); toast('Le morceau repartira du début'); };
+}
+$('#mu-depart').onclick = () => {
+  const { m, pos } = morceauCarte();
+  if (!m || !pos || !pos.connu) return;
+  const avant = debutPiste(m);
+  m.deb = Math.round(pos.t * 10) / 10;
+  // la lecture continue au même endroit : on recale la position de la suite sur le nouveau départ
+  if (etat.musique.lecture || etat.musique.pos0 > 0) { const ecart = m.deb - avant; etat.musique = Object.assign({}, etat.musique, { n: (etat.musique.n || 0) + 1, t0: Date.now(), pos0: Math.max(0, (etat.musique.pos0 || 0) + (etat.musique.lecture && etat.musique.t0 ? (Date.now() - etat.musique.t0) / 1000 : 0) - ecart) }); }
+  envoyer(); majDepart();
+  toast(`« ${m.nom} » démarrera à ${mmss(m.deb)}`);
+};
+setInterval(() => { majEtatMusique(); majDepart(); }, 500);
 $('#mu-lecture').onclick = () => {
   if (!etat.playlist.length) return toast('Ajoute d\'abord une musique');
   if (etat.musique.lecture) pauseMusique();
@@ -212,15 +230,15 @@ $('#mu-suivante').onclick = () => {
 $('#mu-precedente').onclick = () => {
   const { m, pos } = morceauCarte(); if (!m) return;
   const suite = suiteMusique(etat), i = suite.indexOf(m.id);
-  allerAuMorceau((pos && pos.connu && pos.t > 3) || suite.length < 2 ? m.id : suite[(i - 1 + suite.length) % suite.length]);
+  allerAuMorceau((pos && pos.connu && pos.t - debutPiste(m) > 3) || suite.length < 2 ? m.id : suite[(i - 1 + suite.length) % suite.length]);
 };
 /* Un clic sur la barre : la musique saute à cet endroit du morceau, partout en même temps */
 $('#mu-c-barre').onclick = e => {
   const { m, pos } = morceauCarte();
   if (!m || !(m.d > 0) || !pos || !pos.connu) return;
   const r = e.currentTarget.getBoundingClientRect(), part = Math.max(0, Math.min(0.995, (e.clientX - r.left) / r.width));
-  const suite = suiteMusique(etat), avant = suite.slice(0, Math.max(0, suite.indexOf(m.id))).reduce((a, id) => a + ((piste(id) || {}).d || 0), 0);
-  etat.musique = Object.assign({}, etat.musique, { n: (etat.musique.n || 0) + 1, t0: Date.now(), pos0: avant + part * m.d });
+  const suite = suiteMusique(etat), avant = suite.slice(0, Math.max(0, suite.indexOf(m.id))).reduce((a, id) => { const p = piste(id) || {}; return a + Math.max(1, (p.d || 0) - debutPiste(p)); }, 0);
+  etat.musique = Object.assign({}, etat.musique, { n: (etat.musique.n || 0) + 1, t0: Date.now(), pos0: avant + Math.max(0, part * m.d - debutPiste(m)) });
   envoyer(); majEtatMusique();
 };
 /* Aléatoire : s'applique aux morceaux lancés à la main. Si l'un d'eux joue, la suite change sans le couper. */
@@ -228,7 +246,7 @@ $('#mu-aleatoire').onclick = () => {
   etat.musiqueAleatoire = !etat.musiqueAleatoire;
   const m = etat.musique, { m: actuel, pos } = morceauCarte();
   if (actuel && !m.auto && (m.lecture || m.pos0 > 0)) {
-    etat.musique = Object.assign({}, m, { idx: etat.playlist.indexOf(actuel), n: (m.n || 0) + 1, t0: Date.now(), pos0: pos && pos.connu ? pos.t : 0,
+    etat.musique = Object.assign({}, m, { idx: etat.playlist.indexOf(actuel), n: (m.n || 0) + 1, t0: Date.now(), pos0: pos && pos.connu ? Math.max(0, pos.t - debutPiste(actuel)) : 0,
       suite: etat.musiqueAleatoire && etat.playlist.length > 2 ? suiteAleatoire(actuel.id) : undefined });
   }
   envoyer(); afficherMusiques();

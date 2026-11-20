@@ -1125,6 +1125,8 @@ const CANAL = 'studioSeb';
    etat.musique = { idx, lecture, n, t0, pos0, suite, boucle, auto }
      suite : les morceaux d'une scène (ids), joués à la suite puis repris au début ;
      sans suite : toute la liste à partir du morceau lancé ; t0 / pos0 : quand la lecture est partie, et d'où. */
+/* Le moment où un morceau démarre (« Démarrer la musique ici »), en secondes */
+function debutPiste(p) { const d = +(p && p.deb) || 0; return d > 0 && !(p.d > 0 && d >= p.d - 1) ? d : 0; }
 function suiteMusique(st) {
   const l = (st && st.playlist) || [], m = (st && st.musique) || {};
   if (!l.length) return [];
@@ -1137,11 +1139,12 @@ function suiteMusique(st) {
 function positionMusique(st, t) {
   const suite = suiteMusique(st), m = (st && st.musique) || {};
   if (!suite.length) return null;
-  const durees = suite.map(id => +((st.playlist.find(p => p.id === id) || {}).d) || 0);
-  if (durees.some(d => !(d > 0))) return { id: suite[0], t: 0, connu: false };
+  const debs = suite.map(id => debutPiste(st.playlist.find(p => p.id === id)));
+  const durees = suite.map((id, i) => { const d = +((st.playlist.find(p => p.id === id) || {}).d) || 0; return d > 0 ? Math.max(1, d - debs[i]) : 0; });
+  if (durees.some(d => !(d > 0))) return { id: suite[0], t: debs[0], connu: false };
   let p = Math.max(0, (+m.pos0 || 0) + (m.lecture && m.t0 ? (t - m.t0) / 1000 : 0)) % durees.reduce((a, b) => a + b, 0);
-  for (let i = 0; i < suite.length; i++) { if (p < durees[i]) return { id: suite[i], t: p, connu: true }; p -= durees[i]; }
-  return { id: suite[0], t: 0, connu: true };
+  for (let i = 0; i < suite.length; i++) { if (p < durees[i]) return { id: suite[i], t: p + debs[i], connu: true }; p -= durees[i]; }
+  return { id: suite[0], t: debs[0], connu: true };
 }
 
 /* Résumé des statistiques vdo.ninja (format variable selon les versions) :

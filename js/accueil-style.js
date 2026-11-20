@@ -63,7 +63,8 @@ function majVisuels() {
     const liste = sonsDe(t, d.dataset.son), lien = t[LIEN_SON[d.dataset.son]];
     const nom = liste.length > 1 ? `${liste.length} musiques à la suite : ${liste.map(x => x.nom).join(', ')}` : liste.length ? liste[0].nom : lien ? decodeURIComponent(String(lien).split('/').pop().split('?')[0]) : '';
     d.classList.toggle('plein', !!nom);
-    d.querySelector('small').textContent = nom || 'Choisir une ou plusieurs musiques';
+    const deb = liste.length && liste[0].deb > 0 ? ` · départ à ${mmssSon(liste[0].deb)}` : '';
+    d.querySelector('small').textContent = nom ? nom + deb : 'Choisir une ou plusieurs musiques';
     d.querySelector('.son-ecouter').hidden = !liste.length;
     d.querySelector('.son-oter').hidden = !nom;
   });
@@ -76,9 +77,11 @@ const MAX_SONS = LIMITES[formuleActuelle()].musiques;
 const LIEN_SON = { musIntro: 'musiqueIntro', musFin: 'musiqueFin' };   // anciens liens MP3, encore lus s'il y en a
 const TAILLE_MAX_SON = 15 * 1024 * 1024;
 let ecoute = null;
+const mmssSon = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 function arreterEcoute() {
   if (ecoute) { ecoute.pause(); URL.revokeObjectURL(ecoute.src); ecoute = null; }
   $$('.son-ecouter').forEach(b => { b.textContent = '▶'; });
+  $$('.son-lecteur').forEach(l => { l.hidden = true; });
 }
 async function choisirSon(champ, liste) {
   const choisis = [...(liste || [])];
@@ -107,6 +110,25 @@ $$('.son').forEach(d => {
   d.ondragleave = () => d.classList.remove('survol');
   d.ondrop = e => { e.preventDefault(); d.classList.remove('survol'); choisirSon(champ, e.dataTransfer.files); };
   d.querySelector('.son-oter').onclick = () => { arreterEcoute(); surcharge(champ, ''); surcharge(LIEN_SON[champ], ''); majVisuels(); };
+  /* Le lecteur sous la musique : on se place où on veut, puis « Démarrer la musique ici » */
+  const lect = document.createElement('div');
+  lect.className = 'son-lecteur'; lect.hidden = true;
+  lect.innerHTML = '<input type="range" min="0" max="1" step="0.1" value="0" aria-label="Position dans la musique"><span class="son-temps">0:00</span><button type="button" class="petit primaire son-depart">Démarrer la musique ici</button><button type="button" class="petit son-zero" hidden>Depuis le début</button>';
+  d.after(lect);
+  const barre = lect.querySelector('input'), temps = lect.querySelector('.son-temps');
+  barre.oninput = () => { if (ecoute) ecoute.currentTime = +barre.value; };
+  const poserDepart = v => {
+    const liste = sonsDe(themeComplet(brouillon), champ);
+    if (!liste.length) return;
+    const premier = Object.assign({}, liste[0]);
+    if (v > 0) premier.deb = Math.round(v * 10) / 10; else premier.deb = 0;
+    liste[0] = premier;
+    surcharge(champ, liste); majVisuels();
+    lect.querySelector('.son-zero').hidden = !premier.deb;
+    toast(premier.deb ? `La musique ${champ === 'musIntro' ? 'd\'intro' : 'de fin'} démarrera à ${mmssSon(premier.deb)}` : 'La musique repartira du début');
+  };
+  lect.querySelector('.son-depart').onclick = () => { if (ecoute) poserDepart(ecoute.currentTime); };
+  lect.querySelector('.son-zero').onclick = () => { poserDepart(0); if (ecoute) ecoute.currentTime = 0; };
   const bouton = d.querySelector('.son-ecouter');
   bouton.onclick = async () => {
     const enCours = ecoute && bouton.textContent === '⏸';
@@ -117,6 +139,11 @@ $$('.son').forEach(d => {
     if (!blob) return toast('Ce fichier n\'est plus dans ce navigateur : choisis-le à nouveau');
     ecoute = new Audio(URL.createObjectURL(blob));
     ecoute.onended = arreterEcoute;
+    const a = ecoute;
+    a.onloadedmetadata = () => { barre.max = String(a.duration || 1); if (m.deb > 0 && m.deb < a.duration - 1) a.currentTime = m.deb; };
+    a.ontimeupdate = () => { barre.value = String(a.currentTime); temps.textContent = `${mmssSon(a.currentTime)} / ${mmssSon(a.duration || 0)}`; };
+    lect.querySelector('.son-zero').hidden = !(m.deb > 0);
+    lect.hidden = false;
     ecoute.play().then(() => { bouton.textContent = '⏸'; }).catch(arreterEcoute);
   };
 });

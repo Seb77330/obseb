@@ -271,3 +271,4 @@ body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="
 .qz-p-reglages .ligne-boutons { margin: 10px 0 8px; }
 .qz-partie .qzp-statut { margin: -4px 0 10px; }
 .qz-liste-titre .aide { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.mu-depart { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; } .mu-depart .lien-bouton { font-size: inherit; }
