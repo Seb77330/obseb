@@ -215,6 +215,14 @@ addEventListener('message', async e => {
     room.localParticipant.publishData(data, { reliable: true, destinationIdentities: cible ? [cible] : undefined }).catch(() => {});
   }
   if (typeof d.volume === 'number') { volume = Math.max(0, Math.min(1, d.volume)); appliquerVolume(); }
+  // l'invité coupe ou remet son micro / sa caméra, ou quitte (mêmes mots que vdo.ninja : mic, camera, close)
+  if (PUSH && !ECRAN && ('mic' in d || 'camera' in d)) {
+    const lp = room.localParticipant;
+    const voulu = (v, actuel) => v === 'toggle' ? !actuel : !!v;
+    if ('mic' in d) await lp.setMicrophoneEnabled(voulu(d.mic, lp.isMicrophoneEnabled)).catch(() => {});
+    if ('camera' in d) await lp.setCameraEnabled(voulu(d.camera, lp.isCameraEnabled)).catch(() => {});
+  }
+  if (d.close || d.hangup) { await room.disconnect().catch(() => {}); return; }
   if (d.getStreamIDs) {
     const ids = {};
     for (const p of room.remoteParticipants.values()) ids[p.identity] = p.name || '';

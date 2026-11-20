@@ -64,6 +64,10 @@
   .etapes { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
   .etapes li { margin: 4px 0; }
   /* l'invité accepte les conditions d'utilisation avant d'entrer (pas de compte pour lui) */
+  .mes-boutons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .mes-boutons button { padding: 8px 10px; font-size: 14px; }
+  .mes-boutons button[aria-pressed="true"] { background: var(--ui-red, #d33); border-color: var(--ui-red, #d33); color: #fff; }
+  .mes-boutons .quitter { grid-column: 1 / -1; background: transparent; color: var(--ui-muted); }
   .cgu-case { display: flex; justify-content: center; align-items: flex-start; gap: 10px; margin: 14px 0 0; font-size: 14px; color: var(--ui-muted); cursor: pointer; line-height: 1.4; }
   .cgu-case input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--ui-accent); cursor: pointer; }
   .cgu-case a { color: var(--ui-text); }
@@ -122,6 +126,15 @@
       <div id="cam-direct" hidden>
         <iframe id="ma-camera" allow="camera *; microphone *; autoplay *; display-capture *; fullscreen *"></iframe>
         <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span class="aide" id="cam-appareils" style="flex:1;min-width:0;margin:0"></span><button type="button" id="btn-cam-changer" style="padding:6px 12px">Changer</button></div>
+        <div class="mes-boutons">
+          <button type="button" id="btn-mon-micro" aria-pressed="false">🎤 Couper mon micro</button>
+          <button type="button" id="btn-ma-cam" aria-pressed="false">📷 Couper ma caméra</button>
+          <button type="button" id="btn-quitter" class="quitter">Quitter le live</button>
+        </div>
+      </div>
+      <div id="parti" hidden>
+        <p style="margin:0 0 10px">Tu as quitté le live. Ta caméra et ton micro sont éteints.</p>
+        <button type="button" id="btn-revenir" class="primaire" style="width:100%">Revenir dans le live</button>
       </div>
       <p class="aide" id="ma-qualite" style="margin:10px 0 0"></p>
       <p class="aide" id="st-info" hidden style="margin:6px 0 0">Sous-titres activés : quand tu es à l'antenne, ce que tu dis est transcrit par ton navigateur.</p>
@@ -140,9 +153,9 @@
 <script src="js/common.js?v=4933c825"></script>
 <script src="js/reglages-media.js?v=f11847a8"></script>
 <script src="js/sous-titres.js?v=923d3b0d"></script>
-<script src="js/invite.js?v=83c2e0ee"></script>
+<script src="js/invite.js?v=f07e7ed8"></script>
 <script src="js/aide-config.js?v=85ddffac"></script>
-<script src="js/aide-faq.js?v=920002e5"></script>
+<script src="js/aide-faq.js?v=9cd8414e"></script>
 <script src="js/aide.js?v=401ae0ec" data-place="droite"></script>
 </body>
 </html>
