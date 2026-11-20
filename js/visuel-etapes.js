@@ -141,9 +141,9 @@
   if (lim) {
     const l = document.createElement('label'); l.className = 'vp-duree';
     l.title = '20 minutes avant la fin, un minuteur rouge apparaît dans ta régie (toi seul le vois). À l\'heure dite, le live passe sur l\'écran de fin.';
-    l.innerHTML = '<span class="vp-duree-ic" aria-hidden="true">⏱</span><span>Arrêt automatique</span>';
+    l.innerHTML = '<span class="vp-duree-ic" aria-hidden="true">⏱</span><span>Arrêt automatique du live :</span>';
     lim.replaceWith(l); l.appendChild(lim);
-    const o = lim.querySelector('option[value="0"]'); if (o) o.textContent = 'Jamais';
+    const o = lim.querySelector('option[value="0"]'); if (o) o.textContent = 'Jamais, je l\'arrête moi-même';
   }
   // « Garder ce style » va avec le thème, pas avec la date : un pli discret en bas de l'étape Thème
   const blocStyle = blocDe('#style-nom'), paneTheme = panes.querySelector(`.vp-pane[data-etape="${iTheme}"]`);
