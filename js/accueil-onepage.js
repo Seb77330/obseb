@@ -47,7 +47,7 @@
   const BARRE = 68;
   const grandEcran = () => innerWidth > 760 && innerHeight > 560;
   let verrou = 0, cumul = 0;
-  const actuelle = () => { let k = 0; parties.forEach((p, i) => { if (p.el.getBoundingClientRect().top <= BARRE + 12) k = i; }); return k; };
+  const actuelle = () => { let k = 0; parties.forEach((p, i) => { if (p.el.getBoundingClientRect().top < innerHeight / 2) k = i; }); return k; };
   const aller = i => { verrou = Date.now() + 850; cumul = 0; parties[i].el.scrollIntoView({ behavior: doux ? 'auto' : 'smooth', block: 'start' }); };
   addEventListener('wheel', e => {
     if (document.body.dataset.page !== 'vitrine' || !grandEcran() || e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
