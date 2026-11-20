@@ -305,7 +305,7 @@ const ongletPartageOuvert = () => { const o = document.querySelector('[data-ongl
 function cadreEcran(i) {
   const f = document.createElement('iframe');
   f.allow = IFRAME_ALLOW;
-  f.src = vdo({ room: session.room, push: idEcran(session, i + 1), label: `Mon écran ${i + 1}`, screenshare: true, quality: 0,
+  f.src = vdo({ room: session.room, push: idEcran(session, i + 1), label: `Mon écran ${i + 1}`, screenshare: true, quality: 0, screensharefps: 60,   // 60 i/s : un jeu reste fluide (une image fixe ne coûte rien de plus)
     novideo: true, noaudio: true, ln: 'fr', cleanish: true, css: baseUrl() + 'css/vdo-ecran.css' });
   const o = { i, f, charge: false };
   f.addEventListener('load', () => { o.charge = true; }, { once: true });

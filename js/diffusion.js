@@ -16,7 +16,7 @@
   let sortie = null;       // { video, audio, arreter } : image à taille fixe, 30 i/s
   let mode = '';           // 'element' (capture de la scène seule) ou 'zone' (découpe)
   let enDirect = false;
-  let reglages = { hauteur: 1080, debit: 6000000 };
+  let reglages = { hauteur: 1080, debit: 6000000, fps: 30 };   // fps 60 : mode Jeu, si l'ordinateur et la connexion suivent
   const cibles = new Map(); // id -> { nom, url, jeton, envoi, statut, mesure, essais, erreur }
   let verrouEcran = null;
 
@@ -56,7 +56,7 @@
     } catch (e) { const t = setInterval(fn, 1000 / fps); return () => clearInterval(t); }
   }
   function normaliser(piste) {
-    const { w, h } = tailleSortie(), fps = 30;
+    const { w, h } = tailleSortie(), fps = reglages.fps === 60 ? 60 : 30;
     const dessiner = (cx, src, sw, sh) => {
       // l'image entière, sans déformation (bandes noires si la fenêtre n'a pas les bonnes proportions)
       const k = Math.min(w / sw, h / sh), dw = sw * k, dh = sh * k;
@@ -93,7 +93,7 @@
     bouton.disabled = true;
     try {
       capture = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: 30 },
+        video: { frameRate: { ideal: 30, max: 60 } },   // monté à 60 avec le mode Jeu (voir « go »)
         audio: { suppressLocalAudioPlayback: true, echoCancellation: false, noiseSuppression: false, autoGainControl: false },
         preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude', monitorTypeSurfaces: 'exclude', systemAudio: 'exclude'
       });
@@ -133,7 +133,7 @@
     const c = cibles.get(id); if (!c || !sortie || !enDirect) return;
     c.statut = c.essais ? 'reconnexion' : 'connexion'; publier();
     try {
-      c.envoi = await publierWhip({ url: c.url, jeton: c.jeton, video: sortie.video, audio: sortie.audio, debit: reglages.debit, garderTaille: id.startsWith('relais') });
+      c.envoi = await publierWhip({ url: c.url, jeton: c.jeton, video: sortie.video, audio: sortie.audio, debit: reglages.debit, fps: reglages.fps, garderTaille: id.startsWith('relais') });
       c.erreur = ''; c.mesure = null;
       const pc = c.envoi.pc;
       pc.onconnectionstatechange = () => {
@@ -297,16 +297,18 @@
     if (m.type === 'go') {
       if (!sortie) return publier();
       if (m.hauteur || m.debit) {
-        const avant = reglages.hauteur;
-        reglages = { hauteur: m.hauteur === 720 ? 720 : 1080, debit: Math.min(9000000, Math.max(1500000, +m.debit || 6000000)) };
-        if (avant !== reglages.hauteur && !rec) {   // nouvelle taille (jamais pendant un enregistrement : le fichier serait coupé) : on refait l'image fixe, et on la glisse dans les envois en cours sans couper
+        const avant = reglages.hauteur, fpsAvant = reglages.fps;
+        reglages = { hauteur: m.hauteur === 720 ? 720 : 1080, debit: Math.min(9000000, Math.max(1500000, +m.debit || 6000000)), fps: +m.fps === 60 ? 60 : (rec ? fpsAvant : 30) };
+        if (rec) reglages.fps = fpsAvant;   // jamais de changement de cadence pendant un enregistrement
+        if (reglages.fps !== fpsAvant) capture.getVideoTracks()[0].applyConstraints({ frameRate: { ideal: reglages.fps, max: 60 } }).catch(() => {});
+        if ((avant !== reglages.hauteur || fpsAvant !== reglages.fps) && !rec) {   // nouvelle taille (jamais pendant un enregistrement : le fichier serait coupé) : on refait l'image fixe, et on la glisse dans les envois en cours sans couper
           const audio = sortie.audio, ancienne = sortie;
           sortie = normaliser(capture.getVideoTracks()[0]); sortie.audio = audio;
           for (const c of cibles.values()) {
             if (!c.envoi) continue;
             for (const s of c.envoi.pc.getSenders()) if (s.track && s.track.kind === 'video') {
               s.replaceTrack(sortie.video).catch(() => {});
-              const pr = s.getParameters(); if (pr.encodings && pr.encodings[0]) { pr.encodings[0].maxBitrate = reglages.debit; s.setParameters(pr).catch(() => {}); }
+              const pr = s.getParameters(); if (pr.encodings && pr.encodings[0]) { pr.encodings[0].maxBitrate = reglages.debit; pr.encodings[0].maxFramerate = reglages.fps; s.setParameters(pr).catch(() => {}); }
             }
           }
           setTimeout(() => ancienne.arreter(), 500);
