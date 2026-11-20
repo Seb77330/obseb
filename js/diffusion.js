@@ -266,6 +266,83 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 120000);
   }
 
+
+  /* ----- « Revoir l'action » : les dernières secondes du live, rejouées à l'image -----
+     Pendant le direct (ou l'enregistrement), la fenêtre garde en mémoire les ~20 dernières secondes de l'image finie,
+     en petits morceaux de 5 s (un seul encodage en plus, sans le son). Sur ordre de la régie, elle les rejoue par-dessus
+     la scène, avec un badge « REPLAY » : comme la scène est ce qui est capturé, le replay part dans le live et dans le fichier.
+     Le son du live (micros) continue pendant le replay ; le replay lui-même est muet. Rien ne quitte l'ordinateur. */
+  const MORCEAU = 5000, GARDE = 4;
+  let tampon = null;            // { recorder, debut } : le morceau en cours
+  const morceauxReplay = [];    // [{ blob, debut, fin }] du plus ancien au plus récent
+  let replay = null;            // { el, arreter } : replay à l'image
+  function formatReplay() {
+    const essais = ['video/webm;codecs=h264', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp8', 'video/webm'];
+    return essais.find(x => window.MediaRecorder && MediaRecorder.isTypeSupported(x)) || '';
+  }
+  function nouveauMorceau() {
+    if (!sortie || !window.MediaRecorder) return null;
+    const type = formatReplay();
+    let r;
+    try { r = new MediaRecorder(new MediaStream([sortie.video]), Object.assign({ videoBitsPerSecond: 5000000 }, type ? { mimeType: type } : {})); }
+    catch (e) { return null; }
+    const m = { recorder: r, debut: Date.now(), type: type || 'video/webm', fini: null };
+    m.fini = new Promise(ok => {
+      r.ondataavailable = ev => {
+        if (ev.data && ev.data.size) { morceauxReplay.push({ blob: ev.data, debut: m.debut, fin: Date.now() }); while (morceauxReplay.length > GARDE) morceauxReplay.shift(); }
+        ok();
+      };
+      r.onerror = () => ok();
+    });
+    r.start();
+    return m;
+  }
+  // le suivant démarre avant que l'ancien s'arrête : pas de trou entre deux morceaux
+  function couperMorceau() {
+    const ancien = tampon;
+    tampon = nouveauMorceau();
+    if (ancien && ancien.recorder.state !== 'inactive') { ancien.recorder.stop(); return ancien.fini; }
+    return Promise.resolve();
+  }
+  setInterval(() => {
+    const voulu = !!sortie && (enDirect || !!rec);
+    if (voulu && (!tampon || Date.now() - tampon.debut >= MORCEAU)) couperMorceau();
+    else if (!voulu && tampon) { if (tampon.recorder.state !== 'inactive') tampon.recorder.stop(); tampon = null; morceauxReplay.length = 0; }
+  }, 500);
+  function secondesGardees() { return morceauxReplay.reduce((t, m) => t + (m.fin - m.debut), 0) / 1000 + (tampon ? (Date.now() - tampon.debut) / 1000 : 0); }
+
+  async function rejouer(ralenti) {
+    if (replay) arreterReplay();
+    await couperMorceau();
+    const voulu = (ralenti ? 8 : 15) * 1000;
+    const liste = []; let t = 0;
+    for (let i = morceauxReplay.length - 1; i >= 0 && t < voulu; i--) { liste.unshift(morceauxReplay[i]); t += morceauxReplay[i].fin - morceauxReplay[i].debut; }
+    if (!liste.length) return publier();
+    const el = document.createElement('div');
+    el.id = 'replay';
+    el.innerHTML = `<video muted playsinline></video><video muted playsinline></video><div class="replay-badge">${ralenti ? 'RALENTI' : 'REPLAY'}</div>`;
+    document.getElementById('stage').appendChild(el);
+    const lecteurs = [...el.querySelectorAll('video')], urls = liste.map(m => URL.createObjectURL(m.blob));
+    let i = 0, fin = false;
+    const charger = (v, k) => { v.src = urls[k]; v.playbackRate = ralenti ? 0.5 : 1; v.defaultPlaybackRate = v.playbackRate; v.load(); };
+    const suivant = () => {
+      if (fin) return;
+      const v = lecteurs[i % 2], autre = lecteurs[(i + 1) % 2];
+      v.classList.add('vu'); autre.classList.remove('vu');
+      v.playbackRate = ralenti ? 0.5 : 1;
+      v.play().catch(() => {});
+      if (i + 1 < urls.length) charger(autre, i + 1);
+      v.onended = () => { i++; if (i < urls.length) suivant(); else arreterReplay(); };
+    };
+    charger(lecteurs[0], 0);
+    const securite = setTimeout(() => arreterReplay(), t / (ralenti ? 0.5 : 1) + 4000);
+    replay = { el, ralenti, arreter() { fin = true; clearTimeout(securite); el.classList.add('sortie'); setTimeout(() => { el.remove(); urls.forEach(u => URL.revokeObjectURL(u)); }, 300); } };
+    requestAnimationFrame(() => el.classList.add('vu'));
+    suivant();
+    publier();
+  }
+  function arreterReplay() { if (!replay) return; replay.arreter(); replay = null; publier(); }
+
   function etat() {
     const s = sortie && sortie.video.getSettings ? sortie.video.getSettings() : {};
     const src = capture ? capture.getVideoTracks()[0].getSettings() : {};
@@ -274,6 +351,7 @@
       phase: !capture ? 'attente' : enDirect ? 'direct' : 'prete',
       rec: rec ? { actif: true, debut: rec.debut, octets: rec.octets, nom: rec.nom, erreur: rec.erreur || '' } : null,
       dernierRec,
+      replay: { secondes: Math.floor(secondesGardees()), enCours: replay ? (replay.ralenti ? 'ralenti' : 'normal') : '' },
       son: !!(sortie && sortie.audio), mode,
       source: src.width ? { w: src.width, h: src.height } : null,
       sortie: Object.assign(tailleSortie(), s.frameRate ? { fps: Math.round(s.frameRate) } : {}),
@@ -328,6 +406,7 @@
       if (m.action === 'start') demarrerRec(m.nom); else if (m.action === 'stop') arreterRec();
       return publier();
     }
+    if (m.type === 'replay') { if (m.action === 'stop') arreterReplay(); else if (sortie && (enDirect || rec)) rejouer(!!m.ralenti); return publier(); }
     if (m.type === 'fermer') { arreterTout(); if (capture) capture.getTracks().forEach(t => t.stop()); window.close(); }
   };
   // la régie sait tout de suite que la fenêtre est là, puis toutes les 2 s (battement de cœur)
