@@ -66,7 +66,7 @@ $('#chat-masquer').onclick = masquerMessageChat;
 
 /* Message de test : pour essayer le chat et la mise en avant sans attendre un vrai message */
 const ESSAIS_CHAT = [
-  ['Camille', 'Salut ! On vous entend super bien, vous parlez de quel film ce soir ?'],
+  ['Elsa', 'Salut ! On vous entend super bien, vous parlez de quel film ce soir ?'],
   ['BondFan_007', 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !'],
   ['lea_cine', 'Trop bien ce live, continuez !'],
   ['Malik', 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours ?'],

@@ -418,7 +418,7 @@ const estEcran = id => /_ecran\d$|ecr$/.test(id);
 /* Invités de test : de faux invités avec une fausse caméra dessinée, pour voir les scènes quand on est seul (1 à 4) */
 const idFaux = (s, n) => s.room + '_test' + n;
 const estFaux = id => /_test[1-4]$/.test(id);
-const NOMS_FAUX = ['Camille', 'Antho', 'Inès', 'Yanis'];
+const NOMS_FAUX = ['Elsa', 'Margaux', 'Inès', 'Yanis'];
 const fauxNumero = id => +String(id).slice(-1);
 const imageFaux = id => personnage([2, 0, 4, 1][(fauxNumero(id) - 1) % 4], true);   // un personnage différent par invité de test
 

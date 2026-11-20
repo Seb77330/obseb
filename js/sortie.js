@@ -1022,7 +1022,7 @@ if (PREVIEW && window.parent !== window) setInterval(() => { const b = fichierDe
 
 /* ----- Démarrage ----- */
 if (DEMO) {
-  const noms = [session.hote, 'Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade', 'Lucas', 'Emma', 'Rayan', 'Chloé', 'Adam', 'Lina'];
+  const noms = [session.hote, 'Margaux', 'Karim', 'Elsa', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo', 'Sarah', 'Nora', 'Théo', 'Jade', 'Lucas', 'Emma', 'Rayan', 'Chloé', 'Adam', 'Lina'];
   const st = etatParDefaut(session);
   st.scene = SCENE_FORCEE || 'live';
   st.noms = {}; st.onair = [];
@@ -1033,14 +1033,14 @@ if (DEMO) {
   if (Q.get('defilant')) st.defilant = { texte: Q.get('defilant'), actif: true };
   st.layout = Q.get('layout') || 'grille';
   if (Q.get('visibles')) st.visibles = st.onair.slice(0, +Q.get('visibles'));
-  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Antho', ms: 2300, pts: 1023 }, { nom: 'Camille', ms: 4100, pts: 863 }, { nom: 'Landri', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: /^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(Q.get('qimg') || '') ? Q.get('qimg') : null, public: Q.get('qpub') ? { revele: true, pct: +Q.get('qpub').split(',')[0] || 0, n: +Q.get('qpub').split(',')[1] || 0 } : null }, style: Q.get('qstyle') || 'theme' };
-  if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Antho', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: (etat && etat.hote) || 'Alex', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
+  if (Q.get('quiz')) st.quiz = { dispo: Q.get('qdispo') || 'centre', active: { qid: 'd', q: Q.get('qlong') ? 'Dans quel film, sorti en 2006 et réalisé par Martin Campbell, Daniel Craig enfile-t-il pour la toute première fois le smoking de James Bond ?' : 'Dans quel film Daniel Craig devient-il 007 ?', choix: ['Casino Royale', 'Skyfall', 'Spectre', 'Quantum of Solace'], duree: 15, debut: Date.now() - (+Q.get('qecoule') || 0) * 1000, revele: Q.get('quiz') === 'revele', bonne: 0, resultats: [{ nom: 'Margaux', ms: 2300, pts: 1023 }, { nom: 'Elsa', ms: 4100, pts: 863 }, { nom: 'Karim', ms: 7800, pts: 740 }], votes: [3, 1, 0, 1], nbRep: Q.get('quiz') === 'revele' ? 5 : 3, img: /^img\/demo\/[\w-]+\.(svg|webp|jpg|png)$/.test(Q.get('qimg') || '') ? Q.get('qimg') : null, public: Q.get('qpub') ? { revele: true, pct: +Q.get('qpub').split(',')[0] || 0, n: +Q.get('qpub').split(',')[1] || 0 } : null }, style: Q.get('qstyle') || 'theme' };
+  if (Q.get('st')) setTimeout(() => afficherST({ ecran: true, l: [{ nom: 'Margaux', c: Q.get('st') === 'neutre' ? '' : '#FFD84D', t: 'Franchement, le deuxième film est encore meilleur que le premier.' }, { nom: (etat && etat.hote) || 'Alex', c: Q.get('st') === 'neutre' ? '' : '#FFFFFF', t: 'Attends, tu oublies la scène du ver des sables, elle est folle' }] }), 600);
   if (Q.get('st')) st.st = { actif: true, ecran: true };
   if (Q.get('ststyle') === 'cinema') document.body.classList.add('st-cinema');   // démo : sous-titres façon film, sans boîte
   if (Q.get('watch')) st.watch = { titre: (Q.get('wtitre') || 'Dune : Deuxième Partie').slice(0, 60), pos: 2537, ref: Date.now(), lecture: Q.get('watch') !== 'pause', duree: Q.get('wsans') ? 0 : 9960, top: Q.get('watch') === 'top' ? Date.now() + 3600 : null, pastille: true, style: Q.get('wstyle') || 'bandeau', mode: Q.get('wmode') || 'ecoule', episode: Q.get('wep') || '' };
-  if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Camille', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
+  if (Q.get('fil')) st.chatFil = { actif: true, msgs: [{ p: 'youtube', a: 'Elsa', t: 'Salut tout le monde !' }, { p: 'twitch', a: 'BondFan_007', t: 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre.' }, { p: 'youtube', a: 'Malik', t: 'Vous parlez de Skyfall à quelle heure ?' }, { p: 'twitch', a: 'lea_cine', t: 'Team Sean Connery ici' }, { p: 'youtube', a: 'Hugo', t: 'La scène du train est incroyable' }] };
   if (Q.get('chat')) { st.chatAffiche = { p: Q.get('chat'), auteur: 'BondFan_007', texte: Q.get('clong') ? 'Question pour l\'invité : c\'est quoi le film que tu as le plus revu dans ta vie, et pourquoi tu y reviens toujours, même en connaissant chaque réplique par cœur ?' : 'Daniel Craig reste le meilleur Bond, Casino Royale est un chef-d\'œuvre !', ts: 1 }; st.chatStyle = Q.get('cstyle') || 'bulle'; }
-  if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Antho', 'Landri', 'Camille', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
+  if (Q.get('classement')) st.quiz = { style: Q.get('qstyle') || 'theme', dispo: Q.get('qdispo') || 'centre', afficherScores: true, classement: ['Margaux', 'Karim', 'Elsa', 'Yanis', 'Léa', 'Malik', 'Inès', 'Hugo'].slice(0, +Q.get('classement') > 1 ? +Q.get('classement') : 3).map((nom, i) => ({ nom, pts: 2850 - i * 310 })) };
   if (Q.get('qr')) st.qr = { lien: 'https://seb77330.github.io/obseb/', titre: Q.get('qrtitre') ?? 'Abonne-toi à la chaîne', coin: Q.get('qr'), taille: Q.get('qrtaille') || 'm', ts: 1, jouer: Q.get('qrjouer') === '1' };
   if (Q.get('intro')) st.introStyle = Q.get('intro');
   if (Q.get('outro')) st.outroStyle = Q.get('outro');
@@ -1063,10 +1063,10 @@ function demoVivante(st) {
   setInterval(() => { const g = gens(); if (g.length > 1) g[qui % g.length].niveau = 40; }, 150);
   setInterval(() => { qui++; }, 2300);
   const MSGS = [
-    ['youtube', 'Camille', 'Le générique est incroyable 🔥'],
+    ['youtube', 'Elsa', 'Le générique est incroyable 🔥'],
     ['twitch', 'BondFan_007', 'Casino Royale, meilleur Bond, point final.'],
     ['youtube', 'lea_cine', 'Vous faites ça chaque semaine ? Je reviens !'],
-    ['twitch', 'Malik', 'Team Antho sur ce débat 😂']
+    ['twitch', 'Malik', 'Team Margaux sur ce débat 😂']
   ];
   setInterval(() => {
     tour++;

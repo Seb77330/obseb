@@ -197,10 +197,32 @@
 .qz-public.entree { animation: qz-pose .45s both; }
 [data-quiz-style="clair"] .qz-cote { color: #222; }
 [data-quiz-style="clair"] .qzp-barre { background: rgba(0,0,0,.1); }
-/* vertical : la colonne passe sous les réponses, en ligne (code à gauche, texte à droite) */
-body.vertical .qz-cote { --qj: 170px; width: auto; flex-direction: row; flex-wrap: wrap; padding: 14px 0 0; border-left: 0; border-top: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); gap: 10px 22px; }
-body.vertical .qzc-tag { width: 100%; }
-body.vertical .qzc-jeu { flex-direction: row; gap: 18px; text-align: left; }
-body.vertical .qzc-jeu .qzj-code { margin: 0; }
-body.vertical .qzc-jeu b, body.vertical .qzc-jeu small { display: block; }
-body.vertical .qz-public { width: 80%; }
+/* ----- Vertical (TikTok, Shorts) : une carte plus grande et plus stylée, le chat en bandeau sous les réponses ----- */
+body.vertical .qz-panneau { padding: 26px 28px 26px; border-radius: 30px; }
+body.vertical .qz-tete { margin-bottom: 10px; }
+body.vertical .qz-q { font-size: 46px; line-height: 1.1; text-align: center; text-wrap: balance; margin: 4px 0 24px; }
+body.vertical .qz-choix { gap: 12px; }
+body.vertical .qz-c { font-size: 31px; padding: 15px 20px; border-radius: 18px; gap: 18px; }
+body.vertical .qz-c b { width: 50px; height: 50px; font-size: 25px; border-radius: 13px; }
+body.vertical #quiz.avec-image .qz-choix { grid-template-columns: 1fr 1fr; }
+body.vertical #quiz.avec-image .qz-c { font-size: 26px; padding: 12px 14px; }
+body.vertical #quiz.avec-image .qz-q { font-size: 38px; margin-bottom: 16px; }
+body.vertical .qz-cote { --qj: 128px; width: auto; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 22px; padding: 16px 22px 18px; border: 0; border-radius: 22px;
+  background: color-mix(in srgb, var(--accent) 13%, transparent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); text-align: left; }
+body.vertical .qzc-tag { font-size: 17px; }
+body.vertical .qzc-jeu { flex-direction: row; align-items: center; gap: 24px; }
+body.vertical .qzj-code { margin: 0; flex: none; }
+body.vertical .qzc-jeu b { font-size: 40px; color: var(--accent); }
+body.vertical .qzc-jeu small { font-size: 23px; opacity: .8; }
+body.vertical .qzc-jeu small::after { content: ' ou ouvre le lien dans le chat'; }
+body.vertical .qz-public { display: grid; grid-template-columns: auto 1fr; grid-template-areas: 'pct txt' 'pct n' 'bar bar'; column-gap: 22px; row-gap: 2px; align-items: center; text-align: left; }
+body.vertical .qz-public[hidden] { display: none; }
+body.vertical .qzp-pct { grid-area: pct; font-size: 84px; }
+body.vertical .qzp-txt { grid-area: txt; font-size: 30px; align-self: end; }
+body.vertical .qzp-n { grid-area: n; font-size: 22px; align-self: start; }
+body.vertical .qzp-barre { grid-area: bar; height: 12px; margin: 12px 0 0; }
+
+/* ----- Le podium centré entre la ligne grise et le bord du cadre (même écart au-dessus et en dessous) ----- */
+.qz-res { margin-top: 18px; min-height: 0; }
+[data-quiz-dispo="libre"] .qz-res { margin-top: calc(var(--ph) * .05); }
+body.vertical .qz-res { margin-top: 26px; }
