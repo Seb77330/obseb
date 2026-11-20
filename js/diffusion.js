@@ -272,24 +272,25 @@
      en petits morceaux de 5 s (un seul encodage en plus, sans le son). Sur ordre de la régie, elle les rejoue par-dessus
      la scène, avec un badge « REPLAY » : comme la scène est ce qui est capturé, le replay part dans le live et dans le fichier.
      Le son du live (micros) continue pendant le replay ; le replay lui-même est muet. Rien ne quitte l'ordinateur. */
-  const MORCEAU = 5000, GARDE = 4;
+  const MORCEAU = 5000, GARDE = 8;   // 8 morceaux : de quoi faire un clip de ~35 s
   let tampon = null;            // { recorder, debut } : le morceau en cours
   const morceauxReplay = [];    // [{ blob, debut, fin }] du plus ancien au plus récent
   let replay = null;            // { el, arreter } : replay à l'image
   function formatReplay() {
-    const essais = ['video/webm;codecs=h264', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp8', 'video/webm'];
+    const essais = sortie && sortie.audio ? ['video/webm;codecs=h264,opus', 'video/webm;codecs=vp8,opus', 'video/webm'] : ['video/webm;codecs=h264', 'video/webm;codecs=vp8', 'video/webm'];
     return essais.find(x => window.MediaRecorder && MediaRecorder.isTypeSupported(x)) || '';
   }
   function nouveauMorceau() {
     if (!sortie || !window.MediaRecorder) return null;
     const type = formatReplay();
     let r;
-    try { r = new MediaRecorder(new MediaStream([sortie.video]), Object.assign({ videoBitsPerSecond: 5000000 }, type ? { mimeType: type } : {})); }
+    // le son est gardé aussi (pour les clips) ; le replay à l'image, lui, reste muet
+    try { r = new MediaRecorder(new MediaStream([sortie.video, sortie.audio].filter(Boolean)), Object.assign({ videoBitsPerSecond: 5000000, audioBitsPerSecond: 128000 }, type ? { mimeType: type } : {})); }
     catch (e) { return null; }
     const m = { recorder: r, debut: Date.now(), type: type || 'video/webm', fini: null };
     m.fini = new Promise(ok => {
       r.ondataavailable = ev => {
-        if (ev.data && ev.data.size) { morceauxReplay.push({ blob: ev.data, debut: m.debut, fin: Date.now() }); while (morceauxReplay.length > GARDE) morceauxReplay.shift(); }
+        if (ev.data && ev.data.size) { morceauxReplay.push({ blob: ev.data, debut: m.debut, fin: Date.now(), type: m.type }); while (morceauxReplay.length > GARDE) morceauxReplay.shift(); }
         ok();
       };
       r.onerror = () => ok();
@@ -304,11 +305,99 @@
     if (ancien && ancien.recorder.state !== 'inactive') { ancien.recorder.stop(); return ancien.fini; }
     return Promise.resolve();
   }
+  let arretTampon = null;
   setInterval(() => {
     const voulu = !!sortie && (enDirect || !!rec);
     if (voulu && (!tampon || Date.now() - tampon.debut >= MORCEAU)) couperMorceau();
-    else if (!voulu && tampon) { if (tampon.recorder.state !== 'inactive') tampon.recorder.stop(); tampon = null; morceauxReplay.length = 0; }
+    else if (!voulu && tampon && !arretTampon) {
+      // fin du live : le dernier morceau sert encore aux moments marqués juste avant
+      const t = tampon; tampon = null;
+      if (t.recorder.state !== 'inactive') t.recorder.stop();
+      arretTampon = t.fini.then(() => Promise.all(marques.filter(m => !m.garde).map(garderMarque))).finally(() => { morceauxReplay.length = 0; arretTampon = null; });
+    }
   }, 500);
+
+  /* ----- Clips : « Marquer » pendant le live, une petite vidéo par moment à la fin -----
+     Un moment marqué garde ~25 s avant et ~10 s après (les morceaux du tampon, avec le son), écrits tout de suite sur le disque
+     (espace de stockage du site). Quand le live et l'enregistrement sont finis, la fenêtre les recolle en un vrai fichier par
+     moment (en les rejouant sans son ni image visibles : ça prend la durée du clip) et les range dans « Mes enregistrements ». */
+  const AVANT = 25000, APRES = 10000;
+  const marques = [];        // { n, t, garde: bool, fichiers: [noms], fait: bool }
+  let nbMarques = 0, clipEnCours = 0, clipsFaits = 0, clipErreur = '';
+  async function dossierClips() { return (await navigator.storage.getDirectory()).getDirectoryHandle('clips-attente', { create: true }); }
+  function marquer() {
+    if (!tampon && !morceauxReplay.length) return;
+    const m = { n: ++nbMarques, t: Date.now(), garde: false, fichiers: [], fait: false };
+    marques.push(m);
+    m.minuteur = setTimeout(() => { if (tampon) couperMorceau().then(() => garderMarque(m)); }, APRES);
+    publier();
+  }
+  async function garderMarque(m) {
+    if (m.garde) return; m.garde = true; clearTimeout(m.minuteur);
+    const pris = morceauxReplay.filter(x => x.fin > m.t - AVANT && x.debut < m.t + APRES);
+    try {
+      const d = await dossierClips();
+      for (let i = 0; i < pris.length; i++) {
+        const nom = `${m.n}-${i}`, f = await d.getFileHandle(nom, { create: true }), w = await f.createWritable();
+        await w.write(pris[i].blob); await w.close(); m.fichiers.push(nom);
+      }
+      m.type = pris[0] && pris[0].type;
+    } catch (e) { m.blobs = pris.map(x => x.blob); m.type = pris[0] && pris[0].type; }   // pas de stockage : en mémoire
+    publier();
+  }
+  async function fabriquerClip(m) {
+    const d = await dossierClips().catch(() => null);
+    const blobs = m.blobs || (d ? await Promise.all(m.fichiers.map(async n => (await d.getFileHandle(n)).getFile())) : []);
+    if (!blobs.length) return;
+    const { w, h } = tailleSortie();
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { alpha: false });
+    const v = document.createElement('video'); v.playsInline = true;
+    v.style.cssText = 'position:fixed;left:-10px;top:-10px;width:2px;height:2px;opacity:0;pointer-events:none';
+    document.body.appendChild(v);
+    const ac = new AudioContext(), dest = ac.createMediaStreamDestination();
+    ac.createMediaElementSource(v).connect(dest);   // le son va seulement dans le fichier, pas aux haut-parleurs
+    const flux = cv.captureStream(30);
+    const type = ['video/webm;codecs=h264,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(x => MediaRecorder.isTypeSupported(x)) || '';
+    const rec2 = new MediaRecorder(new MediaStream([...flux.getVideoTracks(), ...dest.stream.getAudioTracks()]), Object.assign({ videoBitsPerSecond: 8000000, audioBitsPerSecond: 160000 }, type ? { mimeType: type } : {}));
+    const morceaux = []; rec2.ondataavailable = e => { if (e.data && e.data.size) morceaux.push(e.data); };
+    const fini = new Promise(ok => { rec2.onstop = ok; });
+    const stop = horloge(30, () => { if (v.videoWidth) { const k = Math.min(w / v.videoWidth, h / v.videoHeight); cx.fillStyle = '#000'; cx.fillRect(0, 0, w, h); cx.drawImage(v, (w - v.videoWidth * k) / 2, (h - v.videoHeight * k) / 2, v.videoWidth * k, v.videoHeight * k); } });
+    await ac.resume().catch(() => {});
+    let debutRec = false;
+    for (const b of blobs) {
+      const url = URL.createObjectURL(b);
+      v.src = url;
+      await new Promise(ok => { v.onloadeddata = ok; v.onerror = ok; setTimeout(ok, 4000); });
+      if (!debutRec) { rec2.start(1000); debutRec = true; }
+      await v.play().catch(() => {});
+      await new Promise(ok => { v.onended = ok; v.onerror = ok; setTimeout(ok, 9000); });   // un morceau dure ~5 s
+      URL.revokeObjectURL(url);
+    }
+    rec2.stop(); await fini; stop(); v.remove(); ac.close().catch(() => {}); flux.getTracks().forEach(t => t.stop());
+    const blob = new Blob(morceaux, { type: type || 'video/webm' });
+    const heure = new Date(m.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+    const titreLive = String(session.titre || 'MESA').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .,()'-]+/g, ' ').trim().slice(0, 40) || 'MESA';
+    const nom = `Clip ${m.n} ${titreLive} ${heure}${FORMAT === 'vertical' ? ' vertical' : ''}.webm`;
+    try {
+      const dr = await dossierRec(), f = await dr.getFileHandle(encodeURIComponent(nom), { create: true }), wr = await f.createWritable();
+      await wr.write(blob); await wr.close();
+      const fiche = await dr.getFileHandle(f.name + '.json', { create: true }), wf = await fiche.createWritable();
+      await wf.write(JSON.stringify({ nom, nomAffiche: `Clip ${m.n} · ${heure}`, duree: blobs.length * MORCEAU, format: FORMAT, w, h, debut: m.t, titre: session.titre || '', clip: true }));
+      await wf.close();
+    } catch (e) { telecharger(blob, nom); }   // pas de stockage : on le télécharge
+    if (d) for (const n of m.fichiers) d.removeEntry(n).catch(() => {});
+  }
+  // les clips se fabriquent une fois tout fini (rien ne part plus, l'ordinateur est libre)
+  setInterval(async () => {
+    if (clipEnCours || enDirect || rec || tampon || arretTampon) return;
+    const m = marques.find(x => x.garde && !x.fait); if (!m) return;
+    clipEnCours = m.n; publier();
+    try { await fabriquerClip(m); clipsFaits++; } catch (e) { clipErreur = 'Un clip n\'a pas pu être fabriqué : ' + e.message; }
+    m.fait = true; clipEnCours = 0;
+    dire(marques.some(x => !x.fait) ? 'Clips en préparation…' : 'Clips prêts', marques.some(x => !x.fait) ? 'Garde cette fenêtre ouverte : chaque clip prend environ 40 secondes.' : 'Ils sont dans « Mes enregistrements », dans la régie. Tu peux fermer cette fenêtre.');
+    publier();
+  }, 1000);
   function secondesGardees() { return morceauxReplay.reduce((t, m) => t + (m.fin - m.debut), 0) / 1000 + (tampon ? (Date.now() - tampon.debut) / 1000 : 0); }
 
   async function rejouer(ralenti) {
@@ -352,6 +441,7 @@
       rec: rec ? { actif: true, debut: rec.debut, octets: rec.octets, nom: rec.nom, erreur: rec.erreur || '' } : null,
       dernierRec,
       replay: { secondes: Math.floor(secondesGardees()), enCours: replay ? (replay.ralenti ? 'ralenti' : 'normal') : '' },
+      clips: { marques: nbMarques, attente: marques.filter(x => !x.fait).length, enCours: clipEnCours, faits: clipsFaits, erreur: clipErreur },
       son: !!(sortie && sortie.audio), mode,
       source: src.width ? { w: src.width, h: src.height } : null,
       sortie: Object.assign(tailleSortie(), s.frameRate ? { fps: Math.round(s.frameRate) } : {}),
@@ -406,12 +496,13 @@
       if (m.action === 'start') demarrerRec(m.nom); else if (m.action === 'stop') arreterRec();
       return publier();
     }
+    if (m.type === 'marquer') { if (sortie && (enDirect || rec)) marquer(); return publier(); }
     if (m.type === 'replay') { if (m.action === 'stop') arreterReplay(); else if (sortie && (enDirect || rec)) rejouer(!!m.ralenti); return publier(); }
     if (m.type === 'fermer') { arreterTout(); if (capture) capture.getTracks().forEach(t => t.stop()); window.close(); }
   };
   // la régie sait tout de suite que la fenêtre est là, puis toutes les 2 s (battement de cœur)
   publier();
-  addEventListener('beforeunload', e => { if (enDirect || rec) { e.preventDefault(); e.returnValue = ''; } });
+  addEventListener('beforeunload', e => { if (enDirect || rec || marques.some(x => !x.fait)) { e.preventDefault(); e.returnValue = ''; } });
   addEventListener('pagehide', () => { arreterTout(); arreterRec(); try { canal.postMessage({ type: 'etat', format: FORMAT, phase: 'fermee', t: Date.now(), cibles: [] }); } catch (e) { /* rien */ } });
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && capture && (!verrouEcran || verrouEcran.released)) { try { verrouEcran = await navigator.wakeLock.request('screen'); } catch (e) { /* facultatif */ } }
