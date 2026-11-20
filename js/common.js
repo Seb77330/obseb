@@ -486,6 +486,15 @@ function transportSession() {
 function vdo(params) {
   const t = transportSession();
   const p = Object.assign({}, params);
+  /* Effets de l'invité, calculés dans son navigateur (comme StreamYard, sans serveur) : flou = 'leger' | 'fort', antibruit = true.
+     Le serveur MESA (lk.html) lit flou / antibruit tels quels ; vdo.ninja a ses propres mots pour la même chose. */
+  if (!t) {
+    const flou = p.flou, antibruit = p.antibruit;
+    delete p.flou; delete p.antibruit;
+    if (flou === 'leger') p.effects = '3';        // flou d'arrière-plan de vdo.ninja (MediaPipe)
+    else if (flou === 'fort') p.effects = '3a';   // le même, plus appuyé
+    if (antibruit) { p.denoise = '1'; p.isolation = '1'; }   // réduction de bruit + isolation de la voix de Chrome/Edge
+  }
   if (t) {
     p.lk = t.serveur;
     // l'animateur (sa caméra, ses écrans, sa régie, sa sortie OBS) prouve qui il est avec la clé de la régie ;

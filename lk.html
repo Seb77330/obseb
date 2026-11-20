@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<!-- Sécurité : le navigateur refuse tout script qui ne vient pas du site lui-même (protège tes clés et tes invités) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<!-- Sécurité : le navigateur refuse tout script qui ne vient pas du site lui-même (protège tes clés et tes invités).
+     'wasm-unsafe-eval' autorise seulement le moteur WebAssembly du flou d'arrière-plan, servi par le site lui-même. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MESA · flux</title>
@@ -23,6 +24,7 @@
 <video id="v" autoplay playsinline muted></video>
 <div id="etat"></div>
 <script src="js/vendor/livekit-client-2.23.0.umd.js?v=f4dc7e5a"></script>
-<script src="js/lk-pont.js?v=91914e66"></script>
+<script src="js/vendor/livekit-track-processors-0.8.3.min.js?v=a8374558"></script>
+<script src="js/lk-pont.js?v=99691530"></script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+MediaPipe Tasks Vision 0.10.14 (Google, licence Apache-2.0, voir ../LICENSE-livekit-client pour le texte de la licence Apache 2.0)
+- vision_wasm_internal.js / .wasm : moteur de découpage de la personne (copiés tels quels depuis le paquet npm @mediapipe/tasks-vision@0.10.14)
+- selfie_segmenter.tflite : modèle « selfie segmenter » float16 de Google (storage.googleapis.com/mediapipe-models)
+Gardés ici plutôt que sur un CDN : la page lk.html n'accepte que les scripts du site lui-même.
+Seule la version SIMD est fournie (tous les Chrome/Edge récents) : sans SIMD, le flou est simplement désactivé.

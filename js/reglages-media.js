@@ -12,7 +12,9 @@ function nomAppareil(label) {
 }
 function paramAppareil(label) { return nomAppareil(label).replace(/\s+/g, '_'); }
 
-function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer }) {
+/* effets = true : on propose aussi le flou d'arrière-plan et l'anti-bruit renforcé (coulisses des invités).
+   Les deux sont calculés dans le navigateur de la personne : rien ne passe par un serveur, rien ne coûte. */
+function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer, effets = false }) {
   boite.innerHTML = `
     <div class="rm">
       <div class="rm-video"><video autoplay muted playsinline></video><div class="rm-vide">Autorise la caméra et le micro dans la fenêtre du navigateur</div><span class="rm-res"></span></div>
@@ -20,7 +22,15 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       <select class="rm-cam"></select>
       <label class="rm-champ">Micro</label>
       <select class="rm-mic"></select>
-      <div class="rm-vu" title="Parle : la barre doit bouger"><i></i></div>
+      <div class="rm-vu" title="Parle : la barre doit bouger"><i></i></div>${effets ? `
+      <label class="rm-champ">Arrière-plan</label>
+      <select class="rm-flou">
+        <option value="">Net (aucun effet)</option>
+        <option value="leger">Flou léger</option>
+        <option value="fort">Flou fort (on ne voit plus la pièce)</option>
+      </select>
+      <label class="rm-case"><input type="checkbox" class="rm-antibruit"> <span>Anti-bruit renforcé <small>clavier, ventilateur, bruits de la pièce</small></span></label>
+      <p class="rm-note">Le flou s'affiche dans ta caméra dès que tu entres. Sur un vieil ordinateur, garde « Net ».</p>` : ''}
       <p class="rm-aide"></p>
       <button class="primaire rm-go">${texteBouton}</button>
     </div>`;
@@ -96,6 +106,10 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       tic();
     }
   }
+  // effets : retenus d'une fois sur l'autre ; anti-bruit coché par défaut (la plupart des invités n'ont pas de casque)
+  const selFlou = boite.querySelector('.rm-flou'), caseBruit = boite.querySelector('.rm-antibruit');
+  if (selFlou) selFlou.value = ['leger', 'fort'].includes(choix.flou) ? choix.flou : '';
+  if (caseBruit) caseBruit.checked = choix.antibruit !== false;
   selCam.onchange = () => { choix.cam = selCam.value; ouvrir(); };
   selMic.onchange = () => { choix.mic = selMic.value; ouvrir(); };
   boite.querySelector('.rm-go').onclick = () => {
@@ -103,9 +117,12 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     const appCam = cam ? cam.textContent.replace(/^Par défaut : /, '') : '';
     const appMic = mic ? mic.textContent.replace(/^Par défaut : /, '') : '';
     choix.nomCam = appCam; choix.nomMic = appMic;
+    if (selFlou) choix.flou = selFlou.value || '';
+    if (caseBruit) choix.antibruit = caseBruit.checked;
     try { localStorage.setItem(cle, JSON.stringify(choix)); } catch (e) { /* rien */ }
     arreter();   // libère la caméra avant que la salle l'ouvre (évite le conflit Cam Link)
-    surDemarrer({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 });
+    surDemarrer(Object.assign({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 },
+      effets ? { flou: choix.flou || '', antibruit: !!choix.antibruit } : {}));
   };
   return { ouvrir, arreter, choix: () => choix };
 }
