@@ -12,6 +12,7 @@ appliquerTheme(theme);
 document.title = `Invitation · ${session.titre}`;
 $('#titre').textContent = session.titre;
 $('#hote').textContent = session.hote;
+if (!session.hote) $('#avec-hote').remove();   // pas de nom d'animateur : pas de « Avec . »
 // live programmé : le rendez-vous, à l'heure de l'invité (pas affiché une fois l'heure passée depuis longtemps)
 if (session.debut && session.debut > Date.now() - 6 * 3600e3) {
   $('#rdv').hidden = false;
@@ -20,7 +21,7 @@ if (session.debut && session.debut > Date.now() - 6 * 3600e3) {
   majRdv(); setInterval(majRdv, 30000);
   $('#rdv-agenda').onclick = () => telechargerAgenda(session, location.href);
 }
-$('#hote2').textContent = session.hote;
+$('#hote2').textContent = session.hote || 'l\'animateur';
 $('#chaine').textContent = session.handle || HANDLE_DEFAUT;
 $('#pastille').innerHTML = theme.logo ? `<img src="${esc(theme.logo)}" alt="" style="height:28px;display:block">` : (theme.logoTexte ? esc(theme.logoTexte) : MESA_M);
 $('#pastille').classList.toggle('mesa', !theme.logo && !theme.logoTexte);

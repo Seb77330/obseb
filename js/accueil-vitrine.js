@@ -32,13 +32,13 @@
      Un plan peut avoir plusieurs étapes (ex. le quiz puis le classement) : elles s'enchaînent dans le même plan. */
   const H = 'img/demo/film-horizon.svg', N = 'img/demo/film-neon.svg';
   const PLANS = [
-    { nom: 'Tes invités', theme: 'plateau3d', q: ['demo=4&sources=0'] },
+    { nom: 'Tes invités', court: 'Invités', theme: 'plateau3d', q: ['demo=4&sources=0'] },
     { nom: 'Réaction', theme: 'cinema', q: [`demo=1&mode=reaction&petit=partage&coin=bg&taille=m&vdispo=coin&srcimg=${N}&srcnom=Bande-annonce`] },
     { nom: 'Jeu vidéo', theme: 'arcade', q: ['demo=1&mode=jeu&coin=mg&taille=p&vdispo=coin&srcimg=img/demo/jeu-course.svg&srcnom=Jeu'] },
-    { nom: 'Quiz et classement', theme: 'studio', q: ['demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg', 'demo=3&sources=0&classement=5&qstyle=plateau'] },
-    { nom: 'Le chat à l\'écran', theme: 'neon', q: ['demo=3&sources=0&chat=youtube&cstyle=bulle', 'demo=3&sources=0&chat=twitch&cstyle=affiche', 'demo=3&sources=0&chat=youtube&cstyle=notif', 'demo=3&sources=0&chat=twitch&cstyle=postit'] },
+    { nom: 'Quiz et classement', court: 'Quiz', theme: 'studio', q: ['demo=3&sources=0&quiz=1&qecoule=6&qstyle=plateau&qimg=img/demo/quiz-casino.svg', 'demo=3&sources=0&classement=5&qstyle=plateau'] },
+    { nom: 'Le chat à l\'écran', court: 'Chat', theme: 'neon', q: ['demo=3&sources=0&chat=youtube&cstyle=bulle', 'demo=3&sources=0&chat=twitch&cstyle=affiche', 'demo=3&sources=0&chat=youtube&cstyle=notif', 'demo=3&sources=0&chat=twitch&cstyle=postit'] },
     { nom: 'Sous-titres', theme: 'studio', q: ['demo=2&sources=0&st=1&ststyle=cinema'] },
-    { nom: 'Intros et outros', theme: 'cinema', q: ['demo=3&scene=intro&intro=pellicule', 'demo=3&scene=intro&intro=neon', 'demo=3&scene=fin&outro=rideau', 'demo=3&scene=fin&outro=generique'] },
+    { nom: 'Intros et outros', court: 'Intros', theme: 'cinema', q: ['demo=3&scene=intro&intro=pellicule', 'demo=3&scene=intro&intro=neon', 'demo=3&scene=fin&outro=rideau', 'demo=3&scene=fin&outro=generique'] },
     { nom: 'Soirée film', theme: 'bond', q: [`demo=3&scene=watch&watch=1&wstyle=bandeau&wmode=double&srcimg=${H}&wtitre=Horizon%20Rouge`] }
   ];
   /* un picto par plan ; le nom ne s'affiche que sur le plan choisi */
@@ -64,7 +64,7 @@
     const b = document.createElement('button');
     b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', 'false');
     b.title = p.nom; b.setAttribute('aria-label', p.nom);
-    b.innerHTML = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PICTOS[i] || ''}</svg><span>${esc(p.nom)}</span>`;
+    b.innerHTML = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PICTOS[i] || ''}</svg><span>${esc(p.court || p.nom)}</span>`;
     b.onclick = () => { fixe = true; barre.classList.add('fixe'); montrer(i); };
     barre.appendChild(b); return b;
   });

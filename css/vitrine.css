@@ -321,13 +321,28 @@ body[data-page="vitrine"] .chapitres-nav { display: flex; flex-direction: column
 body.visuel-ent #cats-themes { display: none; }
 body.visuel-ent #galerie .theme-carte:not(.ent) { display: none !important; }
 
-/* Les plans de l'aperçu : des pictos ; le nom s'ouvre seulement sur le plan choisi */
-body[data-page="vitrine"] .v-plans { gap: 6px; align-items: center; }
-body[data-page="vitrine"] .v-plans button { display: inline-flex; align-items: center; gap: 0; height: 38px; min-width: 38px; padding: 0 9px; border-radius: 99px; border: 1px solid transparent; background: none; box-shadow: none; color: var(--ui-muted); transition: color .2s, background .2s, gap .25s; }
-body[data-page="vitrine"] .v-plans button .ic { width: 19px; height: 19px; flex: none; }
-body[data-page="vitrine"] .v-plans button span { max-width: 0; overflow: hidden; white-space: nowrap; font-size: 13px; font-weight: 600; transition: max-width .3s ease; }
-body[data-page="vitrine"] .v-plans button:hover { color: var(--ui-text); background: color-mix(in srgb, var(--ui-text) 6%, transparent); }
-body[data-page="vitrine"] .v-plans button[aria-selected="true"] { gap: 7px; padding: 0 14px 0 11px; color: var(--ui-text); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); border-color: color-mix(in srgb, var(--ui-accent) 40%, transparent); }
-body[data-page="vitrine"] .v-plans button[aria-selected="true"] span { max-width: 180px; }
-body[data-page="vitrine"] .v-plans button[aria-selected="true"]::after { left: 14px; right: 14px; width: auto; bottom: 4px; height: 2px; border-radius: 2px; }
+/* Aperçu (20/11) : sous chaque écran, le format et les logos des plateformes ;
+   dessous, une barre de scènes rangée (picto + nom, toujours lisibles) */
+.v-format > .v-legende { display: flex; align-items: center; gap: 14px; font-size: 13px; font-weight: 600; color: var(--ui-text); }
+.v-fmt { display: inline-flex; align-items: center; gap: 6px; }
+.v-fmt-ic { width: 17px; height: 17px; color: var(--ui-muted); }
+.v-logos { display: inline-flex; align-items: center; gap: 10px; padding-left: 14px; border-left: 1px solid var(--ui-line); color: var(--ui-muted); }
+.v-logo { width: 16px; height: 16px; display: block; transition: color .2s; }
+.v-format:hover .v-logo { color: var(--ui-text); }
+body[data-page="vitrine"] .v-hero .v-plans { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; width: min(100%, 760px); margin: 22px auto 0; padding: 5px; border: 1px solid var(--ui-line); border-radius: 16px; background: color-mix(in srgb, var(--ui-panel) 70%, transparent); }
+body[data-page="vitrine"] .v-plans button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: auto; padding: 10px 4px 11px; border: 0; border-radius: 11px; background: none; box-shadow: none; color: var(--ui-muted); transition: color .2s, background .2s; }
+body[data-page="vitrine"] .v-plans button .ic { width: 20px; height: 20px; flex: none; }
+body[data-page="vitrine"] .v-plans button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
+body[data-page="vitrine"] .v-plans button:hover { color: var(--ui-text); background: color-mix(in srgb, var(--ui-text) 5%, transparent); }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"] { color: var(--ui-text); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"] .ic { color: var(--ui-accent); }
+body[data-page="vitrine"] .v-plans button[aria-selected="true"]::after { left: 22%; right: 22%; width: auto; bottom: 4px; height: 2px; border-radius: 2px; }
 :root[data-mode="clair"] body[data-page="vitrine"] .v-plans button { box-shadow: none; }
+:root[data-mode="clair"] body[data-page="vitrine"] .v-plans button[aria-selected="true"] .ic { color: color-mix(in srgb, var(--ui-accent) 55%, #000); }
+@media (max-width: 620px) {
+  .v-format > .v-legende { flex-direction: column; gap: 6px; font-size: 12px; }
+  .v-logos { padding-left: 0; border-left: 0; gap: 9px; }
+  .v-logo { width: 14px; height: 14px; }
+  body[data-page="vitrine"] .v-hero .v-plans { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body[data-page="vitrine"] .v-plans button span { font-size: 11px; }
+}
