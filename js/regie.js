@@ -44,6 +44,7 @@ function infoEnvoiCamera() {
 }
 let statsCamera = null;        // dernière mesure de ta caméra { h, kbps, n, vu }
 const sortieVue = {};          // dernière fois que la sortie OBS a dit « je suis là » : { horizontal, vertical }
+const coupesInvites = new Map();   // id -> { mic, cam } : ce que l'invité a coupé lui-même depuis ses coulisses
 const qualites = new Map();   // id -> { w, h, kbps } envoyé par chaque invité       // vdo.ninja a-t-il déjà répondu à getStreamIDs ?
 
 /* ----- En-tête ----- */
@@ -349,6 +350,9 @@ function majCarte(id) {
       const bon = q.h >= 720 && q.kbps >= 1500, moyen = q.h >= 480 && q.kbps >= 600;
       qe.innerHTML = `<span class="voyant ${bon ? 'ok' : moyen ? 'att' : 'ko'}"></span>${res} ${debit} · ${bon ? 'bonne image' : moyen ? 'image moyenne' : 'connexion faible'}`;
     }
+    const cp = coupesInvites.get(id);
+    const txt = cp ? [cp.mic ? 'micro' : '', cp.cam ? 'caméra' : ''].filter(Boolean).join(' et ') : '';
+    if (txt) qe.innerHTML += ` <b class="coupe-invite">· ${txt} coupé${cp.mic && cp.cam ? 's' : cp.cam ? 'e' : ''} par l'invité</b>`;
   }
   const pct = c.el.querySelector('.pct');
   if (pct) pct.textContent = (etat.muet[id] ? 0 : Math.round((etat.vol[id] ?? 1) * 100)) + '%';
@@ -449,6 +453,11 @@ addEventListener('message', e => {
         toast(`Un invité s'appelle maintenant ${nomInvite}`); envoyerBientot();
       }
       if (nomInvite) nomsInvites.set(salut.id, nomInvite);
+      if (salut.coupe && typeof salut.coupe === 'object') {
+        const avant = coupesInvites.get(salut.id) || {}, c = { mic: !!salut.coupe.mic, cam: !!salut.coupe.cam };
+        coupesInvites.set(salut.id, c);
+        if (c.mic !== !!avant.mic || c.cam !== !!avant.cam) majCarte(salut.id);
+      }
       if (salut.q) { qualites.set(salut.id, salut.q); majCarte(salut.id); }
       if (salut.st && typeof sousTitreRecu === 'function') sousTitreRecu(salut.id, salut.st);
       if (typeof salut.ecran === 'string' && salut.ecran.startsWith(session.room + '_')) arrivee(salut.ecran, String(salut.nom || '').slice(0, 28) + ' (écran)');

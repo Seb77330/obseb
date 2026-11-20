@@ -89,7 +89,7 @@ function entrer() {
     maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, antibruit: !!app.antibruit });
   }
   $('#btn-cam-changer').onclick = () => {
-    $('#ma-camera').src = 'about:blank'; maCamera = null;
+    $('#ma-camera').src = 'about:blank'; maCamera = null; majCoupe({ mic: false, cam: false });
     $('#cam-direct').hidden = true; $('#cam-reglage').hidden = false; reglage.ouvrir();
   };
   reglage.ouvrir();
@@ -97,6 +97,37 @@ function entrer() {
   apercu.src = `sortie.html?preview=1${CAM_DISTANTE ? '&musique=0' : ''}#s=${hashParams().get('s')}&moi=${encodeURIComponent(moi.id)}`;   // « moi » : avec le serveur MESA, l'aperçu s'ouvre une fois l'invité admis
   $('#mon-nom').value = moi.nom;
 }
+
+/* Couper son micro, sa caméra, ou quitter le live : l'invité garde la main sur ce qu'il envoie.
+   L'ordre part à sa fenêtre caméra (vdo.ninja ou serveur MESA, mêmes mots : mic, camera, close),
+   et la régie l'apprend avec le prochain « je suis là » (champ coupe). */
+let coupe = { mic: false, cam: false };
+function majCoupe(c) {
+  coupe = Object.assign({}, coupe, c);
+  const bm = $('#btn-mon-micro'), bc = $('#btn-ma-cam');
+  bm.setAttribute('aria-pressed', String(coupe.mic)); bm.textContent = coupe.mic ? '🔇 Micro coupé' : '🎤 Couper mon micro'; bm.title = coupe.mic ? 'Clique pour remettre ton micro' : '';
+  bc.setAttribute('aria-pressed', String(coupe.cam)); bc.textContent = coupe.cam ? '🚫 Caméra coupée' : '📷 Couper ma caméra'; bc.title = coupe.cam ? 'Clique pour remettre ta caméra' : '';
+}
+$('#btn-mon-micro').onclick = () => {
+  if (!maCamera) return;
+  majCoupe({ mic: !coupe.mic }); ordre(maCamera, { mic: !coupe.mic }); direBonjour();
+  if (coupe.mic) monEcoute.arreter();   // les sous-titres reprendront avec le prochain état du live
+};
+$('#btn-ma-cam').onclick = () => {
+  if (!maCamera) return;
+  majCoupe({ cam: !coupe.cam }); ordre(maCamera, { camera: !coupe.cam }); direBonjour();
+};
+$('#btn-quitter').onclick = () => {
+  if (!confirm('Quitter le live ? Ta caméra et ton micro s\'éteignent tout de suite.')) return;
+  if (maCamera) { ordre(maCamera, { close: true }); maCamera.src = 'about:blank'; }
+  maCamera = null;
+  const f = $('#mon-ecran'); f.src = 'about:blank'; f.hidden = true; ecranActif = false; $('#btn-mon-ecran').textContent = '🖥️ Partager mon écran';
+  if (apercu) apercu.src = 'about:blank';
+  monEcoute.arreter();
+  $('#cam-direct').hidden = true; $('#cam-reglage').hidden = true; $('#parti').hidden = false;
+  $('#statut').textContent = 'TU AS QUITTÉ LE LIVE';
+};
+$('#btn-revenir').onclick = () => location.reload();
 
 /* L'invité peut changer le nom affiché sous sa caméra (sans changer d'identifiant) */
 $('#form-nom').onsubmit = e => {
@@ -122,11 +153,15 @@ document.getElementById('btn-mon-ecran').onclick = () => {
 
 /* Toutes les 3 s : on mesure sa qualité d'envoi et on dit « je suis là » à l'animateur */
 let maQualite = null;
+function direBonjour() {
+  if (!maCamera) return;
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe } }, type: 'rpcs' });
+  besoinApercu = '';
+}
 setInterval(() => {
   if (!maCamera) return;
   ordre(maCamera, { getStats: true });
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu } }, type: 'rpcs' });
-  besoinApercu = '';
+  direBonjour();
 }, 3000);
 
 let besoinApercu = '';   // fichier que mon aperçu attend de la régie
@@ -170,7 +205,8 @@ addEventListener('message', e => {
 const monEcoute = creerEcoute(st => { if (maCamera) ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, st } }, type: 'rpcs' }); });
 function reglerSousTitres(actifs, jeParle) {
   $('#st-info').hidden = !(actifs && monEcoute.dispo) || CAM_DISTANTE;
-  if (actifs && jeParle && monEcoute.dispo && !CAM_DISTANTE) monEcoute.demarrer(); else monEcoute.arreter();
+  // micro coupé par l'invité : on n'écoute plus rien, même pour les sous-titres
+  if (actifs && jeParle && monEcoute.dispo && !CAM_DISTANTE && !coupe.mic) monEcoute.demarrer(); else monEcoute.arreter();
 }
 
 /* ----- Watch Party : le minuteur du film de l'animateur, pour se caler dessus ----- */
