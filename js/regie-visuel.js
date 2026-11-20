@@ -32,7 +32,7 @@
     } catch (e) { return false; }
   }
 
-  let panneau = null;
+  let panneau = null, vuAvant = true;
   function ouvrir(etape) {
     const b = bloque();
     if (b) return toast(b === 'direct' ? 'Pendant le direct, le thème et les couleurs restent les mêmes. Tu peux toujours changer les titres, les scènes et la musique.' : 'Arrête d\'abord l\'enregistrement pour changer le thème');
@@ -43,13 +43,15 @@
     panneau.innerHTML = `<div class="vp-charge">Chargement du visuel…</div><iframe title="Visuel du live" src="index.html?visuel=${encodeURIComponent(session.room)}&embed=1&panneau=1${typeof etape === 'string' ? '&etape=' + encodeURIComponent(etape) : ''}"></iframe>`;
     document.body.appendChild(panneau);
     document.body.classList.add('visuel-ouvert');
+    if (session.choixVisuel && !vuAvant) document.body.classList.add('visuel-creation');
     panneau.querySelector('iframe').addEventListener('load', () => panneau && panneau.classList.add('pret'));
   }
   function fermer(applique) {
     if (!panneau) return;
     panneau.remove(); panneau = null;
-    document.body.classList.remove('visuel-ouvert');
+    document.body.classList.remove('visuel-ouvert', 'visuel-creation');
     clearTimeout(essai.t);
+    dispatchEvent(new Event('mesa:visuel-ferme'));   // la caméra d'un live tout neuf s'allume maintenant
     if (!applique && essai.actif) revenir();
   }
   btn.onclick = () => ouvrir();
@@ -121,6 +123,7 @@
   const CLE_VU = 'studioSeb:visuelVu:' + session.room;
   let vu = false;
   try { vu = !!localStorage.getItem(CLE_VU); localStorage.setItem(CLE_VU, '1'); } catch (e) { vu = true; }
+  vuAvant = vu;
   // un live à modifier depuis l'accueil (« Modifier » sur sa carte) : la régie s'ouvre sur le visuel
   const demande = hashParams().get('visuel');
   if (demande) { const h = hashParams(); h.delete('visuel'); history.replaceState(null, '', location.pathname + location.search + '#' + h.toString()); }

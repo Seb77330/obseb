@@ -101,7 +101,21 @@ new MutationObserver(majAppelCam).observe($('#cam-reglage'), { attributes: true,
 $('#cam-appel').onclick = () => { const go = $('#cam-reglage .rm-go'); if (go) go.click(); };
 const retenus = appareilsRetenus(CLE_CAM);
 if (retenus && retenus.h) demarrerCamera(retenus);   // sans mesure de la caméra (choix retenu avant le 17/11), on repasse une fois par le réglage : il sert à afficher ce qu'elle filme vraiment
-else { $('#cam-reglage').hidden = false; reglageCam.ouvrir(); }
+else {
+  $('#cam-reglage').hidden = false;
+  // un live tout juste créé : on choisit d'abord son visuel ; la caméra (et la demande d'autorisation) vient après
+  let creation = false;
+  try { creation = !!session.choixVisuel && !localStorage.getItem('studioSeb:visuelVu:' + session.room); } catch (e) { /* rien */ }
+  if (creation) {
+    const attente = document.createElement('div'); attente.id = 'cam-attente';
+    attente.innerHTML = '<p class="aide" style="margin:6px 0 10px">Ta caméra s\'allume quand tu as fini de choisir le visuel de ton live.</p><button type="button" class="primaire" id="cam-maintenant" style="width:100%">Allumer ma caméra maintenant</button>';
+    $('#cam-reglage').before(attente); $('#cam-reglage').hidden = true;
+    let fait = false;
+    const allumer = () => { if (fait) return; fait = true; attente.remove(); $('#cam-reglage').hidden = false; reglageCam.ouvrir(); };
+    $('#cam-maintenant').onclick = allumer;
+    addEventListener('mesa:visuel-ferme', allumer, { once: true });
+  } else reglageCam.ouvrir();
+}
 majAppelCam();
 
 /* ----- Aperçu de l'antenne ----- */

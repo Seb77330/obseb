@@ -1,7 +1,7 @@
 /* MESA : le visuel du live, réglé par étapes dans la régie.
    La régie ouvre cette page dans un panneau sur le côté (index.html?visuel=<salle>&embed=1&panneau=1) :
    l'aperçu de la régie reste visible au centre et change à chaque choix.
-   Les étapes suivent l'ordre logique : 1 Thème, 2 Couleurs, 3 Police, 4 Logo et fond, 5 Musiques, 6 Textes, 7 Quand (date et durée).
+   Trois étapes : (nouveau live : Nom et date) Le look (thème, puis couleurs, police, logo en plis), Finitions (musiques, textes), (sinon : Quand).
    Chaque choix est envoyé à la régie (message « apercu ») ; « Appliquer au live » l'enregistre pour de bon. */
 'use strict';
 (() => {
@@ -18,27 +18,23 @@
   };
 
   const blocDe = sel => { const el = $(sel); return el ? el.closest('.bloc') || el : null; };
-  const ETAPES = [
-    { id: 'theme', nom: 'Thème', titre: 'Choisis un thème', aide: 'Le décor de ton live. Tu peux tout ajuster dans les étapes suivantes.',
-      els: ['#mes-styles', '#materiel-3d', '#cats-themes', '#galerie', '#opt-obs'] },
-    { id: 'couleurs', nom: 'Couleurs', titre: 'Tes couleurs', aide: 'L\'accent colore les titres et les noms ; le fond et le halo font l\'ambiance.',
-      els: [blocDe('.nuancier')] },
-    { id: 'police', nom: 'Police', titre: 'La police des titres', aide: 'Elle sert pour le titre, l\'intro et l\'outro.',
-      els: [blocDe('#polices')] },
-    { id: 'logo', nom: 'Logo et fond', titre: 'Ton logo et ton fond', aide: 'Facultatif. Un PNG transparent rend mieux pour le logo.',
-      els: [blocDe('.depots')] },
-    { id: 'musiques', nom: 'Musiques', titre: 'Les musiques', aide: 'Facultatif. Elles jouent pendant l\'intro et l\'outro.',
-      els: [blocDe('.sons')] },
-    { id: 'textes', nom: 'Textes', titre: 'Les textes de l\'intro et de l\'outro', aide: 'Chaque texte se change ici. Laisse une case vide pour garder le texte proposé.',
-      els: [] },
-    { id: 'titre', nom: 'Quand', titre: 'Quand a lieu le live ?', aide: 'Facultatif : programmer prévient tes invités.',
-      els: ['.quand', '#f-limite'] }
-  ];
-
-  // un live tout neuf : on commence par son nom (le reste peut attendre), et on peut terminer à tout moment
+  /* Trois étapes seulement. Le thème d'abord ; couleurs, police et logo sont des plis juste dessous
+     (l'aperçu de la régie change à chaque clic). « ids » : les anciens noms d'étapes que la régie peut demander. */
   const nouveau = !!brouillon.choixVisuel;
-  if (nouveau) ETAPES.unshift({ id: 'depart', nom: 'Nom', titre: 'Comment s\'appelle ton live ?', aide: 'Ton public le voit dans l\'intro et en bas de l\'écran. Tu pourras le changer quand tu veux.', els: [] });
-  const iTheme = ETAPES.findIndex(e => e.id === 'theme');
+  const LOOK = { id: 'look', ids: ['theme', 'couleurs', 'police', 'logo'], nom: 'Le look', titre: 'Le look de ton live', aide: 'Choisis un thème : l\'aperçu change tout de suite. Ajuste ensuite si tu veux.',
+    parts: [{ els: ['#mes-styles', '#materiel-3d', '#cats-themes', '#galerie'] },
+      { pli: 'Couleurs', els: [blocDe('.nuancier')] },
+      { pli: 'Police des titres', els: [blocDe('#polices')] },
+      { pli: 'Logo et image de fond', els: [blocDe('.depots')] },
+      { els: ['#opt-obs'] }] };
+  const FINITIONS = { id: 'finitions', ids: ['musiques', 'textes'], nom: 'Finitions', titre: 'Musiques et textes', aide: 'Facultatif. Tout est déjà prêt : change seulement ce que tu veux.',
+    parts: [{ sous: 'Musiques de l\'intro et de l\'outro', els: [blocDe('.sons')] }, { sous: 'Textes', els: [], textes: true }] };
+  const QUAND = { id: 'titre', ids: ['titre', 'quand'], nom: 'Quand', titre: 'Quand a lieu le live ?', aide: 'Facultatif : programmer prévient tes invités.', parts: [{ els: ['.quand', '#f-limite'] }] };
+  // un live tout neuf : son nom et sa date d'abord (le reste peut attendre), et on peut terminer à tout moment
+  const DEPART = { id: 'depart', ids: ['depart', 'titre', 'quand'], nom: 'Nom et date', titre: 'Comment s\'appelle ton live ?', aide: 'Ton public le voit dans l\'intro et en bas de l\'écran. Tu pourras le changer quand tu veux.',
+    parts: [{ nomLive: true, els: [] }, { sous: 'Quand ?', els: ['.quand', '#f-limite'] }] };
+  const ETAPES = nouveau ? [DEPART, LOOK, FINITIONS] : [LOOK, FINITIONS, QUAND];
+  const iTheme = ETAPES.indexOf(LOOK);
 
   const corps = $('.creation-choix .choix-corps');
   const tete = document.createElement('div');
@@ -49,18 +45,26 @@
   nav.setAttribute('aria-label', 'Les étapes du visuel');
   const panes = document.createElement('div');
   panes.className = 'vp-panes';
+  const places = {};   // où poser le champ du nom et les textes
 
   ETAPES.forEach((e, i) => {
     nav.insertAdjacentHTML('beforeend', `<li><button type="button" data-etape="${i}" title="${esc(e.titre)}"><span class="vp-num">${i + 1}</span><span class="vp-nom">${esc(e.nom)}</span></button></li>`);
     const p = document.createElement('section');
     p.className = 'vp-pane'; p.dataset.etape = i; p.hidden = true;
     p.innerHTML = `<h2>${esc(e.titre)}</h2><p class="aide">${esc(e.aide)}</p>`;
-    e.els.forEach(x => { const el = typeof x === 'string' ? $(x) : x; if (el) p.appendChild(el); });
+    e.parts.forEach(part => {
+      let boite = p;
+      if (part.pli) { boite = document.createElement('details'); boite.className = 'vp-pli'; boite.innerHTML = `<summary>${esc(part.pli)}</summary>`; p.appendChild(boite); }
+      else if (part.sous) p.insertAdjacentHTML('beforeend', `<h3 class="vp-sous">${esc(part.sous)}</h3>`);
+      if (part.nomLive) { const d = document.createElement('div'); p.appendChild(d); places.nom = d; }
+      if (part.textes) { const d = document.createElement('div'); p.appendChild(d); places.textes = d; }
+      part.els.forEach(x => { const el = typeof x === 'string' ? $(x) : x; if (el) boite.appendChild(el); });
+    });
     panes.appendChild(p);
   });
   /* L'étape « Nom » d'un nouveau live : un grand champ et quelques idées */
   if (nouveau) {
-    const pane = panes.querySelector('.vp-pane[data-etape="0"]');
+    const pane = places.nom;
     const defaut = brouillon.titre === 'Mon live';
     pane.insertAdjacentHTML('beforeend', `<input type="text" class="vp-nom-live" maxlength="70" placeholder="Ex. Spécial Marvel : on refait la phase 6" aria-label="Le nom de ton live">
       <p class="vp-idees-titre">Besoin d'une idée ?</p>
@@ -75,7 +79,7 @@
   }
   /* L'étape « Textes » : un champ par texte affiché, rangé comme à l'écran (intro, puis outro) */
   const champTexte = (k, label) => `<label class="vp-champ"><span>${esc(label)}</span><input type="text" maxlength="60" data-texte="${k}" placeholder="${esc(TEXTES_DEFAUT[k])}"></label>`;
-  const paneTextes = panes.querySelector('.vp-pane[data-etape="' + ETAPES.findIndex(e => e.id === 'textes') + '"]');
+  const paneTextes = places.textes;
   paneTextes.insertAdjacentHTML('beforeend', `
     <div class="vp-groupe"><h3>Intro</h3>
       ${champTexte('introSur', 'Au-dessus du titre')}
@@ -160,7 +164,7 @@
     prec.style.visibility = cur === 0 ? 'hidden' : '';
     const dernier = cur === ETAPES.length - 1;
     suiv.hidden = dernier;
-    suiv.textContent = dernier ? '' : `Suivant : ${ETAPES[cur + 1].nom}`;
+    suiv.innerHTML = dernier ? '' : `Suivant<span class="vp-suiv-nom"> : ${esc(ETAPES[cur + 1].nom)}</span>`;
     // on peut finir à n'importe quelle étape : « Terminer » discret, puis le vrai bouton à la dernière
     creer.classList.toggle('primaire', dernier); creer.classList.toggle('vp-terminer', !dernier);
     creer.textContent = dernier ? (nouveau ? 'C\'est parti' : 'Appliquer au live') : 'Terminer';
@@ -173,7 +177,7 @@
   suiv.onclick = () => aller(cur + 1);
   tete.querySelector('.vp-fermer').onclick = () => parler({ obsebVisuel: 'fermer' });
   // la régie peut demander une étape précise (ex. clic sur le titre du live → « Titre et date »)
-  const demande = ETAPES.findIndex(e => e.id === Q.get('etape'));
+  const demande = ETAPES.findIndex(e => e.id === Q.get('etape') || e.ids.includes(Q.get('etape')));
   aller(demande >= 0 ? demande : 0);
 
   // le test du matériel pour les visuels 3D se faisait au clic sur « Nouveau live » : on le fait ici
