@@ -9,6 +9,7 @@
   const lireJson = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } };
   const ecrireJson = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
   const t = s => (window.typoFr ? typoFr(s) : s);
+  const toast = window.toast || (m => alert(m));
 
   /* compression (le lien reste court) puis base64 sans caractères spéciaux */
   async function emballer(obj) {
@@ -32,7 +33,7 @@
 
   /* ---- côté animateur : créer le lien d'équipe ---- */
   function ouvrirPartage() {
-    const lives = lireJson(CLE_LIVES, []).filter(x => x && x.session && x.cle);
+    const lives = lireJson(CLE_LIVES, []).filter(x => x && x.session && x.cle && (!document.body.classList.contains('page-ent') || x.session.ent));   // sur la page Entreprises : les événements seulement
     const styles = lireJson(CLE_STYLES, []).filter(x => x && x.id && x.theme);
     const eq = lireJson(CLE_EQUIPE, {});
     dlg.innerHTML = `<form method="dialog" class="equipe-boite">
@@ -40,7 +41,7 @@
       <h2>Mon équipe</h2>
       <p>${t(`Travaille à plusieurs : jusqu'à ${MAX_EQUIPE} personnes, toi compris. Tes coéquipiers retrouvent tes lives et tes styles de marque (couleurs, police, logo) dans leur propre studio.`)}</p>
       <ul class="equipe-contenu">
-        <li><b>${lives.length}</b> ${lives.length > 1 ? 'lives' : 'live'}</li>
+        <li><b>${lives.length}</b> ${document.body.classList.contains('page-ent') ? (lives.length > 1 ? 'événements' : 'événement') : (lives.length > 1 ? 'lives' : 'live')}</li>
         <li><b>${styles.length}</b> ${t(styles.length > 1 ? 'styles de marque' : 'style de marque')}</li>
       </ul>
       ${eq.de ? `<p class="equipe-note">${t(`Tu fais partie de l'équipe de ${esc(eq.de)}.`)}</p>` : ''}
@@ -56,7 +57,7 @@
       const b = ev.currentTarget; b.disabled = true;
       try {
         const de = (typeof identiteRetenue === 'function' && identiteRetenue().hote) || (lives[0] && lives[0].session.hote) || '';
-        const lien = `${location.href.replace(/[#?].*$/, '')}#equipe=${await emballer({ v: 1, de, lives: lives.map(x => ({ session: x.session, cle: x.cle })), styles })}`;
+        const lien = `${location.href.replace(/[#?].*$/, '')}#equipe=${await emballer({ v: 1, de, lives: lives.map(x => ({ session: x.session, cle: x.cle })), styles, acces: document.body.classList.contains('page-ent') && typeof accesEntreprise === 'function' ? (accesEntreprise() || {}).code : undefined })}`;
         try { await navigator.clipboard.writeText(lien); toast('Lien d’équipe copié'); }
         catch (e) { prompt('Copie ce lien pour ton équipe :', lien); }
       } catch (e) { toast('Ce navigateur ne sait pas créer le lien : essaie avec Chrome, Edge ou Firefox à jour'); }
@@ -92,11 +93,13 @@
       const mesStyles = lireJson(CLE_STYLES, []);
       for (const s of styles) { const i = mesStyles.findIndex(y => y && y.id === s.id); if (i >= 0) mesStyles[i] = s; else mesStyles.push(s); }
       const ok = ecrireJson(CLE_LIVES, mesLives) && ecrireJson(CLE_STYLES, mesStyles);
+      // MESA Entreprises : le coéquipier reçoit aussi l'accès (le même code, vérifié)
+      if (typeof d.acces === 'string' && typeof verifierCodeEntreprise === 'function') verifierCodeEntreprise(d.acces).then(v => { if (v) ecrireJson(CLE_ACCES_ENT, v); });
       ecrireJson(CLE_EQUIPE, { de, depuis: Date.now() });
       fermer();
       if (!ok) return toast('Plus de place dans ce navigateur pour tout ajouter');
       toast('Lives et styles de l’équipe ajoutés');
-      setTimeout(() => location.reload(), 700);
+      setTimeout(() => location.reload(), 900);
     });
     dlg.showModal();
   }).catch(() => toast('Ce lien d’équipe est abîmé : redemande-le'));

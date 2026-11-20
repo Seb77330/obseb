@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Codes MESA Entreprises</title>
+<style>
+  body { margin: 0; background: #f6f7f9; color: #0f172a; font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 20px; display: grid; gap: 16px; }
+  h1 { margin: 0; font-size: 26px; }
+  p { margin: 0; color: #5b6576; }
+  label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+  input, select, textarea { font: inherit; padding: 10px 12px; border: 1px solid #e3e6eb; border-radius: 10px; background: #fff; color: inherit; }
+  textarea { font: 13px/1.4 ui-monospace, monospace; resize: vertical; }
+  button { font: 600 15px system-ui, sans-serif; padding: 11px 18px; border-radius: 10px; border: 1px solid #1e40af; background: #1e40af; color: #fff; cursor: pointer; justify-self: start; }
+  button.doux { background: #fff; color: #0f172a; border-color: #e3e6eb; }
+  .carte { background: #fff; border: 1px solid #e3e6eb; border-radius: 14px; padding: 20px; display: grid; gap: 12px; }
+  .ok { color: #15803d; font-weight: 600; } .ko { color: #b91c1c; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Codes d'accès MESA Entreprises</h1>
+  <p>Réservé à Sebastian. Ta clé privée reste dans ce navigateur : elle n'est jamais envoyée nulle part, et sans elle personne ne peut fabriquer de code.</p>
+  <section class="carte" id="bloc-cle">
+    <label>Ta clé privée (une seule fois)<textarea id="cle" rows="4" placeholder='Colle ici le contenu du fichier cle-codes-entreprise.json'></textarea></label>
+    <button type="button" id="garder">Garder la clé dans ce navigateur</button>
+    <p id="cle-etat"></p>
+  </section>
+  <section class="carte">
+    <label>Nom de l'entreprise<input id="nom" maxlength="60" placeholder="Ex. : Agence Dupont"></label>
+    <label>Durée de l'accès
+      <select id="duree"><option value="beta">Jusqu'à la fin de la bêta (1er janvier 2027)</option><option value="30">1 mois</option><option value="90">3 mois</option><option value="365">1 an</option></select>
+    </label>
+    <button type="button" id="creer">Créer le code</button>
+    <p id="retour"></p>
+    <label>Lien à envoyer à l'entreprise<textarea id="lien" rows="3" readonly></textarea></label>
+    <button type="button" class="doux" id="copier">Copier le lien</button>
+  </section>
+</main>
+<script src="codes.js"></script>
+</body>
+</html>

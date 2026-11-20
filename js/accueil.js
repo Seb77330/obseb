@@ -380,6 +380,7 @@ $('#btn-formules').onclick = () => { if ($('#vue-liste').hidden) montrerVue('lis
 $$('#formules [data-formule]').forEach(b => b.onclick = () => {
   if (b.dataset.formule === 'gratuit') { $('#btn-nouveau').click(); return; }
   // le paiement n'est pas encore branché : on garde le contact des gens intéressés (page Contact, sans serveur)
+  if (b.dataset.formule === 'entreprise') { location.href = 'entreprises.html'; return; }   // MESA Entreprises a sa propre page
   const nom = { essentiel: 'Essentiel', pro: 'Pro', entreprise: 'Entreprises' }[b.dataset.formule] || '';
   const msg = b.dataset.formule === 'entreprise' ? 'Bonjour, l\'offre Entreprises m\'intéresse. Mon équipe : ' : `Préviens-moi quand la formule ${nom} ouvre, s'il te plaît.`;
   location.href = `contact.html?sujet=${b.dataset.formule === 'entreprise' ? 'Entreprises' : 'Formules'}&msg=${encodeURIComponent(msg)}`;

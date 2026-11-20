@@ -3,6 +3,8 @@
    Les questions arrivent dans le chat de la régie (pastille « Q ») : un clic, et elles passent à l'écran comme un message du chat. */
 'use strict';
 (function () {
+  const bloc = document.getElementById('pli-webinaire');
+  if (!session.ent) { if (bloc) bloc.remove(); return; }   // réservé à MESA Entreprises
   const RELAIS = 'https://ntfy.sh';
   const CLE_WEB = 'studioSeb:webinaire:' + session.room;
   let web = {};

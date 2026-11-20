@@ -82,7 +82,7 @@ $('#chat-test').onclick = () => {
 
 /* Les quatre façons de mettre un message en avant */
 const STYLES_CHAT = ['bulle', 'depeche', 'affiche', 'postit', 'billet', 'clap', 'neon', 'scope', 'notif', 'sms', 'verre', 'terminal', 'post', 'karaoke', 'pixel'];
-if (!STYLES_CHAT.includes(etat.chatStyle)) etat.chatStyle = 'bulle';
+if (!STYLES_CHAT.includes(etat.chatStyle) || (session.ent && !['verre', 'depeche'].includes(etat.chatStyle))) etat.chatStyle = session.ent ? 'verre' : 'bulle';   // Entreprises : 2 styles sobres
 function majStylesChat() { $$('#chat-styles button').forEach(b => b.classList.toggle('actif', b.dataset.cstyle === etat.chatStyle)); }
 $$('#chat-styles button').forEach(b => b.onclick = () => { etat.chatStyle = b.dataset.cstyle; majStylesChat(); envoyer(); });
 majStylesChat();

@@ -1211,15 +1211,42 @@ const fichiers = (() => {
 /* ----- Ce que chaque formule permet.
    « beta » : la formule de Sebastian et des bêta-testeurs, tout au maximum. Tant que les comptes n'existent pas,
    c'est celle de tout le monde (demande de Sebastian, 17/11). ----- */
-/* antenne : personnes à l'écran en même temps, toi compris ; heures : heures de live par mois (affichées, pas encore bloquantes) */
+/* antenne : personnes à l'écran en même temps, toi compris ; heures : heures de live par mois (affichées, pas encore bloquantes).
+   Le webinaire et l'équipe sont réservés à MESA Entreprises (un accès par code, voir plus bas). */
 const LIMITES = {
-  beta: { musiques: 50, antenne: 18, heures: 0 }, gratuit: { musiques: 3, antenne: 6, heures: 15 }, essentiel: { musiques: 10, antenne: 10, heures: 25 },
-  pro: { musiques: 50, antenne: 12, heures: 40 }, regie: { musiques: 50, antenne: 18, heures: 0 }, entreprise: { musiques: 50, antenne: 18, heures: 80 }
+  beta: { musiques: 50, antenne: 12, heures: 0 }, gratuit: { musiques: 3, antenne: 6, heures: 15 }, essentiel: { musiques: 10, antenne: 10, heures: 25 },
+  pro: { musiques: 50, antenne: 12, heures: 40 }, regie: { musiques: 50, antenne: 12, heures: 0 },
+  entreprise: { musiques: 50, antenne: 18, heures: 80, webinaire: true, equipe: true }
 };
+/* ---------- MESA Entreprises : l'accès par code ----------
+   Un code = des infos (nom de l'entreprise, date de fin) signées avec la clé privée de MESA, que seul Sebastian garde
+   (outils/codes.html). Le site vérifie la signature avec la clé publique ci-dessous : personne ne peut fabriquer de code. */
+const CLE_PUBLIQUE_CODES = 'BBFDMOCzcqyipxB7yOYOr_3bZdK3vbqaXq40ArHr2m0CNEfNDlGFfolVfhRLScdMX_NtZXtBT4iBlPyLqk64sMo';
+const CLE_ACCES_ENT = 'studioSeb:entreprise';
+const THEMES_ENTREPRISE = ['studio', 'clair', 'minimal'];
+function b64uVersOctets(t) { const b = atob(String(t).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function verifierCodeEntreprise(code) {
+  try {
+    const [charge, sig] = String(code || '').trim().split('.');
+    if (!charge || !sig) return null;
+    const cle = await crypto.subtle.importKey('raw', b64uVersOctets(CLE_PUBLIQUE_CODES), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+    const ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, cle, b64uVersOctets(sig), new TextEncoder().encode(charge));
+    if (!ok) return null;
+    const d = JSON.parse(new TextDecoder().decode(b64uVersOctets(charge)));
+    if (!d || typeof d.n !== 'string' || !(d.f > Date.now())) return null;
+    return { nom: d.n.slice(0, 60), fin: d.f, code: String(code).trim() };
+  } catch (e) { return null; }
+}
+function accesEntreprise() {
+  try { const a = JSON.parse(localStorage.getItem(CLE_ACCES_ENT) || 'null'); return a && a.code && a.fin > Date.now() ? a : null; } catch (e) { return null; }
+}
+/* revérifie l'accès gardé à chaque page (un accès modifié à la main est retiré) */
+if (typeof crypto !== 'undefined' && crypto.subtle) { const a = accesEntreprise(); if (a) verifierCodeEntreprise(a.code).then(v => { if (!v) try { localStorage.removeItem(CLE_ACCES_ENT); } catch (e) { /* rien */ } }); }
 /* Pendant la bêta (jusqu'au 1er janvier 2027), tout le monde a tout, quelle que soit la formule choisie ou affichée */
 const FIN_BETA = Date.UTC(2027, 0, 1);
 function enBeta() { return Date.now() < FIN_BETA; }
 function formuleActuelle() {
+  if (accesEntreprise()) return 'entreprise';
   if (enBeta()) return 'beta';
   try { const f = localStorage.getItem('studioSeb:formule'); return LIMITES[f] ? f : 'beta'; } catch (e) { return 'beta'; }
 }
