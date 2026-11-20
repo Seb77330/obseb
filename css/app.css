@@ -196,3 +196,9 @@ body.zoom.embed { zoom: 1; }
 .rec-cams input { margin-top: 3px; }
 .rec-cams small { display: block; margin: 2px 0 0; }
 .enr-invite { color: #e55; font-weight: 600; }
+
+/* Typographie : pas de mot seul sur la dernière ligne, titres équilibrés */
+p, li, dd, figcaption, .aide { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+/* petits téléphones : le bouton Affichage garde son icône seule (la barre ne dépasse plus de l'écran) */
+@media (max-width: 420px) { .barre .bouton-affichage > button > span { display: none; } .barre > .etiquette { display: none; } }
