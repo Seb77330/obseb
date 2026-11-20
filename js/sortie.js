@@ -331,7 +331,7 @@ function appliquerEtat(st) {
   // ce que la régie a choisi d'enlever de l'écran (nom des personnes, titre, logo, « En direct », message)
   const masque = st.masquer || {};
   for (const k of ['noms', 'titre', 'logo', 'direct', 'message']) document.body.classList.toggle('sans-' + k, !!masque[k]);
-  const bandeauVide = masque.titre && masque.logo && masque.direct && (masque.message || !sous);
+  const bandeauVide = masque.bandeau || (masque.titre && masque.logo && masque.direct && (masque.message || !sous));
   document.body.classList.toggle('sans-bandeau', !!bandeauVide);
   $('#bandeau').classList.toggle('cachee', scene !== 'live' || !!bandeauVide);
   const bt = $('#bandeau-titre');

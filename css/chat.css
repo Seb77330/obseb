@@ -249,3 +249,7 @@ body.vertical[data-chat-style="karaoke"] .cb-boite { border-radius: 40px; }
 /* les nouveaux styles qui partent du coin bas droit changent de côté en mode Réaction et Jeu, comme les autres */
 body.chat-flip:not(.vertical):is([data-chat-style="sms"], [data-chat-style="verre"], [data-chat-style="terminal"], [data-chat-style="post"], [data-chat-style="pixel"]) #chat-bulle { right: auto; left: 70px; }
 body.chat-on[data-chat-style="pixel"] #bandeau { right: 1010px; }
+
+/* sans bandeau en bas : le message prend sa place, centré et plus bas (sortie.js : body.sans-bandeau) */
+body.sans-bandeau:not(.vertical):not(.chat-flip):is([data-chat-style="bulle"], [data-chat-style="postit"], [data-chat-style="billet"], [data-chat-style="clap"], [data-chat-style="neon"], [data-chat-style="sms"], [data-chat-style="verre"], [data-chat-style="terminal"], [data-chat-style="post"], [data-chat-style="pixel"]) #chat-bulle { left: 0; right: 0; margin-inline: auto; bottom: 44px; }
+body.sans-bandeau:not(.vertical)[data-chat-style="bulle"] #chat-bulle, body.sans-bandeau:not(.vertical)[data-chat-style="pixel"] #chat-bulle { bottom: 60px; }
