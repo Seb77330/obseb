@@ -256,3 +256,18 @@ body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="
 .replay-boutons[hidden] { display: none; }
 .replay-boutons .btn-bandeau.actif { background: var(--ui-accent); color: var(--ui-sur-accent); border-color: var(--ui-accent); }
 #cam-mode button { white-space: nowrap; }
+
+/* ----- Quiz : la partie (20/11) — un seul gros bouton qui avance ----- */
+.qz-partie { border: 1px solid var(--ui-line); border-radius: 14px; padding: 14px; margin: 0 0 18px; background: color-mix(in srgb, var(--ui-panel) 60%, transparent); }
+.qz-partie.actif { border-color: color-mix(in srgb, var(--ui-accent) 55%, var(--ui-line)); }
+.qz-p-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.qz-p-tete b { font-size: 15px; }
+.qz-partie #qz-statut { margin: 0 0 12px; line-height: 1.5; }
+.qz-p-grand { width: 100%; padding: 13px 16px; font-size: 15px; font-weight: 700; border-radius: 12px; }
+.qz-p-plus { margin-top: 10px; gap: 6px; flex-wrap: wrap; }
+.qz-p-plus button.actif { border-color: var(--ui-accent); color: var(--ui-text); background: color-mix(in srgb, var(--ui-accent) 14%, transparent); }
+.qz-p-reglages { margin-top: 12px; font-size: 13px; }
+.qz-p-reglages summary { cursor: pointer; color: var(--ui-muted); }
+.qz-p-reglages .ligne-boutons { margin: 10px 0 8px; }
+.qz-partie .qzp-statut { margin: -4px 0 10px; }
+.qz-liste-titre .aide { text-transform: none; letter-spacing: 0; font-weight: 400; }

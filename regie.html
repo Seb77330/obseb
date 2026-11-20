@@ -641,7 +641,7 @@
   }
 </style>
 <link rel="stylesheet" href="css/modes.css?v=dd2ee5f7">
-<link rel="stylesheet" href="css/regie-leger.css?v=6a3264c8">
+<link rel="stylesheet" href="css/regie-leger.css?v=c5310906">
 <link rel="stylesheet" href="css/regie-entreprise.css?v=bba12519">
 <link rel="stylesheet" href="css/faux.css?v=e2d3aac6">
 <link rel="manifest" href="manifest.webmanifest">
@@ -850,31 +850,35 @@
       </section>
       <section class="onglet" data-onglet="quiz" hidden>
         <button class="lien-bouton" data-vue-invite style="margin:0 0 10px">Essayer comme un invité</button>
-        <div class="qz-direct">
-          <div class="aide" id="qz-statut">Aucune question à l'écran</div>
-          <div class="ligne-boutons">
-            <button class="petit" id="qz-reveler" title="Révéler la bonne réponse">Révéler</button>
-            <button class="petit" id="qz-fermer" title="Retirer la question de l'écran">Retirer</button>
-            <button class="petit" id="qz-scores" title="Afficher ou masquer le classement">Classement</button>
-            <button class="petit" id="qz-reveler-public" hidden title="Affiche à l'écran le pourcentage de bonnes réponses du chat et le nombre de votes">Révéler le chat</button>
+        <div class="qz-partie" id="qz-partie">
+          <div class="qz-p-tete">
+            <b id="qz-p-titre">Partie de quiz</b>
+            <button class="petit" id="qz-p-arreter" hidden>Arrêter la partie</button>
           </div>
-        </div>
-
-        <div class="qzp-bloc">
-          <label class="qzp-titre"><input type="checkbox" id="qzp-actif"> <b>Le public joue aussi</b></label>
-          <p class="aide">Un code QR « Jouer avec nous » : tes spectateurs répondent depuis leur téléphone, sans donner leur nom.</p>
-          <div id="qzp-reglages" hidden>
+          <p class="aide" id="qz-statut">Lance la partie : le code QR s’affiche à l’écran, ton public le scanne et joue depuis son téléphone. Tu poses la 1<sup>re</sup> question quand tout le monde est prêt.</p>
+          <div class="aide qzp-statut" id="qzp-statut"></div>
+          <button class="primaire qz-p-grand" id="qz-p-suivant">Lancer la partie</button>
+          <div class="ligne-boutons qz-p-plus" id="qz-p-plus" hidden>
+            <button class="petit" id="qz-p-qr" title="Le code QR « Joue avec nous » à l’écran">Code QR : affiché</button>
+            <button class="petit" id="qz-scores" title="Afficher ou masquer le classement à l’écran">Classement à l’écran</button>
+            <button class="petit" id="qz-fermer" title="Enlever la question de l’écran">Enlever la question</button>
+            <button class="petit" id="qz-reveler" hidden>Montrer la réponse</button>
+            <button class="petit" id="qz-reveler-public" hidden>Révéler le chat</button>
+          </div>
+          <details class="qz-p-reglages" id="qzp-reglages">
+            <summary>Lien du jeu et réglages</summary>
             <div class="ligne-boutons">
-              <button class="petit primaire" id="qzp-qr">Afficher le QR</button>
-              <button class="petit" id="qzp-copier" title="Pour le coller dans le chat de ton live">Copier le lien</button>
-              <button class="petit" id="qzp-ouvrir" title="Ouvre la page que voient tes spectateurs">Essayer</button>
+              <button class="petit" id="qzp-copier" title="Pour le coller dans le chat de ton live">Copier le lien du jeu</button>
+              <button class="petit" id="qzp-ouvrir" title="Ouvre la page que voient tes spectateurs">Voir comme un spectateur</button>
+              <button class="petit" id="qzp-qr" hidden></button>
             </div>
-            <label class="aide qzp-marge" title="Le direct arrive chez les spectateurs avec quelques secondes de retard (YouTube : 5 à 20 s). Le chat garde ce temps en plus pour répondre.">Temps en plus pour le chat
+            <label class="aide qzp-marge" title="Le direct arrive chez les spectateurs avec quelques secondes de retard (YouTube : 5 à 20 s).">Temps en plus pour le public (le direct leur arrive en retard) :
               <select id="qzp-marge"><option value="0">aucun</option><option value="5">5 s</option><option value="10">10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label>
-            <div class="aide qzp-statut" id="qzp-statut"></div>
-          </div>
+            <input type="checkbox" id="qzp-actif" hidden>
+          </details>
         </div>
 
+        <h3 class="sous-titre qz-liste-titre">Tes questions <span class="aide">(jouées dans l’ordre)</span></h3>
         <div class="qz-cats" id="qz-cats"></div>
         <div id="qz-liste"></div>
 
@@ -889,7 +893,7 @@
           </div>
           <p class="aide" style="margin:2px 0 8px">Coche la bonne réponse.</p>
           <div class="qz-ligne">
-            <label class="aide">Catégorie<input type="text" id="qz-cat" list="qz-cats-liste" placeholder="Ex. Cinéma" maxlength="30"></label>
+            <label class="aide">Thème (pour ranger tes questions)<input type="text" id="qz-cat" list="qz-cats-liste" placeholder="Ex. Cinéma" maxlength="30"></label>
             <datalist id="qz-cats-liste"></datalist>
             <label class="aide">Temps<select id="qz-duree"><option value="10">10 s</option><option value="15" selected>15 s</option><option value="20">20 s</option><option value="30">30 s</option><option value="45">45 s</option><option value="60">1 min</option></select></label>
           </div>
@@ -1198,10 +1202,10 @@
 <script src="js/regie-sources.js?v=c9bbacef"></script>
 <script src="js/regie-modes.js?v=19899f78"></script>
 <script src="js/regie-musique.js?v=56892513"></script>
-<script src="js/regie-quiz.js?v=500e57ff"></script>
+<script src="js/regie-quiz.js?v=f65017f4"></script>
 <script src="js/regie-essai.js?v=cc78e443"></script>
 <script src="js/regie-qr.js?v=2cc8d871"></script>
-<script src="js/regie-public.js?v=05e42570"></script>
+<script src="js/regie-public.js?v=1e06e4f0"></script>
 <script src="js/regie-chat.js?v=4c6bd38c"></script>
 <script src="js/regie-webinaire.js?v=8f383180"></script>
 <script src="js/regie-comptes.js?v=23f74648"></script>

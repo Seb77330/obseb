@@ -5,7 +5,7 @@
 
 const MAX_QUESTIONS = 50;
 const CLE_BANQUE = 'studioSeb:quiz';
-etat.quiz = Object.assign({ active: null, scores: {}, afficherScores: false, style: 'theme', dispo: 'centre' }, etat.quiz || {});
+etat.quiz = Object.assign({ active: null, scores: {}, afficherScores: false, style: 'theme', dispo: 'centre', partie: false, dernier: null }, etat.quiz || {});
 
 /* ----- Banque de questions (partagée entre les lives) ----- */
 let banque = [];
@@ -69,14 +69,14 @@ function afficherQuiz() {
   const liste = banque.filter(q => !filtreCat || (q.cat || 'Général') === filtreCat);
   box.innerHTML = liste.length ? '' : '<div class="vide">Aucune question pour l\'instant.</div>';
   if (!banque.length) $('#qz-form').open = true;
-  liste.forEach(q => {
+  liste.forEach((q, i) => {
     const enCours = qz.active && qz.active.qid === q.id;
     const el = document.createElement('div');
     el.className = 'elt' + (enCours ? ' on' : '');
     el.innerHTML = `${q.imgId || q.imgUrl ? '<img alt="">' : ''}<div class="txt"><b></b><small></small></div>
-      <button class="petit ${enCours ? '' : 'primaire'}">${enCours ? 'À l\'écran' : 'Lancer'}</button>
+      <button class="petit" title="Poser cette question maintenant">${enCours ? 'À l\'écran' : 'Poser'}</button>
       <button class="petit" title="Supprimer la question">✕</button>`;
-    el.querySelector('b').textContent = q.q;
+    el.querySelector('b').textContent = `${i + 1}. ${q.q}`;
     el.querySelector('small').textContent = `${q.cat || 'Général'} · réponse ${'ABCD'[q.bonne]} · ${q.duree === 60 ? '1 min' : q.duree + ' s'}`;
     const img = el.querySelector('img');
     if (img) {
@@ -105,20 +105,79 @@ async function lancerQuestion(q) {
   reponsesQuiz.set(q.id, new Map());
   etat.quiz.active = { qid: q.id, q: q.q, choix: q.choix, duree: q.duree, debut: Date.now(), revele: false, bonne: null, resultats: [], img: img || null };
   etat.quiz.afficherScores = false;
-  $('#qz-scores').textContent = 'Classement';
+  etat.quiz.dernier = q.id;
   if (typeof pubQuestion === 'function') pubQuestion(etat.quiz.active);     // le public joue aussi (regie-public.js)
   envoyer(); afficherQuiz();
   toast('Question à l\'écran');
 }
 
-function majStatutQuiz() {
-  const a = etat.quiz.active;
-  const st = $('#qz-statut');
-  $('.qz-direct').classList.toggle('actif', !!a);
-  if (!a) { st.textContent = 'Aucune question à l\'écran'; return; }
-  const n = (reponsesQuiz.get(a.qid) || new Map()).size, total = Math.max(n, invitesPresents().length);
-  st.textContent = a.revele ? `À l'écran : « ${a.q} » · réponse révélée` : `À l'écran : « ${a.q} » · ${n}/${total} ont répondu`;
+/* ----- La partie : un seul gros bouton qui avance (lancer, question, réponse, question suivante, classement) ----- */
+const listeJeu = () => banque.filter(q => !filtreCat || (q.cat || 'Général') === filtreCat);
+function questionSuivante() {
+  const l = listeJeu();
+  const i = l.findIndex(q => q.id === etat.quiz.dernier);
+  return l[i + 1] || null;
 }
+function majStatutQuiz() {
+  const a = etat.quiz.active, enJeu = !!etat.quiz.partie;
+  const st = $('#qz-statut'), btn = $('#qz-p-suivant');
+  const l = listeJeu(), num = a ? l.findIndex(q => q.id === a.qid) + 1 : 0;
+  $('#qz-partie').classList.toggle('actif', enJeu);
+  $('#qz-p-arreter').hidden = !enJeu;
+  $('#qz-p-plus').hidden = !enJeu;
+  $('#qz-p-titre').textContent = !enJeu ? 'Partie de quiz' : a && num ? `Question ${num} sur ${l.length}` : 'Partie en cours';
+  if (!enJeu) {
+    st.innerHTML = 'Lance la partie\u202f: le code QR s\u2019affiche à l\u2019écran, ton public le scanne et joue depuis son téléphone. Tu poses la 1<sup>re</sup> question quand tout le monde est prêt.';
+    btn.textContent = 'Lancer la partie'; btn.disabled = !banque.length;
+    if (!banque.length) st.textContent = 'Ajoute d\u2019abord une question (plus bas), puis lance la partie.';
+  } else if (!a) {
+    const suiv = questionSuivante();
+    st.textContent = suiv ? (etat.quiz.dernier ? 'Prêt pour la suite\u202f: la question part en même temps à l\u2019écran et sur les téléphones.' : (typeof qrJouerVisible === 'function' && qrJouerVisible() ? 'Le code QR est à l\u2019écran. Laisse à ton public le temps de le scanner, puis pose la 1re question.' : 'Le code QR est caché. Ton public peut aussi rejoindre avec le lien du jeu (dans les réglages).')) : 'Plus de questions\u202f: montre le classement, puis arrête la partie.';
+    btn.textContent = suiv ? (etat.quiz.dernier ? 'Question suivante' : 'Poser la 1re question') : (etat.quiz.afficherScores ? 'Arrêter la partie' : 'Montrer le classement');
+    btn.disabled = false;
+  } else {
+    const n = (reponsesQuiz.get(a.qid) || new Map()).size, total = Math.max(n, invitesPresents().length);
+    const reste = Math.max(0, Math.ceil((a.debut + a.duree * 1000 - Date.now()) / 1000));
+    st.textContent = a.revele ? `«\u202f${a.q}\u202f» · réponse montrée` : `«\u202f${a.q}\u202f» · ${reste ? 'encore ' + reste + '\u202fs' : 'temps écoulé'} · invités\u202f: ${n}/${total}`;
+    btn.textContent = !a.revele ? 'Montrer la réponse' : questionSuivante() ? 'Question suivante' : 'Montrer le classement';
+    btn.disabled = false;
+  }
+  const qrOn = typeof qrJouerVisible === 'function' && qrJouerVisible();
+  $('#qz-p-qr').textContent = qrOn ? 'Code QR\u202f: affiché' : 'Code QR\u202f: caché';
+  $('#qz-p-qr').classList.toggle('actif', qrOn);
+  $('#qz-scores').classList.toggle('actif', !!etat.quiz.afficherScores);
+  $('#qz-fermer').disabled = !a;
+}
+function montrerClassement(oui) {
+  etat.quiz.afficherScores = oui;
+  if (oui) etat.quiz.classement = Object.entries(etat.quiz.scores)
+    .map(([id, pts]) => ({ nom: etat.noms[id] || 'Invité', pts })).sort((x, y) => y.pts - x.pts).slice(0, 10);
+  envoyer(); majStatutQuiz();
+}
+async function lancerPartie() {
+  if (typeof activerPublic === 'function' && !(await activerPublic(true))) return;
+  etat.quiz.partie = true; etat.quiz.dernier = null; etat.quiz.active = null;
+  if (typeof qrJouer === 'function') qrJouer(true);
+  envoyer(); afficherQuiz();
+  toast('Partie lancée : le code QR est à l\'écran');
+}
+function arreterPartie() {
+  etat.quiz.partie = false; etat.quiz.active = null; etat.quiz.afficherScores = false;
+  if (typeof qrJouer === 'function') qrJouer(false);
+  if (typeof activerPublic === 'function') activerPublic(false);
+  envoyer(); afficherQuiz();
+}
+$('#qz-p-suivant').onclick = () => {
+  const a = etat.quiz.active;
+  if (!etat.quiz.partie) return lancerPartie();
+  if (a && !a.revele) return $('#qz-reveler').click();
+  const suiv = questionSuivante();
+  if (suiv) { if (etat.quiz.afficherScores) etat.quiz.afficherScores = false; return lancerQuestion(suiv); }
+  if (!etat.quiz.afficherScores) { etat.quiz.active = null; if (typeof pubRetire === 'function') pubRetire(); montrerClassement(true); afficherQuiz(); return; }
+  arreterPartie();
+};
+$('#qz-p-arreter').onclick = arreterPartie;
+$('#qz-p-qr').onclick = () => { if (typeof qrJouer === 'function') qrJouer(!qrJouerVisible()); majStatutQuiz(); };
 setInterval(majStatutQuiz, 1000);
 
 /* ----- Nouvelle question ----- */
@@ -190,15 +249,10 @@ $('#qz-reveler').onclick = () => {
   a.revele = true; a.bonne = q.bonne;
   if (typeof pubRevele === 'function') pubRevele();
   envoyer(); afficherQuiz();
+  if (etat.quiz.public && etat.quiz.public.actif && !(a.public && a.public.revele)) $('#qz-reveler-public').click();
 };
 $('#qz-fermer').onclick = () => { etat.quiz.active = null; if (typeof pubRetire === 'function') pubRetire(); envoyer(); afficherQuiz(); };
-$('#qz-scores').onclick = () => {
-  etat.quiz.afficherScores = !etat.quiz.afficherScores;
-  if (etat.quiz.afficherScores) etat.quiz.classement = Object.entries(etat.quiz.scores)
-    .map(([id, pts]) => ({ nom: etat.noms[id] || 'Invité', pts })).sort((a, b) => b.pts - a.pts).slice(0, 10);
-  $('#qz-scores').textContent = etat.quiz.afficherScores ? 'Masquer' : 'Classement';
-  envoyer();
-};
+$('#qz-scores').onclick = () => montrerClassement(!etat.quiz.afficherScores);
 $('#qz-zero').onclick = () => { if (confirm('Remettre tous les scores à zéro ?')) { etat.quiz.scores = {}; etat.quiz.classement = []; envoyer(); } };
 
 /* Réponses des invités (envoyées par leur page de coulisses) */
