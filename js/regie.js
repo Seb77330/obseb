@@ -132,6 +132,7 @@ $('#btn-apercu-format').onclick = () => {
 };
 
 /* ----- Envoi de l'état vers la sortie OBS et les invités ----- */
+let envoiSigne = 0;
 function envoyer() {
   if (typeof musiqueAuto === 'function') musiqueAuto();   // un morceau lié à la scène démarre avec elle
   etat.ts = Date.now();
@@ -144,7 +145,12 @@ function envoyer() {
   delete st.plans;
   // les questions préparées (avec les bonnes réponses) restent dans la régie
   if (st.quiz) st.quiz = { active: st.quiz.active, afficherScores: st.quiz.afficherScores, classement: st.quiz.classement, style: st.quiz.style, dispo: st.quiz.dispo };
-  ordre(maCamera, { sendData: { [CANAL]: st }, type: 'pcs' });     // vers OBS et les coulisses
+  // vers OBS et les coulisses : l'état part signé (ils vérifient que c'est bien ta régie)
+  const texte = JSON.stringify(st), n = ++envoiSigne;
+  signerEtat(cle, texte).then(sig => {
+    if (n !== envoiSigne) return;   // un état plus récent est déjà parti
+    ordre(maCamera, { sendData: sig ? { studioSebSigne: { d: texte, s: sig } } : { [CANAL]: st }, type: 'pcs' });
+  }).catch(() => ordre(maCamera, { sendData: { [CANAL]: st }, type: 'pcs' }));
   ordre(apercu, { [CANAL]: st });                                  // vers l'aperçu de la régie
   if (typeof envoyerEssai === 'function') envoyerEssai(st);        // vers la « Vue invité », si elle est ouverte
   try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(etat)); } catch (e) { /* rien */ }

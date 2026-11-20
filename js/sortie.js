@@ -1006,12 +1006,14 @@ setInterval(() => {
 let parleCandidat = null, parleDepuis = 0, parleActuel = null;
 
 /* ----- Messages reçus ----- */
+let dernierEtatHote = 0;
 addEventListener('message', e => {
   const d = e.data;
   if (!d || typeof d !== 'object') return;
   // 1) état envoyé par la régie via la caméra de l'hôte (seule source acceptée dans OBS)
-  if (hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived[CANAL]) {
-    appliquerEtat(d.dataReceived[CANAL]);
+  if (hote && e.source === hote.iframe?.contentWindow && d.dataReceived && (d.dataReceived[CANAL] || d.dataReceived.studioSebSigne)) {
+    // avec un lien récent (&sg=), seul un état signé par la régie est accepté
+    etatVerifie(d.dataReceived, CANAL).then(st => { if (st && typeof st === 'object' && !(st.ts && st.ts < dernierEtatHote && st.ts > dernierEtatHote - 10000)) { dernierEtatHote = st.ts || dernierEtatHote; appliquerEtat(st); } });
     return;
   }
   if (hote && e.source === hote.iframe?.contentWindow && d.dataReceived && d.dataReceived.studioSebFichier) { recevoirMorceau(d.dataReceived.studioSebFichier); return; }

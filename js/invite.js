@@ -187,10 +187,16 @@ addEventListener('message', e => {
   if (morceau && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebFichier: morceau }); return; }
   const sousT = e.data && e.data.dataReceived && e.data.dataReceived.studioSebST;
   if (sousT && !(typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session))) { ordre(apercu, { studioSebST: sousT }); return; }
-  const st = e.data && e.data.dataReceived && e.data.dataReceived[CANAL];
-  if (!st) return;
+  const dr = e.data && e.data.dataReceived;
+  if (!dr || !(dr[CANAL] || dr.studioSebSigne)) return;
   // seul l'animateur pilote les coulisses : un autre invité ne peut pas envoyer de faux ordres
   if (typeof e.data.streamID === 'string' && e.data.streamID !== idHote(session)) return;
+  // et, avec un lien récent, seulement si l'état est signé par la régie (personne ne peut prendre la place de l'animateur)
+  etatVerifie(dr, CANAL).then(st => { if (st && typeof st === 'object') recevoirEtat(st); });
+});
+function recevoirEtat(st) {
+  if (st.ts && st.ts < dernierEtatTs && st.ts > dernierEtatTs - 10000) return;   // un état plus ancien arrivé en retard (une autre horloge, bien plus en arrière, passe)
+  dernierEtatTs = st.ts || dernierEtatTs;
   ordre(apercu, { [CANAL]: st });
   calerHorloge(st.ts);
   gererQuiz(st.quiz);
@@ -202,7 +208,8 @@ addEventListener('message', e => {
   const statut = $('#statut');
   statut.textContent = enDirect ? '● À L\'ANTENNE' : ((st.onair || []).includes(moi.id) ? 'PRÊT(E), À L\'ANTENNE AU PROCHAIN PLAN' : 'EN COULISSES');
   statut.classList.toggle('direct', enDirect);
-});
+}
+let dernierEtatTs = 0;
 
 /* ----- Sous-titres : ma voix est transcrite ici, puis envoyée à l'animateur avec mon nom ----- */
 const monEcoute = creerEcoute(st => { if (maCamera) ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, st } }, type: 'rpcs' }); });
