@@ -80,3 +80,15 @@ details.vp-style { margin-top: 18px; }
 .vp-idees { display: flex; flex-wrap: wrap; gap: 8px; }
 .vp-idees button { padding: 7px 13px; border-radius: 99px; font-size: 13px; background: none; color: var(--ui-muted); }
 .vp-idees button:hover { color: var(--ui-text); border-color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 8%, transparent); }
+
+/* trois étapes : sous-titres et plis (couleurs, police, logo sous le thème) */
+.vp-sous { margin: 22px 0 10px; font: 600 11px var(--mono, monospace); letter-spacing: .12em; text-transform: uppercase; color: var(--ui-muted); }
+.vp-pli { margin: 10px 0 0; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-input); }
+.vp-pli > summary { cursor: pointer; padding: 11px 14px; font-weight: 600; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px; }
+.vp-pli > summary::-webkit-details-marker { display: none; }
+.vp-pli > summary::after { content: '+'; margin-left: auto; color: var(--ui-muted); font-size: 18px; line-height: 1; }
+.vp-pli[open] > summary::after { content: '−'; }
+.vp-pli[open] > summary { border-bottom: 1px solid var(--ui-line); }
+.vp-pli > :not(summary) { padding: 12px 14px; }
+.vp-nav button { font-size: 12px; overflow-wrap: normal; }
+@media (max-width: 520px) { .vp-suiv-nom { display: none; } body.vp-etapes .pied-form button { white-space: nowrap; } }

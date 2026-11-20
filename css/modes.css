@@ -157,3 +157,9 @@ body.visuel-ouvert #cam-appel { display: none !important; }
 /* les vignettes des scènes : un peu plus grandes */
 .scenes .sc-vue { aspect-ratio: 16/9; max-height: 64px; }
 @media (max-width: 1000px) { #col-programme .scene-tiroir { margin: 0 10px; } .scene-tiroir .st-nom { display: none; } }
+/* Le visuel d'un live tout neuf : sur ordinateur, la colonne des sources s'efface et l'aperçu prend la place, à côté du panneau */
+@media (min-width: 901px) {
+  body.visuel-ouvert main { grid-template-columns: 300px minmax(0, 1fr) clamp(380px, 31vw, 470px); }
+  body.visuel-creation main { grid-template-columns: 0 minmax(0, 1fr) clamp(380px, 31vw, 470px); }
+  body.visuel-creation #col-sources { visibility: hidden; overflow: hidden; padding: 0; border: 0; }
+}
