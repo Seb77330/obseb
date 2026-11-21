@@ -122,6 +122,14 @@
   .replique .oter { padding: 8px 0; color: var(--ui-muted); background: none; border: 0; }
   .replique .oter:hover { color: var(--ui-ko); background: none; }
   @media (max-width: 640px) { .replique { grid-template-columns: 60px minmax(0, 1fr) 26px; } .replique .qui { grid-column: 2; } .replique textarea { grid-column: 1 / -1; grid-row: 2; } }
+  .atelier-apres { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 18px; border-top: 1px solid var(--ui-line); font-size: 13px; }
+  .atelier-apres .ap-groupe { display: inline-flex; gap: 6px; }
+  .atelier-apres button { white-space: nowrap; }
+  .atelier-apres select { width: auto; }
+  .atelier-apres #ap-etat { margin: 0; }
+  .atelier-apres .ap-sortie { flex: 1 1 100%; display: grid; gap: 6px; }
+  .atelier-apres .ap-sortie textarea { width: 100%; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; min-height: 170px; max-height: 40vh; }
+  .atelier-apres .ap-boutons { display: flex; gap: 6px; }
   .atelier-pied { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-top: 1px solid var(--ui-line); }
   .atelier-pied label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-right: auto; cursor: pointer; }
   /* Les formules : une couleur par formule (« à tes couleurs »), très peu de texte, les chiffres clés en grand */
@@ -815,6 +823,7 @@
 <script src="js/accueil-prog.js?v=01a85935"></script>
 <script src="js/accueil-style.js?v=98f2504f"></script>
 <script src="js/accueil-st.js?v=e783a3ff"></script>
+<script src="js/accueil-apres.js?v=c40e6db9"></script>
 <script src="js/accueil-biblio.js?v=69aeaf7e"></script>
 <script src="js/accueil-nouveau.js?v=60e2e269"></script>
 <script src="js/accueil-vitrine.js?v=bdf38eb2"></script>
