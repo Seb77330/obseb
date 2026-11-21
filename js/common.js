@@ -604,17 +604,29 @@ function transportSession() {
   const s = (typeof lireSession === 'function' && location.hash.includes('s=')) ? lireSession() : null;
   return s && s.serveur ? { serveur: s.serveur } : null;
 }
+/* Anti-bruit : 'doux' (réduction de bruit normale du navigateur + gain automatique : les voix faibles restent),
+   'fort' (en plus, isolation de la voix de Chrome/Edge : pour une pièce bruyante, peut avaler une voix très basse),
+   'aucun' (son brut, pour un casque et un bon micro). Anciennes valeurs : case cochée = doux, décochée = aucun. */
+function niveauAntibruit(v, defaut = 'doux') {
+  if (v === 'doux' || v === 'fort' || v === 'aucun') return v;
+  if (v === true) return 'doux';
+  if (v === false) return 'aucun';
+  return defaut;
+}
+const texteAntibruit = v => ({ doux: 'anti-bruit doux', fort: 'anti-bruit fort' })[niveauAntibruit(v, 'aucun')] || '';
 function vdo(params) {
   const t = transportSession();
   const p = Object.assign({}, params);
-  /* Effets de l'invité, calculés dans son navigateur (aucun serveur) : flou = 'leger' | 'fort', antibruit = true.
+  /* Effets de l'invité, calculés dans son navigateur (aucun serveur) : flou = 'leger' | 'fort', antibruit = 'doux' | 'fort' | 'aucun'.
      Le serveur MESA (lk.html) lit flou / antibruit tels quels ; vdo.ninja a ses propres mots pour la même chose. */
   if (!t) {
     const flou = p.flou, antibruit = p.antibruit;
     delete p.flou; delete p.antibruit;
     if (flou === 'leger') p.effects = '3';        // flou d'arrière-plan de vdo.ninja (MediaPipe)
     else if (flou === 'fort') p.effects = '3a';   // le même, plus appuyé
-    if (antibruit) { p.denoise = '1'; p.isolation = '1'; }   // réduction de bruit + isolation de la voix de Chrome/Edge
+    const nb = niveauAntibruit(antibruit, 'aucun');
+    if (nb === 'fort') { p.denoise = '1'; p.isolation = '1'; }   // réduction de bruit + isolation de la voix de Chrome/Edge
+    // 'doux' : rien à ajouter, la réduction de bruit et le gain automatique du navigateur sont déjà actifs
   }
   if (t) {
     p.lk = t.serveur;

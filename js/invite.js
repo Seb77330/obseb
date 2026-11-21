@@ -85,10 +85,10 @@ function entrer() {
   function demarrer(app) {
     monApp = app;
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
-    $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.antibruit ? 'anti-bruit' : ''].filter(Boolean).join(' · ');
+    $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
     // l'invité entend tout le monde ici ; flou et anti-bruit sont traduits pour le transport du live (voir vdo() dans common.js)
-    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, antibruit: !!app.antibruit });
+    maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, antibruit: niveauAntibruit(app.antibruit, 'aucun') });
   }
   $('#btn-cam-changer').onclick = () => {
     $('#ma-camera').src = 'about:blank'; maCamera = null; enrLocal.arreter(); majCoupe({ mic: false, cam: false });

@@ -26,7 +26,7 @@ function EnregistreurCamera() {
     } catch (e) { return null; }
   }
 
-  /* app : { nomCam, nomMic, antibruit } ; nom : nom du fichier sans extension ; coupe : { mic, cam } */
+  /* app : { nomCam, nomMic, antibruit ('doux' | 'fort' | 'aucun') } ; nom : nom du fichier sans extension ; coupe : { mic, cam } */
   async function demarrer({ app = {}, nom, coupe = {}, sansVideo = false, sansSon = false }) {
     if (rec) return;
     if (!window.MediaRecorder || !navigator.mediaDevices) { dernier = { erreur: 'Ce navigateur ne sait pas enregistrer : utilise Chrome ou Edge.', fin: Date.now() }; return; }
@@ -38,7 +38,7 @@ function EnregistreurCamera() {
       const [cam, mic] = await Promise.all([idAppareil('videoinput', app.nomCam), idAppareil('audioinput', app.nomMic)]);
       flux = await navigator.mediaDevices.getUserMedia({
         video: sansVideo ? false : Object.assign({ width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, cam ? { deviceId: { exact: cam } } : {}),
-        audio: sansSon ? false : Object.assign({ echoCancellation: true, noiseSuppression: !!app.antibruit, autoGainControl: false }, mic ? { deviceId: { exact: mic } } : {})
+        audio: sansSon ? false : Object.assign({ echoCancellation: true, noiseSuppression: niveauAntibruit(app.antibruit, 'aucun') !== 'aucun', autoGainControl: false }, mic ? { deviceId: { exact: mic } } : {})
       });
     } catch (e) {
       if (rec === place) rec = null;

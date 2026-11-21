@@ -80,20 +80,20 @@ $('#btn-sortie').onclick = () => window.open(L.sortie, 'sortie', 'width=960,heig
 /* ----- Ma caméra (le seul endroit qui ouvre la Cam Link) ----- */
 const maCamera = $('#ma-camera');
 const CLE_CAM = 'studioSeb:appareils:hote';
-// effets aussi pour l'animateur ; anti-bruit décoché d'office (micro et casque de qualité : son brut, voir proaudio)
-const reglageCam = ReglagesMedia({ boite: $('#cam-reglage'), cle: CLE_CAM, texteBouton: 'Démarrer ma caméra', surDemarrer: demarrerCamera, effets: true, antibruitDefaut: false });
+// effets aussi pour l'animateur ; anti-bruit doux d'office (avec casque et bon micro : « Aucun », son brut, voir proaudio)
+const reglageCam = ReglagesMedia({ boite: $('#cam-reglage'), cle: CLE_CAM, texteBouton: 'Démarrer ma caméra', surDemarrer: demarrerCamera, effets: true, antibruitDefaut: 'doux' });
 let appHote = null;
 const enrHote = EnregistreurCamera();   // ta caméra enregistrée chez toi pendant « Enregistrer » (pistes séparées)
 function demarrerCamera(app) {
   appHote = app;
   hauteurCamera = app.h || 0;
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
-  $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.antibruit ? 'anti-bruit' : ''].filter(Boolean).join(' · ');
+  $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
   // la meilleure image que la caméra sait donner (1080p avec une Cam Link, 720p avec une webcam) ; « detail » : le navigateur baisse les images/s plutôt que la définition
-  // son brut (proaudio) sauf si tu as coché l'anti-bruit ; flou d'arrière-plan calculé sur ton ordinateur
-  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: !app.antibruit, maxframerate: 30, contenthint: 'detail',
-    flou: app.flou || false, antibruit: !!app.antibruit });
+  // son brut (proaudio) seulement avec « Aucun » ; flou d'arrière-plan calculé sur ton ordinateur
+  maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: niveauAntibruit(app.antibruit, 'aucun') === 'aucun', maxframerate: 30, contenthint: 'detail',
+    flou: app.flou || false, antibruit: niveauAntibruit(app.antibruit, 'aucun') });
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;
