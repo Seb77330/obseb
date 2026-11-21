@@ -42,6 +42,8 @@
     if (!stop) toast('Replay à l\'image');
     setTimeout(maj, 300);
   }
+  /* « Moments forts » (js/regie-parole.js) : un clip marqué tout seul, sans message */
+  window.marquerMoment = () => { const i = infos(); if (!i.formats.length) return false; for (const f of i.formats) canalDiff(f).postMessage({ type: 'marquer' }); setTimeout(maj, 300); return true; };
   boite.addEventListener('click', e => { const b = e.target.closest('button[data-r]'); if (b) lancer(b.dataset.r); });
   addEventListener('keydown', e => {
     const t = e.key.toLowerCase(); if (t !== 'r' && t !== 'm') return;

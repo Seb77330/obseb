@@ -291,3 +291,10 @@ body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="
 .mains-compte { margin-left: 8px; padding: 1px 7px; border-radius: 6px; background: #f5c518; color: #111; font-size: 12px; font-weight: 700; }
 .reac-vol { position: absolute; bottom: 6px; z-index: 3; font-size: 22px; pointer-events: none; animation: reac-vol 2.2s ease-out forwards; }
 @keyframes reac-vol { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translateY(-10px) scale(1.1); } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
+/* Modération du chat */
+.chat-msg.modere { opacity: .5; }
+.chat-msg.modere span { text-decoration: line-through; text-decoration-color: rgba(255,255,255,.35); }
+.chat-msg .mod-raison { margin-left: 6px; padding: 0 5px; border-radius: 4px; background: var(--ui-line); color: var(--ui-muted); font-size: 10.5px; font-style: normal; white-space: nowrap; }
+.mod-compte { margin-left: 6px; padding: 0 6px; border-radius: 5px; background: var(--ui-line); color: var(--ui-muted); font-size: 11px; text-transform: none; letter-spacing: 0; }
+.mod-mots-titre { display: block; margin: 8px 0 4px; font-size: 12.5px; color: var(--ui-muted); }
+#mod-mots { width: 100%; resize: vertical; }

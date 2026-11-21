@@ -53,9 +53,38 @@
       t.textContent = total >= 1000 ? dureeCourte(total) : '';
     }
     planAuto(maintenant);
+    momentFort(maintenant);
     majRepartition();
   }
   const dureeCourte = ms => { const s = Math.round(ms / 1000); return s < 60 ? s + ' s' : Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0'); };
+
+  /* ----- Moments forts : rires, applaudissements, débat qui s'emballe -----
+     Quand plusieurs personnes à l'antenne font du bruit en même temps (ou une seule, bien plus fort que d'habitude)
+     pendant plus d'une seconde, on marque le moment : il devient un clip à la fin du live, comme avec « Marquer ».
+     Au plus un toutes les 90 s, et 15 par live. */
+  etat.clipsAuto = !!etat.clipsAuto;
+  let fortDepuis = 0, dernierFort = 0, nbForts = 0, directFort = 0;
+  function momentFort(maintenant) {
+    if (!etat.clipsAuto || !etat.direct || typeof marquerMoment !== 'function') { fortDepuis = 0; return; }
+    if (directFort !== etat.direct.debut) { directFort = etat.direct.debut; nbForts = 0; }
+    let ensemble = 0, eclat = false;
+    for (const [id, c] of cartes) {
+      const s = suivi.get(id);
+      if (!s || !etat.onair.includes(id) || (etat.muet && etat.muet[id])) continue;
+      const n = c.niveau || 0;
+      if (s.voix === undefined) s.voix = 15;
+      if (s.parle && n > 0) s.voix = s.voix * 0.995 + n * 0.005;   // niveau habituel de sa voix
+      if (n > Math.max(10, s.fond * 2.2 + 3)) ensemble++;
+      if (n > Math.max(30, s.voix * 2.3)) eclat = true;
+    }
+    const fort = ensemble >= 2 || eclat;
+    if (!fort) { fortDepuis = 0; return; }
+    if (!fortDepuis) fortDepuis = maintenant;
+    if (maintenant - fortDepuis >= 1200 && maintenant - dernierFort >= 90000 && nbForts < 15 && marquerMoment()) {
+      dernierFort = maintenant; nbForts++; fortDepuis = 0;
+      toast('Moment fort marqué : il deviendra un clip à la fin du live');
+    }
+  }
 
   /* ----- Le plan suit qui parle ----- */
   let candidat = null, candidatDepuis = 0, dernierChangement = 0;
@@ -76,6 +105,7 @@
   bloc.className = 'pli'; bloc.id = 'pli-parole';
   bloc.innerHTML = `<summary>Qui parle</summary>
     <label class="ligne-case" title="En Solo, Interview ou Médaillon : la personne qui parle passe en grand (au moins 4 s entre deux changements)."><input type="checkbox" id="parole-auto"> <span><b>Le plan suit qui parle</b></span></label>
+    <label class="ligne-case" title="Rires, applaudissements, débat qui s'emballe : repérés au son, pendant le direct. Il faut que le live parte de la fenêtre de diffusion de MESA (comme pour « Marquer »)."><input type="checkbox" id="parole-clips"> <span><b>Clips automatiques des moments forts</b></span></label>
     <div class="parole-repartition" id="parole-repartition"></div>
     <div class="ligne-boutons"><button class="petit" id="parole-csv" title="Chaque prise de parole avec son heure, pour le montage">Télécharger « qui parle quand »</button>
     <button class="petit" id="parole-marqueurs" title="Un fichier de marqueurs à importer dans ton logiciel de montage (DaVinci Resolve, Premiere)">Marqueurs pour le montage</button></div>
@@ -83,6 +113,8 @@
   const place = $('[data-onglet="habillage"]');
   if (place) place.appendChild(bloc);
   $('#parole-auto').checked = etat.planAuto;
+  $('#parole-clips').checked = etat.clipsAuto;
+  $('#parole-clips').onchange = e => { etat.clipsAuto = e.target.checked; envoyer(); toast(etat.clipsAuto ? 'Les moments forts deviendront des clips' : 'Plus de clips automatiques'); };
   $('#parole-auto').onchange = e => { etat.planAuto = e.target.checked; envoyer(); toast(etat.planAuto ? 'Le plan suit la personne qui parle' : 'Le plan ne bouge plus tout seul'); };
 
   function majRepartition() {
