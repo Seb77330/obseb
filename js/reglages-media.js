@@ -4,7 +4,7 @@
 'use strict';
 
 function nomAppareil(label) {
-  // « Par défaut - Micro (Cam Link 4K) (0fd9:0066) » -> « Micro (Cam Link 4K) »
+  // « Par défaut - Micro (Cam Link 4K) (0fd9:0066) » -> « Micro (Cam Link 4K) »
   return String(label || '')
     .replace(/^(par défaut|default|communications)\s*-\s*/i, '')
     .replace(/\s*\([0-9a-f]{4}:[0-9a-f]{4}\)\s*$/i, '')
@@ -29,14 +29,15 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
         <option value="leger">Flou léger</option>
         <option value="fort">Flou fort (on ne voit plus la pièce)</option>
       </select>
+      <label class="rm-case"><input type="checkbox" class="rm-cadrage"> <span>Cadrage automatique <small class="rm-cadrage-note">l'image suit ton visage, même si tu bouges</small></span></label>
       <label class="rm-champ">Anti-bruit</label>
       <select class="rm-antibruit">
         <option value="doux">Doux (conseillé)</option>
-        <option value="fort">Fort : pièce bruyante</option>
-        <option value="aucun">Aucun : casque et bon micro</option>
+        <option value="fort">Fort : pièce bruyante</option>
+        <option value="aucun">Aucun : casque et bon micro</option>
       </select>
       <p class="rm-note rm-bruit-note"></p>
-      <p class="rm-note">Le flou s'affiche dans ta caméra dès que tu entres. Sur un vieil ordinateur, garde « Net ».</p>` : ''}
+      <p class="rm-note">Le flou s'affiche dans ta caméra dès que tu entres. Sur un vieil ordinateur, garde « Net ».</p>` : ''}
       <p class="rm-aide"></p>
       <button class="primaire rm-go">${texteBouton}</button>
     </div>`;
@@ -75,7 +76,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     const vt = flux.getVideoTracks()[0], at = flux.getAudioTracks()[0];
     const s = vt && vt.getSettings();
     if (s) {
-      // la définition se lit sur le petit côté : un téléphone tenu debout (1080 × 1920) filme en 1080p, pas en « 1920p »
+      // la définition se lit sur le petit côté : un téléphone tenu debout (1080 × 1920) filme en 1080p, pas en « 1920p »
       const def = s.width && s.height ? Math.min(s.width, s.height) : s.height;
       const debout = s.width && s.height && s.height > s.width;
       res.textContent = def ? `${def}p${debout ? ' debout' : ''}${s.frameRate ? ' · ' + Math.round(s.frameRate) + ' i/s' : ''}` : '';
@@ -115,6 +116,17 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
   // effets : retenus d'une fois sur l'autre ; anti-bruit doux par défaut (il enlève le souffle sans couper une voix qui parle bas)
   const selFlou = boite.querySelector('.rm-flou'), caseBruit = boite.querySelector('.rm-antibruit');
   if (selFlou) selFlou.value = ['leger', 'fort'].includes(choix.flou) ? choix.flou : '';
+  // cadrage automatique (la salle recadre sur le visage, dans le navigateur de la personne) : un seul effet d'image à la fois avec le flou
+  const caseCadrage = boite.querySelector('.rm-cadrage');
+  const majCadrage = () => {
+    if (!caseCadrage) return;
+    const avecFlou = !!(selFlou && selFlou.value);
+    caseCadrage.disabled = avecFlou;
+    caseCadrage.closest('label').classList.toggle('rm-off', avecFlou);
+    boite.querySelector('.rm-cadrage-note').textContent = avecFlou ? 'pas avec le flou : choisis « Net » pour l\'activer' : 'l\'image suit ton visage, même si tu bouges';
+  };
+  if (caseCadrage) { caseCadrage.checked = choix.cadrage === true; majCadrage(); }
+  if (selFlou) selFlou.addEventListener('change', majCadrage);
   if (caseBruit) caseBruit.value = niveauAntibruit(choix.antibruit, antibruitDefaut);
   const NOTE_BRUIT = { doux: 'Enlève le souffle et les petits bruits, sans couper une voix qui parle bas.', fort: 'Isole la voix : clavier, ventilateur, rue. Une voix très basse peut être coupée.', aucun: 'Son brut et naturel, sans aucun traitement.' };
   const noteBruit = () => { const n = boite.querySelector('.rm-bruit-note'); if (n && caseBruit) n.textContent = NOTE_BRUIT[caseBruit.value]; };
@@ -128,10 +140,11 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     choix.nomCam = appCam; choix.nomMic = appMic;
     if (selFlou) choix.flou = selFlou.value || '';
     if (caseBruit) choix.antibruit = caseBruit.value;
+    if (caseCadrage) choix.cadrage = caseCadrage.checked;
     try { localStorage.setItem(cle, JSON.stringify(choix)); } catch (e) { /* rien */ }
     arreter();   // libère la caméra avant que la salle l'ouvre (évite le conflit Cam Link)
     surDemarrer(Object.assign({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 },
-      effets ? { flou: choix.flou || '', antibruit: niveauAntibruit(choix.antibruit, antibruitDefaut) } : {}));
+      effets ? { flou: choix.flou || '', antibruit: niveauAntibruit(choix.antibruit, antibruitDefaut), cadrage: !choix.flou && choix.cadrage === true } : {}));
   };
   return { ouvrir, arreter, choix: () => choix };
 }
@@ -142,6 +155,6 @@ function appareilsRetenus(cle, antibruitDefaut = 'doux') {
     const c = JSON.parse(localStorage.getItem(cle) || '{}');
     if (!c.nomCam && !c.nomMic) return null;
     return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0,
-      flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: niveauAntibruit(c.antibruit, antibruitDefaut) };
+      flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: niveauAntibruit(c.antibruit, antibruitDefaut), cadrage: !c.flou && c.cadrage === true };
   } catch (e) { return null; }
 }

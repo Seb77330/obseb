@@ -238,3 +238,4 @@ sup { line-height: 0; font-size: .68em; }
 .son-lecteur input[type=range] { flex: 1 1 160px; accent-color: var(--ui-accent); }
 .son-lecteur .son-temps { font-size: 12px; color: var(--ui-muted); font-variant-numeric: tabular-nums; min-width: 72px; }
 .retour-base { display: block; margin: 10px 0 0; font-size: 13px; } .retour-base[hidden] { display: none; } #galerie + .retour-base, .retour-base + #galerie { margin-bottom: 10px; }
+.rm-case.rm-off { opacity: .55; cursor: default; }
