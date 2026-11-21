@@ -1007,6 +1007,29 @@ setInterval(() => {
 }, 200);
 let parleCandidat = null, parleDepuis = 0, parleActuel = null;
 
+/* ----- Réactions des invités (👏 😂 ❤️ 👍 😮), envoyées depuis leurs coulisses : elles s'envolent sur leur image ----- */
+const reacsVues = new Set();
+setInterval(() => {
+  if (!etat || !Array.isArray(etat.reacs)) return;
+  for (const r of etat.reacs) {
+    const cle = r.t + ':' + r.n;
+    if (reacsVues.has(cle)) continue;
+    reacsVues.add(cle);
+    if (Date.now() - r.t > 5000 && Math.abs(Date.now() - r.t) < 60000) continue;   // trop vieille (une autre horloge, bien décalée, passe)
+    const t = tuiles.get(r.id);
+    if (!t || t.el.classList.contains('horsantenne') || !['👏', '😂', '❤️', '👍', '😮'].includes(r.e)) continue;
+    for (let k = 0; k < 3; k++) {
+      const s = document.createElement('span');
+      s.className = 'reac-vol'; s.textContent = r.e;
+      s.style.left = (15 + Math.random() * 70) + '%';
+      s.style.animationDelay = (k * 0.18) + 's';
+      t.el.appendChild(s);
+      setTimeout(() => s.remove(), 3000);
+    }
+  }
+  if (reacsVues.size > 300) reacsVues.clear();
+}, 200);
+
 /* ----- Messages reçus ----- */
 let dernierEtatHote = 0;
 addEventListener('message', e => {

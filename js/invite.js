@@ -158,7 +158,7 @@ document.getElementById('btn-mon-ecran').onclick = () => {
 let maQualite = null;
 function direBonjour() {
   if (!maCamera) return;
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe, enr: enrLocal.etat() } }, type: 'rpcs' });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe, enr: enrLocal.etat(), main: maMain } }, type: 'rpcs' });
   besoinApercu = '';
 }
 setInterval(() => {
@@ -168,6 +168,29 @@ setInterval(() => {
 }, 3000);
 
 let besoinApercu = '';   // fichier que mon aperçu attend de la régie
+
+/* Lever la main (demander la parole) et réactions : la régie les voit tout de suite */
+let maMain = 0;   // moment où j'ai levé la main (0 : baissée)
+function majMain(info) {
+  const b = $('#btn-main');
+  b.setAttribute('aria-pressed', String(!!maMain));
+  b.textContent = maMain ? '✋ Main levée (baisser)' : '✋ Lever la main';
+  const p = $('#main-info');
+  p.hidden = !info; p.textContent = info || '';
+}
+$('#btn-main').onclick = () => {
+  maMain = maMain ? 0 : Date.now();
+  majMain(maMain ? 'Ta main est levée : l\'animateur la voit dans sa régie.' : '');
+  direBonjour();
+};
+let derniereReac = 0;
+document.querySelectorAll('.mes-reactions .reac').forEach(b => b.onclick = () => {
+  if (!maCamera || Date.now() - derniereReac < 1000) return;
+  derniereReac = Date.now();
+  ordre(maCamera, { sendData: { studioSebReac: { id: moi.id, e: b.dataset.e } }, type: 'rpcs' });
+  b.classList.add('envoye'); setTimeout(() => b.classList.remove('envoye'), 300);
+  vibrer(15);
+});
 addEventListener('message', e => {
   // un fichier choisi dans la régie (musique, image) manque à mon aperçu : je le demande à la régie avec mon prochain « je suis là »
   if (apercu && e.source === apercu.contentWindow && e.data && typeof e.data.studioSebBesoin === 'string') { besoinApercu = e.data.studioSebBesoin.slice(0, 40); return; }
@@ -202,6 +225,7 @@ function recevoirEtat(st) {
   calerHorloge(st.ts);
   gererQuiz(st.quiz);
   gererEnr(st.enrCams);
+  if (maMain && st.mainsBaissees && st.mainsBaissees[moi.id] === maMain) { maMain = 0; majMain('L\'animateur a baissé ta main : c\'est peut-être à toi.'); setTimeout(() => { if (!maMain) majMain(''); }, 8000); }
   filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || (st.watch.pastille && st.watch.pos > 0) || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
   majWatchInvite();
   const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
