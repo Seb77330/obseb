@@ -87,6 +87,7 @@ function entrer() {
     $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
     $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.cadrage ? 'cadrage auto' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');
     maCamera = $('#ma-camera');
+    maCamera.style.filter = filtreEclat(facteurEclatSur(app.eclat));   // pièce sombre : il se voit éclairci, comme dans le live
     // l'invité entend tout le monde ici ; flou et anti-bruit sont traduits pour le transport du live (voir vdo() dans common.js)
     maCamera.src = urlPublier(session, moi.id, moi.nom, { vd: app.vd, ad: app.ad, autostart: true, flou: app.flou || false, cadrage: !!app.cadrage, antibruit: niveauAntibruit(app.antibruit, 'aucun') });
   }
@@ -158,7 +159,7 @@ document.getElementById('btn-mon-ecran').onclick = () => {
 let maQualite = null;
 function direBonjour() {
   if (!maCamera) return;
-  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe, enr: enrLocal.etat(), main: maMain } }, type: 'rpcs' });
+  ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, q: maQualite, ecran: ecranActif ? moi.id + 'ecr' : null, besoin: besoinApercu, coupe, enr: enrLocal.etat(), main: maMain, eclat: monApp ? facteurEclatSur(monApp.eclat) : 1 } }, type: 'rpcs' });
   besoinApercu = '';
 }
 setInterval(() => {
