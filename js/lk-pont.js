@@ -28,6 +28,7 @@ function secours(raison) {
   // les effets de l'invité, dans les mots de vdo.ninja (même traduction que vdo() dans common.js)
   const flou = q.get('flou'); q.delete('flou');
   if (flou === 'leger' || flou === 'fort') q.set('effects', flou === 'fort' ? '3a' : '3');
+  if (q.has('cadrage')) { const c = q.get('cadrage'); q.delete('cadrage'); if (c !== 'false' && !q.has('effects')) q.set('autofacecrop', ''); }
   if (q.has('antibruit')) { const v = q.get('antibruit'); q.delete('antibruit'); if (v === 'fort' || v === 'true' || v === '1') { q.set('denoise', '1'); q.set('isolation', '1'); } }
   location.replace('https://vdo.ninja/?' + q.toString().replace(/=(?=&|$)/g, ''));
 }

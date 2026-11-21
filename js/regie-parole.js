@@ -1,10 +1,10 @@
-/* MESA : régie, « Qui parle ».
+/* MESA : régie, « Qui parle ».
    À partir du niveau sonore de chaque personne (déjà mesuré pour les vu-mètres), on décide qui parle,
    avec un seuil propre à chacun (son bruit de fond est mesuré en continu) et une petite inertie pour ne pas clignoter.
    - la carte de la personne qui parle s'allume dans la régie ;
    - le temps de parole de chacun s'affiche (pour rythmer les débats) ;
-   - « Le plan suit qui parle » : en Solo, Interview ou Médaillon, la personne qui parle passe en grand ;
-   - pendant le direct, chaque prise de parole est notée : après le live, « Qui parle quand » se télécharge
+   - « Le plan suit qui parle » : en Solo, Interview ou Médaillon, la personne qui parle passe en grand ;
+   - pendant le direct, chaque prise de parole est notée : après le live, « Qui parle quand » se télécharge
      pour le montage (tableur CSV et marqueurs). Rien ne sort de l'ordinateur. */
 'use strict';
 (() => {
@@ -71,13 +71,13 @@
     }
   }
 
-  /* ----- Le bloc « Qui parle » (onglet Titres, en bas) ----- */
+  /* ----- Le bloc « Qui parle » (onglet Titres, en bas) ----- */
   const bloc = document.createElement('details');
   bloc.className = 'pli'; bloc.id = 'pli-parole';
   bloc.innerHTML = `<summary>Qui parle</summary>
     <label class="ligne-case" title="En Solo, Interview ou Médaillon : la personne qui parle passe en grand (au moins 4 s entre deux changements)."><input type="checkbox" id="parole-auto"> <span><b>Le plan suit qui parle</b></span></label>
     <div class="parole-repartition" id="parole-repartition"></div>
-    <div class="ligne-boutons"><button class="petit" id="parole-csv" title="Chaque prise de parole avec son heure, pour le montage">Télécharger « qui parle quand »</button>
+    <div class="ligne-boutons"><button class="petit" id="parole-csv" title="Chaque prise de parole avec son heure, pour le montage">Télécharger « qui parle quand »</button>
     <button class="petit" id="parole-marqueurs" title="Un fichier de marqueurs à importer dans ton logiciel de montage (DaVinci Resolve, Premiere)">Marqueurs pour le montage</button></div>
     <p class="aide" id="parole-info"></p>`;
   const place = $('[data-onglet="habillage"]');

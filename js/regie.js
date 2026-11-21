@@ -88,12 +88,12 @@ function demarrerCamera(app) {
   appHote = app;
   hauteurCamera = app.h || 0;
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
-  $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');
+  $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.cadrage ? 'cadrage auto' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');
   // la salle démarre directement avec les appareils choisis, sans son propre écran de réglage
   // la meilleure image que la caméra sait donner (1080p avec une Cam Link, 720p avec une webcam) ; « detail » : le navigateur baisse les images/s plutôt que la définition
   // son brut (proaudio) seulement avec « Aucun » ; flou d'arrière-plan calculé sur ton ordinateur
   maCamera.src = urlPublier(session, ID_HOTE, session.hote, { noaudio: true, vd: app.vd, ad: app.ad, autostart: true, proaudio: niveauAntibruit(app.antibruit, 'aucun') === 'aucun', maxframerate: 30, contenthint: 'detail',
-    flou: app.flou || false, antibruit: niveauAntibruit(app.antibruit, 'aucun') });
+    flou: app.flou || false, cadrage: !!app.cadrage, antibruit: niveauAntibruit(app.antibruit, 'aucun') });
 }
 $('#btn-cam-changer').onclick = () => {
   if (etat.direct && etat.onair.includes(ID_HOTE) && !confirm('Ta caméra va se couper quelques secondes pendant le changement. Continuer ?')) return;

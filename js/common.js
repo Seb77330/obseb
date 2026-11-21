@@ -620,8 +620,9 @@ function vdo(params) {
   /* Effets de l'invité, calculés dans son navigateur (aucun serveur) : flou = 'leger' | 'fort', antibruit = 'doux' | 'fort' | 'aucun'.
      Le serveur MESA (lk.html) lit flou / antibruit tels quels ; vdo.ninja a ses propres mots pour la même chose. */
   if (!t) {
-    const flou = p.flou, antibruit = p.antibruit;
-    delete p.flou; delete p.antibruit;
+    const flou = p.flou, antibruit = p.antibruit, cadrage = p.cadrage;
+    delete p.flou; delete p.antibruit; delete p.cadrage;
+    if (cadrage && !flou) p.autofacecrop = true;   // cadrage automatique sur le visage, calculé chez la personne (détecteur de visage du navigateur ou MediaPipe)
     if (flou === 'leger') p.effects = '3';        // flou d'arrière-plan de vdo.ninja (MediaPipe)
     else if (flou === 'fort') p.effects = '3a';   // le même, plus appuyé
     const nb = niveauAntibruit(antibruit, 'aucun');
