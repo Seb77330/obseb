@@ -4,7 +4,7 @@
    pour que tu puisses les corriger et les télécharger depuis « Lives terminés ». */
 'use strict';
 
-etat.st = Object.assign({ actif: false, ecran: true, parCouleur: true, couleurs: {} }, etat.st || {});
+etat.st = Object.assign({ actif: false, ecran: true, parCouleur: true, couleurs: {}, moteur: 'navigateur' }, etat.st || {});
 /* Couleurs lisibles sur fond sombre, bien distinctes entre elles. La première personne (toi) est en blanc. */
 const PALETTE_ST = ['#FFFFFF', '#FFD84D', '#5FD4FF', '#7BE08A', '#FF9ECF', '#FFA95C', '#B9A5FF', '#6FE3C8', '#FF8A80'];
 function couleurST(id) {
@@ -62,13 +62,15 @@ function diffuserST() {
 setInterval(() => { if (stLignes.size) diffuserST(); }, 1000);
 
 /* Ta voix : écoutée ici, sur le micro choisi quand le navigateur le permet */
-let stEtatHote = 'arret';
-const ecouteHote = creerEcoute(st => sousTitreRecu(ID_HOTE, st), e => { stEtatHote = e; majST(); },
-  () => { const p = typeof microFlux !== 'undefined' && microFlux && microFlux.getAudioTracks()[0]; return p && p.readyState === 'live' ? p : null; });
+let stEtatHote = 'arret', stDetailHote = '';
+const ecouteHote = creerEcoute(st => sousTitreRecu(ID_HOTE, st), (e, d) => { stEtatHote = e; stDetailHote = d ?? ''; majST(); },
+  () => { const p = typeof microFlux !== 'undefined' && microFlux && microFlux.getAudioTracks()[0]; return p && p.readyState === 'live' ? p : null; },
+  () => etat.st.moteur);
 function reglerEcouteHote() {
   const veut = etat.st.actif && !$('#cam-direct').hidden && !etat.muet[ID_HOTE];
   if (veut && !ecouteHote.actif()) ecouteHote.demarrer();
   if (!veut && ecouteHote.actif()) ecouteHote.arreter();
+  ecouteHote.suivreMoteur();
 }
 setInterval(reglerEcouteHote, 1000);
 
@@ -81,6 +83,12 @@ $('#st-actif').onchange = e => {
   if (!etat.st.actif) { stLignes.clear(); stDebuts.clear(); }
   envoyer(); reglerEcouteHote(); diffuserST(); majST();
   toast(etat.st.actif ? 'Sous-titres activés : chacun est transcrit sur son ordinateur' : 'Sous-titres arrêtés');
+};
+$('#st-moteur').value = etat.st.moteur === 'whisper' ? 'whisper' : 'navigateur';
+$('#st-moteur').onchange = e => {
+  etat.st.moteur = e.target.value;
+  envoyer(); reglerEcouteHote(); majST();
+  toast(etat.st.moteur === 'whisper' ? 'Whisper : chacun est transcrit par son ordinateur, sans rien envoyer' : 'Transcription par le navigateur (Chrome, Edge)');
 };
 $('#st-ecran').onchange = e => { etat.st.ecran = e.target.checked; envoyer(); diffuserST(); majST(); };
 $('#st-couleurs').checked = !!etat.st.parCouleur;
@@ -112,7 +120,13 @@ function majST() {
   $('#st-ecran').disabled = !etat.st.actif;
   const n = stArchive && etat.direct && stArchive.debut === etat.direct.debut ? stArchive.segs.length : 0;
   let niveau = '', txt;
-  if (!ecouteHote.dispo) { niveau = 'att'; txt = 'Ce navigateur ne sait pas transcrire : ouvre la régie dans Chrome ou Edge.'; }
+  const wh = etat.st.moteur === 'whisper';
+  $('#st-moteur-info').textContent = wh
+    ? 'La voix ne quitte pas l\'ordinateur et ça marche aussi dans Firefox et Safari. Le modèle (environ 80\u00a0Mo) se télécharge une fois par ordinateur. Il faut un ordinateur assez récent.'
+    : 'Le plus léger. Tes invités doivent être sur Chrome ou Edge.';
+  if (!ecouteHote.dispo) { niveau = 'att'; txt = 'Ce navigateur ne sait pas transcrire : ouvre la régie dans Chrome ou Edge, ou choisis Whisper.'; }
+  else if (etat.st.actif && stEtatHote === 'chargement') { niveau = 'att'; txt = `Préparation de Whisper : ${stDetailHote || 0}\u00a0% (une seule fois sur cet ordinateur).`; }
+  else if (etat.st.actif && stEtatHote === 'erreur') { niveau = 'ko'; txt = 'Whisper n\'a pas pu démarrer : ' + stDetailHote; }
   else if (!etat.st.actif) txt = 'Arrêtés. Rien n\'est transcrit.';
   else if (stEtatHote === 'refuse') { niveau = 'ko'; txt = 'Le navigateur a refusé l\'accès au micro pour la transcription.'; }
   else if ($('#cam-direct').hidden) { niveau = 'att'; txt = 'En attente : démarre ta caméra.'; }

@@ -230,7 +230,7 @@ function recevoirEtat(st) {
   filmHote = st.watch && (st.scene === 'watch' || st.watch.lecture || (st.watch.pastille && st.watch.pos > 0) || (st.watch.top && maintenantHote() < st.watch.top + 1500)) ? st.watch : null;
   majWatchInvite();
   const enDirect = (st.onair || []).includes(moi.id) && sceneCameras(st.scene);
-  reglerSousTitres(!!(st.st && st.st.actif), enDirect && !(st.muet || {})[moi.id]);
+  reglerSousTitres(!!(st.st && st.st.actif), enDirect && !(st.muet || {})[moi.id], st.st && st.st.moteur);
   const statut = $('#statut');
   statut.textContent = enDirect ? '● À L\'ANTENNE' : ((st.onair || []).includes(moi.id) ? 'PRÊT(E), À L\'ANTENNE AU PROCHAIN PLAN' : 'EN COULISSES');
   statut.classList.toggle('direct', enDirect);
@@ -238,8 +238,17 @@ function recevoirEtat(st) {
 let dernierEtatTs = 0;
 
 /* ----- Sous-titres : ma voix est transcrite ici, puis envoyée à l'animateur avec mon nom ----- */
-const monEcoute = creerEcoute(st => { if (maCamera) ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, st } }, type: 'rpcs' }); });
-function reglerSousTitres(actifs, jeParle) {
+let moteurST = 'navigateur';
+const monEcoute = creerEcoute(st => { if (maCamera) ordre(maCamera, { sendData: { studioSebSalut: { id: moi.id, nom: moi.nom, st } }, type: 'rpcs' }); },
+  (e, d) => {
+    const info = $('#st-info');
+    if (e === 'chargement') info.textContent = `Préparation des sous-titres sur ton ordinateur : ${d || 0}\u00a0% (une seule fois).`;
+    else if (e === 'erreur') info.textContent = 'Les sous-titres n\'ont pas pu démarrer sur ton ordinateur.';
+    else info.textContent = moteurST === 'whisper' ? 'Sous-titres activés : quand tu es à l\'antenne, ce que tu dis est transcrit sur ton ordinateur (rien n\'est envoyé ailleurs).' : 'Sous-titres activés : quand tu es à l\'antenne, ce que tu dis est transcrit par ton navigateur.';
+  }, undefined, () => moteurST);
+function reglerSousTitres(actifs, jeParle, moteur) {
+  moteurST = moteur === 'whisper' ? 'whisper' : 'navigateur';
+  monEcoute.suivreMoteur();
   $('#st-info').hidden = !(actifs && monEcoute.dispo) || CAM_DISTANTE;
   // micro coupé par l'invité : on n'écoute plus rien, même pour les sous-titres
   if (actifs && jeParle && monEcoute.dispo && !CAM_DISTANTE && !coupe.mic) monEcoute.demarrer(); else monEcoute.arreter();

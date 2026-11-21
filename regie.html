@@ -44,6 +44,8 @@
   .ligne-case b { display: block; font-weight: 500; } .ligne-case small { display: block; color: var(--ui-muted); font-size: 12px; margin-top: 1px; }
   .st-palette { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px 26px; }
   .st-palette:empty { display: none; }
+  .st-moteur { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0 2px; font-size: 13px; }
+  .st-moteur select { flex: 1 1 200px; min-width: 0; }
   .st-pers { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 5px; border: 1px solid var(--ui-line); border-radius: 99px; font-size: 13px; cursor: pointer; }
   .st-pers:hover { border-color: var(--ui-line2); }
   .st-pers input[type=color] { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
@@ -839,6 +841,11 @@
         <summary>Sous-titres en direct</summary>
         <label class="ligne-case" title="Chacun est transcrit sur son ordinateur : on sait toujours qui parle."><input type="checkbox" id="st-actif"> <span><b>Activer les sous-titres</b></span></label>
         <label class="ligne-case" title="Décoche pour les garder seulement pour le replay."><input type="checkbox" id="st-ecran"> <span><b>Les afficher à l'écran</b></span></label>
+        <div class="st-moteur"><label for="st-moteur">Transcription :</label><select id="st-moteur">
+          <option value="navigateur">par le navigateur (Chrome, Edge)</option>
+          <option value="whisper">Whisper, sur chaque ordinateur (bêta)</option>
+        </select></div>
+        <p class="aide" id="st-moteur-info"></p>
         <label class="ligne-case" title="On reconnaît qui parle d'un coup d'œil. Clique sur une pastille pour changer la couleur."><input type="checkbox" id="st-couleurs"> <span><b>Une couleur par personne</b></span></label>
         <div class="st-palette" id="st-palette"></div>
         <div class="wp-source" style="margin-top:8px" title="Après le direct, corrige et télécharge les sous-titres dans « Lives terminés », pendant 10 jours."><span class="voyant" id="st-voyant"></span><span id="st-etat"></span></div>
@@ -1194,7 +1201,7 @@
 <script src="js/typo.js?v=f3f2b542" data-auto="non"></script>
 <script src="js/reglages-media.js?v=efad26cf"></script>
 <script src="js/enregistrement-local.js?v=815cd7b4"></script>
-<script src="js/sous-titres.js?v=923d3b0d"></script>
+<script src="js/sous-titres.js?v=12f18d0d"></script>
 <script src="js/regie.js?v=8275ea08"></script>
 <script src="js/fonds3d.js?v=3f9e3809"></script>
 <script src="js/habillages.js?v=c066d580"></script>
@@ -1225,7 +1232,7 @@
 <script src="js/regie-eclat.js?v=a5eb7527"></script>
 <script src="js/regie-watch.js?v=2f3c6da8"></script>
 <script src="js/regie-etat.js?v=ed91ae08"></script>
-<script src="js/regie-st.js?v=211f6618"></script>
+<script src="js/regie-st.js?v=01e052da"></script>
 <script src="js/regie-ecran.js?v=50522a44"></script>
 <script src="js/regie-simple.js?v=3f363f58"></script>
 <script src="js/regie-securite.js?v=13ef7dd8"></script>
