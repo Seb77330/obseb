@@ -1,12 +1,33 @@
-/* Sous-titres : chacun est transcrit par son propre navigateur (reconnaissance vocale de Chrome et d'Edge, gratuite).
+/* Sous-titres : chacun est transcrit sur son propre ordinateur, au choix de l'animateur :
+   - « navigateur » : la reconnaissance vocale de Chrome et d'Edge (gratuite) ;
+   - « whisper » : le modèle Whisper, calculé sur l'ordinateur (js/whisper-travail.js) : la voix ne part nulle part,
+     et ça marche aussi dans Firefox et Safari. Le modèle se télécharge une fois (≈ 80 Mo).
    Comme chaque personne est écoutée sur son ordinateur, on sait toujours qui parle, même quand plusieurs parlent à la fois.
    Ce fichier sert à la régie (ta voix) et à la page invité (la voix de chaque invité). */
 'use strict';
 
 /* surTexte({ t: texte, f: 1 si la phrase est terminée, n: numéro de la phrase })
-   surEtat('ecoute' | 'arret' | 'refuse')
-   piste() : (facultatif) la piste audio du micro choisi ; sans elle, le navigateur écoute le micro par défaut de l'ordinateur */
-function creerEcoute(surTexte, surEtat, piste) {
+   surEtat('ecoute' | 'arret' | 'refuse' | 'chargement' (avec le pourcentage) | 'erreur' (avec le message))
+   piste() : (facultatif) la piste audio du micro choisi ; sans elle, le navigateur écoute le micro par défaut de l'ordinateur
+   moteur() : (facultatif) 'navigateur' (par défaut) ou 'whisper' */
+function creerEcoute(surTexte, surEtat, piste, moteur) {
+  const nav = creerEcouteNavigateur(surTexte, surEtat, piste);
+  let wh = null, enCours = null;
+  const choisi = () => (moteur && moteur() === 'whisper' && whisperPossible() ? 'whisper' : 'navigateur');
+  const ecoute = m => m === 'whisper' ? (wh || (wh = creerEcouteWhisper(surTexte, surEtat, piste))) : nav;
+  return {
+    get dispo() { return choisi() === 'whisper' ? true : nav.dispo; },
+    get moteur() { return choisi(); },
+    actif: () => !!enCours,
+    demarrer() { if (enCours) return; enCours = choisi(); ecoute(enCours).demarrer(); },
+    arreter() { if (!enCours) return; ecoute(enCours).arreter(); enCours = null; },
+    /* l'animateur a changé de moteur pendant l'écoute : on bascule */
+    suivreMoteur() { if (enCours && enCours !== choisi()) { ecoute(enCours).arreter(); enCours = choisi(); ecoute(enCours).demarrer(); } },
+  };
+}
+const whisperPossible = () => typeof Worker !== 'undefined' && typeof WebAssembly !== 'undefined' && !!(window.AudioContext || window.webkitAudioContext);
+
+function creerEcouteNavigateur(surTexte, surEtat, piste) {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
   let r = null, voulu = false, n = 0, dernierProvisoire = 0;
   function lancer() {
@@ -39,6 +60,121 @@ function creerEcoute(surTexte, surEtat, piste) {
     actif: () => voulu,
     demarrer() { if (voulu) return; voulu = true; lancer(); },
     arreter() { if (!voulu) return; voulu = false; if (r) { try { r.stop(); } catch (e) { /* rien */ } } },
+  };
+}
+
+/* ----- Whisper : on découpe la voix en phrases (pause de 0,7 s, ou 12 s au plus) et on les transcrit une par une ----- */
+const HALLUCINATIONS_WHISPER = /amara\.org|sous-titr(es|age)s? (réalisés?|faits?|par)|merci d'avoir regardé|abonnez-vous|n'oubliez pas de (vous|t')abonner|^[\s.…!?,-]*$|^[[(].*[\])]$/i;
+function creerEcouteWhisper(surTexte, surEtat, piste) {
+  const SR = 16000;
+  let voulu = false, travail = null, pret = false, ctx = null, src = null, proc = null, flux = null, fluxAMoi = false;
+  let n = 0, idMorceau = 0, occupe = false;
+  const file = [], fichiers = new Map();
+  // détection de la voix : un seuil qui suit le bruit de fond de la pièce
+  let fond = 0.004, parle = false, silence = 0, total = 0, morceaux = [], avant = [];
+
+  function travailleur() {
+    if (travail) return travail;
+    travail = new Worker('js/whisper-travail.js', { type: 'module' });
+    travail.onmessage = ({ data }) => {
+      if (data.type === 'progres') {
+        fichiers.set(data.fichier, [data.charge, data.total]);
+        let c = 0, t = 0; for (const [a, b] of fichiers.values()) { c += a; t += b; }
+        if (surEtat && voulu) surEtat('chargement', t ? Math.round(c * 100 / t) : 0);
+      } else if (data.type === 'pret') {
+        pret = true; if (surEtat && voulu) surEtat('ecoute');
+      } else if (data.type === 'texte') {
+        occupe = false;
+        const t = String(data.texte || '').replace(/\s+/g, ' ').trim();
+        if (voulu && t && !HALLUCINATIONS_WHISPER.test(t)) surTexte({ t, f: 1, n: n++ });
+        suivant();
+      } else if (data.type === 'erreur') {
+        occupe = false;
+        if (!pret) { voulu = false; couperMicro(); if (surEtat) surEtat('erreur', /fetch|network|locate|load/i.test(data.message) ? 'le modèle n\'a pas pu être téléchargé (vérifie la connexion, puis réessaie)' : data.message); travail.terminate(); travail = null; }
+        else suivant();
+      }
+    };
+    travail.onerror = () => { if (!pret && surEtat) surEtat('erreur', 'Whisper n\'a pas pu démarrer dans ce navigateur'); voulu = false; couperMicro(); travail = null; };
+    return travail;
+  }
+  function suivant() {
+    if (occupe || !file.length || !travail) return;
+    occupe = true;
+    const audio = file.shift();
+    travail.postMessage({ type: 'audio', id: ++idMorceau, audio }, [audio.buffer]);
+  }
+  function finirPhrase() {
+    const long = morceaux.reduce((a, m) => a + m.length, 0);
+    if (long >= SR * 0.5) {
+      const audio = new Float32Array(long);
+      let i = 0; for (const m of morceaux) { audio.set(m, i); i += m.length; }
+      file.push(audio);
+      while (file.length > 3) file.shift();   // ordinateur trop lent : on saute plutôt que d'avoir un retard qui grandit
+      suivant();
+    }
+    parle = false; morceaux = []; silence = 0; total = 0;
+  }
+  function traiter(b) {
+    let s = 0; for (let i = 0; i < b.length; i++) s += b[i] * b[i];
+    const rms = Math.sqrt(s / b.length);
+    if (!parle) {
+      if (rms < fond * 3) fond = fond * 0.95 + rms * 0.05;
+      avant.push(b);
+      while (avant.reduce((a, m) => a + m.length, 0) > SR * 0.4) avant.shift();   // on garde 0,4 s avant le premier mot
+      if (rms > Math.max(0.012, fond * 3)) { parle = true; morceaux = avant; avant = []; total = morceaux.reduce((a, m) => a + m.length, 0); silence = 0; }
+    } else {
+      morceaux.push(b); total += b.length;
+      if (rms < Math.max(0.008, fond * 2)) silence += b.length; else silence = 0;
+      if (silence > SR * 0.7 || total > SR * 12) finirPhrase();
+    }
+  }
+  /* le micro arrive à 44,1 ou 48 kHz : on le ramène à 16 kHz (moyenne des échantillons) */
+  function vers16k(entree, taux) {
+    const r = taux / SR, nb = Math.floor(entree.length / r), sortie = new Float32Array(nb);
+    for (let i = 0; i < nb; i++) {
+      const a = Math.floor(i * r), z = Math.min(entree.length, Math.floor((i + 1) * r));
+      let s = 0; for (let k = a; k < z; k++) s += entree[k];
+      sortie[i] = s / Math.max(1, z - a);
+    }
+    return sortie;
+  }
+  async function ouvrirMicro() {
+    const p = piste && piste();
+    if (p) { flux = new MediaStream([p]); fluxAMoi = false; }
+    else { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); fluxAMoi = true; }
+    if (!voulu) { couperMicro(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    src = ctx.createMediaStreamSource(flux);
+    proc = ctx.createScriptProcessor(4096, 1, 1);
+    proc.onaudioprocess = e => { if (voulu) traiter(vers16k(e.inputBuffer.getChannelData(0), ctx.sampleRate)); };
+    src.connect(proc); proc.connect(ctx.destination);   // la sortie reste muette : c'est seulement pour que le navigateur fasse tourner l'analyse
+  }
+  function couperMicro() {
+    try { if (src) src.disconnect(); if (proc) proc.disconnect(); } catch (e) { /* rien */ }
+    if (ctx) ctx.close().catch(() => {});
+    if (flux && fluxAMoi) flux.getTracks().forEach(t => t.stop());
+    ctx = src = proc = flux = null;
+    parle = false; morceaux = []; avant = []; file.length = 0;
+  }
+  return {
+    dispo: whisperPossible(),
+    actif: () => voulu,
+    async demarrer() {
+      if (voulu) return;
+      voulu = true;
+      travailleur().postMessage({ type: 'charger' });
+      if (surEtat) surEtat(pret ? 'ecoute' : 'chargement', 0);
+      try { await ouvrirMicro(); }
+      catch (e) { voulu = false; couperMicro(); if (surEtat) surEtat('refuse'); }
+    },
+    arreter() {
+      if (!voulu) return;
+      voulu = false;
+      if (parle) finirPhrase();
+      couperMicro();
+      if (surEtat) surEtat('arret');
+    },
   };
 }
 
