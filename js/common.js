@@ -607,6 +607,14 @@ function transportSession() {
 /* Anti-bruit : 'doux' (réduction de bruit normale du navigateur + gain automatique : les voix faibles restent),
    'fort' (en plus, isolation de la voix de Chrome/Edge : pour une pièce bruyante, peut avaler une voix très basse),
    'aucun' (son brut, pour un casque et un bon micro). Anciennes valeurs : case cochée = doux, décochée = aucun. */
+/* Webcam sombre : lumière moyenne mesurée (0 à 1) -> facteur d'éclaircissement (1 = rien, 1,8 au plus).
+   On ne touche à rien au-dessus de 0,32 (une image normale) ; on vise 0,42 sans jamais pousser au point de tout griser. */
+function facteurEclat(lum) {
+  if (!(lum > 0.02) || lum >= 0.32) return 1;
+  return Math.round(Math.min(1.8, 0.42 / lum) * 20) / 20;
+}
+const facteurEclatSur = v => { v = +v; return v > 1 ? Math.min(1.8, Math.round(v * 20) / 20) : 1; };
+const filtreEclat = f => f > 1 ? `brightness(${f}) contrast(${(1 + (f - 1) * 0.12).toFixed(3)}) saturate(${(1 + (f - 1) * 0.15).toFixed(3)})` : '';
 function niveauAntibruit(v, defaut = 'doux') {
   if (v === 'doux' || v === 'fort' || v === 'aucun') return v;
   if (v === true) return 'doux';

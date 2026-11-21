@@ -86,6 +86,7 @@ let appHote = null;
 const enrHote = EnregistreurCamera();   // ta caméra enregistrée chez toi pendant « Enregistrer » (pistes séparées)
 function demarrerCamera(app) {
   appHote = app;
+  if (typeof eclatRecu === 'function') eclatRecu(ID_HOTE, app.eclat);
   hauteurCamera = app.h || 0;
   $('#cam-reglage').hidden = true; $('#cam-direct').hidden = false;
   $('#cam-appareils').textContent = [app.nomCam, app.nomMic, app.flou ? 'fond flou' : '', app.cadrage ? 'cadrage auto' : '', texteAntibruit(app.antibruit)].filter(Boolean).join(' · ');

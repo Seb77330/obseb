@@ -196,6 +196,16 @@ function creerSource(src) {
    webcam) : elle remplit la case. Ça suit la rotation pendant le live, pour toutes les caméras, invités compris. */
 const CSS_VOIR = ':root{--fit-style:contain!important}video{object-fit:contain!important}';
 const CSS_REMPLIR = ':root{--fit-style:cover!important}video{object-fit:cover!important}';
+/* Webcams sombres : éclaircies à l'affichage (le facteur est mesuré dans les coulisses de la personne) */
+function majEclat() {
+  const e = etat && etat.eclairer !== false && etat.eclat || {};
+  for (const t of tuiles.values()) {
+    if (t.ecran || !t.iframe) continue;
+    const f = filtreEclat(facteurEclatSur(e[t.id]));
+    if (t.iframe.style.filter !== f) t.iframe.style.filter = f;
+  }
+}
+setInterval(majEclat, 1000);   // une image qui vient d'arriver reçoit son filtre
 function modeCadre(id) { const m = etat && etat.cadre && etat.cadre[id]; return m === 'voir' || m === 'remplir' ? m : 'auto'; }
 function appliquerCadre(t) {
   if (t && !t.ecran && estFaux(t.id)) { t.el.dataset.cadre = modeCadre(t.id); return; }
@@ -303,6 +313,7 @@ function appliquerEtat(st) {
   if (!DEMO && suivreVisuel(st.visuel)) return;
   etat = st;
   calerHorloge(st.ts);
+  majEclat();
   const scene = SCENE_FORCEE || (st.scene === 'partage' ? 'live' : st.scene);
 
   // créer les tuiles des personnes connues, retirer les absents

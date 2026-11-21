@@ -38,19 +38,40 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       </select>
       <p class="rm-note rm-bruit-note"></p>
       <p class="rm-note">Le flou s'affiche dans ta caméra dès que tu entres. Sur un vieil ordinateur, garde « Net ».</p>` : ''}
+      <p class="rm-note rm-eclat" hidden></p>
       <p class="rm-aide"></p>
       <button class="primaire rm-go">${texteBouton}</button>
     </div>`;
   const video = boite.querySelector('video'), selCam = boite.querySelector('.rm-cam'), selMic = boite.querySelector('.rm-mic');
   const vu = boite.querySelector('.rm-vu i'), aide = boite.querySelector('.rm-aide'), res = boite.querySelector('.rm-res');
-  let flux = null, ctx = null, boucle = null;
+  let flux = null, ctx = null, boucle = null, mesureLumiere = null;
   let choix = {};
+  /* Webcam sombre : pendant le réglage, on mesure la lumière moyenne de l'image (une toute petite copie, rien n'est envoyé).
+     Si la pièce est sombre, l'image est éclaircie dans le live (filtre d'affichage), et la personne le voit tout de suite ici. */
+  let eclat = 1;
+  const lumieres = [];
+  function mesurer() {
+    if (!video.videoWidth) return;
+    const c = mesurer.c || (mesurer.c = Object.assign(document.createElement('canvas'), { width: 32, height: 18 }));
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(video, 0, 0, 32, 18);
+    const d = g.getImageData(0, 0, 32, 18).data;
+    let y = 0; for (let i = 0; i < d.length; i += 4) y += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+    lumieres.push(y / (d.length / 4) / 255);
+    if (lumieres.length > 7) lumieres.shift();
+    const med = [...lumieres].sort((a, b) => a - b)[Math.floor(lumieres.length / 2)];
+    eclat = facteurEclat(med);
+    video.style.filter = filtreEclat(eclat);
+    const n = boite.querySelector('.rm-eclat');
+    if (n) { n.hidden = eclat <= 1; n.textContent = 'Ta pièce est sombre : ton image est éclaircie automatiquement. Une lampe face à toi, c\'est encore mieux.'; }
+  }
   try { choix = JSON.parse(localStorage.getItem(cle) || '{}'); } catch (e) { /* rien */ }
 
   function arreter() {
     if (flux) flux.getTracks().forEach(t => t.stop());
     flux = null;
     if (boucle) cancelAnimationFrame(boucle);
+    clearInterval(mesureLumiere); lumieres.length = 0;
     if (ctx) ctx.close().catch(() => {});
     ctx = null;
   }
@@ -73,6 +94,7 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     }
     boite.querySelector('.rm-vide').hidden = true;
     video.srcObject = flux;
+    mesureLumiere = setInterval(mesurer, 600);
     const vt = flux.getVideoTracks()[0], at = flux.getAudioTracks()[0];
     const s = vt && vt.getSettings();
     if (s) {
@@ -143,7 +165,8 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     if (caseCadrage) choix.cadrage = caseCadrage.checked;
     try { localStorage.setItem(cle, JSON.stringify(choix)); } catch (e) { /* rien */ }
     arreter();   // libère la caméra avant que la salle l'ouvre (évite le conflit Cam Link)
-    surDemarrer(Object.assign({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 },
+    choix.eclat = eclat;
+    surDemarrer(Object.assign({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0, eclat },
       effets ? { flou: choix.flou || '', antibruit: niveauAntibruit(choix.antibruit, antibruitDefaut), cadrage: !choix.flou && choix.cadrage === true } : {}));
   };
   return { ouvrir, arreter, choix: () => choix };
@@ -154,7 +177,7 @@ function appareilsRetenus(cle, antibruitDefaut = 'doux') {
   try {
     const c = JSON.parse(localStorage.getItem(cle) || '{}');
     if (!c.nomCam && !c.nomMic) return null;
-    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0,
+    return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0, eclat: facteurEclatSur(c.eclat),
       flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: niveauAntibruit(c.antibruit, antibruitDefaut), cadrage: !c.flou && c.cadrage === true };
   } catch (e) { return null; }
 }
