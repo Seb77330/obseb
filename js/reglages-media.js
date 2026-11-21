@@ -12,9 +12,9 @@ function nomAppareil(label) {
 }
 function paramAppareil(label) { return nomAppareil(label).replace(/\s+/g, '_'); }
 
-/* effets = true : on propose aussi le flou d'arrière-plan et l'anti-bruit renforcé (coulisses des invités).
+/* effets = true : on propose aussi le flou d'arrière-plan et l'anti-bruit (doux, fort ou aucun).
    Les deux sont calculés dans le navigateur de la personne : rien ne passe par un serveur, rien ne coûte. */
-function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer, effets = false, antibruitDefaut = true }) {
+function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDemarrer, effets = false, antibruitDefaut = 'doux' }) {
   boite.innerHTML = `
     <div class="rm">
       <div class="rm-video"><video autoplay muted playsinline></video><div class="rm-vide">Autorise la caméra et le micro dans la fenêtre du navigateur</div><span class="rm-res"></span></div>
@@ -29,7 +29,13 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
         <option value="leger">Flou léger</option>
         <option value="fort">Flou fort (on ne voit plus la pièce)</option>
       </select>
-      <label class="rm-case"><input type="checkbox" class="rm-antibruit"> <span>Anti-bruit renforcé <small>clavier, ventilateur, bruits de la pièce</small></span></label>
+      <label class="rm-champ">Anti-bruit</label>
+      <select class="rm-antibruit">
+        <option value="doux">Doux (conseillé)</option>
+        <option value="fort">Fort : pièce bruyante</option>
+        <option value="aucun">Aucun : casque et bon micro</option>
+      </select>
+      <p class="rm-note rm-bruit-note"></p>
       <p class="rm-note">Le flou s'affiche dans ta caméra dès que tu entres. Sur un vieil ordinateur, garde « Net ».</p>` : ''}
       <p class="rm-aide"></p>
       <button class="primaire rm-go">${texteBouton}</button>
@@ -106,10 +112,13 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
       tic();
     }
   }
-  // effets : retenus d'une fois sur l'autre ; anti-bruit coché par défaut (la plupart des invités n'ont pas de casque)
+  // effets : retenus d'une fois sur l'autre ; anti-bruit doux par défaut (il enlève le souffle sans couper une voix qui parle bas)
   const selFlou = boite.querySelector('.rm-flou'), caseBruit = boite.querySelector('.rm-antibruit');
   if (selFlou) selFlou.value = ['leger', 'fort'].includes(choix.flou) ? choix.flou : '';
-  if (caseBruit) caseBruit.checked = typeof choix.antibruit === 'boolean' ? choix.antibruit : antibruitDefaut;
+  if (caseBruit) caseBruit.value = niveauAntibruit(choix.antibruit, antibruitDefaut);
+  const NOTE_BRUIT = { doux: 'Enlève le souffle et les petits bruits, sans couper une voix qui parle bas.', fort: 'Isole la voix : clavier, ventilateur, rue. Une voix très basse peut être coupée.', aucun: 'Son brut et naturel, sans aucun traitement.' };
+  const noteBruit = () => { const n = boite.querySelector('.rm-bruit-note'); if (n && caseBruit) n.textContent = NOTE_BRUIT[caseBruit.value]; };
+  if (caseBruit) { caseBruit.onchange = noteBruit; noteBruit(); }
   selCam.onchange = () => { choix.cam = selCam.value; ouvrir(); };
   selMic.onchange = () => { choix.mic = selMic.value; ouvrir(); };
   boite.querySelector('.rm-go').onclick = () => {
@@ -118,21 +127,21 @@ function ReglagesMedia({ boite, cle, texteBouton = 'Démarrer ma caméra', surDe
     const appMic = mic ? mic.textContent.replace(/^Par défaut : /, '') : '';
     choix.nomCam = appCam; choix.nomMic = appMic;
     if (selFlou) choix.flou = selFlou.value || '';
-    if (caseBruit) choix.antibruit = caseBruit.checked;
+    if (caseBruit) choix.antibruit = caseBruit.value;
     try { localStorage.setItem(cle, JSON.stringify(choix)); } catch (e) { /* rien */ }
     arreter();   // libère la caméra avant que la salle l'ouvre (évite le conflit Cam Link)
     surDemarrer(Object.assign({ vd: appCam ? paramAppareil(appCam) : '1', ad: appMic ? paramAppareil(appMic) : '1', nomCam: appCam, nomMic: appMic, h: choix.h || 0 },
-      effets ? { flou: choix.flou || '', antibruit: !!choix.antibruit } : {}));
+      effets ? { flou: choix.flou || '', antibruit: niveauAntibruit(choix.antibruit, antibruitDefaut) } : {}));
   };
   return { ouvrir, arreter, choix: () => choix };
 }
 
 /* Appareils retenus la dernière fois (pour redémarrer sans repasser par le réglage) */
-function appareilsRetenus(cle) {
+function appareilsRetenus(cle, antibruitDefaut = 'doux') {
   try {
     const c = JSON.parse(localStorage.getItem(cle) || '{}');
     if (!c.nomCam && !c.nomMic) return null;
     return { vd: c.nomCam ? paramAppareil(c.nomCam) : '1', ad: c.nomMic ? paramAppareil(c.nomMic) : '1', nomCam: c.nomCam, nomMic: c.nomMic, h: c.h || 0,
-      flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: c.antibruit === true };
+      flou: ['leger', 'fort'].includes(c.flou) ? c.flou : '', antibruit: niveauAntibruit(c.antibruit, antibruitDefaut) };
   } catch (e) { return null; }
 }

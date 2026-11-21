@@ -272,3 +272,15 @@ body.regie-simple #etat-studio:not(:has(> button:not(.pousse):not([data-niveau="
 .qz-partie .qzp-statut { margin: -4px 0 10px; }
 .qz-liste-titre .aide { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .mu-depart { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; } .mu-depart .lien-bouton { font-size: inherit; }
+/* Qui parle : la carte s'allume, le temps de parole s'affiche sur la vignette */
+.participant.parle { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
+.participant .parole-temps { position: absolute; right: 4px; bottom: 4px; z-index: 2; padding: 1px 5px; border-radius: 5px; background: rgba(0,0,0,.65); color: #fff; font-size: 10.5px; font-variant-numeric: tabular-nums; pointer-events: none; }
+.participant .parole-temps:empty { display: none; }
+.participant.parle .parole-temps { background: var(--ui-accent); color: #111; }
+.parole-repartition { display: grid; gap: 5px; margin: 8px 0; }
+.pr-ligne { display: grid; grid-template-columns: minmax(60px, 30%) 1fr 38px; gap: 8px; align-items: center; font-size: 12.5px; }
+.pr-ligne .pr-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pr-ligne .pr-barre { height: 7px; border-radius: 4px; background: var(--ui-line); overflow: hidden; }
+.pr-ligne .pr-barre i { display: block; height: 100%; background: var(--ui-muted); border-radius: 4px; transition: width .4s; }
+.pr-ligne.parle .pr-barre i { background: var(--ui-accent); }
+.pr-ligne .pr-pct { text-align: right; color: var(--ui-muted); font-variant-numeric: tabular-nums; }

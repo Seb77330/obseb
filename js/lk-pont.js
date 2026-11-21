@@ -28,7 +28,7 @@ function secours(raison) {
   // les effets de l'invité, dans les mots de vdo.ninja (même traduction que vdo() dans common.js)
   const flou = q.get('flou'); q.delete('flou');
   if (flou === 'leger' || flou === 'fort') q.set('effects', flou === 'fort' ? '3a' : '3');
-  if (q.has('antibruit')) { q.delete('antibruit'); q.set('denoise', '1'); q.set('isolation', '1'); }
+  if (q.has('antibruit')) { const v = q.get('antibruit'); q.delete('antibruit'); if (v === 'fort' || v === 'true' || v === '1') { q.set('denoise', '1'); q.set('isolation', '1'); } }
   location.replace('https://vdo.ninja/?' + q.toString().replace(/=(?=&|$)/g, ''));
 }
 
@@ -182,7 +182,7 @@ async function publier() {
   await lp.setMicrophoneEnabled(true, {
     deviceId, channelCount: pro ? 2 : 1,
     echoCancellation: !pro, noiseSuppression: !pro, autoGainControl: !pro,   // casque + bon micro : aucun traitement
-    voiceIsolation: !pro && has('antibruit'),   // anti-bruit renforcé choisi en coulisses : Chrome/Edge isolent la voix
+    voiceIsolation: !pro && ['fort', 'true', '1'].includes(P.get('antibruit')),   // anti-bruit fort choisi en coulisses : Chrome/Edge isolent la voix (doux : réduction de bruit seule)
   }).catch(() => etat('Micro indisponible'));
 }
 
